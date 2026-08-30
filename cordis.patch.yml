@@ -1,0 +1,22 @@
+# dsh-better-workspace bundle patch.
+#
+# Installed through the official CLI —
+#
+#   dsh plugin --profile <name> add dsh-better-workspace
+#
+# — the command reconciles dsh.profile.bundles against installed packages and,
+# seeing this declaration, merges THIS patch exactly like the manual mount
+# line below. No profile file edits needed.
+#
+# Manual mount equivalent (profile cordis.patch.yml):
+#
+#   - insert:
+#       - id: better-workspace
+#         name: 'dsh-better-workspace'
+#
+# Only the Node half loads through this row; the web client half is served
+# through the package's exports["./client"] entry and mounted by the browser
+# boot graph (window.__DSH_BOOT__).
+- insert:
+    - id: better-workspace
+      name: 'dsh-better-workspace'

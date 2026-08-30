@@ -1,0 +1,74 @@
+# dsh-better-workspace
+
+> 给 [DeepSeek Harness (DSH)](https://www.npmjs.com/package/@deepseek-ai/dsh) 的侧边栏「工作区」列表装上一套**文件夹系统**——工作区还是那个工作区(一个目录),但名字里的 `/` 就是层级,让「网页前端」「网页后端」这类工作区可以归到同一个 `web` 分组下。
+
+```
+web/                 ← 虚拟分组(不是真实目录,纯命名层级)
+├─ 前端              ← 工作区「web/前端」
+└─ 后端              ← 工作区「web/后端」
+测试/                
+└─ 两个插件维护      ← 原有的单层工作区照常工作
+```
+
+## 它做什么
+
+- **层级树**:工作区名称里的 `/` 即分组。`web/前端` 显示在 `web` 分组下,支持任意多级;不带 `/` 的工作区照常显示在根层。重命名工作区后树**即时重排**——分组只是名字的投影,没有第二份需要同步的数据。
+- **添加工作区附「所属分组」弹窗**:点「添加工作区」选完文件夹后,弹出一个小对话框,一行选择工作区所属分组——可以直接输入(如 `web`)、从下拉里选已有层级(datalist 原生补全),留空就是根分组。确认后插件创建工作区并把分组前缀写进名称。
+- **新建分组**:标题栏的「新建分组」按钮可以创建**空分组**(比如先把 `web` 占好位),分组路径支持多级。空分组持久保存在浏览器本地;一旦有工作区落进去,分组就由名称自然派生。
+- **分组级操作**:分组行悬停出菜单——重命名分组(同步更新组内所有工作区名称)、删除空分组。
+- **不丢原生能力**:会话行(打开/重命名/分叉/归档)、每工作区「新会话」、折叠与展开、当前会话高亮、运行中/等待交互圆点、未分组会话兜底、中英双语跟随界面语言。
+- **对话空态页同样生效**:会话空态页的「添加工作区」菜单走的也是本插件的拾取交互,同样带所属分组弹窗。
+
+## 安装
+
+```bash
+dsh plugin --profile web add dsh-better-workspace   # npm 公开包
+# 源码与 Release: https://github.com/KannaKuron/dsh-better-workspace
+```
+
+纯 JS、零构建、零 npm 依赖(只依赖 dsh 客户端基线模块),安装不触发任何构建脚本。装完**重启 DSH** 即生效。
+
+<details>
+<summary>手动挂载(不用 CLI 时)</summary>
+
+把包放进 profile 的 `node_modules` 后,在 profile 的 `cordis.patch.yml` 里加:
+
+```yaml
+- insert:
+    - id: better-workspace
+      name: 'dsh-better-workspace'
+```
+
+</details>
+
+## 工作原理
+
+DSH 的侧边栏浏览区是一个公开插槽 `sidebar.workspaces`(single),官方工作区浏览器是它的占用者;本插件以更低优先级注册同一插槽,**整区替换**为层级树版本。数据全部来自插槽标准注入(`useWorkspaces` / `useSessions` 快照钩子),动作(打开会话、重命名/删除工作区、归档等)也走注入的宿主动作——不碰任何私有 API。
+
+「添加工作区」则落在 dsh 专门为第三方设计的一条缝里:`sidebar.workspaces.directoryFlow` 与 `conversation.hero.workspace.directoryFlow` 两个目录流插槽。触发按钮、忙碌语义、错误弹窗全由官方持有;本插件只拥有「触发之后、交付路径之前」的交互——正好用来塞进「选完文件夹 → 弹窗选分组 → 创建 → 改名加前缀」这条链。
+
+视图状态(分组折叠、会话展开、显式空分组)通过 dsh 客户端 store 持久化在浏览器本地(`dsh.betterWorkspace.view.v1`)。
+
+## 与 dsh-better-sidebar 的关系
+
+同属 `dsh-better-*` 家族,但互不重叠:[dsh-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar) 是**右侧**的 VSCode 式面板(资源管理器/终端/Git);本插件只接管**左侧**工作区列表。两者可同装。
+
+## 限制与路线图
+
+- 工作区拖拽排序未接管(v0.1 树内按名称排序;原浏览器的排序仍存于宿主,后续版本接回)。
+- 搜索为本地标题过滤;宿主内容搜索(`session.search`)计划接回。
+- 空分组持久在浏览器本地,不同浏览器/设备不共享(路线图:宿主侧分组登记 + 设置页)。
+- flat(平铺)视图未接管,层级树即视图。
+
+## 开发
+
+```bash
+npm test        # 冒烟测试:清单一致性 / 基线 require 白名单 / 中英词典对齐 / 语法
+npm pack        # 出 tarball 后可本地安装验证
+```
+
+本地验证:把 `npm pack` 产出的 tarball 装进 web profile 并手动挂载(见上),重启 DSH,验证:层级树渲染、添加工作区弹窗、重命名即时重排、新建分组、卸载后回到原浏览器。
+
+## License
+
+[MIT](./LICENSE)

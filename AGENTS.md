@@ -52,13 +52,13 @@
 
 - 会话拖到「另一分组内的会话行」仅扁平重排(标题分组归属不变);改分组请拖到分组行或重命名。
 - 搜索是本地标题过滤,未接 session.search 宿主内容搜索。
-- 外观自定义的「发光」是行级 textShadow/boxShadow(浏览器合成),不改变主题 token。
+- 外观自定义的「发光」是文字级 textShadow(浏览器合成),不改变主题 token;颜色/发光只影响本插件树行。
 
 ## v0.4 追加不变量(设置页 / 压缩树 / 右键外观)
 
 10. **压缩树**(compressTree):仅当一层恰好一个子级时合并——单文件夹链合成一行(名字用 / 连接,path 取最深 = 展开状态键);单工作区链合成工作区行(leaf 拼接,kind=ws)。**只对根的子文件夹应用,根自身绝不合并**;纯展示层变换,工作区原 title/workspaceId 不动。ws-kind 在工作区/会话树遍历处都要处理(搜索、渲染、计数)。
 11. **右键即操作**:全行 onContextMenu 打开自绘菜单(fixed overlay,坐标来自事件),原 ⋯ 按钮已移除、不要加回;菜单动作与旧 ellipsis 完全一致(rename/delete/fork/archive/rename-sgroup)。文件夹的「删除分组」仅对显式空分组显示。
-12. **外观自定义**:store.styling 键约定 folder:/workspace:/session:/sgroup: <id|path>;值 { color, glow(0/4/8/14), icon(solid/outline/none) };iconMode 只作用于 folder/workspace 行(图标族:IconFolderClose16/IconFolderOpen16/IconFolderOpenOutline16);默认值提交 = null 清除。删除条目 = setStyling(key, null)。
+12. **外观自定义**:store.styling 键约定 folder:/workspace:/session:/sgroup: <id|path>;值 { color, glow(0/4/8/14), icon }。icon 兼容矩阵:legacy 三值 solid/outline/none(实心/空心文件夹/无)或任意 primitives 图标名(ICON_CHOICES 网格,25 个同库图标)。**发光只有文字**:textShadow 只作用于行内文字,禁止行外圈 boxShadow(用户明确不要外框发光)。default 提交 = null 清除;删除条目 = setStyling(key, null)。
 13. **settings.section 注册**:id `better-workspace`、order 30、label 用 locale bind 的 thunk;store 传**共享 handle**(apply 里创建一次的 viewStore)——同 persist 名的多个 handle 会交叉污染,绝不能各自 createViewStore()。组件用 useStore 读 prefs/actions.setPref 写。
 14. **透明/磨砂适配纪律**(第三方主题插件(dsh-any-background)实测):自绘表面一律走「主题 token + 插件 CSS 变量」链,禁止写死不透明背景。右键菜单底色 = var(--dsw-specific-menu, var(--dsw-alias-bg-overlay, rgba(28,28,32,.72)))(官方菜单同款 token,插件覆盖它时自动生效);磨砂 = backdrop-filter: var(--dsh-any-blur-card-panels, blur(12px) saturate(1.15))(-webkit- 同步)。其他表面同理:行透明 / 输入用 bg-layer-2 / 弹窗用 primitives Modal(官方面)。新增自绘面板必须复用该链,v0.4.1 已全仓扫过无残留硬背景。
 - flat 视图未接管。

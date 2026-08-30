@@ -454,6 +454,15 @@ window.__ModuleLoader__.load({
       '.bw-seg-btn{height:24px;padding:0 10px;border-radius:6px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));background:transparent;color:var(--dsw-alias-label-secondary,#b8b8b8);font-size:12px;cursor:pointer;font-family:inherit}',
       '.bw-seg-btn:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12))}',
       '.bw-seg-btn-active{background:var(--dsw-alias-brand-primary,#5b8def);border-color:transparent;color:var(--dsw-alias-brand-text,#fff)}',
+      '.bw-seg-btn-active:hover{background:var(--dsw-alias-button-primary-hover,var(--dsw-alias-brand-primary,#5b8def));border-color:transparent}',
+      '.bw-icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(30px,1fr));gap:4px}',
+      '.bw-icon-cell{height:30px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));border-radius:6px;background:transparent;display:grid;place-items:center;color:var(--dsw-alias-label-secondary,#b8b8b8);cursor:pointer;padding:0}',
+      '.bw-icon-cell:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12));color:var(--dsw-alias-label-primary,#e6e6e6)}',
+      '.bw-icon-cell-active{border-color:var(--dsw-alias-brand-primary,#5b8def);color:var(--dsw-alias-label-primary,#e6e6e6);outline:2px solid var(--dsw-alias-brand-primary,#5b8def);outline-offset:-2px}',
+      '.bw-icon-none{width:12px;height:2px;background:currentColor;border-radius:1px;opacity:.7}',
+      '.bw-rgb-row{display:flex;gap:10px;align-items:center}',
+      '.bw-rgb-label{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
+      '.bw-rgb-input{width:52px;height:26px;box-sizing:border-box;background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.1));border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));border-radius:6px;color:inherit;font-size:12px;padding:0 6px;font-family:inherit}',
       '.bw-ctx-overlay{position:fixed;inset:0;z-index:40}',
       '.bw-ctx-menu{position:fixed;min-width:170px;background:var(--dsw-specific-menu,var(--dsw-alias-bg-overlay,rgba(28,28,32,.72)));-webkit-backdrop-filter:var(--dsh-any-blur-card-panels,blur(12px) saturate(1.15));backdrop-filter:var(--dsh-any-blur-card-panels,blur(12px) saturate(1.15));border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.3));border-radius:8px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.35);display:flex;flex-direction:column}',
       '.bw-ctx-item{display:flex;align-items:center;gap:8px;height:28px;padding:0 10px;border:none;background:transparent;color:var(--dsw-alias-label-primary,#e6e6e6);font-size:12.5px;border-radius:6px;cursor:pointer;text-align:left;font-family:inherit}',
@@ -706,11 +715,24 @@ window.__ModuleLoader__.load({
     /* ============================== rows ============================== */
 
     /** Folder glyph variants from the primitives family (solid / outline / hidden). */
+    /** Custom icon value → glyph: legacy slots (solid/outline/none) or any primitives icon name. */
     const iconOf = (mode, expanded) => {
-      if (mode === 'none') return null
+      if (!mode || mode === 'none') return null
+      if (mode === 'solid') return icon(expanded ? 'IconFolderOpen16' : 'IconFolderClose16')
       if (mode === 'outline') return icon('IconFolderOpenOutline16')
-      return icon(expanded ? 'IconFolderOpen16' : 'IconFolderClose16')
+      return icon(mode)
     }
+
+    const colorToRgb = (hex) => {
+      if (!hex) return null
+      const m = /^#?([0-9a-fA-F]{6})$/.exec(hex)
+      if (!m) return null
+      const v = parseInt(m[1], 16)
+      return [(v >> 16) & 255, (v >> 8) & 255, v & 255]
+    }
+    const rgbToHex = (r, g, b) => '#' + [r, g, b]
+      .map(n => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0'))
+      .join('')
 
     function FolderRow({ node, depth, expanded, onToggle, onContextMenu, dropInto, dragEvents, custStyle, iconMode, t }) {
       const total = countWorkspaces(node)
@@ -804,7 +826,15 @@ window.__ModuleLoader__.load({
 
     const SWATCHES = ['', '#5b8def', '#3fb950', '#d29922', '#f85149', '#a371f7', '#39c5cf', '#ec6cb9', '#ff9f45', '#6e7681']
     const GLOW_LEVELS = [0, 4, 8, 14]
-    const ICON_MODES = ['solid', 'outline', 'none']
+    const ICON_CHOICES = [
+      'solid', 'outline', 'none',
+      'IconProjectAddOutline16', 'IconBranchOutline16', 'IconArchiveOutline20', 'IconCodeOutline16',
+      'IconDataOutline16', 'IconGoalOutline16', 'IconGlobeOutline14', 'IconInspectOutline12',
+      'IconCopyOutline16', 'IconLinkOutline16', 'IconListPenOutline16', 'IconChecklistOutline14',
+      'IconBrowseOutline16', 'IconDownloadOutline16', 'IconContextInjectionOutline16',
+      'IconCordisPluginOutline14', 'IconApiOutline14', 'IconAgentPresetOutline16', 'IconEnhanceOutline16',
+      'IconSkillOutline16', 'IconSparkle16', 'IconNewChatOutline16',
+    ]
 
     /**
      * Per-row appearance: color swatches (+ native picker), glow intensity,
@@ -826,6 +856,14 @@ window.__ModuleLoader__.load({
         const style = (color === '' && glow === 0 && iconMode === 'solid') ? null : { color, glow, icon: iconMode }
         onChange(style)
         onClose()
+      }
+      const channels = colorToRgb(color)
+      const setChannel = (index, raw) => {
+        const n = Math.max(0, Math.min(255, parseInt(raw, 10) || 0))
+        const base = channels || [0, 0, 0]
+        const next = base.slice()
+        next[index] = n
+        setColor(rgbToHex(next[0], next[1], next[2]))
       }
       return E(ui.Modal, {
         open: true,
@@ -856,6 +894,20 @@ window.__ModuleLoader__.load({
                 onChange: (e) => setColor(e.target.value),
               }),
             ),
+            E('div', { className: 'bw-rgb-row' },
+              ['R', 'G', 'B'].map((label, index) => E('label', { key: label, className: 'bw-rgb-label' },
+                label,
+                E('input', {
+                  type: 'number',
+                  className: 'bw-rgb-input',
+                  min: 0,
+                  max: 255,
+                  value: channels ? channels[index] : '',
+                  placeholder: '—',
+                  onChange: (e) => setChannel(index, e.target.value),
+                }),
+              )),
+            ),
           ),
           E('div', { className: 'bw-field' },
             t('custom.glow'),
@@ -870,13 +922,15 @@ window.__ModuleLoader__.load({
           ),
           E('div', { className: 'bw-field' },
             t('custom.icon'),
-            E('div', { className: 'bw-seg' },
-              ICON_MODES.map((mode) => E('button', {
+            E('div', { className: 'bw-icon-grid' },
+              ICON_CHOICES.map((mode) => E('button', {
                 key: mode,
                 type: 'button',
-                className: cls('bw-seg-btn', iconMode === mode && 'bw-seg-btn-active'),
+                className: cls('bw-icon-cell', iconMode === mode && 'bw-icon-cell-active'),
+                title: mode === 'solid' ? t('custom.icon.solid') : (mode === 'outline' ? t('custom.icon.outline') : mode),
+                'aria-label': mode === 'solid' ? t('custom.icon.solid') : (mode === 'outline' ? t('custom.icon.outline') : mode),
                 onClick: () => setIconMode(mode),
-              }, t('custom.icon.' + (mode === 'solid' ? 'solid' : (mode === 'outline' ? 'outline' : 'none'))))),
+              }, mode === 'none' ? E('span', { className: 'bw-icon-none' }) : iconOf(mode, false))),
             ),
           ),
         ),
@@ -957,7 +1011,6 @@ window.__ModuleLoader__.load({
         return {
           color: entry.color,
           textShadow: glow > 0 ? '0 0 ' + glow + 'px ' + entry.color : undefined,
-          boxShadow: glow > 0 ? '0 0 ' + Math.round(glow * 1.25) + 'px ' + entry.color : undefined,
         }
       }
       const keyOf = (kind, payload) => {

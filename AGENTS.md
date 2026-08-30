@@ -39,13 +39,18 @@
 4. **收起语义**:工作区行点击 = 该工作区会话树整体 0↔全部(默认展开,收起后行上保留会话数角标);会话子分组默认展开、可收起;搜索时强制全展开。**不要**恢复旧的「收起仍显示 5 条」行为(用户明确要文件夹式收起)。
 5. **会话层级**:会话标题同样按 / 分层(buildSessionTree);会话子分组**必须**与工作区文件夹视觉可辨——次级配色(tertiary)、无文件夹图标、只有 chevron。分组重命名 = 批量改写成员标题前缀(renameSession)。
 6. **持久化**只用 dsh 客户端 store(defineStore + persist: dsh.betterWorkspace.view.v1,浏览器本地)。显式空分组(folders)、折叠状态(expanded/sessionsExpanded/sessionGroups)都在这里;不要为动态实验另起持久化。
+   - **关键事实**:hydration 是整值替换(attachPersistence 直接 setState(JSON.parse(raw))),不会合并 init。新增 state 键必须同时:(a) 初始化默认值;(b) action 里容错缺失键;(c) selector 读取带回退。2026-08 曾因 sessionGroups 未容错导致「会话分组点不开合」——这是本仓库的硬性纪律。
+7. **拖拽语义**(原生 HTML5 DnD,drag 状态机 { kind, source, over }):
+   - 工作区:同分组拖到工作区行上/下半 → insertWorkspaceBefore(anchor);跨分组 → renameWorkspace(新前缀标题) + insertBefore(组尾);拖到分组行 → 移入该分组(rename + append)。root 分组 = 无前缀标题。搜索中禁用拖拽;
+   - 会话:同工作区内拖到会话行上/下半 → insertSessionBefore(以扁平 sessionIds 序为锚);拖到会话子分组行 → renameSession(新前缀标题)。跨工作区拖拽被守卫拒绝。
+   - 显示顺序 = 宿主手动序(sessionIds / registry 序);buildTree/buildSessionTree 只排序分组名,绝不按名称/时间重排成员行(否则拖拽结果不可见)。
 7. **词典纪律**:NS = betterWorkspace;zh/en 两个词典 key 必须完全对齐,且覆盖文件里每个静态 t(...) 调用——冒烟测试逐 key 校验。动态拼 key(如 time. + unit、status. + kind)的取值集合也要在词典里配齐。
 8. **React 纪律**:纯 React.createElement;组件必须定义在模块层(内联组件定义会在父组件每次渲染时重挂载、丢输入状态);所有 hook 调用必须先于任何 early return。
 9. **防御式边界**:primitives 图标/组件一律经 icon()/BTN() 特征探测降级,不硬崩;require 只允许基线(测试强制)。
 
 ## 已知限制(改之前先看是不是已排期)
 
-- 工作区拖拽排序未接管(官方顺序仍存于宿主);树内按名称排序。
+- 会话拖到「另一分组内的会话行」仅扁平重排(标题分组归属不变);改分组请拖到分组行或重命名。
 - 搜索是本地标题过滤,未接 session.search 宿主内容搜索。
 - flat 视图未接管。
 - 显式空分组持久在浏览器本地,跨设备不共享。

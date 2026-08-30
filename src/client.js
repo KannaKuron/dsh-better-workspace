@@ -245,8 +245,8 @@ window.__ModuleLoader__.load({
 
     /**
      * Session nesting inside one workspace: same "/" convention as workspace
-     * titles. Groups are virtual (projection of names); sessions sort by
-     * recency inside their group.
+     * titles. Groups are virtual (projection of names). Rows keep the Host
+     * workspace.sessionIds (manual) order — drag-to-reorder must be visible.
      */
     function buildSessionTree(rows) {
       const root = { path: '', name: '', groups: [], sessions: [] }
@@ -270,7 +270,6 @@ window.__ModuleLoader__.load({
       }
       const sortRec = (node) => {
         node.groups.sort((a, b) => a.name.localeCompare(b.name, 'zh'))
-        node.sessions.sort((a, b) => b.updatedAt - a.updatedAt)
         for (const group of node.groups) sortRec(group)
       }
       sortRec(root)
@@ -328,11 +327,11 @@ window.__ModuleLoader__.load({
           path: String(workspace.path || ''),
           sessionIds: Array.isArray(workspace.sessionIds) ? workspace.sessionIds : [],
           leaf,
+          folderPath,
         })
       }
       const sortRec = (node) => {
         node.folders.sort((a, b) => a.name.localeCompare(b.name, 'zh'))
-        node.workspaces.sort((a, b) => a.leaf.localeCompare(b.leaf, 'zh'))
         for (const child of node.folders) sortRec(child)
       }
       sortRec(root)
@@ -354,7 +353,10 @@ window.__ModuleLoader__.load({
       '.bw-input:focus{border-color:var(--dsw-alias-brand-primary,#5b8def)}',
       '.bw-input::placeholder{color:var(--dsw-alias-label-quaternary,#8a8a8a)}',
       '.bw-tree{flex:1;overflow-y:auto;overflow-x:hidden;padding:2px 6px 12px;min-height:0}',
-      '.bw-row{display:flex;align-items:center;gap:6px;min-height:28px;padding:0 6px;border-radius:6px;cursor:pointer;user-select:none;font-size:13px;color:var(--dsw-alias-label-primary,#e6e6e6)}',
+      '.bw-row{display:flex;align-items:center;gap:6px;min-height:28px;padding:0 6px;border-radius:6px;cursor:pointer;user-select:none;font-size:13px;color:var(--dsw-alias-label-primary,#e6e6e6);position:relative}',
+      '.bw-drop-before::after{content:"";position:absolute;left:8px;right:8px;top:-1px;height:2px;border-radius:1px;background:var(--dsw-alias-brand-primary,#5b8def);pointer-events:none}',
+      '.bw-drop-after::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;border-radius:1px;background:var(--dsw-alias-brand-primary,#5b8def);pointer-events:none}',
+      '.bw-drop-into{outline:1.5px dashed var(--dsw-alias-brand-primary,#5b8def);outline-offset:-1.5px}',
       '.bw-row:hover{background:var(--dsw-specific-sidebar-nav-item-hover,var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12)))}',
       '.bw-row:hover{background:color-mix(in srgb,var(--dsw-specific-sidebar-nav-item-hover,rgba(127,127,127,.14)) 50%,transparent)}',
       '.bw-row-current{background:var(--dsw-specific-sidebar-nav-item-active,rgba(91,141,239,.15))}',
@@ -369,14 +371,10 @@ window.__ModuleLoader__.load({
       '.bw-row:hover .bw-row-actions{display:flex}',
       '.bw-row:hover .bw-row-time,.bw-row:hover .bw-row-count{display:none}',
       '.bw-dot{flex:none;width:6px;height:6px;border-radius:50%;background:transparent}',
-      '.bw-dot-running{background:var(--dsw-alias-state-success-primary,#3fb950)}',
-      '.bw-dot-pending{background:var(--dsw-alias-state-warn-primary,#d29922)}',
       '.bw-session-row{font-size:12.5px;color:var(--dsw-alias-label-secondary,#b8b8b8);min-height:26px}',
       '.bw-sgroup-row{font-size:12.5px;color:var(--dsw-alias-label-tertiary,#9a9a9a);min-height:24px}',
       '.bw-sgroup-row:hover{color:var(--dsw-alias-label-secondary,#b8b8b8)}',
       '.bw-session-row:hover{color:var(--dsw-alias-label-primary,#e6e6e6)}',
-      '.bw-overflow-btn{margin:2px 0 2px 26px;border:none;background:transparent;color:var(--dsw-alias-label-tertiary,#9a9a9a);font-size:11.5px;cursor:pointer;padding:2px 6px;border-radius:6px;text-align:left}',
-      '.bw-overflow-btn:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12));color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-empty{padding:28px 12px;text-align:center;font-size:12px;color:var(--dsw-alias-label-dimmed,#7a7a7a)}',
       '.bw-rail{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 0}',
       '.bw-rail-btn{width:36px;height:36px;border:none;background:transparent;border-radius:8px;display:grid;place-items:center;color:var(--dsw-alias-label-secondary,#b8b8b8);cursor:pointer;padding:0}',
@@ -401,17 +399,26 @@ window.__ModuleLoader__.load({
 
     const createViewStore = () => storeKit.defineStore({
       init: () => ({ folders: [], expanded: {}, sessionsExpanded: {}, sessionGroups: {} }),
+      // NOTE: hydration REPLACES the state with the persisted whole value —
+      // init defaults never merge. Every action must tolerate a missing key
+      // (states persisted by older plugin versions lack sessionGroups), and
+      // every selector read takes a fallback.
       persist: 'dsh.betterWorkspace.view.v1',
       actions: {
-        setExpanded: (d, key, value) => { d.expanded[key] = value },
-        setSessionsExpanded: (d, key, value) => { d.sessionsExpanded[key] = value },
-        setSessionGroupExpanded: (d, key, value) => { d.sessionGroups[key] = value },
+        setExpanded: (d, key, value) => { if (!d.expanded) d.expanded = {}; d.expanded[key] = value },
+        setSessionsExpanded: (d, key, value) => { if (!d.sessionsExpanded) d.sessionsExpanded = {}; d.sessionsExpanded[key] = value },
+        setSessionGroupExpanded: (d, key, value) => { if (!d.sessionGroups) d.sessionGroups = {}; d.sessionGroups[key] = value },
         addFolder: (d, path) => {
+          if (!Array.isArray(d.folders)) d.folders = []
           const p = normPath(path)
           if (p !== '' && !d.folders.includes(p)) d.folders.push(p)
         },
-        removeFolder: (d, path) => { d.folders = d.folders.filter(f => f !== path) },
+        removeFolder: (d, path) => {
+          if (!Array.isArray(d.folders)) d.folders = []
+          d.folders = d.folders.filter(f => f !== path)
+        },
         renameFolder: (d, oldPath, newPath) => {
+          if (!Array.isArray(d.folders)) d.folders = []
           const oo = oldPath + '/'
           const nn = newPath + '/'
           const next = d.folders.map(f => (f === oldPath ? newPath : (f.startsWith(oo) ? nn + f.slice(oo.length) : f)))
@@ -509,7 +516,7 @@ window.__ModuleLoader__.load({
       // All hooks run before any early return: the flow unmounts its dialog
       // while closed, but its hook sequence must stay stable.
       const snapshotItems = typeof useWorkspaces === 'function' ? useWorkspaces(s => s.items) : []
-      const storeFolders = typeof useStore === 'function' ? useStore(s => s.folders) : []
+      const storeFolders = typeof useStore === 'function' ? (useStore(s => s.folders) || []) : []
 
       React.useEffect(() => {
         if (!open) {
@@ -609,14 +616,15 @@ window.__ModuleLoader__.load({
 
     /* ============================== rows ============================== */
 
-    function FolderRow({ node, depth, expanded, onToggle, onMenu, t }) {
+    function FolderRow({ node, depth, expanded, onToggle, onMenu, dropInto, dragEvents, t }) {
       const total = countWorkspaces(node)
       return E('div', {
-        className: 'bw-row',
+        className: cls('bw-row', dropInto && 'bw-drop-into'),
         style: { paddingLeft: 4 + depth * 12 },
         onClick: onToggle,
         role: 'treeitem',
         'aria-expanded': expanded,
+        ...(dragEvents || {}),
       },
         E('span', { className: cls('bw-chevron', expanded && 'bw-chevron-open') }, icon('IconTriangleRightFill14', 14)),
         E('span', { className: 'bw-row-icon' }, icon(expanded ? 'IconFolderOpen16' : 'IconFolderClose16')),
@@ -628,13 +636,14 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function WorkspaceRow({ workspace, depth, count, sessionsOpen, onToggle, onStart, onMenu, currentInside, t }) {
+    function WorkspaceRow({ workspace, depth, count, sessionsOpen, onToggle, onStart, onMenu, currentInside, dropHalf, dragEvents, t }) {
       return E('div', {
-        className: cls('bw-row', currentInside && 'bw-row-current'),
+        className: cls('bw-row', currentInside && 'bw-row-current', dropHalf === 'before' && 'bw-drop-before', dropHalf === 'after' && 'bw-drop-after'),
         style: { paddingLeft: 6 + depth * 12 },
         onClick: onToggle,
         role: 'treeitem',
         'aria-expanded': sessionsOpen,
+        ...(dragEvents || {}),
       },
         E('span', { className: cls('bw-chevron', sessionsOpen && 'bw-chevron-open') }, icon('IconTriangleRightFill14', 14)),
         E('span', { className: 'bw-row-icon' }, icon(sessionsOpen ? 'IconFolderOpen16' : 'IconFolderClose16')),
@@ -647,7 +656,7 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function SessionRow({ node, depth, current, onOpen, onMenu, now, t }) {
+    function SessionRow({ node, depth, current, onOpen, onMenu, now, dropHalf, dragEvents, t }) {
       // Official status priority: pending interaction > running > running
       // subagents > completed reminder; idle rows show no dot at all.
       let status = null
@@ -659,10 +668,11 @@ window.__ModuleLoader__.load({
         status = { state: 'done', title: t('status.completed') }
       }
       return E('div', {
-        className: cls('bw-row', 'bw-session-row', current && 'bw-row-current'),
+        className: cls('bw-row', 'bw-session-row', current && 'bw-row-current', dropHalf === 'before' && 'bw-drop-before', dropHalf === 'after' && 'bw-drop-after'),
         style: { paddingLeft: 8 + depth * 12 },
         onClick: () => onOpen(node.id),
         role: 'treeitem',
+        ...(dragEvents || {}),
       },
         E('span', { className: 'bw-row-icon', title: status ? status.title : undefined },
           status && typeof ui.StateDot === 'function'
@@ -682,13 +692,14 @@ window.__ModuleLoader__.load({
      * titles). Deliberately NOT styled like a workspace folder — no folder
      * icon, tertiary color — so a session level never reads as a workspace.
      */
-    function SessionGroupRow({ name, depth, expanded, count, onToggle, onMenu, t }) {
+    function SessionGroupRow({ name, depth, expanded, count, onToggle, onMenu, dropInto, dragEvents, t }) {
       return E('div', {
-        className: cls('bw-row', 'bw-sgroup-row'),
+        className: cls('bw-row', 'bw-sgroup-row', dropInto && 'bw-drop-into'),
         style: { paddingLeft: 10 + depth * 12 },
         onClick: onToggle,
         role: 'treeitem',
         'aria-expanded': expanded,
+        ...(dragEvents || {}),
       },
         E('span', { className: cls('bw-chevron', expanded && 'bw-chevron-open') }, icon('IconTriangleRightFill14', 14)),
         E('span', { className: 'bw-row-label' }, name),
@@ -707,7 +718,7 @@ window.__ModuleLoader__.load({
         useSessions, useSessionPendingInteraction, useWorkspaces,
         useStore, actions,
         startSession, open, renameSession, forkSession, renameWorkspace, deleteWorkspace,
-        archiveSession, createWorkspace, pickDirectory,
+        archiveSession, createWorkspace, pickDirectory, insertWorkspaceBefore, insertSessionBefore,
         t,
       } = props
 
@@ -721,10 +732,10 @@ window.__ModuleLoader__.load({
       const archivedSessionIds = useWorkspaces(s => s.archivedSessionIds) || []
       const list = useSessions(s => s)
       const pending = useSessionPendingInteraction ? useSessionPendingInteraction(s => s) : null
-      const storeFolders = useStore ? useStore(s => s.folders) : []
-      const expandedMap = useStore ? useStore(s => s.expanded) : {}
-      const sessionsExpandedMap = useStore ? useStore(s => s.sessionsExpanded) : {}
-      const sessionGroupsMap = useStore ? useStore(s => s.sessionGroups) : {}
+      const storeFolders = useStore ? (useStore(s => s.folders) || []) : []
+      const expandedMap = useStore ? (useStore(s => s.expanded) || {}) : {}
+      const sessionsExpandedMap = useStore ? (useStore(s => s.sessionsExpanded) || {}) : {}
+      const sessionGroupsMap = useStore ? (useStore(s => s.sessionGroups) || {}) : {}
       const archivedSet = React.useMemo(() => new Set(archivedSessionIds), [archivedSessionIds])
       const subCounts = React.useMemo(() => subagentRunningCounts(list ? list.byId : {}), [list ? list.byId : null])
 
@@ -734,6 +745,7 @@ window.__ModuleLoader__.load({
       const [dialog, setDialog] = React.useState(null) // { kind, ... }
       const [menu, setMenu] = React.useState(null) // { kind, payload, rect }
       const [errorText, setErrorText] = React.useState(null)
+      const [drag, setDrag] = React.useState(null) // { kind: 'workspace'|'session', source, over } | null
       const normalizedQuery = query.trim().toLowerCase()
       const now = Date.now()
 
@@ -780,7 +792,6 @@ window.__ModuleLoader__.load({
             pending: pendingKindOf(pending, id),
           })
         }
-        rows.sort((a, b) => b.updatedAt - a.updatedAt)
         return rows
       }
 
@@ -812,6 +823,200 @@ window.__ModuleLoader__.load({
       const openMenu = (kind, payload, e) => {
         const rect = e && e.currentTarget ? e.currentTarget.getBoundingClientRect() : null
         setMenu({ kind, payload, rect })
+      }
+
+      /* ------------------------- drag & drop -------------------------- */
+
+      React.useEffect(() => {
+        if (drag === null) return
+        const accept = (event) => {
+          event.preventDefault()
+          if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
+        }
+        const acceptDrop = (event) => { event.preventDefault() }
+        document.addEventListener('dragover', accept)
+        document.addEventListener('drop', acceptDrop)
+        return () => {
+          document.removeEventListener('dragover', accept)
+          document.removeEventListener('drop', acceptDrop)
+        }
+      }, [drag === null])
+
+      const rowHalf = (event) => {
+        const rect = event.currentTarget.getBoundingClientRect()
+        return event.clientY < rect.top + rect.height / 2 ? 'before' : 'after'
+      }
+      const dragMatches = (kind) => drag !== null && drag.kind === kind
+      const canDragWorkspace = typeof insertWorkspaceBefore === 'function'
+
+      /* --------------------- workspace drag & drop -------------------- */
+
+      const wsDropHalf = (workspaceId) => {
+        if (!dragMatches('workspace')) return null
+        const over = drag.over
+        return over && over.kind === 'workspace' && over.target === workspaceId ? over.half : null
+      }
+      const wsDropInto = (path) => dragMatches('workspace') && drag.over && drag.over.kind === 'folder' && drag.over.target === path
+      const workspaceDragEvents = (workspace) => ({
+        draggable: !searching && canDragWorkspace,
+        onDragStart: (event) => {
+          if (searching || !canDragWorkspace) return
+          event.stopPropagation()
+          try {
+            event.dataTransfer.effectAllowed = 'move'
+            event.dataTransfer.setData('text/plain', workspace.workspaceId)
+          } catch { /* drag payload is best-effort */ }
+          setDrag({ kind: 'workspace', source: { workspaceId: workspace.workspaceId, leaf: workspace.leaf, folderPath: workspace.folderPath || '' }, over: null })
+        },
+        onDragEnd: () => setDrag(null),
+        onDragOver: (event) => {
+          if (!dragMatches('workspace')) return
+          event.preventDefault()
+          event.stopPropagation()
+          try { event.dataTransfer.dropEffect = 'move' } catch { }
+          const half = rowHalf(event)
+          setDrag(current => (current && current.over && current.over.kind === 'workspace' && current.over.target === workspace.workspaceId && current.over.half === half)
+            ? current
+            : (current ? { ...current, over: { kind: 'workspace', target: workspace.workspaceId, half } } : current))
+        },
+        onDrop: (event) => {
+          if (!dragMatches('workspace')) return
+          event.preventDefault()
+          event.stopPropagation()
+          const half = drag.over && drag.over.kind === 'workspace' && drag.over.target === workspace.workspaceId ? drag.over.half : rowHalf(event)
+          commitWorkspaceDrop(workspace, half)
+        },
+      })
+      const folderDropEvents = (path) => ({
+        onDragOver: (event) => {
+          if (!dragMatches('workspace')) return
+          event.preventDefault()
+          event.stopPropagation()
+          try { event.dataTransfer.dropEffect = 'move' } catch { }
+          setDrag(current => (current && current.over && current.over.kind === 'folder' && current.over.target === path)
+            ? current
+            : (current ? { ...current, over: { kind: 'folder', target: path } } : current))
+        },
+        onDrop: (event) => {
+          if (!dragMatches('workspace')) return
+          event.preventDefault()
+          event.stopPropagation()
+          commitWorkspaceMoveInto(path)
+        },
+      })
+      const nextWorkspaceAfter = (folderPath, workspaceId) => {
+        const node = findTreeNode(tree, folderPath)
+        if (!node) return undefined
+        const index = node.workspaces.findIndex(w => w.workspaceId === workspaceId)
+        return index === -1 ? undefined : (node.workspaces[index + 1] ? node.workspaces[index + 1].workspaceId : undefined)
+      }
+      const commitWorkspaceDrop = (targetWorkspace, half) => {
+        const source = drag.source
+        setDrag(null)
+        if (source.workspaceId === targetWorkspace.workspaceId) return
+        const sameFolder = (targetWorkspace.folderPath || '') === source.folderPath
+        const anchor = half === 'after'
+          ? nextWorkspaceAfter(targetWorkspace.folderPath || '', targetWorkspace.workspaceId)
+          : targetWorkspace.workspaceId
+        const chain = sameFolder
+          ? Promise.resolve()
+          : Promise.resolve().then(() => {
+            const newTitle = (targetWorkspace.folderPath || '') !== '' ? (targetWorkspace.folderPath || '') + '/' + source.leaf : source.leaf
+            return renameWorkspace(source.workspaceId, newTitle)
+          })
+        chain
+          .then(() => (anchor !== undefined ? insertWorkspaceBefore(source.workspaceId, anchor) : insertWorkspaceBefore(source.workspaceId)))
+          .catch(fail)
+      }
+      const commitWorkspaceMoveInto = (folderPath) => {
+        const source = drag.source
+        setDrag(null)
+        if (source.folderPath === folderPath) return
+        const newTitle = folderPath !== '' ? folderPath + '/' + source.leaf : source.leaf
+        Promise.resolve()
+          .then(() => renameWorkspace(source.workspaceId, newTitle))
+          .then(() => insertWorkspaceBefore(source.workspaceId))
+          .catch(fail)
+      }
+
+      /* ---------------------- session drag & drop --------------------- */
+
+      const sessDropHalf = (sessionId) => {
+        if (!dragMatches('session')) return null
+        const over = drag.over
+        return over && over.kind === 'session' && over.target === sessionId ? over.half : null
+      }
+      const sgroupDropInto = (workspaceId, path) => dragMatches('session') && drag.over && drag.over.kind === 'sgroup' && drag.over.target === path
+      const sessionDragEvents = (session, workspaceId) => ({
+        draggable: !searching,
+        onDragStart: (event) => {
+          if (searching) return
+          event.stopPropagation()
+          try {
+            event.dataTransfer.effectAllowed = 'move'
+            event.dataTransfer.setData('text/plain', session.id)
+          } catch { }
+          setDrag({ kind: 'session', source: { sessionId: session.id, workspaceId, title: session.title, leaf: session.leaf || session.title }, over: null })
+        },
+        onDragEnd: () => setDrag(null),
+        onDragOver: (event) => {
+          if (!dragMatches('session') || drag.source.workspaceId !== workspaceId) return
+          event.preventDefault()
+          event.stopPropagation()
+          try { event.dataTransfer.dropEffect = 'move' } catch { }
+          const half = rowHalf(event)
+          setDrag(current => (current && current.over && current.over.kind === 'session' && current.over.target === session.id && current.over.half === half)
+            ? current
+            : (current ? { ...current, over: { kind: 'session', target: session.id, half } } : current))
+        },
+        onDrop: (event) => {
+          if (!dragMatches('session') || drag.source.workspaceId !== workspaceId) return
+          event.preventDefault()
+          event.stopPropagation()
+          const half = drag.over && drag.over.kind === 'session' && drag.over.target === session.id ? drag.over.half : rowHalf(event)
+          commitSessionDrop(workspaceId, session.id, half)
+        },
+      })
+      const sgroupDropEvents = (workspaceId, path) => ({
+        onDragOver: (event) => {
+          if (!dragMatches('session') || drag.source.workspaceId !== workspaceId) return
+          event.preventDefault()
+          event.stopPropagation()
+          try { event.dataTransfer.dropEffect = 'move' } catch { }
+          setDrag(current => (current && current.over && current.over.kind === 'sgroup' && current.over.target === path)
+            ? current
+            : (current ? { ...current, over: { kind: 'sgroup', target: path } } : current))
+        },
+        onDrop: (event) => {
+          if (!dragMatches('session') || drag.source.workspaceId !== workspaceId) return
+          event.preventDefault()
+          event.stopPropagation()
+          commitSessionMoveInto(workspaceId, path)
+        },
+      })
+      const commitSessionDrop = (workspaceId, targetSessionId, half) => {
+        const source = drag.source
+        setDrag(null)
+        if (source.sessionId === targetSessionId) return
+        const workspace = (items || []).find(w => w.workspaceId === workspaceId)
+        if (!workspace) return
+        const flat = sessionsOf(workspace)
+        const index = flat.findIndex(s => s.id === targetSessionId)
+        const anchor = half === 'after'
+          ? (index === -1 ? undefined : (flat[index + 1] ? flat[index + 1].id : undefined))
+          : targetSessionId
+        Promise.resolve()
+          .then(() => (anchor !== undefined ? insertSessionBefore(workspaceId, source.sessionId, anchor) : insertSessionBefore(workspaceId, source.sessionId)))
+          .catch(fail)
+      }
+      const commitSessionMoveInto = (workspaceId, groupPath) => {
+        const source = drag.source
+        setDrag(null)
+        const newTitle = groupPath !== '' ? groupPath + '/' + source.leaf : source.leaf
+        if (newTitle === source.title) return
+        Promise.resolve()
+          .then(() => renameSession(source.sessionId, newTitle))
+          .catch(fail)
       }
 
       /* --------------------------- actions --------------------------- */
@@ -945,15 +1150,17 @@ window.__ModuleLoader__.load({
             count: countSessionTree(group),
             onToggle: () => { if (!searching) actions.setSessionGroupExpanded(key, !open) },
             onMenu: (e) => openMenu('sgroup', { workspaceId, path: group.path, name: group.name }, e),
+            dropInto: sgroupDropInto(workspaceId, group.path),
+            dragEvents: sgroupDropEvents(workspaceId, group.path),
             t,
           }))
           if (open) out.push(...renderSessionNode(group, workspaceId, depth + 1))
         }
-        for (const s of view.sessions) out.push(renderSessionRow(s, depth))
+        for (const s of view.sessions) out.push(renderSessionRow(s, depth, workspaceId))
         return out
       }
 
-      const renderSessionRow = (session, depth) => E(SessionRow, {
+      const renderSessionRow = (session, depth, workspaceId) => E(SessionRow, {
         key: session.id,
         node: session,
         depth,
@@ -961,6 +1168,8 @@ window.__ModuleLoader__.load({
         now,
         onOpen: (id) => open(id),
         onMenu: openMenu,
+        dropHalf: workspaceId ? sessDropHalf(session.id) : null,
+        dragEvents: workspaceId ? sessionDragEvents(session, workspaceId) : undefined,
         t,
       })
 
@@ -977,6 +1186,8 @@ window.__ModuleLoader__.load({
           onToggle: () => { if (!searching) actions.setSessionsExpanded(workspace.workspaceId, !sessionsOpenOf(workspace.workspaceId)) },
           onStart: () => startSession(workspace.workspaceId),
           onMenu: openMenu,
+          dropHalf: wsDropHalf(workspace.workspaceId),
+          dragEvents: workspaceDragEvents(workspace),
           t,
         })]
         rows.push(...renderSessionTree(workspace, depth + 1))
@@ -992,6 +1203,8 @@ window.__ModuleLoader__.load({
           expanded,
           onToggle: () => { if (!searching) actions.setExpanded(node.path, !expanded) },
           onMenu: openMenu,
+          dropInto: wsDropInto(node.path),
+          dragEvents: folderDropEvents(node.path),
           t,
         })]
         if (expanded) {
@@ -1009,6 +1222,8 @@ window.__ModuleLoader__.load({
           expanded: true,
           onToggle: () => {},
           onMenu: openMenu,
+          dropInto: false,
+          dragEvents: undefined,
           t,
         })]
         for (const child of hit.folders) rows.push(...renderSearchedFolder(child, depth + 1))
@@ -1277,6 +1492,9 @@ window.__ModuleLoader__.load({
         forkSession,
         renameWorkspace: (workspaceId, title) => workspaces.rename(workspaceId, title),
         deleteWorkspace: (workspaceId) => workspaces.delete(workspaceId),
+        insertWorkspaceBefore: typeof workspaces.insertBefore === 'function'
+          ? (workspaceId, beforeWorkspaceId) => workspaces.insertBefore(workspaceId, beforeWorkspaceId)
+          : undefined,
         archiveSession: (sessionId) => uiWorkspace.archiveSession(sessionId),
         createWorkspace: (input) => workspaces.create(input),
         pickDirectory: () => uiWorkspace.pickDirectory(),

@@ -18,6 +18,8 @@ web/                 ← virtual folder (naming only, not a real directory)
 
 ![Settings card under Settings → Plugins → Configuration](docs/screenshots/4-settings-card.png)
 
+![Right-click menu (rename / delete / customize)](docs/screenshots/5-context-menu.png)
+
 ## Features
 
 - **Hierarchy tree**: `/` inside a workspace title groups it under a virtual folder, arbitrarily deep. Renaming a workspace re-derives the tree instantly — folders are a projection of names, there is no second source of truth.

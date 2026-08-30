@@ -60,12 +60,23 @@ window.__ModuleLoader__.load({
       'menu.removeFolder': '删除分组',
       'menu.renameSgroup': '重命名会话分组',
       'settings.title': '更好的工作区',
+      'settings.desc': '工作区树的外观与折叠偏好',
+      'settings.expand': '展开',
+      'settings.collapse': '收起',
       'settings.compactChains': '单链分组折叠显示',
       'settings.compactChains.hint': '当分组链每层只有一个子级时,合并成一行显示(如 测试层1/AI交易),像 VS Code 的文件路径一样;某层出现多个子级时自动展开为树状',
       'settings.note': '展开状态与自定义外观保存在当前浏览器(dsh 客户端 store)',
       'custom.title': '自定义外观',
       'custom.color': '颜色',
       'custom.glow': '发光',
+      'custom.preview': '实时预览',
+      'custom.preview.sample': '工作区示例',
+      'custom.weight': '字体粗细',
+      'custom.weight.regular': '常规',
+      'custom.weight.medium': '中',
+      'custom.weight.semibold': '半粗',
+      'custom.weight.bold': '粗',
+      'custom.shadow': '字体阴影',
       'custom.weak': '弱',
       'custom.medium': '中',
       'custom.strong': '强',
@@ -135,12 +146,23 @@ window.__ModuleLoader__.load({
       'menu.removeFolder': 'Delete folder',
       'menu.renameSgroup': 'Rename session group',
       'settings.title': 'Better Workspaces',
+      'settings.desc': 'Workspace tree appearance and folding preferences',
+      'settings.expand': 'Expand',
+      'settings.collapse': 'Collapse',
       'settings.compactChains': 'Merge single-child chains',
       'settings.compactChains.hint': 'When every folder level has exactly one child, render the chain as one row (e.g. 测试层1/AI交易) like VS Code paths; multiple children expand into the tree',
       'settings.note': 'Expansion state and custom styling persist in this browser (dsh client store)',
       'custom.title': 'Customize',
       'custom.color': 'Color',
       'custom.glow': 'Glow',
+      'custom.preview': 'Live preview',
+      'custom.preview.sample': 'Workspace sample',
+      'custom.weight': 'Font weight',
+      'custom.weight.regular': 'Regular',
+      'custom.weight.medium': 'Medium',
+      'custom.weight.semibold': 'Semi-bold',
+      'custom.weight.bold': 'Bold',
+      'custom.shadow': 'Font shadow',
       'custom.weak': 'Subtle',
       'custom.medium': 'Medium',
       'custom.strong': 'Strong',
@@ -469,7 +491,18 @@ window.__ModuleLoader__.load({
       '.bw-ctx-item:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.14))}',
       '.bw-ctx-danger{color:var(--dsw-alias-state-error-primary,#f85149)}',
       '.bw-ctx-sep{height:1px;background:var(--dsw-alias-border-l1,rgba(127,127,127,.2));margin:4px 6px}',
-      '.bw-settings{display:flex;flex-direction:column;gap:8px;max-width:560px}',
+      '.bw-settings{display:flex;flex-direction:column;gap:8px;max-width:640px}',
+      '.bw-plugin-card{list-style:none;border:1px solid var(--dsw-alias-border-l2,rgba(127,127,127,.18));border-radius:12px;background:var(--dsw-alias-bg-layer-3,rgba(127,127,127,.05));transition:border-color .16s,background .16s}',
+      '.bw-plugin-card:hover{border-color:var(--dsw-alias-label-dimmed,#7a7a7a)}',
+      '.bw-plugin-card-open{background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.1));border-color:var(--dsw-alias-label-dimmed,#7a7a7a)}',
+      '.bw-plugin-head{width:100%;appearance:none;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px}',
+      '.bw-plugin-head:focus-visible{outline:2px solid var(--dsw-alias-brand-primary,#5b8def);outline-offset:-2px}',
+      '.bw-plugin-headtext{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}',
+      '.bw-plugin-name{font-size:15px;font-weight:600;line-height:1.4;color:var(--dsw-alias-label-primary,#e6e6e6)}',
+      '.bw-plugin-desc{font-size:13px;line-height:1.5;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
+      '.bw-plugin-chevron{flex:none;color:var(--dsw-alias-label-tertiary,#9a9a9a);transition:transform .16s}',
+      '.bw-plugin-chevron-open{transform:rotate(180deg)}',
+      '.bw-plugin-body{border-top:1px solid var(--dsw-alias-border-l2,rgba(127,127,127,.18));margin:0 16px;padding:12px 0 16px}',
       '.bw-setting-row{display:flex;align-items:center;gap:10px}',
       '.bw-setting-label{flex:1;font-size:13px;color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-rail{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 0}',
@@ -477,7 +510,7 @@ window.__ModuleLoader__.load({
       '.bw-rail-btn:hover{background:var(--dsw-specific-sidebar-nav-item-hover,var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12)));color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-modal-body{display:flex;flex-direction:column;gap:10px;min-width:300px;max-width:380px;box-sizing:border-box}',
       '.bw-field{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--dsw-alias-label-secondary,#b8b8b8)}',
-      '.bw-hint{font-size:11px;color:var(--dsw-alias-label-quaternary,#8a8a8a);line-height:1.5}',
+      '.bw-hint{font-size:11px;color:var(--dsw-alias-label-quaternary,#8a8a8a);line-height:1.5;white-space:normal;word-break:break-word}',
       '.bw-path-echo{font-size:11px;color:var(--dsw-alias-label-tertiary,#9a9a9a);word-break:break-all;max-width:380px}',
       '.bw-modal-actions{display:flex;justify-content:flex-end;gap:8px}',
       '.bw-btn{height:28px;padding:0 14px;border-radius:6px;font-size:12.5px;cursor:pointer;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));background:transparent;color:var(--dsw-alias-label-primary,#e6e6e6);font-family:inherit}',
@@ -487,6 +520,13 @@ window.__ModuleLoader__.load({
       '.bw-btn:disabled{opacity:.5;cursor:default}',
       '.bw-error-text{font-size:12.5px;color:var(--dsw-alias-state-error-primary,#f85149);word-break:break-all;max-width:380px}',
       '.bw-dialog-input-row{display:flex;gap:6px;align-items:center}',
+      '.bw-glow-row{display:flex;align-items:center;gap:10px}',
+      '.bw-slider{flex:1;accent-color:var(--dsw-alias-brand-primary,#5b8def);height:22px}',
+      '.bw-glow-value{min-width:44px;text-align:right;font-size:12px;color:var(--dsw-alias-label-secondary,#b8b8b8);font-variant-numeric:tabular-nums}',
+      '.bw-preview{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px dashed var(--dsw-alias-border-l2,rgba(127,127,127,.3));border-radius:6px;min-height:28px}',
+      '.bw-preview-icon{flex:none;display:grid;place-items:center;width:20px;height:20px;color:var(--dsw-alias-label-primary,#e6e6e6)}',
+      '.bw-preview-icon svg{width:18px;height:18px}',
+      '.bw-preview-label{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:18px}',
     ].join('')
 
     const StyleNode = () => E('style', null, CSS_TEXT)
@@ -825,7 +865,7 @@ window.__ModuleLoader__.load({
     /* --------------------- customization dialog ----------------------- */
 
     const SWATCHES = ['', '#5b8def', '#3fb950', '#d29922', '#f85149', '#a371f7', '#39c5cf', '#ec6cb9', '#ff9f45', '#6e7681']
-    const GLOW_LEVELS = [0, 4, 8, 14]
+    const GLOW_MAX = 14
     const ICON_CHOICES = [
       'solid', 'outline', 'none',
       'IconProjectAddOutline16', 'IconBranchOutline16', 'IconArchiveOutline20', 'IconCodeOutline16',
@@ -834,6 +874,17 @@ window.__ModuleLoader__.load({
       'IconBrowseOutline16', 'IconDownloadOutline16', 'IconContextInjectionOutline16',
       'IconCordisPluginOutline14', 'IconApiOutline14', 'IconAgentPresetOutline16', 'IconEnhanceOutline16',
       'IconSkillOutline16', 'IconSparkle16', 'IconNewChatOutline16',
+      'IconCheckOutline14', 'IconCheckOutline16', 'IconChevronDownOutline14', 'IconChevronLeftOutline14',
+      'IconChevronRightOutline14', 'IconChevronUpOutline14', 'IconCloseOutline16', 'IconDarkOutline16',
+      'IconEditOutline16', 'IconEllipsisOutline16', 'IconFolderClose16', 'IconFolderOpen16',
+      'IconFolderOpenOutline16', 'IconFullscreenOutline16', 'IconLightOutline16', 'IconLinkOutline14',
+      'IconLoadingOutline16', 'IconPanelLeftOutline16', 'IconPaperclipOutline16', 'IconPersonalizationOutline16',
+      'IconPlayOutline16', 'IconPauseOutline16', 'IconPlusOutline16', 'IconQuestionOutline14',
+      'IconQueueOutline14', 'IconRefreshOutline14', 'IconRefreshOutline16', 'IconRightUpOutline14',
+      'IconSearchOutline16', 'IconSendOutline14', 'IconSendOutline16', 'IconSettingsOutline14',
+      'IconSettingsOutline16', 'IconShareOutline16', 'IconStopFill16', 'IconThinkOutline14',
+      'IconThinkOutline16', 'IconTrashOutline16', 'IconUserOutline16', 'IconWarningOutline16',
+      'IconLikeOutline16', 'IconDislikeOutline16', 'IconFollowsystemOutline16',
     ]
 
     /**
@@ -845,15 +896,21 @@ window.__ModuleLoader__.load({
       const [color, setColor] = React.useState('')
       const [glow, setGlow] = React.useState(0)
       const [iconMode, setIconMode] = React.useState('solid')
+      const [weight, setWeight] = React.useState(0)
+      const [shadow, setShadow] = React.useState(false)
       React.useEffect(() => {
         if (!open) return
         setColor(initial && initial.color ? initial.color : '')
         setGlow(initial && initial.glow ? Number(initial.glow) || 0 : 0)
         setIconMode(initial && initial.icon ? initial.icon : 'solid')
+        setWeight(initial && initial.weight ? Number(initial.weight) || 0 : 0)
+        setShadow(initial && initial.shadow === true)
       }, [open, initial])
       if (!open) return null
       const commit = () => {
-        const style = (color === '' && glow === 0 && iconMode === 'solid') ? null : { color, glow, icon: iconMode }
+        const style = (color === '' && glow === 0 && iconMode === 'solid' && weight === 0 && !shadow)
+          ? null
+          : { color, glow, icon: iconMode, weight: weight > 0 ? weight : undefined, shadow: shadow || undefined }
         onChange(style)
         onClose()
       }
@@ -865,6 +922,9 @@ window.__ModuleLoader__.load({
         next[index] = n
         setColor(rgbToHex(next[0], next[1], next[2]))
       }
+      const previewShadows = []
+      if (glow > 0 && color) previewShadows.push('0 0 ' + glow + 'px ' + color)
+      if (shadow) previewShadows.push('1px 1px 2px rgba(0,0,0,.85)')
       return E(ui.Modal, {
         open: true,
         onClose,
@@ -911,13 +971,36 @@ window.__ModuleLoader__.load({
           ),
           E('div', { className: 'bw-field' },
             t('custom.glow'),
+            E('div', { className: 'bw-glow-row' },
+              E('input', {
+                type: 'range',
+                className: 'bw-slider',
+                min: 0,
+                max: GLOW_MAX,
+                step: 1,
+                value: glow,
+                'aria-label': t('custom.glow'),
+                onChange: (e) => setGlow(Number(e.target.value)),
+              }),
+              E('span', { className: 'bw-glow-value' }, glow === 0 ? t('custom.none') : glow + 'px'),
+            ),
+          ),
+          E('div', { className: 'bw-field' },
+            t('custom.weight'),
             E('div', { className: 'bw-seg' },
-              GLOW_LEVELS.map((level) => E('button', {
-                key: String(level),
+              [400, 500, 600, 700].map((wt) => E('button', {
+                key: String(wt),
                 type: 'button',
-                className: cls('bw-seg-btn', glow === level && 'bw-seg-btn-active'),
-                onClick: () => setGlow(level),
-              }, level === 0 ? t('custom.none') : (level === 4 ? t('custom.weak') : (level === 8 ? t('custom.medium') : t('custom.strong'))))),
+                className: cls('bw-seg-btn', weight === wt && 'bw-seg-btn-active'),
+                onClick: () => setWeight(wt),
+              }, wt === 400 ? t('custom.weight.regular') : wt === 500 ? t('custom.weight.medium') : wt === 600 ? t('custom.weight.semibold') : t('custom.weight.bold'))),
+            ),
+          ),
+          E('div', { className: 'bw-field' },
+            t('custom.shadow'),
+            E('div', { className: 'bw-seg' },
+              E('button', { type: 'button', className: cls('bw-seg-btn', !shadow && 'bw-seg-btn-active'), onClick: () => setShadow(false) }, t('custom.none')),
+              E('button', { type: 'button', className: cls('bw-seg-btn', shadow && 'bw-seg-btn-active'), onClick: () => setShadow(true) }, t('settings.on')),
             ),
           ),
           E('div', { className: 'bw-field' },
@@ -931,6 +1014,20 @@ window.__ModuleLoader__.load({
                 'aria-label': mode === 'solid' ? t('custom.icon.solid') : (mode === 'outline' ? t('custom.icon.outline') : mode),
                 onClick: () => setIconMode(mode),
               }, mode === 'none' ? E('span', { className: 'bw-icon-none' }) : iconOf(mode, false))),
+            ),
+          ),
+          E('div', { className: 'bw-field' },
+            t('custom.preview'),
+            E('div', {
+              className: 'bw-preview',
+              style: {
+                color: color || undefined,
+                fontWeight: weight > 0 ? weight : undefined,
+                textShadow: previewShadows.length > 0 ? previewShadows.join(',') : undefined,
+              },
+            },
+              E('span', { className: 'bw-preview-icon' }, iconOf(iconMode, true)),
+              E('span', { className: 'bw-preview-label' }, t('custom.preview.sample')),
             ),
           ),
         ),
@@ -955,6 +1052,31 @@ window.__ModuleLoader__.load({
         ),
         E('div', { className: 'bw-hint' }, t('settings.compactChains.hint')),
         E('div', { className: 'bw-hint' }, t('settings.note')),
+      )
+    }
+
+    /* --------- settings → plug-ins card (accordion like official cards) --------- */
+
+    function BetterWorkspacePluginCard({ useStore, actions, t }) {
+      const [open, setOpen] = React.useState(false)
+      const Chevron = ui.IconChevronDownOutline14
+      return E('li', { className: cls('bw-plugin-card', open && 'bw-plugin-card-open') },
+        E('button', {
+          type: 'button',
+          className: 'bw-plugin-head',
+          'aria-expanded': open,
+          'aria-label': (open ? t('settings.collapse') : t('settings.expand')) + ': ' + t('settings.title'),
+          onClick: () => setOpen(!open),
+        },
+          E('span', { className: 'bw-plugin-headtext' },
+            E('span', { className: 'bw-plugin-name' }, t('settings.title')),
+            E('span', { className: 'bw-plugin-desc' }, t('settings.desc')),
+          ),
+          Chevron ? E(Chevron, { className: cls('bw-plugin-chevron', open && 'bw-plugin-chevron-open') }) : null,
+        ),
+        open ? E('div', { className: 'bw-plugin-body' },
+          E(BetterWorkspaceSettings, { useStore, actions, t }),
+        ) : null,
       )
     }
 
@@ -1008,9 +1130,15 @@ window.__ModuleLoader__.load({
         const entry = styleEntry(key)
         if (!entry || !entry.color) return null
         const glow = Number(entry.glow) || 0
+        const weight = Number(entry.weight) || 0
+        const shadow = entry.shadow === true
+        const shadows = []
+        if (glow > 0) shadows.push('0 0 ' + glow + 'px ' + entry.color)
+        if (shadow) shadows.push('1px 1px 2px rgba(0,0,0,.85)')
         return {
           color: entry.color,
-          textShadow: glow > 0 ? '0 0 ' + glow + 'px ' + entry.color : undefined,
+          fontWeight: weight > 0 ? weight : undefined,
+          textShadow: shadows.length > 0 ? shadows.join(',') : undefined,
         }
       }
       const keyOf = (kind, payload) => {
@@ -1885,6 +2013,19 @@ window.__ModuleLoader__.load({
           store: viewStore,
         },
         BetterWorkspaceSettings,
+      ))
+
+      // Settings → Plugins card (the tab dispatches the intersection of served
+      // namespaces — registered host-side — and settings.plugin.item cards).
+      slots.inject('settings.plugin.item', guarded(
+        'settings.plugin.item',
+        {
+          name: 'settings.plugin.item',
+          key: 'better-workspace',
+          locale: NS,
+          store: viewStore,
+        },
+        BetterWorkspacePluginCard,
       ))
 
       // 3. the browser itself — lowest priority renders, shadowing the shipped entry.

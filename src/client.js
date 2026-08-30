@@ -59,6 +59,25 @@ window.__ModuleLoader__.load({
       'menu.renameFolder': '重命名分组',
       'menu.removeFolder': '删除分组',
       'menu.renameSgroup': '重命名会话分组',
+      'settings.title': '更好的工作区',
+      'settings.compactChains': '单链分组折叠显示',
+      'settings.compactChains.hint': '当分组链每层只有一个子级时,合并成一行显示(如 测试层1/AI交易),像 VS Code 的文件路径一样;某层出现多个子级时自动展开为树状',
+      'settings.note': '展开状态与自定义外观保存在当前浏览器(dsh 客户端 store)',
+      'custom.title': '自定义外观',
+      'custom.color': '颜色',
+      'custom.glow': '发光',
+      'custom.weak': '弱',
+      'custom.medium': '中',
+      'custom.strong': '强',
+      'custom.icon': '图标',
+      'custom.icon.solid': '实心文件夹',
+      'custom.icon.outline': '空心文件夹',
+      'custom.icon.none': '不显示',
+      'custom.none': '不显示',
+      'custom.reset': '清除自定义',
+      'custom.done': '完成',
+      'settings.on': '开',
+      'settings.off': '关',
       'flow.title': '添加工作区',
       'flow.picked': '所选文件夹',
       'flow.parent': '所属分组',
@@ -115,6 +134,25 @@ window.__ModuleLoader__.load({
       'menu.renameFolder': 'Rename folder',
       'menu.removeFolder': 'Delete folder',
       'menu.renameSgroup': 'Rename session group',
+      'settings.title': 'Better Workspaces',
+      'settings.compactChains': 'Merge single-child chains',
+      'settings.compactChains.hint': 'When every folder level has exactly one child, render the chain as one row (e.g. 测试层1/AI交易) like VS Code paths; multiple children expand into the tree',
+      'settings.note': 'Expansion state and custom styling persist in this browser (dsh client store)',
+      'custom.title': 'Customize',
+      'custom.color': 'Color',
+      'custom.glow': 'Glow',
+      'custom.weak': 'Subtle',
+      'custom.medium': 'Medium',
+      'custom.strong': 'Strong',
+      'custom.icon': 'Icon',
+      'custom.icon.solid': 'Solid folder',
+      'custom.icon.outline': 'Outline folder',
+      'custom.icon.none': 'Hidden',
+      'custom.none': 'None',
+      'custom.reset': 'Clear custom style',
+      'custom.done': 'Done',
+      'settings.on': 'On',
+      'settings.off': 'Off',
       'flow.title': 'Add workspace',
       'flow.picked': 'Chosen folder',
       'flow.parent': 'Parent group',
@@ -338,7 +376,40 @@ window.__ModuleLoader__.load({
       return root
     }
 
-    const countWorkspaces = (node) => node.workspaces.length + node.folders.reduce((sum, f) => sum + countWorkspaces(f), 0)
+    const countWorkspaces = (node) => (node.kind === 'ws' ? 1 : node.workspaces.length + node.folders.reduce((sum, f) => sum + countWorkspaces(f), 0))
+
+    /**
+     * VS Code-style single-child chain compression (preference-controlled):
+     * a folder level holding exactly ONE child and nothing else merges into a
+     * single display row — folder chains join names with "/" (keeps the DEEPEST
+     * path as its expansion identity), and a folder whose only child is one
+     * workspace becomes that workspace row with the merged label. Only
+     * presentation changes; the underlying workspace/title data is untouched.
+     */
+    function compressTree(node) {
+      const folders = (node.folders || []).map(compressTree)
+      const workspaces = node.workspaces || []
+      if (workspaces.length === 0 && folders.length === 1) {
+        const child = folders[0]
+        if (child.kind === 'ws') {
+          const ws = child.workspace
+          return {
+            kind: 'ws',
+            path: child.path,
+            workspace: { ...ws, leaf: (node.path !== '' ? node.path + '/' : '') + ws.leaf, title: ws.title, folderPath: '' },
+            folders: [],
+            workspaces: [],
+            dropPath: child.path,
+          }
+        }
+        return { kind: 'folder', path: child.path, name: node.name + '/' + child.name, folders: child.folders || [], workspaces: child.workspaces || [], dropPath: child.path || node.path }
+      }
+      if (folders.length === 0 && workspaces.length === 1) {
+        const ws = workspaces[0]
+        return { kind: 'ws', path: node.path, workspace: { ...ws, leaf: (node.path !== '' ? node.path + '/' : '') + ws.leaf, title: ws.title, folderPath: '' }, folders: [], workspaces: [], dropPath: node.path }
+      }
+      return { kind: 'folder', path: node.path, name: node.name, folders, workspaces, dropPath: node.path }
+    }
 
     /* ============================== styles ============================ */
 
@@ -376,6 +447,22 @@ window.__ModuleLoader__.load({
       '.bw-sgroup-row:hover{color:var(--dsw-alias-label-secondary,#b8b8b8)}',
       '.bw-session-row:hover{color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-empty{padding:28px 12px;text-align:center;font-size:12px;color:var(--dsw-alias-label-dimmed,#7a7a7a)}',
+      '.bw-swatch{width:20px;height:20px;border-radius:6px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));cursor:pointer;flex:none;background:transparent;padding:0}',
+      '.bw-swatch-active{outline:2px solid var(--dsw-alias-brand-primary,#5b8def);outline-offset:1px}',
+      '.bw-color-input{width:36px;height:26px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));border-radius:6px;background:transparent;cursor:pointer;padding:0}',
+      '.bw-seg{display:flex;gap:6px;flex-wrap:wrap}',
+      '.bw-seg-btn{height:24px;padding:0 10px;border-radius:6px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));background:transparent;color:var(--dsw-alias-label-secondary,#b8b8b8);font-size:12px;cursor:pointer;font-family:inherit}',
+      '.bw-seg-btn:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12))}',
+      '.bw-seg-btn-active{background:var(--dsw-alias-brand-primary,#5b8def);border-color:transparent;color:var(--dsw-alias-brand-text,#fff)}',
+      '.bw-ctx-overlay{position:fixed;inset:0;z-index:40}',
+      '.bw-ctx-menu{position:fixed;min-width:170px;background:var(--dsw-alias-bg-overlay,rgba(28,28,32,.96));border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.3));border-radius:8px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.35);display:flex;flex-direction:column}',
+      '.bw-ctx-item{display:flex;align-items:center;gap:8px;height:28px;padding:0 10px;border:none;background:transparent;color:var(--dsw-alias-label-primary,#e6e6e6);font-size:12.5px;border-radius:6px;cursor:pointer;text-align:left;font-family:inherit}',
+      '.bw-ctx-item:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.14))}',
+      '.bw-ctx-danger{color:var(--dsw-alias-state-error-primary,#f85149)}',
+      '.bw-ctx-sep{height:1px;background:var(--dsw-alias-border-l1,rgba(127,127,127,.2));margin:4px 6px}',
+      '.bw-settings{display:flex;flex-direction:column;gap:8px;max-width:560px}',
+      '.bw-setting-row{display:flex;align-items:center;gap:10px}',
+      '.bw-setting-label{flex:1;font-size:13px;color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-rail{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 0}',
       '.bw-rail-btn{width:36px;height:36px;border:none;background:transparent;border-radius:8px;display:grid;place-items:center;color:var(--dsw-alias-label-secondary,#b8b8b8);cursor:pointer;padding:0}',
       '.bw-rail-btn:hover{background:var(--dsw-specific-sidebar-nav-item-hover,var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12)));color:var(--dsw-alias-label-primary,#e6e6e6)}',
@@ -398,7 +485,7 @@ window.__ModuleLoader__.load({
     /* ========================== view store =========================== */
 
     const createViewStore = () => storeKit.defineStore({
-      init: () => ({ folders: [], expanded: {}, sessionsExpanded: {}, sessionGroups: {} }),
+      init: () => ({ folders: [], expanded: {}, sessionsExpanded: {}, sessionGroups: {}, prefs: { compactChains: true }, styling: {} }),
       // NOTE: hydration REPLACES the state with the persisted whole value —
       // init defaults never merge. Every action must tolerate a missing key
       // (states persisted by older plugin versions lack sessionGroups), and
@@ -408,6 +495,8 @@ window.__ModuleLoader__.load({
         setExpanded: (d, key, value) => { if (!d.expanded) d.expanded = {}; d.expanded[key] = value },
         setSessionsExpanded: (d, key, value) => { if (!d.sessionsExpanded) d.sessionsExpanded = {}; d.sessionsExpanded[key] = value },
         setSessionGroupExpanded: (d, key, value) => { if (!d.sessionGroups) d.sessionGroups = {}; d.sessionGroups[key] = value },
+        setPref: (d, key, value) => { if (!d.prefs) d.prefs = {}; d.prefs[key] = value },
+        setStyling: (d, key, value) => { if (!d.styling) d.styling = {}; if (value === null) delete d.styling[key]; else d.styling[key] = value },
         addFolder: (d, path) => {
           if (!Array.isArray(d.folders)) d.folders = []
           const p = normPath(path)
@@ -616,47 +705,52 @@ window.__ModuleLoader__.load({
 
     /* ============================== rows ============================== */
 
-    function FolderRow({ node, depth, expanded, onToggle, onMenu, dropInto, dragEvents, t }) {
+    /** Folder glyph variants from the primitives family (solid / outline / hidden). */
+    const iconOf = (mode, expanded) => {
+      if (mode === 'none') return null
+      if (mode === 'outline') return icon('IconFolderOpenOutline16')
+      return icon(expanded ? 'IconFolderOpen16' : 'IconFolderClose16')
+    }
+
+    function FolderRow({ node, depth, expanded, onToggle, onContextMenu, dropInto, dragEvents, custStyle, iconMode, t }) {
       const total = countWorkspaces(node)
       return E('div', {
         className: cls('bw-row', dropInto && 'bw-drop-into'),
-        style: { paddingLeft: 4 + depth * 12 },
+        style: { paddingLeft: 4 + depth * 12, ...(custStyle || {}) },
         onClick: onToggle,
+        onContextMenu: onContextMenu,
         role: 'treeitem',
         'aria-expanded': expanded,
         ...(dragEvents || {}),
       },
         E('span', { className: cls('bw-chevron', expanded && 'bw-chevron-open') }, icon('IconTriangleRightFill14', 14)),
-        E('span', { className: 'bw-row-icon' }, icon(expanded ? 'IconFolderOpen16' : 'IconFolderClose16')),
+        E('span', { className: 'bw-row-icon' }, iconOf(iconMode, expanded)),
         E('span', { className: 'bw-row-label' }, node.name),
         total > 0 ? E('span', { className: 'bw-row-count' }, String(total)) : null,
-        E('span', { className: 'bw-row-actions', onClick: (e) => e.stopPropagation() },
-          E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('menu.renameFolder'), onClick: (e) => onMenu('folder', node, e) }, icon('IconEllipsisOutline16')),
-        ),
       )
     }
 
-    function WorkspaceRow({ workspace, depth, count, sessionsOpen, onToggle, onStart, onMenu, currentInside, dropHalf, dragEvents, t }) {
+    function WorkspaceRow({ workspace, depth, count, sessionsOpen, onToggle, onStart, onContextMenu, currentInside, dropHalf, dragEvents, custStyle, iconMode, t }) {
       return E('div', {
         className: cls('bw-row', currentInside && 'bw-row-current', dropHalf === 'before' && 'bw-drop-before', dropHalf === 'after' && 'bw-drop-after'),
-        style: { paddingLeft: 6 + depth * 12 },
+        style: { paddingLeft: 6 + depth * 12, ...(custStyle || {}) },
         onClick: onToggle,
+        onContextMenu: onContextMenu,
         role: 'treeitem',
         'aria-expanded': sessionsOpen,
         ...(dragEvents || {}),
       },
         E('span', { className: cls('bw-chevron', sessionsOpen && 'bw-chevron-open') }, icon('IconTriangleRightFill14', 14)),
-        E('span', { className: 'bw-row-icon' }, icon(sessionsOpen ? 'IconFolderOpen16' : 'IconFolderClose16')),
+        E('span', { className: 'bw-row-icon' }, iconOf(iconMode, sessionsOpen)),
         E('span', { className: 'bw-row-label', title: workspace.title || workspace.leaf }, workspace.leaf),
         count > 0 ? E('span', { className: 'bw-row-count' }, String(count)) : null,
         E('span', { className: 'bw-row-actions', onClick: (e) => e.stopPropagation() },
           E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('session.new'), onClick: (e) => { e.stopPropagation(); onStart() } }, icon('IconPlusOutline16')),
-          E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('menu.rename'), onClick: (e) => onMenu('workspace', workspace, e) }, icon('IconEllipsisOutline16')),
         ),
       )
     }
 
-    function SessionRow({ node, depth, current, onOpen, onMenu, now, dropHalf, dragEvents, t }) {
+    function SessionRow({ node, depth, current, onOpen, onContextMenu, now, dropHalf, dragEvents, custStyle, t }) {
       // Official status priority: pending interaction > running > running
       // subagents > completed reminder; idle rows show no dot at all.
       let status = null
@@ -669,8 +763,9 @@ window.__ModuleLoader__.load({
       }
       return E('div', {
         className: cls('bw-row', 'bw-session-row', current && 'bw-row-current', dropHalf === 'before' && 'bw-drop-before', dropHalf === 'after' && 'bw-drop-after'),
-        style: { paddingLeft: 8 + depth * 12 },
+        style: { paddingLeft: 8 + depth * 12, ...(custStyle || {}) },
         onClick: () => onOpen(node.id),
+        onContextMenu: onContextMenu,
         role: 'treeitem',
         ...(dragEvents || {}),
       },
@@ -681,9 +776,6 @@ window.__ModuleLoader__.load({
         ),
         E('span', { className: 'bw-row-label' }, node.leaf || node.title),
         E('span', { className: 'bw-row-time' }, timeLabel(node.updatedAt, now, t)),
-        E('span', { className: 'bw-row-actions', onClick: (e) => e.stopPropagation() },
-          E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('menu.rename'), onClick: (e) => onMenu('session', node, e) }, icon('IconEllipsisOutline16')),
-        ),
       )
     }
 
@@ -692,11 +784,12 @@ window.__ModuleLoader__.load({
      * titles). Deliberately NOT styled like a workspace folder — no folder
      * icon, tertiary color — so a session level never reads as a workspace.
      */
-    function SessionGroupRow({ name, depth, expanded, count, onToggle, onMenu, dropInto, dragEvents, t }) {
+    function SessionGroupRow({ name, depth, expanded, count, onToggle, onContextMenu, dropInto, dragEvents, custStyle, t }) {
       return E('div', {
         className: cls('bw-row', 'bw-sgroup-row', dropInto && 'bw-drop-into'),
-        style: { paddingLeft: 10 + depth * 12 },
+        style: { paddingLeft: 10 + depth * 12, ...(custStyle || {}) },
         onClick: onToggle,
+        onContextMenu: onContextMenu,
         role: 'treeitem',
         'aria-expanded': expanded,
         ...(dragEvents || {}),
@@ -704,9 +797,110 @@ window.__ModuleLoader__.load({
         E('span', { className: cls('bw-chevron', expanded && 'bw-chevron-open') }, icon('IconTriangleRightFill14', 14)),
         E('span', { className: 'bw-row-label' }, name),
         count > 0 ? E('span', { className: 'bw-row-count' }, String(count)) : null,
-        E('span', { className: 'bw-row-actions', onClick: (e) => e.stopPropagation() },
-          E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('menu.renameSgroup'), onClick: (e) => onMenu(e) }, icon('IconEllipsisOutline16')),
+      )
+    }
+
+    /* --------------------- customization dialog ----------------------- */
+
+    const SWATCHES = ['', '#5b8def', '#3fb950', '#d29922', '#f85149', '#a371f7', '#39c5cf', '#ec6cb9', '#ff9f45', '#6e7681']
+    const GLOW_LEVELS = [0, 4, 8, 14]
+    const ICON_MODES = ['solid', 'outline', 'none']
+
+    /**
+     * Per-row appearance: color swatches (+ native picker), glow intensity,
+     * folder-glyph mode. Committing the defaults clears the entry; Reset
+     * removes it entirely.
+     */
+    function CustomizeDialog({ open, initial, onChange, onReset, onClose, t }) {
+      const [color, setColor] = React.useState('')
+      const [glow, setGlow] = React.useState(0)
+      const [iconMode, setIconMode] = React.useState('solid')
+      React.useEffect(() => {
+        if (!open) return
+        setColor(initial && initial.color ? initial.color : '')
+        setGlow(initial && initial.glow ? Number(initial.glow) || 0 : 0)
+        setIconMode(initial && initial.icon ? initial.icon : 'solid')
+      }, [open, initial])
+      if (!open) return null
+      const commit = () => {
+        const style = (color === '' && glow === 0 && iconMode === 'solid') ? null : { color, glow, icon: iconMode }
+        onChange(style)
+        onClose()
+      }
+      return E(ui.Modal, {
+        open: true,
+        onClose,
+        closeLabel: t('close'),
+        title: t('custom.title'),
+        footer: E('div', { className: 'bw-modal-actions' },
+          E(BTN, { variant: 'outline', onClick: () => { onReset(); onClose() } }, t('custom.reset')),
+          E(BTN, { variant: 'primary', onClick: commit }, t('custom.done')),
         ),
+      },
+        E('div', { className: 'bw-modal-body' },
+          E('div', { className: 'bw-field' },
+            t('custom.color'),
+            E('div', { className: 'bw-dialog-input-row' },
+              SWATCHES.map((swatch) => E('button', {
+                key: swatch || 'none',
+                type: 'button',
+                className: cls('bw-swatch', color === swatch && 'bw-swatch-active'),
+                style: swatch === '' ? undefined : { background: swatch },
+                'aria-label': swatch === '' ? t('custom.reset') : swatch,
+                onClick: () => setColor(swatch),
+              })),
+              E('input', {
+                type: 'color',
+                className: 'bw-color-input',
+                value: color || '#5b8def',
+                onChange: (e) => setColor(e.target.value),
+              }),
+            ),
+          ),
+          E('div', { className: 'bw-field' },
+            t('custom.glow'),
+            E('div', { className: 'bw-seg' },
+              GLOW_LEVELS.map((level) => E('button', {
+                key: String(level),
+                type: 'button',
+                className: cls('bw-seg-btn', glow === level && 'bw-seg-btn-active'),
+                onClick: () => setGlow(level),
+              }, level === 0 ? t('custom.none') : (level === 4 ? t('custom.weak') : (level === 8 ? t('custom.medium') : t('custom.strong'))))),
+            ),
+          ),
+          E('div', { className: 'bw-field' },
+            t('custom.icon'),
+            E('div', { className: 'bw-seg' },
+              ICON_MODES.map((mode) => E('button', {
+                key: mode,
+                type: 'button',
+                className: cls('bw-seg-btn', iconMode === mode && 'bw-seg-btn-active'),
+                onClick: () => setIconMode(mode),
+              }, t('custom.icon.' + (mode === 'solid' ? 'solid' : (mode === 'outline' ? 'outline' : 'none'))))),
+            ),
+          ),
+        ),
+        StyleNode(),
+      )
+    }
+
+    /* ------------------------- settings page ------------------------- */
+
+    function BetterWorkspaceSettings({ useStore, actions, t }) {
+      const prefs = useStore ? (useStore(s => s.prefs) || {}) : {}
+      const compactChains = prefs.compactChains !== false
+      return E('div', { className: 'bw-settings' },
+        StyleNode(),
+        E('div', { className: 'bw-setting-row' },
+          E('div', { className: 'bw-setting-label' }, t('settings.compactChains')),
+          E('button', {
+            type: 'button',
+            className: cls('bw-seg-btn', compactChains && 'bw-seg-btn-active'),
+            onClick: () => { actions.setPref('compactChains', !compactChains) },
+          }, compactChains ? t('settings.on') : t('settings.off')),
+        ),
+        E('div', { className: 'bw-hint' }, t('settings.compactChains.hint')),
+        E('div', { className: 'bw-hint' }, t('settings.note')),
       )
     }
 
@@ -736,6 +930,9 @@ window.__ModuleLoader__.load({
       const expandedMap = useStore ? (useStore(s => s.expanded) || {}) : {}
       const sessionsExpandedMap = useStore ? (useStore(s => s.sessionsExpanded) || {}) : {}
       const sessionGroupsMap = useStore ? (useStore(s => s.sessionGroups) || {}) : {}
+      const prefsMap = useStore ? (useStore(s => s.prefs) || {}) : {}
+      const stylingMap = useStore ? (useStore(s => s.styling) || {}) : {}
+      const compactChains = prefsMap.compactChains !== false
       const archivedSet = React.useMemo(() => new Set(archivedSessionIds), [archivedSessionIds])
       const subCounts = React.useMemo(() => subagentRunningCounts(list ? list.byId : {}), [list ? list.byId : null])
 
@@ -743,13 +940,33 @@ window.__ModuleLoader__.load({
       const [searchOpen, setSearchOpen] = React.useState(false)
       const [flowOpen, setFlowOpen] = React.useState(false)
       const [dialog, setDialog] = React.useState(null) // { kind, ... }
-      const [menu, setMenu] = React.useState(null) // { kind, payload, rect }
+      const [ctx, setCtx] = React.useState(null) // context menu { kind, payload, x, y }
+      const [customize, setCustomize] = React.useState(null) // { kind, entryKey, name }
       const [errorText, setErrorText] = React.useState(null)
       const [drag, setDrag] = React.useState(null) // { kind: 'workspace'|'session', source, over } | null
       const normalizedQuery = query.trim().toLowerCase()
       const now = Date.now()
 
       const fail = (text) => { setFlowOpen(false); setDialog(null); setErrorText(String(text || 'unknown error')) }
+
+      const styleEntry = (key) => stylingMap[key] || null
+      const rowStyleOf = (key) => {
+        const entry = styleEntry(key)
+        if (!entry || !entry.color) return null
+        const glow = Number(entry.glow) || 0
+        return {
+          color: entry.color,
+          textShadow: glow > 0 ? '0 0 ' + glow + 'px ' + entry.color : undefined,
+          boxShadow: glow > 0 ? '0 0 ' + Math.round(glow * 1.25) + 'px ' + entry.color : undefined,
+        }
+      }
+      const keyOf = (kind, payload) => {
+        if (kind === 'folder') return 'folder:' + payload.path
+        if (kind === 'workspace') return 'workspace:' + payload.workspaceId
+        if (kind === 'session') return 'session:' + payload.id
+        if (kind === 'sgroup') return 'sgroup:' + payload.workspaceId + '|' + payload.path
+        return String(kind)
+      }
 
       const accounted = new Set()
       for (const workspace of items || []) for (const id of workspace.sessionIds || []) accounted.add(id)
@@ -773,7 +990,11 @@ window.__ModuleLoader__.load({
         ungrouped.sort((a, b) => b.updatedAt - a.updatedAt)
       }
 
-      const tree = React.useMemo(() => buildTree(items, storeFolders), [items, storeFolders])
+      const tree = React.useMemo(() => {
+        const built = buildTree(items, storeFolders)
+        if (!compactChains) return built
+        return { ...built, folders: built.folders.map(compressTree), workspaces: built.workspaces }
+      }, [items, storeFolders, compactChains])
 
       const sessionsOf = (workspace) => {
         const rows = []
@@ -798,6 +1019,15 @@ window.__ModuleLoader__.load({
       const searchAgent = (agent) => {
         // Returns a pruned copy of the tree node, or null when nothing matches.
         if (!normalizedQuery) return agent
+        if (agent.kind === 'ws') {
+          const ws = agent.workspace
+          const sessions = sessionsOf(ws)
+          const wsHit = ws.leaf.toLowerCase().includes(normalizedQuery) || ws.title.toLowerCase().includes(normalizedQuery)
+          if (wsHit || sessions.some(s => s.title.toLowerCase().includes(normalizedQuery))) {
+            return { ...agent, node: agent, folders: [], workspaces: [ws] }
+          }
+          return null
+        }
         const folders = []
         for (const folder of agent.folders) {
           const hit = searchAgent(folder)
@@ -820,9 +1050,9 @@ window.__ModuleLoader__.load({
       const sessionsOpenOf = (workspaceId) => (sessionsExpandedMap ? sessionsExpandedMap[workspaceId] !== false : true)
       const sessionGroupOpen = (key) => (sessionGroupsMap ? sessionGroupsMap[key] !== false : true)
 
-      const openMenu = (kind, payload, e) => {
-        const rect = e && e.currentTarget ? e.currentTarget.getBoundingClientRect() : null
-        setMenu({ kind, payload, rect })
+      const openCtx = (kind, payload, e) => {
+        if (e) e.preventDefault()
+        setCtx({ kind, payload, x: e.clientX, y: e.clientY })
       }
 
       /* ------------------------- drag & drop -------------------------- */
@@ -1149,9 +1379,10 @@ window.__ModuleLoader__.load({
             expanded: open,
             count: countSessionTree(group),
             onToggle: () => { if (!searching) actions.setSessionGroupExpanded(key, !open) },
-            onMenu: (e) => openMenu('sgroup', { workspaceId, path: group.path, name: group.name }, e),
+            onContextMenu: (e) => openCtx('sgroup', { workspaceId, path: group.path, name: group.name }, e),
             dropInto: sgroupDropInto(workspaceId, group.path),
             dragEvents: sgroupDropEvents(workspaceId, group.path),
+            custStyle: rowStyleOf('sgroup:' + workspaceId + '|' + group.path),
             t,
           }))
           if (open) out.push(...renderSessionNode(group, workspaceId, depth + 1))
@@ -1167,9 +1398,10 @@ window.__ModuleLoader__.load({
         current: list && list.current === session.id,
         now,
         onOpen: (id) => open(id),
-        onMenu: openMenu,
+        onContextMenu: (e) => openCtx('session', session, e),
         dropHalf: workspaceId ? sessDropHalf(session.id) : null,
         dragEvents: workspaceId ? sessionDragEvents(session, workspaceId) : undefined,
+        custStyle: rowStyleOf('session:' + session.id),
         t,
       })
 
@@ -1185,9 +1417,11 @@ window.__ModuleLoader__.load({
           currentInside: !!(list && list.current && (workspace.sessionIds || []).includes(list.current)),
           onToggle: () => { if (!searching) actions.setSessionsExpanded(workspace.workspaceId, !sessionsOpenOf(workspace.workspaceId)) },
           onStart: () => startSession(workspace.workspaceId),
-          onMenu: openMenu,
+          onContextMenu: (e) => openCtx('workspace', workspace, e),
           dropHalf: wsDropHalf(workspace.workspaceId),
           dragEvents: workspaceDragEvents(workspace),
+          custStyle: rowStyleOf('workspace:' + workspace.workspaceId),
+          iconMode: (styleEntry('workspace:' + workspace.workspaceId) || {}).icon || 'solid',
           t,
         })]
         rows.push(...renderSessionTree(workspace, depth + 1))
@@ -1195,6 +1429,7 @@ window.__ModuleLoader__.load({
       }
 
       const renderPlainFolder = (node, depth) => {
+        if (node.kind === 'ws') return renderWorkspaceEntry({ workspace: node.workspace }, depth)
         const expanded = searching || folderExpanded(node.path)
         const rows = [E(FolderRow, {
           key: 'f-' + node.path,
@@ -1202,9 +1437,11 @@ window.__ModuleLoader__.load({
           depth,
           expanded,
           onToggle: () => { if (!searching) actions.setExpanded(node.path, !expanded) },
-          onMenu: openMenu,
+          onContextMenu: (e) => openCtx('folder', { path: node.path, name: node.name }, e),
           dropInto: wsDropInto(node.path),
           dragEvents: folderDropEvents(node.path),
+          custStyle: rowStyleOf('folder:' + node.path),
+          iconMode: (styleEntry('folder:' + node.path) || {}).icon || 'solid',
           t,
         })]
         if (expanded) {
@@ -1214,6 +1451,7 @@ window.__ModuleLoader__.load({
         return rows
       }
       const renderSearchedFolder = (hit, depth) => {
+        if (hit.kind === 'ws') return renderWorkspaceEntry({ workspace: hit.workspace }, depth)
         const node = hit.node
         const rows = [E(FolderRow, {
           key: 'f-' + node.path,
@@ -1221,9 +1459,11 @@ window.__ModuleLoader__.load({
           depth,
           expanded: true,
           onToggle: () => {},
-          onMenu: openMenu,
+          onContextMenu: (e) => openCtx('folder', { path: node.path, name: node.name }, e),
           dropInto: false,
           dragEvents: undefined,
+          custStyle: rowStyleOf('folder:' + node.path),
+          iconMode: (styleEntry('folder:' + node.path) || {}).icon || 'solid',
           t,
         })]
         for (const child of hit.folders) rows.push(...renderSearchedFolder(child, depth + 1))
@@ -1250,22 +1490,49 @@ window.__ModuleLoader__.load({
         bodyRows = [E('div', { key: 'empty', className: 'bw-empty' }, searching ? t('empty.search') : (phase === 'pending' ? '…' : t('empty')))]
       }
 
-      /* ---------------------------- menus ---------------------------- */
+      /* ------------------------- context menu ------------------------ */
 
-      const menuProps = (kind) => ({
-        open: menu !== null && menu.kind === kind,
-        anchor: null,
-        getAnchorRect: () => (menu && menu.rect) ? menu.rect : null,
-        onClose: () => setMenu(null),
-        onSelect: (id) => { setMenu(null); handleMenuPick(id) },
-        side: 'bottom',
-        align: 'end',
-        dense: true,
-        portal: true,
-      })
-      const handleMenuPick = (id) => {
-        if (menu === null) return
-        const { kind, payload } = menu
+      const ctxItems = () => {
+        if (ctx === null) return []
+        if (ctx.kind === 'folder') {
+          const items = [{ id: 'rename-folder', label: t('menu.renameFolder') }]
+          if (storeFolders.includes(ctx.payload.path)) items.push({ id: 'remove-folder', label: t('menu.removeFolder'), danger: true })
+          items.push({ sep: true })
+          items.push({ id: 'customize', label: t('custom.title') })
+          return items
+        }
+        if (ctx.kind === 'workspace') return [
+          { id: 'rename', label: t('menu.rename') },
+          { id: 'delete', label: t('menu.delete'), danger: true },
+          { sep: true },
+          { id: 'customize', label: t('custom.title') },
+        ]
+        if (ctx.kind === 'session') return [
+          { id: 'rename', label: t('menu.rename') },
+          { id: 'fork', label: t('menu.fork') },
+          { id: 'archive', label: t('menu.archive'), danger: true },
+          { sep: true },
+          { id: 'customize', label: t('custom.title') },
+        ]
+        return [
+          { id: 'rename-sgroup', label: t('menu.renameSgroup') },
+          { sep: true },
+          { id: 'customize', label: t('custom.title') },
+        ]
+      }
+      const handleCtxPick = (id) => {
+        const current = ctx
+        if (current === null) return
+        if (id === 'customize') {
+          const payload = current.payload
+          const name = current.kind === 'workspace' ? (payload.title || payload.leaf)
+            : (current.kind === 'session' ? payload.title : payload.name)
+          setCustomize({ kind: current.kind, entryKey: keyOf(current.kind, payload), name })
+          setCtx(null)
+          return
+        }
+        const { kind, payload } = current
+        setCtx(null)
         if (kind === 'folder' && id === 'rename-folder') setDialog({ kind: 'folder-rename', path: payload.path })
         else if (kind === 'folder' && id === 'remove-folder') setDialog({ kind: 'folder-delete', path: payload.path })
         else if (kind === 'workspace' && id === 'rename') setDialog({ kind: 'ws-rename', workspace: payload })
@@ -1275,7 +1542,6 @@ window.__ModuleLoader__.load({
         else if (kind === 'session' && id === 'fork') forkSession(payload.id)
         else if (kind === 'session' && id === 'archive') { Promise.resolve().then(() => archiveSession(payload.id)).catch(fail) }
       }
-      const folderNodeOfMenu = () => (menu && menu.kind === 'folder' ? findTreeNode(tree, menu.payload.path) : null)
 
       /* --------------------------- dialogs --------------------------- */
       // TextDialog / ConfirmDialog are module-level components: a per-render
@@ -1400,22 +1666,36 @@ window.__ModuleLoader__.load({
           t,
         }),
         dialogElement,
-        E(ui.Menu, { ...menuProps('folder'), items: [
-          { id: 'rename-folder', label: t('menu.renameFolder'), icon: icon('IconEditOutline16') },
-          { id: 'remove-folder', label: t('menu.removeFolder'), icon: icon('IconTrashOutline16'), danger: true, disabled: !folderNodeOfMenu() || countWorkspaces(folderNodeOfMenu() || { workspaces: [], folders: [] }) > 0 },
-        ] }),
-        E(ui.Menu, { ...menuProps('sgroup'), items: [
-          { id: 'rename-sgroup', label: t('menu.renameSgroup'), icon: icon('IconEditOutline16') },
-        ] }),
-        E(ui.Menu, { ...menuProps('workspace'), items: [
-          { id: 'rename', label: t('menu.rename'), icon: icon('IconEditOutline16') },
-          { id: 'delete', label: t('menu.delete'), icon: icon('IconTrashOutline16'), danger: true },
-        ] }),
-        E(ui.Menu, { ...menuProps('session'), items: [
-          { id: 'rename', label: t('menu.rename'), icon: icon('IconEditOutline16') },
-          { id: 'fork', label: t('menu.fork'), icon: icon('IconBranchOutline16') },
-          { id: 'archive', label: t('menu.archive'), icon: icon('IconArchiveOutline20'), danger: true },
-        ] }),
+        ctx !== null ? E('div', {
+          className: 'bw-ctx-overlay',
+          onMouseDown: () => setCtx(null),
+          onContextMenu: (e) => e.preventDefault(),
+        },
+          E('div', {
+            className: 'bw-ctx-menu',
+            style: { left: Math.min(ctx.x, window.innerWidth - 190), top: Math.min(ctx.y, window.innerHeight - 240) },
+            onMouseDown: (e) => e.stopPropagation(),
+            onContextMenu: (e) => e.preventDefault(),
+          },
+            ctxItems().map((item, index) => item.sep
+              ? E('div', { key: 'sep-' + index, className: 'bw-ctx-sep' })
+              : E('button', {
+                key: item.id,
+                type: 'button',
+                className: cls('bw-ctx-item', item.danger && 'bw-ctx-danger'),
+                onClick: () => handleCtxPick(item.id),
+              }, item.label),
+            ),
+          ),
+        ) : null,
+        E(CustomizeDialog, {
+          open: customize !== null,
+          initial: customize ? styleEntry(customize.entryKey) : undefined,
+          onChange: (style) => { if (customize) actions.setStyling(customize.entryKey, style) },
+          onReset: () => { if (customize) actions.setStyling(customize.entryKey, null) },
+          onClose: () => setCustomize(null),
+          t,
+        }),
         E(ui.Modal, {
           open: errorText !== null,
           onClose: () => setErrorText(null),
@@ -1534,13 +1814,33 @@ window.__ModuleLoader__.load({
         BetterFlow,
       ))
 
+      // One shared store handle: the browser and the settings page must see the
+      // same persisted state (expansion, folder list, prefs, styling).
+      const viewStore = createViewStore()
+
+      // settings tab (official settings.section list slot, additive)
+      slots.inject('settings.section', guarded(
+        'settings.section',
+        {
+          name: 'settings.section',
+          id: 'better-workspace',
+          order: 30,
+          label: () => {
+            try { return ctx.locale.bind(NS)('settings.title') } catch { return '更好的工作区' }
+          },
+          locale: NS,
+          store: viewStore,
+        },
+        BetterWorkspaceSettings,
+      ))
+
       // 3. the browser itself — lowest priority renders, shadowing the shipped entry.
       slots.inject('sidebar.workspaces', guarded(
         'sidebar.workspaces',
         {
           name: 'sidebar.workspaces',
           priority: -1,
-          store: createViewStore(),
+          store: viewStore,
           inject: browserInjected,
           locale: NS,
         },

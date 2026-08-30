@@ -897,7 +897,12 @@ window.__ModuleLoader__.load({
      * folder-glyph mode. Committing the defaults clears the entry; Reset
      * removes it entirely.
      */
-    function CustomizeDialog({ open, initial, onChange, onReset, onClose, t }) {
+    function CustomizeDialog({ open, initial, kind, onChange, onReset, onClose, t }) {
+      // Icons render only for workspace / workspace-folder rows. Session rows
+      // already carry the official status dot (pending/running/done) in the
+      // leading slot, and session sub-group rows have no icon either — so the
+      // icon grid is offered only where it actually displays.
+      const allowIcon = kind === 'folder' || kind === 'workspace'
       const [color, setColor] = React.useState('')
       const [glow, setGlow] = React.useState(0)
       const [iconMode, setIconMode] = React.useState('solid')
@@ -913,9 +918,12 @@ window.__ModuleLoader__.load({
       }, [open, initial])
       if (!open) return null
       const commit = () => {
-        const style = (color === '' && glow === 0 && iconMode === 'solid' && weight === 0 && !shadow)
+        const empty = allowIcon
+          ? (color === '' && glow === 0 && iconMode === 'solid' && weight === 0 && !shadow)
+          : (color === '' && glow === 0 && weight === 0 && !shadow)
+        const style = empty
           ? null
-          : { color, glow, icon: iconMode, weight: weight > 0 ? weight : undefined, shadow: shadow || undefined }
+          : { color, glow, weight: weight > 0 ? weight : undefined, shadow: shadow || undefined, ...(allowIcon ? { icon: iconMode } : {}) }
         onChange(style)
         onClose()
       }
@@ -1008,7 +1016,7 @@ window.__ModuleLoader__.load({
               E('button', { type: 'button', className: cls('bw-seg-btn', shadow && 'bw-seg-btn-active'), onClick: () => setShadow(true) }, t('settings.on')),
             ),
           ),
-          E('div', { className: 'bw-field' },
+          allowIcon ? E('div', { className: 'bw-field' },
             t('custom.icon'),
             E('div', { className: 'bw-icon-grid' },
               ICON_CHOICES.map((mode) => E('button', {
@@ -1020,7 +1028,7 @@ window.__ModuleLoader__.load({
                 onClick: () => setIconMode(mode),
               }, mode === 'none' ? E('span', { className: 'bw-icon-none' }) : iconOf(mode, false))),
             ),
-          ),
+          ) : null,
           E('div', { className: 'bw-field' },
             t('custom.preview'),
             E('div', {
@@ -1031,7 +1039,7 @@ window.__ModuleLoader__.load({
                 textShadow: previewShadows.length > 0 ? previewShadows.join(',') : undefined,
               },
             },
-              E('span', { className: 'bw-preview-icon' }, iconOf(iconMode, true)),
+              allowIcon ? E('span', { className: 'bw-preview-icon' }, iconOf(iconMode, true)) : null,
               E('span', { className: 'bw-preview-label' }, t('custom.preview.sample')),
             ),
           ),
@@ -1878,6 +1886,7 @@ window.__ModuleLoader__.load({
         ) : null,
         E(CustomizeDialog, {
           open: customize !== null,
+          kind: customize ? customize.kind : undefined,
           initial: customize ? styleEntry(customize.entryKey) : undefined,
           onChange: (style) => { if (customize) actions.setStyling(customize.entryKey, style) },
           onReset: () => { if (customize) actions.setStyling(customize.entryKey, null) },

@@ -8,12 +8,24 @@ web/                 ← virtual folder (naming only, not a real directory)
 └─ backend           ← workspace "web/backend"
 ```
 
+## Preview
+
+![Hierarchical workspace tree preview](docs/screenshots/1-workspace-tree.png)
+
+![Custom appearance preview — color, glow, font weight, shadow, icon](docs/screenshots/2-customized-tree.png)
+
+![Appearance dialog with live preview](docs/screenshots/3-appearance-dialog.png)
+
+![Settings card under Settings → Plugins → Configuration](docs/screenshots/4-settings-card.png)
+
 ## Features
 
 - **Hierarchy tree**: `/` inside a workspace title groups it under a virtual folder, arbitrarily deep. Renaming a workspace re-derives the tree instantly — folders are a projection of names, there is no second source of truth.
 - **Parent-group popup in the add flow**: after picking a directory for a new workspace, a small dialog asks for the parent group — type one (`web`), pick an existing level from the datalist, or leave empty for the root. The plugin creates the workspace and writes the prefix into its title.
 - **New-folder button**: create explicit empty folders (multi-level paths welcome) that persist in the browser until workspaces live inside them.
 - **Folder actions**: hover a folder row to rename it (rewrites every descendant workspace title) or delete it when empty.
+- **Appearance customization**: right-click any row (folder / workspace / session / session group) → Customize — color swatches + picker + RGB, glow slider (0–14), font weight, font shadow, an icon grid (66 icons from the dsh primitives family, workspace & folder rows only) and a live preview at the bottom.
+- **Settings card**: Settings → Plugins → Configuration shows a "Better Workspaces" card (official accordion style) with the single-child-chain merge toggle; expansion state and custom styling persist in the browser (dsh client store).
 - **Native capabilities kept**: open/rename/fork/archive sessions, per-workspace new-session, collapse/expand, current-session highlight, running/pending dots, ungrouped-session fallback, zh/en localization.
 - **Conversation hero too**: the empty-state "Add workspace" menu uses the same picking interaction.
 

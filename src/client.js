@@ -1642,7 +1642,7 @@ window.__ModuleLoader__.load({
         })]
         if (expanded) {
           for (const child of node.folders) rows.push(...renderPlainFolder(child, depth + 1))
-          for (const workspace of node.workspaces) rows.push(...renderWorkspaceEntry({ workspace }, depth))
+          for (const workspace of node.workspaces) rows.push(...renderWorkspaceEntry({ workspace }, depth + 1))
         }
         return rows
       }
@@ -1663,7 +1663,7 @@ window.__ModuleLoader__.load({
           t,
         })]
         for (const child of hit.folders) rows.push(...renderSearchedFolder(child, depth + 1))
-        for (const entry of hit.workspaces) rows.push(...renderWorkspaceEntry(entry, depth))
+        for (const entry of hit.workspaces) rows.push(...renderWorkspaceEntry(entry, depth + 1))
         return rows
       }
 

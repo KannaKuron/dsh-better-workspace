@@ -64,8 +64,7 @@ window.__ModuleLoader__.load({
       'settings.expand': '展开',
       'settings.collapse': '收起',
       'settings.compactChains': '单链分组折叠显示',
-      'settings.compactChains.hint': '当分组链每层只有一个子级时,合并成一行显示(如 测试层1/AI交易),像 VS Code 的文件路径一样;某层出现多个子级时自动展开为树状',
-      'settings.note': '展开状态与自定义外观保存在当前浏览器(dsh 客户端 store)',
+      'settings.compactChains.hint': '单层链合并为一行,出现多个子级时自动展开为树状;展开状态与自定义外观保存在当前浏览器。',
       'custom.title': '自定义外观',
       'custom.color': '颜色',
       'custom.glow': '发光',
@@ -150,8 +149,7 @@ window.__ModuleLoader__.load({
       'settings.expand': 'Expand',
       'settings.collapse': 'Collapse',
       'settings.compactChains': 'Merge single-child chains',
-      'settings.compactChains.hint': 'When every folder level has exactly one child, render the chain as one row (e.g. 测试层1/AI交易) like VS Code paths; multiple children expand into the tree',
-      'settings.note': 'Expansion state and custom styling persist in this browser (dsh client store)',
+      'settings.compactChains.hint': 'Single-child chains merge into one row; levels with multiple children expand as a tree. State and custom styling persist in this browser.',
       'custom.title': 'Customize',
       'custom.color': 'Color',
       'custom.glow': 'Glow',
@@ -491,7 +489,7 @@ window.__ModuleLoader__.load({
       '.bw-ctx-item:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.14))}',
       '.bw-ctx-danger{color:var(--dsw-alias-state-error-primary,#f85149)}',
       '.bw-ctx-sep{height:1px;background:var(--dsw-alias-border-l1,rgba(127,127,127,.2));margin:4px 6px}',
-      '.bw-settings{display:flex;flex-direction:column;gap:8px;max-width:640px}',
+      '.bw-settings{display:flex;flex-direction:column;gap:6px;max-width:640px}',
       '.bw-plugin-card{list-style:none;border:1px solid var(--dsw-alias-border-l2,rgba(127,127,127,.18));border-radius:12px;background:var(--dsw-alias-bg-layer-3,rgba(127,127,127,.05));transition:border-color .16s,background .16s}',
       '.bw-plugin-card:hover{border-color:var(--dsw-alias-label-dimmed,#7a7a7a)}',
       '.bw-plugin-card-open{background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.1));border-color:var(--dsw-alias-label-dimmed,#7a7a7a)}',
@@ -1061,7 +1059,6 @@ window.__ModuleLoader__.load({
           }, E('span', { className: 'bw-switch-thumb' })),
         ),
         E('div', { className: 'bw-hint' }, t('settings.compactChains.hint')),
-        E('div', { className: 'bw-hint' }, t('settings.note')),
       )
     }
 
@@ -2009,24 +2006,10 @@ window.__ModuleLoader__.load({
       // same persisted state (expansion, folder list, prefs, styling).
       const viewStore = createViewStore()
 
-      // settings tab (official settings.section list slot, additive)
-      slots.inject('settings.section', guarded(
-        'settings.section',
-        {
-          name: 'settings.section',
-          id: 'better-workspace',
-          order: 30,
-          label: () => {
-            try { return ctx.locale.bind(NS)('settings.title') } catch { return '更好的工作区' }
-          },
-          locale: NS,
-          store: viewStore,
-        },
-        BetterWorkspaceSettings,
-      ))
-
-      // Settings → Plugins card (the tab dispatches the intersection of served
-      // namespaces — registered host-side — and settings.plugin.item cards).
+      // Settings → Plugins card only (the tab dispatches the intersection of
+      // served namespaces — registered host-side — and settings.plugin.item
+      // cards). The old left-nav settings.section entry was removed: the
+      // plugins-section card is the single settings surface now.
       slots.inject('settings.plugin.item', guarded(
         'settings.plugin.item',
         {

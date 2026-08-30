@@ -40,7 +40,16 @@ export function apply(ctx) {
         const settings = sctx && sctx.settings
         if (!settings || typeof settings.register !== 'function') return
         const Schema = sm.default
-        settings.register(ds.settingsNamespace('better-workspace'), Schema.object({ compactChains: Schema.boolean().default(true) }))
+        // dsh >= 0.1.2-alpha.2 removed the settingsNamespace() helper from
+        // @deepseek-ai/dsh-settings: register() now takes a plain string and
+        // validates it at runtime (parseSettingsNamespace). The helper's old
+        // signature was compile-time branding only, so a plain string is also
+        // accepted by the older register() — one call, both eras. Only use the
+        // helper when the installed package still ships it.
+        const ns = typeof ds.settingsNamespace === 'function'
+          ? ds.settingsNamespace('better-workspace')
+          : 'better-workspace'
+        settings.register(ns, Schema.object({ compactChains: Schema.boolean().default(true) }))
         log('[dsh-better-workspace] settings namespace registered: better-workspace')
       })
       .catch((error) => {

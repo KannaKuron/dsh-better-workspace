@@ -32,7 +32,7 @@ Session titles nest on `/` too (e.g. `test1/plugin maintenance`). Session groups
 <table>
 <tr>
 <td align="center" width="58%"><img src="docs/screenshots/3-appearance-dialog.png" alt="Appearance dialog with live preview"/></td>
-<td valign="top"><b>Appearance customization</b><br/>Right-click any row (workspace folder / workspace / session / session group) → Customize: color (swatches + picker + RGB), glow strength (0–14 slider, text only), font weight, font shadow, an icon grid (66 icons from the dsh primitives family, workspace &amp; folder rows only), with a live preview at the bottom. Reset returns to default in one click.</td>
+<td valign="top"><b>Appearance customization</b><br/>Right-click any row (workspace folder / workspace / session / session group) → Customize: color (swatches + picker + RGB), glow strength (0–14 slider, text only), font weight, font shadow, an icon grid (69 icons from the dsh primitives family, workspace &amp; folder rows only), with a live preview at the bottom. Reset returns to default in one click.</td>
 </tr>
 <tr>
 <td align="center" width="58%"><img src="docs/screenshots/2-customized-tree.png" alt="Custom appearance result"/></td>
@@ -58,7 +58,7 @@ Session titles nest on `/` too (e.g. `test1/plugin maintenance`). Session groups
 
 - **Folder-style collapse**: clicking a workspace row collapses/expands all of its sessions (the row keeps a session counter when collapsed); session groups collapse too; search force-expands everything.
 - **Native drag restored**: drag a workspace row above/below another to reorder (writes back the host registry order) or onto a folder row to move it into that group; drag session rows to reorder within the same workspace or onto a session group to move. Display order = host manual order, drag results are visible immediately.
-- **Native capabilities kept**: open/rename/fork/archive sessions, per-workspace new-session, current-session highlight, official status dots (blue running ring / amber pending / green done), ungrouped-session fallback, zh/en localization.
+- **Native capabilities kept**: open/rename/fork/archive sessions, per-workspace new-session, current-session highlight, official status dots (blue running ring / amber pending / green done), **active-schedule badge** (alarm clock icon for sessions with active Schedule records, matching the official rows), ungrouped-session fallback, zh/en localization.
 - **Conversation hero too**: the empty-state “Add workspace” menu uses the same picking interaction with the same group popup.
 
 ## Install

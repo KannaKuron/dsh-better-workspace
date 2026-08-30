@@ -52,6 +52,7 @@ window.__ModuleLoader__.load({
       'status.planReview': '等待计划确认',
       'status.question': '等待回答',
       'status.subagents': '{n} 个子任务运行中',
+      'schedule.active': '有活动定时任务',
       'menu.rename': '重命名',
       'menu.delete': '删除',
       'menu.fork': '分叉',
@@ -137,6 +138,7 @@ window.__ModuleLoader__.load({
       'status.planReview': 'Waiting for plan review',
       'status.question': 'Waiting for answer',
       'status.subagents': '{n} subagent(s) running',
+      'schedule.active': 'Has active scheduled task',
       'menu.rename': 'Rename',
       'menu.delete': 'Delete',
       'menu.fork': 'Fork',
@@ -269,17 +271,32 @@ window.__ModuleLoader__.load({
       && (!summary.blank || summary.id === current)
 
     /**
+     * Active-schedule marker, mirroring the official tree's
+     * hasActiveSchedule(): the list projection carries one entry per active
+     * Schedule record, and a non-empty projection is the badge's only gate.
+     * Defensive shapes (missing/mis-typed projection) degrade to false.
+     */
+    const hasActiveScheduleOf = (summary) => !!(summary
+      && summary.projectionValues
+      && Array.isArray(summary.projectionValues.schedule)
+      && summary.projectionValues.schedule.length > 0)
+
+    /**
      * Running subagent descendants per session (light lineage walk over
-     * parentSessionId links) — a parent row keeps its "ongoing" ring while a
-     * spawned subagent is still working.
+     * parent links) — a parent row keeps its "ongoing" ring while a spawned
+     * subagent is still working. The client SessionSummary exposes the
+     * parent as parentId (the session controller maps parentSessionId to
+     * parentId on the wire); the old parentSessionId spelling is kept as a
+     * fallback for profiles serving the pre-rename shape.
      */
     const subagentRunningCounts = (byId) => {
       const children = new Map()
       for (const id of Object.keys(byId || {})) {
         const summary = byId[id]
-        if (!summary || !summary.parentSessionId) continue
-        let list = children.get(summary.parentSessionId)
-        if (!list) { list = []; children.set(summary.parentSessionId, list) }
+        const parentId = summary && (summary.parentId || summary.parentSessionId)
+        if (!summary || !parentId) continue
+        let list = children.get(parentId)
+        if (!list) { list = []; children.set(parentId, list) }
         list.push(summary)
       }
       const countFor = (rootId) => {
@@ -458,9 +475,10 @@ window.__ModuleLoader__.load({
       '.bw-row-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
       '.bw-row-count{flex:none;font-size:11px;color:var(--dsw-alias-label-quaternary,#8a8a8a)}',
       '.bw-row-time{flex:none;font-size:11px;color:var(--dsw-alias-label-quaternary,#8a8a8a)}',
+      '.bw-schedule-badge{flex:none;display:inline-flex;align-items:center;color:var(--dsw-alias-label-tertiary,#9a9a9a);margin:0 6px}',
       '.bw-row-actions{flex:none;display:none;align-items:center;gap:2px}',
       '.bw-row:hover .bw-row-actions{display:flex}',
-      '.bw-row:hover .bw-row-time,.bw-row:hover .bw-row-count{display:none}',
+      '.bw-row:hover .bw-row-time,.bw-row:hover .bw-row-count,.bw-row:hover .bw-schedule-badge{display:none}',
       '.bw-dot{flex:none;width:6px;height:6px;border-radius:50%;background:transparent}',
       '.bw-session-row{font-size:12.5px;color:var(--dsw-alias-label-secondary,#b8b8b8);min-height:26px}',
       '.bw-sgroup-row{font-size:12.5px;color:var(--dsw-alias-label-tertiary,#9a9a9a);min-height:24px}',
@@ -842,6 +860,9 @@ window.__ModuleLoader__.load({
             : E('span', { className: 'bw-dot' }),
         ),
         E('span', { className: 'bw-row-label' }, node.leaf || node.title),
+        node.hasActiveSchedule
+          ? E('span', { className: 'bw-schedule-badge', role: 'img', 'aria-label': t('schedule.active'), title: t('schedule.active') }, icon('IconAlarmClockOutline16', 14))
+          : null,
         E('span', { className: 'bw-row-time' }, timeLabel(node.updatedAt, now, t)),
       )
     }
@@ -890,6 +911,7 @@ window.__ModuleLoader__.load({
       'IconSettingsOutline16', 'IconShareOutline16', 'IconStopFill16', 'IconThinkOutline14',
       'IconThinkOutline16', 'IconTrashOutline16', 'IconUserOutline16', 'IconWarningOutline16',
       'IconLikeOutline16', 'IconDislikeOutline16', 'IconFollowsystemOutline16',
+      'IconAlarmClockOutline16', 'IconClockOutline16', 'IconDatabaseOutline16',
     ]
 
     /**
@@ -1178,6 +1200,7 @@ window.__ModuleLoader__.load({
             blank: !!summary.blank,
             running: !!summary.running,
             completed: summary.completed === true,
+            hasActiveSchedule: hasActiveScheduleOf(summary),
             subagents: subCounts.get(id) || 0,
             updatedAt: summary.updatedAt || 0,
             pending: pendingKindOf(pending, id),
@@ -1204,6 +1227,7 @@ window.__ModuleLoader__.load({
             blank: !!summary.blank,
             running: !!summary.running,
             completed: summary.completed === true,
+            hasActiveSchedule: hasActiveScheduleOf(summary),
             subagents: subCounts.get(id) || 0,
             updatedAt: summary.updatedAt || 0,
             pending: pendingKindOf(pending, id),

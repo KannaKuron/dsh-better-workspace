@@ -46,12 +46,19 @@ window.__ModuleLoader__.load({
       'time.days': '{n} 天',
       'time.months': '{n} 个月',
       'time.years': '{n} 年',
+      'status.running': '生成中',
+      'status.completed': '已完成',
+      'status.approval': '等待批准',
+      'status.planReview': '等待计划确认',
+      'status.question': '等待回答',
+      'status.subagents': '{n} 个子任务运行中',
       'menu.rename': '重命名',
       'menu.delete': '删除',
       'menu.fork': '分叉',
       'menu.archive': '归档',
       'menu.renameFolder': '重命名分组',
       'menu.removeFolder': '删除分组',
+      'menu.renameSgroup': '重命名会话分组',
       'flow.title': '添加工作区',
       'flow.picked': '所选文件夹',
       'flow.parent': '所属分组',
@@ -95,12 +102,19 @@ window.__ModuleLoader__.load({
       'time.days': '{n}d',
       'time.months': '{n}mo',
       'time.years': '{n}y',
+      'status.running': 'Running',
+      'status.completed': 'Completed',
+      'status.approval': 'Waiting for approval',
+      'status.planReview': 'Waiting for plan review',
+      'status.question': 'Waiting for answer',
+      'status.subagents': '{n} subagent(s) running',
       'menu.rename': 'Rename',
       'menu.delete': 'Delete',
       'menu.fork': 'Fork',
       'menu.archive': 'Archive',
       'menu.renameFolder': 'Rename folder',
       'menu.removeFolder': 'Delete folder',
+      'menu.renameSgroup': 'Rename session group',
       'flow.title': 'Add workspace',
       'flow.picked': 'Chosen folder',
       'flow.parent': 'Parent group',
@@ -145,6 +159,22 @@ window.__ModuleLoader__.load({
       return C ? E(C, { size: size || 16 }) : null
     }
 
+    /** Folder-with-plus glyph for the new-group header button (absent from the primitives set). */
+    const FolderPlusIcon = (props) => E('svg', {
+      width: props.size || 16,
+      height: props.size || 16,
+      viewBox: '0 0 16 16',
+      fill: 'none',
+      stroke: 'currentColor',
+      strokeWidth: 1.2,
+      strokeLinecap: 'round',
+      strokeLinejoin: 'round',
+      'aria-hidden': 'true',
+    },
+      E('path', { d: 'M1.75 4.6c0-.74.6-1.35 1.35-1.35h2.5l1.4 1.6h4.9c.74 0 1.35.6 1.35 1.35v5.9c0 .74-.6 1.35-1.35 1.35H3.1c-.74 0-1.35-.6-1.35-1.35V4.6z' }),
+      E('path', { d: 'M8 7.2v3.6M6.2 9h3.6' }),
+    )
+
     const FALLBACK_UNITS = { minutes: 'm', hours: 'h', days: 'd', months: 'mo', years: 'y' }
     const timeLabel = (updatedAt, now, t) => {
       if (typeof ui.relativeTime !== 'function') return ''
@@ -168,6 +198,100 @@ window.__ModuleLoader__.load({
       if (!summary) return ''
       if (summary.blank) return t('session.new')
       return String(summary.displayTitle || summary.title || '')
+    }
+
+    /**
+     * Official visibility rule (dsh tree.ts sessionVisible): subagent children
+     * live in their parent's catalog, archived sessions are visible nowhere,
+     * and a blank row is the provisional New Session of the current selection.
+     */
+    const sessionVisible = (summary, current, archivedSet) => !!summary
+      && summary.origin !== 'subagent'
+      && !(archivedSet && archivedSet.has(summary.id))
+      && (!summary.blank || summary.id === current)
+
+    /**
+     * Running subagent descendants per session (light lineage walk over
+     * parentSessionId links) — a parent row keeps its "ongoing" ring while a
+     * spawned subagent is still working.
+     */
+    const subagentRunningCounts = (byId) => {
+      const children = new Map()
+      for (const id of Object.keys(byId || {})) {
+        const summary = byId[id]
+        if (!summary || !summary.parentSessionId) continue
+        let list = children.get(summary.parentSessionId)
+        if (!list) { list = []; children.set(summary.parentSessionId, list) }
+        list.push(summary)
+      }
+      const countFor = (rootId) => {
+        let count = 0
+        const queue = (children.get(rootId) || []).slice()
+        const seen = new Set([rootId])
+        while (queue.length > 0) {
+          const summary = queue.shift()
+          if (!summary || seen.has(summary.id)) continue
+          seen.add(summary.id)
+          if (summary.running) count += 1
+          const kids = children.get(summary.id)
+          if (kids) for (const kid of kids) queue.push(kid)
+        }
+        return count
+      }
+      const counts = new Map()
+      for (const id of Object.keys(byId || {})) counts.set(id, countFor(id))
+      return counts
+    }
+
+    /**
+     * Session nesting inside one workspace: same "/" convention as workspace
+     * titles. Groups are virtual (projection of names); sessions sort by
+     * recency inside their group.
+     */
+    function buildSessionTree(rows) {
+      const root = { path: '', name: '', groups: [], sessions: [] }
+      const byPath = new Map([['', root]])
+      const ensure = (path) => {
+        if (path === '') return root
+        const known = byPath.get(path)
+        if (known) return known
+        const segs = path.split('/')
+        const parent = ensure(segs.slice(0, -1).join('/'))
+        const node = { path, name: segs[segs.length - 1], groups: [], sessions: [] }
+        byPath.set(path, node)
+        parent.groups.push(node)
+        return node
+      }
+      for (const row of rows || []) {
+        const segs = splitTitleSegs(row.title)
+        const folderPath = segs.slice(0, -1).join('/')
+        const leaf = segs.length > 0 ? segs[segs.length - 1] : row.title
+        ensure(folderPath).sessions.push({ ...row, leaf })
+      }
+      const sortRec = (node) => {
+        node.groups.sort((a, b) => a.name.localeCompare(b.name, 'zh'))
+        node.sessions.sort((a, b) => b.updatedAt - a.updatedAt)
+        for (const group of node.groups) sortRec(group)
+      }
+      sortRec(root)
+      return root
+    }
+
+    const countSessionTree = (node) => node.sessions.length + node.groups.reduce((sum, group) => sum + countSessionTree(group), 0)
+
+    const collectSessionRows = (node) => {
+      const out = node.sessions.slice()
+      for (const group of node.groups) out.push(...collectSessionRows(group))
+      return out
+    }
+
+    const findSessionGroup = (node, path) => {
+      if (node.path === path) return node
+      for (const group of node.groups) {
+        const hit = findSessionGroup(group, path)
+        if (hit) return hit
+      }
+      return null
     }
 
     /**
@@ -232,7 +356,9 @@ window.__ModuleLoader__.load({
       '.bw-tree{flex:1;overflow-y:auto;overflow-x:hidden;padding:2px 6px 12px;min-height:0}',
       '.bw-row{display:flex;align-items:center;gap:6px;min-height:28px;padding:0 6px;border-radius:6px;cursor:pointer;user-select:none;font-size:13px;color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-row:hover{background:var(--dsw-specific-sidebar-nav-item-hover,var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12)))}',
+      '.bw-row:hover{background:color-mix(in srgb,var(--dsw-specific-sidebar-nav-item-hover,rgba(127,127,127,.14)) 50%,transparent)}',
       '.bw-row-current{background:var(--dsw-specific-sidebar-nav-item-active,rgba(91,141,239,.15))}',
+      '.bw-row-current{background:color-mix(in srgb,var(--dsw-specific-sidebar-nav-item-active,rgba(91,141,239,.16)) 40%,transparent)}',
       '.bw-row-icon{flex:none;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
       '.bw-chevron{flex:none;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary,#9a9a9a);transition:transform .15s ease}',
       '.bw-chevron-open{transform:rotate(90deg)}',
@@ -246,6 +372,8 @@ window.__ModuleLoader__.load({
       '.bw-dot-running{background:var(--dsw-alias-state-success-primary,#3fb950)}',
       '.bw-dot-pending{background:var(--dsw-alias-state-warn-primary,#d29922)}',
       '.bw-session-row{font-size:12.5px;color:var(--dsw-alias-label-secondary,#b8b8b8);min-height:26px}',
+      '.bw-sgroup-row{font-size:12.5px;color:var(--dsw-alias-label-tertiary,#9a9a9a);min-height:24px}',
+      '.bw-sgroup-row:hover{color:var(--dsw-alias-label-secondary,#b8b8b8)}',
       '.bw-session-row:hover{color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-overflow-btn{margin:2px 0 2px 26px;border:none;background:transparent;color:var(--dsw-alias-label-tertiary,#9a9a9a);font-size:11.5px;cursor:pointer;padding:2px 6px;border-radius:6px;text-align:left}',
       '.bw-overflow-btn:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12));color:var(--dsw-alias-label-primary,#e6e6e6)}',
@@ -272,11 +400,12 @@ window.__ModuleLoader__.load({
     /* ========================== view store =========================== */
 
     const createViewStore = () => storeKit.defineStore({
-      init: () => ({ folders: [], expanded: {}, sessionsExpanded: {} }),
+      init: () => ({ folders: [], expanded: {}, sessionsExpanded: {}, sessionGroups: {} }),
       persist: 'dsh.betterWorkspace.view.v1',
       actions: {
         setExpanded: (d, key, value) => { d.expanded[key] = value },
         setSessionsExpanded: (d, key, value) => { d.sessionsExpanded[key] = value },
+        setSessionGroupExpanded: (d, key, value) => { d.sessionGroups[key] = value },
         addFolder: (d, path) => {
           const p = normPath(path)
           if (p !== '' && !d.folders.includes(p)) d.folders.push(p)
@@ -499,7 +628,7 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function WorkspaceRow({ workspace, depth, sessionsOpen, onToggle, onStart, onMenu, currentInside, t }) {
+    function WorkspaceRow({ workspace, depth, count, sessionsOpen, onToggle, onStart, onMenu, currentInside, t }) {
       return E('div', {
         className: cls('bw-row', currentInside && 'bw-row-current'),
         style: { paddingLeft: 6 + depth * 12 },
@@ -510,6 +639,7 @@ window.__ModuleLoader__.load({
         E('span', { className: cls('bw-chevron', sessionsOpen && 'bw-chevron-open') }, icon('IconTriangleRightFill14', 14)),
         E('span', { className: 'bw-row-icon' }, icon(sessionsOpen ? 'IconFolderOpen16' : 'IconFolderClose16')),
         E('span', { className: 'bw-row-label', title: workspace.title || workspace.leaf }, workspace.leaf),
+        count > 0 ? E('span', { className: 'bw-row-count' }, String(count)) : null,
         E('span', { className: 'bw-row-actions', onClick: (e) => e.stopPropagation() },
           E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('session.new'), onClick: (e) => { e.stopPropagation(); onStart() } }, icon('IconPlusOutline16')),
           E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('menu.rename'), onClick: (e) => onMenu('workspace', workspace, e) }, icon('IconEllipsisOutline16')),
@@ -518,18 +648,53 @@ window.__ModuleLoader__.load({
     }
 
     function SessionRow({ node, depth, current, onOpen, onMenu, now, t }) {
-      const kind = node.pending
+      // Official status priority: pending interaction > running > running
+      // subagents > completed reminder; idle rows show no dot at all.
+      let status = null
+      if (node.pending === 'approval' || node.pending === 'plan-review' || node.pending === 'question') {
+        status = { state: 'warning', title: t('status.' + (node.pending === 'plan-review' ? 'planReview' : node.pending)) }
+      } else if (node.running || node.subagents > 0) {
+        status = { state: 'ongoing', title: node.running ? t('status.running') : t('status.subagents', { n: node.subagents }) }
+      } else if (node.completed) {
+        status = { state: 'done', title: t('status.completed') }
+      }
       return E('div', {
         className: cls('bw-row', 'bw-session-row', current && 'bw-row-current'),
         style: { paddingLeft: 8 + depth * 12 },
         onClick: () => onOpen(node.id),
         role: 'treeitem',
       },
-        E('span', { className: cls('bw-dot', node.running && 'bw-dot-running', !node.running && kind && 'bw-dot-pending'), title: kind || (node.running ? 'running' : '') }),
-        E('span', { className: 'bw-row-label' }, node.title),
+        E('span', { className: 'bw-row-icon', title: status ? status.title : undefined },
+          status && typeof ui.StateDot === 'function'
+            ? E(ui.StateDot, { state: status.state, size: 10 })
+            : E('span', { className: 'bw-dot' }),
+        ),
+        E('span', { className: 'bw-row-label' }, node.leaf || node.title),
         E('span', { className: 'bw-row-time' }, timeLabel(node.updatedAt, now, t)),
         E('span', { className: 'bw-row-actions', onClick: (e) => e.stopPropagation() },
           E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('menu.rename'), onClick: (e) => onMenu('session', node, e) }, icon('IconEllipsisOutline16')),
+        ),
+      )
+    }
+
+    /**
+     * Session sub-group inside a workspace (same "/" convention on session
+     * titles). Deliberately NOT styled like a workspace folder — no folder
+     * icon, tertiary color — so a session level never reads as a workspace.
+     */
+    function SessionGroupRow({ name, depth, expanded, count, onToggle, onMenu, t }) {
+      return E('div', {
+        className: cls('bw-row', 'bw-sgroup-row'),
+        style: { paddingLeft: 10 + depth * 12 },
+        onClick: onToggle,
+        role: 'treeitem',
+        'aria-expanded': expanded,
+      },
+        E('span', { className: cls('bw-chevron', expanded && 'bw-chevron-open') }, icon('IconTriangleRightFill14', 14)),
+        E('span', { className: 'bw-row-label' }, name),
+        count > 0 ? E('span', { className: 'bw-row-count' }, String(count)) : null,
+        E('span', { className: 'bw-row-actions', onClick: (e) => e.stopPropagation() },
+          E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('menu.renameSgroup'), onClick: (e) => onMenu(e) }, icon('IconEllipsisOutline16')),
         ),
       )
     }
@@ -559,6 +724,9 @@ window.__ModuleLoader__.load({
       const storeFolders = useStore ? useStore(s => s.folders) : []
       const expandedMap = useStore ? useStore(s => s.expanded) : {}
       const sessionsExpandedMap = useStore ? useStore(s => s.sessionsExpanded) : {}
+      const sessionGroupsMap = useStore ? useStore(s => s.sessionGroups) : {}
+      const archivedSet = React.useMemo(() => new Set(archivedSessionIds), [archivedSessionIds])
+      const subCounts = React.useMemo(() => subagentRunningCounts(list ? list.byId : {}), [list ? list.byId : null])
 
       const [query, setQuery] = React.useState('')
       const [searchOpen, setSearchOpen] = React.useState(false)
@@ -577,14 +745,15 @@ window.__ModuleLoader__.load({
       if (list && Array.isArray(list.ids)) {
         for (const id of list.ids) {
           const summary = list.byId[id]
-          if (!summary) continue
-          if (accounted.has(id) || archivedSessionIds.includes(id)) continue
-          if (summary.blank && list.current !== id) continue
+          if (accounted.has(id) || !sessionVisible(summary, list.current, archivedSet)) continue
           ungrouped.push({
             id,
             title: sessionTitleOf(summary, t),
+            leaf: sessionTitleOf(summary, t),
             blank: !!summary.blank,
             running: !!summary.running,
+            completed: summary.completed === true,
+            subagents: subCounts.get(id) || 0,
             updatedAt: summary.updatedAt || 0,
             pending: pendingKindOf(pending, id),
           })
@@ -598,12 +767,15 @@ window.__ModuleLoader__.load({
         const rows = []
         for (const id of workspace.sessionIds || []) {
           const summary = list && list.byId ? list.byId[id] : undefined
-          if (!summary || archivedSessionIds.includes(id)) continue
+          if (!sessionVisible(summary, list ? list.current : undefined, archivedSet)) continue
           rows.push({
             id,
             title: sessionTitleOf(summary, t),
+            leaf: sessionTitleOf(summary, t),
             blank: !!summary.blank,
             running: !!summary.running,
+            completed: summary.completed === true,
+            subagents: subCounts.get(id) || 0,
             updatedAt: summary.updatedAt || 0,
             pending: pendingKindOf(pending, id),
           })
@@ -634,7 +806,8 @@ window.__ModuleLoader__.load({
       const searching = normalizedQuery !== ''
 
       const folderExpanded = (path) => (expandedMap ? expandedMap[path] !== false : true)
-      const sessionsOpenOf = (workspaceId) => (sessionsExpandedMap ? sessionsExpandedMap[workspaceId] === true : false)
+      const sessionsOpenOf = (workspaceId) => (sessionsExpandedMap ? sessionsExpandedMap[workspaceId] !== false : true)
+      const sessionGroupOpen = (key) => (sessionGroupsMap ? sessionGroupsMap[key] !== false : true)
 
       const openMenu = (kind, payload, e) => {
         const rect = e && e.currentTarget ? e.currentTarget.getBoundingClientRect() : null
@@ -664,6 +837,30 @@ window.__ModuleLoader__.load({
         if (title === '' || title === session.title) { setDialog(null); return }
         Promise.resolve()
           .then(() => renameSession(session.id, title))
+          .then(() => setDialog(null))
+          .catch(fail)
+      }
+
+      /** Rename one session sub-group: rewrite the title prefix of every member. */
+      const submitSessionGroupRename = (target, rawName) => {
+        const name = normPath(rawName)
+        if (name === '') { setErrorText(t('folder.error.empty')); return }
+        if (name === target.name) { setDialog(null); return }
+        const workspace = (items || []).find(w => w.workspaceId === target.workspaceId)
+        if (!workspace) { setDialog(null); return }
+        const node = findSessionGroup(buildSessionTree(sessionsOf(workspace)), target.path)
+        if (!node) { setDialog(null); return }
+        const parentPath = target.path.includes('/') ? target.path.slice(0, target.path.lastIndexOf('/')) : ''
+        const nextPath = parentPath !== '' ? parentPath + '/' + name : name
+        const affected = collectSessionRows(node)
+        Promise.resolve()
+          .then(async () => {
+            for (const row of affected) {
+              if (row.blank) continue
+              const nextTitle = nextPath + row.title.slice(target.path.length)
+              await renameSession(row.id, nextTitle)
+            }
+          })
           .then(() => setDialog(null))
           .catch(fail)
       }
@@ -715,39 +912,45 @@ window.__ModuleLoader__.load({
 
       /* ---------------------------- rows ----------------------------- */
 
-      const renderSessions = (workspace, depth) => {
-        const all = sessionsOf(workspace)
-        if (all.length === 0) return []
-        const out = []
-        if (!sessionsOpenOf(workspace.workspaceId)) {
-          const visible = all.slice(0, 5)
-          for (const s of visible) out.push(renderSessionRow(s, depth))
-          if (all.length > visible.length) {
-            out.push(E('button', {
-              key: 'more-' + workspace.workspaceId,
-              type: 'button',
-              className: 'bw-overflow-btn',
-              onClick: (e) => { e.stopPropagation(); actions.setSessionsExpanded(workspace.workspaceId, true) },
-            }, t('sessions.expand', { n: all.length - visible.length })))
-          }
-          return out
-        }
-        for (const s of all) out.push(renderSessionRow(s, depth))
-        if (all.length > 5) {
-          out.push(E('button', {
-            key: 'less-' + workspace.workspaceId,
-            type: 'button',
-            className: 'bw-overflow-btn',
-            onClick: (e) => { e.stopPropagation(); actions.setSessionsExpanded(workspace.workspaceId, false) },
-          }, t('sessions.collapse')))
-        }
-        return out
+      const renderSessionTree = (workspace, depth) => {
+        // Folder semantics: a closed workspace shows no sessions at all (the
+        // row keeps its count badge); an open one shows the full session tree.
+        if (!searching && !sessionsOpenOf(workspace.workspaceId)) return []
+        const rows = sessionsOf(workspace)
+        if (rows.length === 0) return []
+        return renderSessionNode(buildSessionTree(rows), workspace.workspaceId, depth)
       }
-      const searchedWorkspaceSessions = (workspace) => {
-        // During search the caller only keeps matched sessions; recompute here.
-        const all = sessionsOf(workspace)
-        const wsHit = workspace.leaf.toLowerCase().includes(normalizedQuery) || workspace.title.toLowerCase().includes(normalizedQuery)
-        return wsHit ? all : all.filter(s => s.title.toLowerCase().includes(normalizedQuery))
+      const searchSessionNode = (node) => {
+        const groups = []
+        for (const group of node.groups) {
+          const hit = searchSessionNode(group)
+          if (hit) groups.push(hit)
+        }
+        const sessions = node.sessions.filter(s => ((s.leaf || s.title) + ' ' + s.title).toLowerCase().includes(normalizedQuery))
+        if (groups.length === 0 && sessions.length === 0) return null
+        return { path: node.path, name: node.name, groups, sessions }
+      }
+      const renderSessionNode = (node, workspaceId, depth) => {
+        const view = searching ? searchSessionNode(node) : node
+        if (!view) return []
+        const out = []
+        for (const group of view.groups) {
+          const key = workspaceId + '|' + group.path
+          const open = searching || sessionGroupOpen(key)
+          out.push(E(SessionGroupRow, {
+            key: 'sg-' + key,
+            name: group.name,
+            depth,
+            expanded: open,
+            count: countSessionTree(group),
+            onToggle: () => { if (!searching) actions.setSessionGroupExpanded(key, !open) },
+            onMenu: (e) => openMenu('sgroup', { workspaceId, path: group.path, name: group.name }, e),
+            t,
+          }))
+          if (open) out.push(...renderSessionNode(group, workspaceId, depth + 1))
+        }
+        for (const s of view.sessions) out.push(renderSessionRow(s, depth))
+        return out
       }
 
       const renderSessionRow = (session, depth) => E(SessionRow, {
@@ -762,11 +965,13 @@ window.__ModuleLoader__.load({
       })
 
       const renderWorkspaceEntry = (entry, depth) => {
-        const { workspace, matchedSessions } = entry
+        const { workspace } = entry
+        const count = countSessionTree(buildSessionTree(sessionsOf(workspace)))
         const rows = [E(WorkspaceRow, {
           key: 'ws-' + workspace.workspaceId,
           workspace,
           depth,
+          count,
           sessionsOpen: searching ? true : sessionsOpenOf(workspace.workspaceId),
           currentInside: !!(list && list.current && (workspace.sessionIds || []).includes(list.current)),
           onToggle: () => { if (!searching) actions.setSessionsExpanded(workspace.workspaceId, !sessionsOpenOf(workspace.workspaceId)) },
@@ -774,12 +979,7 @@ window.__ModuleLoader__.load({
           onMenu: openMenu,
           t,
         })]
-        const sessions = searching ? matchedSessions : null
-        if (searching) {
-          for (const s of sessions) rows.push(renderSessionRow(s, depth + 1))
-        } else {
-          rows.push(...renderSessions(workspace, depth + 1))
-        }
+        rows.push(...renderSessionTree(workspace, depth + 1))
         return rows
       }
 
@@ -855,6 +1055,7 @@ window.__ModuleLoader__.load({
         else if (kind === 'folder' && id === 'remove-folder') setDialog({ kind: 'folder-delete', path: payload.path })
         else if (kind === 'workspace' && id === 'rename') setDialog({ kind: 'ws-rename', workspace: payload })
         else if (kind === 'workspace' && id === 'delete') setDialog({ kind: 'ws-delete', workspace: payload })
+        else if (kind === 'sgroup' && id === 'rename-sgroup') setDialog({ kind: 'sgroup-rename', target: payload })
         else if (kind === 'session' && id === 'rename') setDialog({ kind: 'sess-rename', session: payload })
         else if (kind === 'session' && id === 'fork') forkSession(payload.id)
         else if (kind === 'session' && id === 'archive') { Promise.resolve().then(() => archiveSession(payload.id)).catch(fail) }
@@ -899,6 +1100,15 @@ window.__ModuleLoader__.load({
           title: t('menu.rename'),
           initial: dialog.session.title,
           onConfirm: (v) => submitSessionRename(dialog.session, v),
+          onClose: () => setDialog(null),
+          t,
+        })
+        if (dialog.kind === 'sgroup-rename') return E(TextDialog, {
+          key: 'sgroup-rename',
+          title: t('menu.renameSgroup'),
+          hint: t('ws.rename.hint'),
+          initial: dialog.target.name,
+          onConfirm: (v) => submitSessionGroupRename(dialog.target, v),
           onClose: () => setDialog(null),
           t,
         })
@@ -956,7 +1166,7 @@ window.__ModuleLoader__.load({
             onBlur: () => { if (query === '') setSearchOpen(false) },
           }) : null,
           E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('search.placeholder'), onClick: () => setSearchOpen(v => !v) }, icon('IconSearchOutline16')),
-          E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('newFolder'), onClick: () => setDialog({ kind: 'folder-new' }) }, icon('IconFolderPlusOutline16') || icon('IconProjectAddOutline16')),
+          E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('newFolder'), onClick: () => setDialog({ kind: 'folder-new' }) }, E(FolderPlusIcon, { size: 16 })),
           E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('add'), onClick: () => setFlowOpen(true) }, icon('IconProjectAddOutline16')),
         ),
         E('div', { className: 'bw-tree', role: 'tree', 'aria-label': t('title') }, bodyRows),
@@ -978,6 +1188,9 @@ window.__ModuleLoader__.load({
         E(ui.Menu, { ...menuProps('folder'), items: [
           { id: 'rename-folder', label: t('menu.renameFolder'), icon: icon('IconEditOutline16') },
           { id: 'remove-folder', label: t('menu.removeFolder'), icon: icon('IconTrashOutline16'), danger: true, disabled: !folderNodeOfMenu() || countWorkspaces(folderNodeOfMenu() || { workspaces: [], folders: [] }) > 0 },
+        ] }),
+        E(ui.Menu, { ...menuProps('sgroup'), items: [
+          { id: 'rename-sgroup', label: t('menu.renameSgroup'), icon: icon('IconEditOutline16') },
         ] }),
         E(ui.Menu, { ...menuProps('workspace'), items: [
           { id: 'rename', label: t('menu.rename'), icon: icon('IconEditOutline16') },

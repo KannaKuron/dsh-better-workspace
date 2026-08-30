@@ -33,11 +33,15 @@
 3. **数据事实**(dsh 0.1.2-alpha.1 实测):
    - 分组来源是 WorkspaceView.title(按 / 切分);title 为空回退 basename(path)。
    - 会话标题是 SessionSummary.displayTitle(blank 会话显示本地化「新会话」);SessionListState = { ids, byId, current, phase, ... };WorkspaceSnapshot.archivedSessionIds 是注册表级归档集。
+   - **会话可见性官方规则**(tree.ts sessionVisible):origin 非 subagent、不在归档集、blank 仅当前选中可见。子代理行(Side:*)永远不进浏览器列表。SessionSummary 还有 completed(完成提醒)与 parentSessionId(子代理血缘)。
+   - **状态灯官方语义**(Rows.tsx sessionStatuses + StateDot):pending(approval/plan-review/question → warning 琥珀)> running(ongoing 蓝色运行环)> 子代理运行中(ongoing)> completed===true(done 绿);空闲不显示灯。绝不要用自绘圆点代替 StateDot。
    - 浏览器组件 props:wide/expandSidebar(owner)、useWorkspaces/useSessions/useSessionPendingInteraction(standard)、注入动作(startSession/open/renameSession/forkSession/renameWorkspace/deleteWorkspace/archiveSession/createWorkspace/searchSessions/pickDirectory)、useStore/actions(store)、t(locale)。注入工厂的非 hooks 条目按原名成为 props;hooks 舱条目被渲染器绑成 useXxx 钩子。
-4. **持久化**只用 dsh 客户端 store(defineStore + persist: dsh.betterWorkspace.view.v1,浏览器本地)。显式空分组(folders)与折叠状态都在这里;不要为动态实验另起持久化。
-5. **词典纪律**:NS = betterWorkspace;zh/en 两个词典 key 必须完全对齐,且覆盖文件里每个静态 t(...) 调用——冒烟测试逐 key 校验。动态拼 key(如 time. + unit)的取值集合也要在词典里配齐。
-6. **React 纪律**:纯 React.createElement;组件必须定义在模块层(内联组件定义会在父组件每次渲染时重挂载、丢输入状态);所有 hook 调用必须先于任何 early return。
-7. **防御式边界**:primitives 图标/组件一律经 icon()/BTN() 特征探测降级,不硬崩;require 只允许基线(测试强制)。
+4. **收起语义**:工作区行点击 = 该工作区会话树整体 0↔全部(默认展开,收起后行上保留会话数角标);会话子分组默认展开、可收起;搜索时强制全展开。**不要**恢复旧的「收起仍显示 5 条」行为(用户明确要文件夹式收起)。
+5. **会话层级**:会话标题同样按 / 分层(buildSessionTree);会话子分组**必须**与工作区文件夹视觉可辨——次级配色(tertiary)、无文件夹图标、只有 chevron。分组重命名 = 批量改写成员标题前缀(renameSession)。
+6. **持久化**只用 dsh 客户端 store(defineStore + persist: dsh.betterWorkspace.view.v1,浏览器本地)。显式空分组(folders)、折叠状态(expanded/sessionsExpanded/sessionGroups)都在这里;不要为动态实验另起持久化。
+7. **词典纪律**:NS = betterWorkspace;zh/en 两个词典 key 必须完全对齐,且覆盖文件里每个静态 t(...) 调用——冒烟测试逐 key 校验。动态拼 key(如 time. + unit、status. + kind)的取值集合也要在词典里配齐。
+8. **React 纪律**:纯 React.createElement;组件必须定义在模块层(内联组件定义会在父组件每次渲染时重挂载、丢输入状态);所有 hook 调用必须先于任何 early return。
+9. **防御式边界**:primitives 图标/组件一律经 icon()/BTN() 特征探测降级,不硬崩;require 只允许基线(测试强制)。
 
 ## 已知限制(改之前先看是不是已排期)
 

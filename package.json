@@ -1,6 +1,6 @@
 {
   "name": "dsh-better-workspace",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "DSH web plugin: a hierarchical workspace tree for the sidebar. Workspace titles containing \"/\" group into virtual folders (web/前端 · web/后端); the add-workspace directory flow gains a parent-group popup; renames re-derive the tree; a new-folder button creates empty levels.",
   "type": "module",
   "repository": {

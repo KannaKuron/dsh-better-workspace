@@ -10,11 +10,12 @@ web/                 <- virtual folder (naming only, not a real directory)
 
 ## Features & preview
 
-### Hierarchical tree
-
-Every `/` in a workspace title creates a virtual folder: `web/frontend` and `web/backend` sit under one `web` group, arbitrarily deep; workspaces without a `/` stay at the root. Renaming a workspace re-derives the tree instantly — folders are a projection of names, there is no second source of truth.
-
-![Hierarchical workspace tree](docs/screenshots/1-workspace-tree.png)
+<table>
+<tr>
+<td align="center" width="58%"><img src="docs/screenshots/1-workspace-tree.png" alt="Hierarchical workspace tree"/></td>
+<td valign="top"><b>Hierarchical tree</b><br/>Every `/` in a workspace title creates a virtual folder: web/frontend and web/backend sit under one web group, arbitrarily deep; workspaces without a `/` stay at the root. Renaming a workspace re-derives the tree <b>instantly</b> — folders are a projection of names, there is no second source of truth.</td>
+</tr>
+</table>
 
 ### Add flow: pick a folder, then pick a group
 
@@ -28,25 +29,30 @@ Create explicit empty folders (multi-level paths welcome) that persist in the br
 
 Session titles nest on `/` too (e.g. `test1/plugin maintenance`). Session groups render in a secondary color without a folder icon, so they are clearly distinct from workspace folders; a session group can be renamed as a whole (rewrites member titles).
 
-### Appearance customization
+<table>
+<tr>
+<td align="center" width="58%"><img src="docs/screenshots/3-appearance-dialog.png" alt="Appearance dialog with live preview"/></td>
+<td valign="top"><b>Appearance customization</b><br/>Right-click any row (workspace folder / workspace / session / session group) → Customize: color (swatches + picker + RGB), glow strength (0–14 slider, text only), font weight, font shadow, an icon grid (66 icons from the dsh primitives family, workspace &amp; folder rows only), with a live preview at the bottom. Reset returns to default in one click.</td>
+</tr>
+<tr>
+<td align="center" width="58%"><img src="docs/screenshots/2-customized-tree.png" alt="Custom appearance result"/></td>
+<td valign="top"><b>Applied immediately</b><br/>Color, text glow, font weight, shadow and icon apply per row and persist, together with expansion state, via the dsh client store in the current browser.</td>
+</tr>
+</table>
 
-Right-click any row (folder / workspace / session / session group) → Customize: color (swatches + picker + RGB), glow strength (0–14 slider, text only), font weight, font shadow, an icon grid (66 icons from the dsh primitives family, workspace & folder rows only), with a live preview at the bottom. Reset returns to default in one click.
+<table>
+<tr>
+<td align="center" width="58%"><img src="docs/screenshots/5-context-menu.png" alt="Context menu"/></td>
+<td valign="top"><b>Context menu everywhere</b><br/>Actions live in the right-click menu: workspace rows — rename / delete / fork / archive / customize; folder rows — rename group (updates all descendant workspaces) / delete empty group / customize; session &amp; session-group rows — rename / fork / archive / customize.</td>
+</tr>
+</table>
 
-![Appearance dialog with live preview](docs/screenshots/3-appearance-dialog.png)
-
-![Custom appearance result — color / glow / weight / shadow / icon](docs/screenshots/2-customized-tree.png)
-
-### Context menu everywhere
-
-Actions live in the right-click menu: workspace rows — rename / delete / fork / archive / customize; folder rows — rename group (updates all descendant workspaces) / delete empty group / customize; session & session-group rows — rename / fork / archive / customize.
-
-![Right-click menu (rename / delete / customize)](docs/screenshots/5-context-menu.png)
-
-### Settings card
-
-Settings → Plugins → Configuration adds a “Better Workspaces” card (official accordion style) with a **single-child-chain merge** toggle (e.g. `level1` containing only `AI trade` renders as one row `level1/AI trade`); expansion state and styling persist via the dsh client store in the browser.
-
-![Settings card under Settings → Plugins → Configuration](docs/screenshots/4-settings-card.png)
+<table>
+<tr>
+<td align="center" width="58%"><img src="docs/screenshots/4-settings-card.png" alt="Settings card"/></td>
+<td valign="top"><b>Settings card</b><br/>Settings → Plugins → Configuration adds a “Better Workspaces” card (official accordion style) with a <b>single-child-chain merge</b> toggle (e.g. level1 containing only AI trade renders as one row level1/AI trade); expansion state and styling persist via the dsh client store in the browser.</td>
+</tr>
+</table>
 
 ### More highlights
 

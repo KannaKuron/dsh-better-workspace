@@ -8,7 +8,7 @@
 
 ## 环境与工具
 
-- GitHub 操作一律用 gh(已认证 KannaKuron);git 走本地代理 [local-clash-proxy],偶发 TLS EOF 原样重试。
+- GitHub 操作一律用 gh(已认证 KannaKuron);git 走本地代理(端点见工作区总纲 AGENTS.md),偶发 TLS EOF 原样重试。
 - 发布双通道同家族惯例:npm test → npm version → git push --tags → gh release create → Release published 触发 OIDC 自动发 npm(node 24 + id-token: write,见 .github/workflows/npm-publish.yml)。发布后 curl -X PUT https://registry.npmmirror.com/dsh-better-workspace/sync 同步 npmmirror。
 - 本机 web profile 装本地开发版:npm pack 出 tarball → 在 (dsh home)/profiles/web 里 pnpm add <tarball> → profile cordis.patch.yml 加挂载行(- insert: - id: better-workspace / name: dsh-better-workspace)→ 重启 DSH。
 

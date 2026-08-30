@@ -2000,14 +2000,17 @@ window.__ModuleLoader__.load({
       }
 
       // 1+2. the two directory-flow holes (hero picker, shipped sidebar browser).
+      // Since dsh 0.1.2-alpha.1 the shell's own directory picker occupies each
+      // hole at priority 0, so shadow at -1 (ascending, lowest renders) exactly
+      // like the sidebar.workspaces browser below.
       slots.inject('conversation.hero.workspace.directoryFlow', guarded(
         'conversation.hero.workspace.directoryFlow',
-        { name: 'conversation.hero.workspace.directoryFlow', inject: flowInjected('conversation.hero.workspace.directoryFlow'), locale: NS },
+        { name: 'conversation.hero.workspace.directoryFlow', inject: flowInjected('conversation.hero.workspace.directoryFlow'), locale: NS, priority: -1 },
         BetterFlow,
       ))
       slots.inject('sidebar.workspaces.directoryFlow', guarded(
         'sidebar.workspaces.directoryFlow',
-        { name: 'sidebar.workspaces.directoryFlow', inject: flowInjected('sidebar.workspaces.directoryFlow'), locale: NS },
+        { name: 'sidebar.workspaces.directoryFlow', inject: flowInjected('sidebar.workspaces.directoryFlow'), locale: NS, priority: -1 },
         BetterFlow,
       ))
 

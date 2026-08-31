@@ -1312,6 +1312,9 @@ window.__ModuleLoader__.load({
       }
       const dragMatches = (kind) => drag !== null && drag.kind === kind
       const canDragWorkspace = typeof insertWorkspaceBefore === 'function'
+      // Session REORDER needs the host insertSessionBefore action; dragging a
+      // session onto a sub-group row (a pure rename) stays available without it.
+      const canReorderSessions = typeof insertSessionBefore === 'function'
 
       /* --------------------- workspace drag & drop -------------------- */
 
@@ -1443,7 +1446,7 @@ window.__ModuleLoader__.load({
         },
         onDragEnd: () => setDrag(null),
         onDragOver: (event) => {
-          if (!dragMatches('session') || drag.source.workspaceId !== workspaceId) return
+          if (!dragMatches('session') || !canReorderSessions || drag.source.workspaceId !== workspaceId) return
           event.preventDefault()
           event.stopPropagation()
           try { event.dataTransfer.dropEffect = 'move' } catch { }
@@ -1453,7 +1456,7 @@ window.__ModuleLoader__.load({
             : (current ? { ...current, over: { kind: 'session', target: session.id, half } } : current))
         },
         onDrop: (event) => {
-          if (!dragMatches('session') || drag.source.workspaceId !== workspaceId) return
+          if (!dragMatches('session') || !canReorderSessions || drag.source.workspaceId !== workspaceId) return
           event.preventDefault()
           event.stopPropagation()
           const half = drag.over && drag.over.kind === 'session' && drag.over.target === session.id ? drag.over.half : rowHalf(event)
@@ -1480,6 +1483,7 @@ window.__ModuleLoader__.load({
       const commitSessionDrop = (workspaceId, targetSessionId, half) => {
         const source = drag.source
         setDrag(null)
+        if (!canReorderSessions) return
         if (source.sessionId === targetSessionId) return
         const workspace = (items || []).find(w => w.workspaceId === workspaceId)
         if (!workspace) return
@@ -2028,6 +2032,12 @@ window.__ModuleLoader__.load({
         deleteWorkspace: (workspaceId) => workspaces.delete(workspaceId),
         insertWorkspaceBefore: typeof workspaces.insertBefore === 'function'
           ? (workspaceId, beforeWorkspaceId) => workspaces.insertBefore(workspaceId, beforeWorkspaceId)
+          : undefined,
+        // Official contract exposes session reorder through the WORKSPACES
+        // service (see dsh ui-workspace client index.ts); feature-probed so
+        // older hosts degrade to "group-move only" instead of a TypeError.
+        insertSessionBefore: typeof workspaces.insertSessionBefore === 'function'
+          ? (workspaceId, sessionId, beforeSessionId) => workspaces.insertSessionBefore(workspaceId, sessionId, beforeSessionId)
           : undefined,
         archiveSession: (sessionId) => uiWorkspace.archiveSession(sessionId),
         createWorkspace: (input) => workspaces.create(input),

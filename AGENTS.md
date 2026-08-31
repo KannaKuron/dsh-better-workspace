@@ -36,7 +36,7 @@
    - **会话可见性官方规则**(tree.ts sessionVisible):origin 非 subagent、不在归档集、blank 仅当前选中可见。子代理行(Side:*)永远不进浏览器列表。SessionSummary 还有 completed(完成提醒)、parentId(子代理血缘;客户端 service 映射 parentSessionId → parentId,**读 parentId**,旧拼写仅作向下兼容兜底——2026-08-31 修正)与 projectionValues.schedule(活跃定时任务,非空即显示闹钟角标,见 Schedule 角标)。
    - **活跃定时任务角标**(dsh 0.1.2-alpha.2 起):官方行对 projectionValues.schedule 非空的会话显示 IconAlarmClockOutline16(v0.6.0 已同样接入 SessionRow,role=img/aria-label/title 齐全);该图标与 IconClockOutline16/IconDatabaseOutline16 同为 alpha.2 新增,ICON_CHOICES 已补(66→69)。
    - **状态灯官方语义**(Rows.tsx sessionStatuses + StateDot):pending(approval/plan-review/question → warning 琥珀)> running(ongoing 蓝色运行环)> 子代理运行中(ongoing)> completed===true(done 绿);空闲不显示灯。绝不要用自绘圆点代替 StateDot。
-   - 浏览器组件 props:wide/expandSidebar(owner)、useWorkspaces/useSessions/useSessionPendingInteraction(standard)、注入动作(startSession/open/renameSession/forkSession/renameWorkspace/deleteWorkspace/archiveSession/createWorkspace/searchSessions/pickDirectory)、useStore/actions(store)、t(locale)。注入工厂的非 hooks 条目按原名成为 props;hooks 舱条目被渲染器绑成 useXxx 钩子。
+   - 浏览器组件 props:wide/expandSidebar(owner)、useWorkspaces/useSessions/useSessionPendingInteraction(standard)、注入动作(startSession/open/renameSession/forkSession/renameWorkspace/deleteWorkspace/archiveSession/createWorkspace/searchSessions/pickDirectory/insertWorkspaceBefore/insertSessionBefore——后两个由本插件 browserInjected 特征探测提供,分别桥接宿主 workspaces.insertBefore 与 workspaces.insertSessionBefore,见官方 slots.ts 契约)、useStore/actions(store)、t(locale)。注入工厂的非 hooks 条目按原名成为 props;hooks 舱条目被渲染器绑成 useXxx 钩子。
 4. **收起语义**:工作区行点击 = 该工作区会话树整体 0↔全部(默认展开,收起后行上保留会话数角标);会话子分组默认展开、可收起;搜索时强制全展开。**不要**恢复旧的「收起仍显示 5 条」行为(用户明确要文件夹式收起)。
 5. **会话层级**:会话标题同样按 / 分层(buildSessionTree);会话子分组**必须**与工作区文件夹视觉可辨——次级配色(tertiary)、无文件夹图标、只有 chevron。分组重命名 = 批量改写成员标题前缀(renameSession)。
 6. **持久化**只用 dsh 客户端 store(defineStore + persist: dsh.betterWorkspace.view.v1,浏览器本地)。显式空分组(folders)、折叠状态(expanded/sessionsExpanded/sessionGroups)都在这里;不要为动态实验另起持久化。
@@ -45,7 +45,7 @@
    - 工作区:同分组拖到工作区行上/下半 → insertWorkspaceBefore(anchor);跨分组 → renameWorkspace(新前缀标题) + insertBefore(组尾);拖到分组行 → 移入该分组(rename + append)。root 分组 = 无前缀标题。搜索中禁用拖拽;
    - **工作区拖拽激活期间 compressTree 暂停**(drag.kind==='workspace' 时 tree memo 跳过压缩,依赖是 draggingWorkspace 布尔而非整个 drag 对象——over 高频变化不该重建树):合并行把链上所有分组层级藏进名字里,恰好删掉了「移入该分组」的投放目标;拖拽期间单链展开回文件夹行、任意一级可投放,拖完自动合并回去。**拖拽源身份(leaf/folderPath)必须从原始 title 按 / 切分推导**,绝不能读合并行的显示 leaf(其 folderPath 被重置为 ''),否则拖着合并行做移入/跨组放置会拼出 x/组/工作区 这类双重前缀标题;
    - **工作区 dragstart 的 setDrag 必须延迟一帧**(wsDragArmTimer setTimeout 0,dragEnd 清理):Chromium 在拖拽手势建立前,若同步重渲染把拖拽源元素从光标下移开(链展开恰好会把新行插到拖拽行上方),会立即取消整个拖拽(0.7.0 回归,参照 react-dnd #3649 的结论与同款 setTimeout 解法)。会话拖拽不改树结构,保持同步 setDrag 不受影响;
-   - 会话:同工作区内拖到会话行上/下半 → insertSessionBefore(以扁平 sessionIds 序为锚);拖到会话子分组行 → renameSession(新前缀标题)。跨工作区拖拽被守卫拒绝。
+   - 会话:同工作区内拖到会话行上/下半 → insertSessionBefore(以扁平 sessionIds 序为锚);拖到会话子分组行 → renameSession(新前缀标题)。跨工作区拖拽被守卫拒绝。**会话行排序投放以 canReorderSessions(typeof insertSessionBefore === 'function')门控**——不可用时 onDragOver/onDrop 直接 return(浏览器自然显示禁止投放),绝不能裸调 undefined(≤0.7.1 拖会话排序即弹 TypeError: insertSessionBefore is not a function,根因是 browserInjected 漏注入该动作);会话行 draggable 不因此关闭:拖到子分组是纯 rename,永远可用。
    - 显示顺序 = 宿主手动序(sessionIds / registry 序);buildTree/buildSessionTree 只排序分组名,绝不按名称/时间重排成员行(否则拖拽结果不可见)。
 7. **词典纪律**:NS = betterWorkspace;zh/en 两个词典 key 必须完全对齐,且覆盖文件里每个静态 t(...) 调用——冒烟测试逐 key 校验。动态拼 key(如 time. + unit、status. + kind)的取值集合也要在词典里配齐。
 8. **React 纪律**:纯 React.createElement;组件必须定义在模块层(内联组件定义会在父组件每次渲染时重挂载、丢输入状态);所有 hook 调用必须先于任何 early return。

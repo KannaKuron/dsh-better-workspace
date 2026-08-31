@@ -1157,6 +1157,12 @@ window.__ModuleLoader__.load({
       const [customize, setCustomize] = React.useState(null) // { kind, entryKey, name }
       const [errorText, setErrorText] = React.useState(null)
       const [drag, setDrag] = React.useState(null) // { kind: 'workspace'|'session', source, over } | null
+      // Workspace drags arm their state one frame LATE (see workspaceDragEvents):
+      // arming synchronously re-renders during the dragstart dispatch, the chain
+      // expansion inserts rows above the drag source, the cursor leaves the
+      // source element, and Chromium cancels the whole gesture. dragEnd clears
+      // the timer so a same-tick cancel never leaves a ghost drag behind.
+      const wsDragArmTimer = React.useRef(null)
       const normalizedQuery = query.trim().toLowerCase()
       const now = Date.now()
 
@@ -1332,9 +1338,20 @@ window.__ModuleLoader__.load({
           const segs = splitTitleSegs(workspace.title)
           const sourceLeaf = segs.length > 0 ? segs[segs.length - 1] : (workspace.leaf || String(workspace.workspaceId))
           const sourceFolder = segs.length > 1 ? segs.slice(0, -1).join('/') : ''
-          setDrag({ kind: 'workspace', source: { workspaceId: workspace.workspaceId, leaf: sourceLeaf, folderPath: sourceFolder }, over: null })
+          // Deferred by one frame on purpose (Chromium cancels a just-started
+          // drag whose source element is moved out from under the cursor; see
+          // wsDragArmTimer above). By the next frame the gesture has settled
+          // and the chain expansion is an ordinary mid-drag update.
+          if (wsDragArmTimer.current !== null) clearTimeout(wsDragArmTimer.current)
+          wsDragArmTimer.current = setTimeout(() => {
+            wsDragArmTimer.current = null
+            setDrag({ kind: 'workspace', source: { workspaceId: workspace.workspaceId, leaf: sourceLeaf, folderPath: sourceFolder }, over: null })
+          }, 0)
         },
-        onDragEnd: () => setDrag(null),
+        onDragEnd: () => {
+          if (wsDragArmTimer.current !== null) { clearTimeout(wsDragArmTimer.current); wsDragArmTimer.current = null }
+          setDrag(null)
+        },
         onDragOver: (event) => {
           if (!dragMatches('workspace')) return
           event.preventDefault()

@@ -44,6 +44,7 @@
 7. **拖拽语义**(原生 HTML5 DnD,drag 状态机 { kind, source, over }):
    - 工作区:同分组拖到工作区行上/下半 → insertWorkspaceBefore(anchor);跨分组 → renameWorkspace(新前缀标题) + insertBefore(组尾);拖到分组行 → 移入该分组(rename + append)。root 分组 = 无前缀标题。搜索中禁用拖拽;
    - **工作区拖拽激活期间 compressTree 暂停**(drag.kind==='workspace' 时 tree memo 跳过压缩,依赖是 draggingWorkspace 布尔而非整个 drag 对象——over 高频变化不该重建树):合并行把链上所有分组层级藏进名字里,恰好删掉了「移入该分组」的投放目标;拖拽期间单链展开回文件夹行、任意一级可投放,拖完自动合并回去。**拖拽源身份(leaf/folderPath)必须从原始 title 按 / 切分推导**,绝不能读合并行的显示 leaf(其 folderPath 被重置为 ''),否则拖着合并行做移入/跨组放置会拼出 x/组/工作区 这类双重前缀标题;
+   - **工作区 dragstart 的 setDrag 必须延迟一帧**(wsDragArmTimer setTimeout 0,dragEnd 清理):Chromium 在拖拽手势建立前,若同步重渲染把拖拽源元素从光标下移开(链展开恰好会把新行插到拖拽行上方),会立即取消整个拖拽(0.7.0 回归,参照 react-dnd #3649 的结论与同款 setTimeout 解法)。会话拖拽不改树结构,保持同步 setDrag 不受影响;
    - 会话:同工作区内拖到会话行上/下半 → insertSessionBefore(以扁平 sessionIds 序为锚);拖到会话子分组行 → renameSession(新前缀标题)。跨工作区拖拽被守卫拒绝。
    - 显示顺序 = 宿主手动序(sessionIds / registry 序);buildTree/buildSessionTree 只排序分组名,绝不按名称/时间重排成员行(否则拖拽结果不可见)。
 7. **词典纪律**:NS = betterWorkspace;zh/en 两个词典 key 必须完全对齐,且覆盖文件里每个静态 t(...) 调用——冒烟测试逐 key 校验。动态拼 key(如 time. + unit、status. + kind)的取值集合也要在词典里配齐。

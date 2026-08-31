@@ -31,7 +31,6 @@ window.__ModuleLoader__.load({
       'title': '工作区',
       'search.placeholder': '搜索工作区或会话',
       'add': '添加工作区',
-      'newFolder': '新建分组',
       'rail.search': '搜索',
       'rail.add': '添加工作区',
       'empty': '暂无工作区',
@@ -48,6 +47,7 @@ window.__ModuleLoader__.load({
       'time.years': '{n} 年',
       'status.running': '生成中',
       'status.completed': '已完成',
+      'toast.completed': '会话已完成',
       'status.approval': '等待批准',
       'status.planReview': '等待计划确认',
       'status.question': '等待回答',
@@ -57,6 +57,8 @@ window.__ModuleLoader__.load({
       'menu.delete': '删除',
       'menu.fork': '分叉',
       'menu.archive': '归档',
+      'menu.newSubfolder': '新增子分组',
+      'menu.newSubWorkspace': '新增子工作区',
       'menu.renameFolder': '重命名分组',
       'menu.removeFolder': '删除分组',
       'menu.renameSgroup': '重命名会话分组',
@@ -66,6 +68,8 @@ window.__ModuleLoader__.load({
       'settings.collapse': '收起',
       'settings.compactChains': '单链分组折叠显示',
       'settings.compactChains.hint': '单层链合并为一行,出现多个子级时自动展开为树状;拖拽工作区期间单链临时展开回文件夹树,可放入任意一级;展开状态与自定义外观保存在当前浏览器。',
+      'settings.completionToasts': '完成提醒浮窗',
+      'settings.completionToasts.hint': '工作区处于折叠状态时,其中的会话完成后在侧边栏弹出数秒的非阻塞提醒(不打断输入等任何操作);默认开启,可在此关闭。',
       'custom.title': '自定义外观',
       'custom.color': '颜色',
       'custom.glow': '发光',
@@ -117,7 +121,6 @@ window.__ModuleLoader__.load({
       'title': 'Workspaces',
       'search.placeholder': 'Search workspaces or sessions',
       'add': 'Add workspace',
-      'newFolder': 'New folder',
       'rail.search': 'Search',
       'rail.add': 'Add workspace',
       'empty': 'No workspaces yet',
@@ -134,6 +137,7 @@ window.__ModuleLoader__.load({
       'time.years': '{n}y',
       'status.running': 'Running',
       'status.completed': 'Completed',
+      'toast.completed': 'Session completed',
       'status.approval': 'Waiting for approval',
       'status.planReview': 'Waiting for plan review',
       'status.question': 'Waiting for answer',
@@ -143,6 +147,8 @@ window.__ModuleLoader__.load({
       'menu.delete': 'Delete',
       'menu.fork': 'Fork',
       'menu.archive': 'Archive',
+      'menu.newSubfolder': 'New subfolder',
+      'menu.newSubWorkspace': 'New workspace here',
       'menu.renameFolder': 'Rename folder',
       'menu.removeFolder': 'Delete folder',
       'menu.renameSgroup': 'Rename session group',
@@ -152,6 +158,8 @@ window.__ModuleLoader__.load({
       'settings.collapse': 'Collapse',
       'settings.compactChains': 'Merge single-child chains',
       'settings.compactChains.hint': 'Single-child chains merge into one row; levels with multiple children expand as a tree. Chains re-expand into folder rows while you drag a workspace, so it can drop into any level. State and custom styling persist in this browser.',
+      'settings.completionToasts': 'Completion toasts',
+      'settings.completionToasts.hint': 'When its workspace row is collapsed, a finishing session pops a brief non-blocking toast in the sidebar (never intercepts typing); on by default, turn it off here.',
       'custom.title': 'Customize',
       'custom.color': 'Color',
       'custom.glow': 'Glow',
@@ -210,30 +218,53 @@ window.__ModuleLoader__.load({
       const i = Math.max(s.lastIndexOf('/'), s.lastIndexOf('\\'))
       return i === -1 ? s : s.slice(i + 1)
     }
-    const splitTitleSegs = (title) => String(title || '').split('/').map(s => s.trim()).filter(Boolean)
-    const normPath = (p) => String(p || '').split('/').map(s => s.trim()).filter(Boolean).join('/')
+    /**
+     * URL-aware segment splitting for titles. A bare "/" split shreds URLs
+     * ("https:" → empty → host → path...), so when a "://" shows up the tail is
+     * parsed as a URL and split the way URLs mean it: scheme://host is ONE
+     * segment (the authority is not a hierarchy level), each pathname segment
+     * is a level, and query/hash glue to the last segment. Consequences:
+     * several sessions sharing a URL prefix (".../v1/m", ".../v1/n") nest
+     * under the same derived folder instead of piling up as long flat rows,
+     * while "docs/see https://x/a/b" keeps the plain "docs" head. Titles whose
+     * URL-looking tail does not parse stay opaque from the last "/" before the
+     * scheme marker. Grouping is a pure projection of titles, so sessions that
+     * were previously shredded into pseudo-folders re-flow on reload.
+     */
+    const urlSegsOf = (raw) => {
+      let u = null
+      try { u = new URL(raw) } catch { return null }
+      const host = u.protocol + '//' + u.host
+      const pathSegs = u.pathname.split('/').filter(Boolean)
+      const tail = (u.search || '') + (u.hash || '')
+      if (pathSegs.length === 0) return [host + tail]
+      if (tail !== '') pathSegs[pathSegs.length - 1] += tail
+      return [host].concat(pathSegs)
+    }
+
+    const splitTitleSegs = (title) => {
+      const s = String(title || '')
+      const schemeAt = s.indexOf('://')
+      if (schemeAt === -1) return s.split('/').map(x => x.trim()).filter(Boolean)
+      let start = schemeAt
+      while (start > 0 && /[a-zA-Z0-9+.-]/.test(s[start - 1])) start--
+      const head = s.slice(0, start).split('/').map(x => x.trim()).filter(Boolean)
+      const urlSegs = urlSegsOf(s.slice(start).trim())
+      if (urlSegs !== null) return head.concat(urlSegs)
+      // Not a parseable URL after all: opaque from the last "/" before the marker.
+      const cut = s.lastIndexOf('/', schemeAt)
+      const segs = (cut === -1 ? '' : s.slice(0, cut)).split('/').map(x => x.trim()).filter(Boolean)
+      const tailText = s.slice(cut + 1).trim()
+      if (tailText !== '') segs.push(tailText)
+      return segs
+    }
+    const normPath = (p) => splitTitleSegs(p).join('/')
 
     /** Render a primitives icon by name; unknown names degrade to null, never crash. */
     const icon = (name, size) => {
       const C = ui[name]
       return C ? E(C, { size: size || 16 }) : null
     }
-
-    /** Folder-with-plus glyph for the new-group header button (absent from the primitives set). */
-    const FolderPlusIcon = (props) => E('svg', {
-      width: props.size || 16,
-      height: props.size || 16,
-      viewBox: '0 0 16 16',
-      fill: 'none',
-      stroke: 'currentColor',
-      strokeWidth: 1.2,
-      strokeLinecap: 'round',
-      strokeLinejoin: 'round',
-      'aria-hidden': 'true',
-    },
-      E('path', { d: 'M1.75 4.6c0-.74.6-1.35 1.35-1.35h2.5l1.4 1.6h4.9c.74 0 1.35.6 1.35 1.35v5.9c0 .74-.6 1.35-1.35 1.35H3.1c-.74 0-1.35-.6-1.35-1.35V4.6z' }),
-      E('path', { d: 'M8 7.2v3.6M6.2 9h3.6' }),
-    )
 
     const FALLBACK_UNITS = { minutes: 'm', hours: 'h', days: 'd', months: 'mo', years: 'y' }
     const timeLabel = (updatedAt, now, t) => {
@@ -326,22 +357,31 @@ window.__ModuleLoader__.load({
     function buildSessionTree(rows) {
       const root = { path: '', name: '', groups: [], sessions: [] }
       const byPath = new Map([['', root]])
-      const ensure = (path) => {
-        if (path === '') return root
-        const known = byPath.get(path)
-        if (known) return known
-        const segs = path.split('/')
-        const parent = ensure(segs.slice(0, -1).join('/'))
-        const node = { path, name: segs[segs.length - 1], groups: [], sessions: [] }
-        byPath.set(path, node)
-        parent.groups.push(node)
+      // SEGMENT-driven: paths arrive as already-split segment arrays (URL-aware
+      // splitTitleSegs can yield segments containing "//", e.g. the
+      // "scheme://host" authority segment) and are joined into the path KEY
+      // verbatim — never re-split on "/", which would shred an authority
+      // segment into "https:" + "" + host.
+      const ensure = (segs) => {
+        let node = root
+        let key = ''
+        for (const seg of segs) {
+          key = key === '' ? seg : key + '/' + seg
+          let next = byPath.get(key)
+          if (!next) {
+            next = { path: key, name: seg, groups: [], sessions: [] }
+            byPath.set(key, next)
+            node.groups.push(next)
+          }
+          node = next
+        }
         return node
       }
       for (const row of rows || []) {
         const segs = splitTitleSegs(row.title)
         const folderPath = segs.slice(0, -1).join('/')
         const leaf = segs.length > 0 ? segs[segs.length - 1] : row.title
-        ensure(folderPath).sessions.push({ ...row, leaf })
+        ensure(segs.slice(0, -1)).sessions.push({ ...row, leaf })
       }
       const sortRec = (node) => {
         node.groups.sort((a, b) => a.name.localeCompare(b.name, 'zh'))
@@ -377,26 +417,32 @@ window.__ModuleLoader__.load({
     function buildTree(items, explicitFolders) {
       const root = { path: '', name: '', folders: [], workspaces: [] }
       const byPath = new Map([['', root]])
-      const ensure = (path) => {
-        if (path === '') return root
-        const known = byPath.get(path)
-        if (known) return known
-        const segs = path.split('/')
-        const parent = ensure(segs.slice(0, -1).join('/'))
-        const node = { path, name: segs[segs.length - 1], folders: [], workspaces: [] }
-        byPath.set(path, node)
-        parent.folders.push(node)
+      // SEGMENT-driven, same as buildSessionTree: the joined path is only a
+      // KEY; parsing it back on "/" would break URL authority segments.
+      const ensure = (segs) => {
+        let node = root
+        let key = ''
+        for (const seg of segs) {
+          key = key === '' ? seg : key + '/' + seg
+          let next = byPath.get(key)
+          if (!next) {
+            next = { path: key, name: seg, folders: [], workspaces: [] }
+            byPath.set(key, next)
+            node.folders.push(next)
+          }
+          node = next
+        }
         return node
       }
       for (const folder of explicitFolders || []) {
-        const p = normPath(folder)
-        if (p !== '') ensure(p)
+        const segs = splitTitleSegs(normPath(folder))
+        if (segs.length > 0) ensure(segs)
       }
       for (const workspace of items || []) {
         const segs = splitTitleSegs(workspace.title)
         const folderPath = segs.slice(0, -1).join('/')
         const leaf = segs.length > 0 ? segs[segs.length - 1] : (basename(workspace.path) || String(workspace.title || '') || String(workspace.workspaceId || ''))
-        ensure(folderPath).workspaces.push({
+        ensure(segs.slice(0, -1)).workspaces.push({
           workspaceId: workspace.workspaceId,
           title: String(workspace.title || ''),
           path: String(workspace.path || ''),
@@ -418,40 +464,59 @@ window.__ModuleLoader__.load({
     /**
      * VS Code-style single-child chain compression (preference-controlled):
      * a folder level holding exactly ONE child and nothing else merges into a
-     * single display row — folder chains join names with "/" (keeps the DEEPEST
-     * path as its expansion identity), and a folder whose only child is one
-     * workspace becomes that workspace row with the merged label. Only
-     * presentation changes; the underlying workspace/title data is untouched.
+     * single display row; a chain ending in one workspace becomes that
+     * workspace row with the merged label. Only presentation changes; the
+     * underlying workspace/title data is untouched.
+     *
+     * The merged label is the chain RELATIVE to the first un-compressed
+     * ancestor (VS Code explorer behaviour): a chain a/b/c holding only
+     * workspace W shows "a/b/c/W" at the root, but the same chain nested
+     * inside a populated folder "a" shows "b/c/W". Labels are therefore
+     * assembled from RELATIVE segments (segs + pure leaf name) and only
+     * materialised into a display node at the chain's top — the pre-0.8 code
+     * prefixed each recursion level with the FULL node.path, so nested chains
+     * rendered duplicated prefixes like "1/2/1/2/3/A".
      */
+    const materializeChain = (chain) => chain.kind === 'ws'
+      ? {
+        kind: 'ws',
+        path: chain.path,
+        workspace: { ...chain.workspace, leaf: chain.segs.join('/') + '/' + chain.pure, title: chain.workspace.title, folderPath: '' },
+        folders: [],
+        workspaces: [],
+      }
+      : { kind: 'folder', path: chain.path, name: chain.segs.join('/'), folders: chain.folders, workspaces: chain.workspaces }
+
     function compressTree(node) {
       const folders = (node.folders || []).map(compressTree)
       const workspaces = node.workspaces || []
       if (workspaces.length === 0 && folders.length === 1) {
+        // Continue the chain upward: one more relative segment in front of
+        // whatever the child chain accumulated. path stays the DEEPEST full
+        // path (expansion identity); the label is joined only at the top.
         const child = folders[0]
-        if (child.kind === 'ws') {
-          const ws = child.workspace
-          return {
-            kind: 'ws',
-            path: child.path,
-            workspace: { ...ws, leaf: (node.path !== '' ? node.path + '/' : '') + ws.leaf, title: ws.title, folderPath: '' },
-            folders: [],
-            workspaces: [],
-            dropPath: child.path,
-          }
+        return {
+          kind: child.kind,
+          path: child.path,
+          segs: [node.name].concat(child.segs || []),
+          pure: child.pure,
+          workspace: child.workspace,
+          folders: child.folders,
+          workspaces: child.workspaces,
         }
-        return { kind: 'folder', path: child.path, name: node.name + '/' + child.name, folders: child.folders || [], workspaces: child.workspaces || [], dropPath: child.path || node.path }
       }
       if (folders.length === 0 && workspaces.length === 1) {
-        const ws = workspaces[0]
-        return { kind: 'ws', path: node.path, workspace: { ...ws, leaf: (node.path !== '' ? node.path + '/' : '') + ws.leaf, title: ws.title, folderPath: '' }, folders: [], workspaces: [], dropPath: node.path }
+        return { kind: 'ws', path: node.path, segs: [node.name], pure: workspaces[0].leaf, workspace: workspaces[0], folders: [], workspaces: [] }
       }
-      return { kind: 'folder', path: node.path, name: node.name, folders, workspaces, dropPath: node.path }
+      // Chain top (multiple children, or a mix): children are materialised
+      // relative to this node; this node itself keeps its single name.
+      return { kind: 'folder', path: node.path, segs: [node.name], folders: folders.map(materializeChain), workspaces }
     }
 
     /* ============================== styles ============================ */
 
     const CSS_TEXT = [
-      '.bw-root{height:100%;display:flex;flex-direction:column;min-height:0;color:var(--dsw-alias-label-primary,#e6e6e6)}',
+      '.bw-root{height:100%;display:flex;flex-direction:column;min-height:0;position:relative;color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-header{display:flex;align-items:center;gap:2px;padding:10px 10px 4px;flex:none}',
       '.bw-header-title{flex:1;font-size:12px;font-weight:600;letter-spacing:.02em;color:var(--dsw-alias-label-secondary,#b8b8b8);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
       '.bw-icon-btn{flex:none;width:24px;height:24px;border:none;background:transparent;border-radius:6px;display:grid;place-items:center;color:var(--dsw-alias-label-secondary,#b8b8b8);cursor:pointer;padding:0}',
@@ -550,6 +615,11 @@ window.__ModuleLoader__.load({
       '.bw-preview-icon{flex:none;display:grid;place-items:center;width:20px;height:20px;color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-preview-icon svg{width:18px;height:18px}',
       '.bw-preview-label{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:18px}',
+      '.bw-toasts{position:absolute;right:10px;bottom:14px;display:flex;flex-direction:column;gap:6px;z-index:30;pointer-events:none;max-width:280px}',
+      '.bw-toast{display:flex;align-items:center;gap:8px;max-width:280px;padding:8px 10px;border-radius:8px;background:var(--dsw-specific-menu,var(--dsw-alias-bg-overlay,rgba(28,28,32,.72)));-webkit-backdrop-filter:var(--dsh-any-blur-card-panels,blur(12px) saturate(1.15));backdrop-filter:var(--dsh-any-blur-card-panels,blur(12px) saturate(1.15));border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.3));box-shadow:0 8px 24px rgba(0,0,0,.35);animation:bw-toast-in .18s ease}',
+      '@keyframes bw-toast-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}',
+      '.bw-toast-title{font-size:12.5px;color:var(--dsw-alias-label-primary,#e6e6e6);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.bw-toast-kind{flex:none;font-size:11px;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
     ].join('')
 
     const StyleNode = () => E('style', null, CSS_TEXT)
@@ -670,6 +740,7 @@ window.__ModuleLoader__.load({
      */
     function BetterFlow(props) {
       const { open, busy, onPicked, onCancel, onError, createWorkspace, renameWorkspace, pickDirectory, useWorkspaces, useStore, t } = props
+      const initialParent = props.initialParent || ''
       const actions = props.actions
       const [phase, setPhase] = React.useState('idle') // idle | picking | picked | submitting
       const [pickedPath, setPickedPath] = React.useState('')
@@ -694,7 +765,7 @@ window.__ModuleLoader__.load({
             if (!alive) return
             if (!path) { onCancel(); return }
             setPickedPath(String(path))
-            setParentInput('')
+            setParentInput(initialParent)
             setPhase('picked')
           })
           .catch((reason) => {
@@ -1075,6 +1146,7 @@ window.__ModuleLoader__.load({
     function BetterWorkspaceSettings({ useStore, actions, t }) {
       const prefs = useStore ? (useStore(s => s.prefs) || {}) : {}
       const compactChains = prefs.compactChains !== false
+      const completionToasts = prefs.completionToasts !== false
       return E('div', { className: 'bw-settings' },
         StyleNode(),
         E('div', { className: 'bw-setting-row' },
@@ -1089,6 +1161,18 @@ window.__ModuleLoader__.load({
           }, E('span', { className: 'bw-switch-thumb' })),
         ),
         E('div', { className: 'bw-hint' }, t('settings.compactChains.hint')),
+        E('div', { className: 'bw-setting-row', style: { marginTop: 10 } },
+          E('div', { className: 'bw-setting-label' }, t('settings.completionToasts')),
+          E('button', {
+            type: 'button',
+            role: 'switch',
+            'aria-checked': completionToasts,
+            'aria-label': t('settings.completionToasts'),
+            className: cls('bw-switch', completionToasts && 'bw-switch-on'),
+            onClick: () => { actions.setPref('completionToasts', !completionToasts) },
+          }, E('span', { className: 'bw-switch-thumb' })),
+        ),
+        E('div', { className: 'bw-hint' }, t('settings.completionToasts.hint')),
       )
     }
 
@@ -1146,16 +1230,20 @@ window.__ModuleLoader__.load({
       const prefsMap = useStore ? (useStore(s => s.prefs) || {}) : {}
       const stylingMap = useStore ? (useStore(s => s.styling) || {}) : {}
       const compactChains = prefsMap.compactChains !== false
+      const completionToasts = prefsMap.completionToasts !== false
       const archivedSet = React.useMemo(() => new Set(archivedSessionIds), [archivedSessionIds])
       const subCounts = React.useMemo(() => subagentRunningCounts(list ? list.byId : {}), [list ? list.byId : null])
 
       const [query, setQuery] = React.useState('')
       const [searchOpen, setSearchOpen] = React.useState(false)
       const [flowOpen, setFlowOpen] = React.useState(false)
+      const [flowParent, setFlowParent] = React.useState('') // parent path prefill for the add-workspace flow (context menu entry)
       const [dialog, setDialog] = React.useState(null) // { kind, ... }
       const [ctx, setCtx] = React.useState(null) // context menu { kind, payload, x, y }
       const [customize, setCustomize] = React.useState(null) // { kind, entryKey, name }
       const [errorText, setErrorText] = React.useState(null)
+      const [toasts, setToasts] = React.useState([]) // completion relays: { key, title }
+      const toastTimers = React.useRef([])
       const [drag, setDrag] = React.useState(null) // { kind: 'workspace'|'session', source, over } | null
       // Workspace drags arm their state one frame LATE (see workspaceDragEvents):
       // arming synchronously re-renders during the dragstart dispatch, the chain
@@ -1163,8 +1251,42 @@ window.__ModuleLoader__.load({
       // source element, and Chromium cancels the whole gesture. dragEnd clears
       // the timer so a same-tick cancel never leaves a ghost drag behind.
       const wsDragArmTimer = React.useRef(null)
+      const completedSeenRef = React.useRef(null) // previous render's completed session ids
+      // Declared BEFORE the completion effect: its dependency array evaluates
+      // during render, so referencing a later const would be a TDZ crash.
       const normalizedQuery = query.trim().toLowerCase()
       const now = Date.now()
+
+      // Completion relay (preference-controlled, default ON): when a session
+      // flips to completed===true while its workspace row is COLLAPSED, the
+      // official green dot is invisible, so a brief non-blocking toast pops in
+      // the sidebar. Edge-triggered against the previous snapshot (no storm on
+      // reload), skipped while searching (rows are force-expanded there), and
+      // pointer-events:none keeps typing and clicks completely uninterrupted.
+      React.useEffect(() => {
+        const cur = new Set()
+        if (list && list.byId) {
+          for (const id of Object.keys(list.byId)) {
+            const summary = list.byId[id]
+            if (summary && summary.completed === true && sessionVisible(summary, list.current, archivedSet)) cur.add(id)
+          }
+        }
+        const prev = completedSeenRef.current
+        completedSeenRef.current = cur
+        if (prev === null || !completionToasts) return // first snapshot records only
+        for (const id of cur) {
+          if (prev.has(id)) continue
+          const workspace = (items || []).find(w => (w.sessionIds || []).includes(id))
+          if (!workspace) continue
+          if (normalizedQuery === '' && sessionsOpenOf(workspace.workspaceId)) continue // green dot already visible
+          const toast = { key: id + ':' + String(Date.now()), title: sessionTitleOf(list.byId[id], t) }
+          setToasts(current => current.concat([toast]))
+          toastTimers.current.push(setTimeout(() => {
+            setToasts(current => current.filter(x => x.key !== toast.key))
+          }, 5200))
+        }
+      }, [list, items, normalizedQuery !== '', completionToasts, sessionsExpandedMap, archivedSet])
+      React.useEffect(() => () => { for (const timer of toastTimers.current) clearTimeout(timer) }, [])
 
       const fail = (text) => { setFlowOpen(false); setDialog(null); setErrorText(String(text || 'unknown error')) }
 
@@ -1226,7 +1348,7 @@ window.__ModuleLoader__.load({
       const tree = React.useMemo(() => {
         const built = buildTree(items, storeFolders)
         if (!compactChains || draggingWorkspace) return built
-        return { ...built, folders: built.folders.map(compressTree), workspaces: built.workspaces }
+        return { ...built, folders: built.folders.map((f) => materializeChain(compressTree(f))), workspaces: built.workspaces }
       }, [items, storeFolders, compactChains, draggingWorkspace])
 
       const sessionsOf = (workspace) => {
@@ -1566,10 +1688,19 @@ window.__ModuleLoader__.load({
         return null
       }
 
-      const submitFolderNew = (rawPath) => {
-        const p = normPath(rawPath)
-        if (p === '') { setErrorText(t('folder.error.empty')); return }
-        if (storeFolders.includes(p)) { setErrorText(t('folder.error.exists')); return }
+      const submitFolderNew = (parentPath, rawPath) => {
+        const parent = normPath(parentPath)
+        const sub = normPath(rawPath)
+        if (sub === '') { setErrorText(t('folder.error.empty')); return }
+        const p = parent !== '' ? parent + '/' + sub : sub
+        // Existence check covers explicit folders AND every folder derived
+        // from workspace titles, so "already exists" means either kind.
+        const derived = new Set()
+        for (const w of items || []) {
+          const segs = splitTitleSegs(w.title)
+          for (let i = 1; i < segs.length; i++) derived.add(segs.slice(0, i).join('/'))
+        }
+        if (storeFolders.includes(p) || derived.has(p)) { setErrorText(t('folder.error.exists')); return }
         actions.addFolder(p)
         setDialog(null)
       }
@@ -1673,7 +1804,9 @@ window.__ModuleLoader__.load({
           sessionsOpen: searching ? true : sessionsOpenOf(workspace.workspaceId),
           currentInside: !!(list && list.current && (workspace.sessionIds || []).includes(list.current)),
           onToggle: () => { if (!searching) actions.setSessionsExpanded(workspace.workspaceId, !sessionsOpenOf(workspace.workspaceId)) },
-          onStart: () => startSession(workspace.workspaceId),
+          // Starting a session force-expands the workspace row: the user must
+          // SEE the new session appear, even if the row was collapsed.
+          onStart: () => { actions.setSessionsExpanded(workspace.workspaceId, true); startSession(workspace.workspaceId) },
           onContextMenu: (e) => openCtx('workspace', workspace, e),
           dropHalf: wsDropHalf(workspace.workspaceId),
           dragEvents: workspaceDragEvents(workspace),
@@ -1752,7 +1885,11 @@ window.__ModuleLoader__.load({
       const ctxItems = () => {
         if (ctx === null) return []
         if (ctx.kind === 'folder') {
-          const items = [{ id: 'rename-folder', label: t('menu.renameFolder') }]
+          const items = [
+            { id: 'new-subfolder', label: t('menu.newSubfolder') },
+            { id: 'new-subworkspace', label: t('menu.newSubWorkspace') },
+            { id: 'rename-folder', label: t('menu.renameFolder') },
+          ]
           if (storeFolders.includes(ctx.payload.path)) items.push({ id: 'remove-folder', label: t('menu.removeFolder'), danger: true })
           items.push({ sep: true })
           items.push({ id: 'customize', label: t('custom.title') })
@@ -1790,7 +1927,9 @@ window.__ModuleLoader__.load({
         }
         const { kind, payload } = current
         setCtx(null)
-        if (kind === 'folder' && id === 'rename-folder') setDialog({ kind: 'folder-rename', path: payload.path })
+        if (kind === 'folder' && id === 'new-subfolder') setDialog({ kind: 'folder-new', parentPath: payload.path })
+        else if (kind === 'folder' && id === 'new-subworkspace') { setFlowParent(payload.path); setFlowOpen(true) }
+        else if (kind === 'folder' && id === 'rename-folder') setDialog({ kind: 'folder-rename', path: payload.path })
         else if (kind === 'folder' && id === 'remove-folder') setDialog({ kind: 'folder-delete', path: payload.path })
         else if (kind === 'workspace' && id === 'rename') setDialog({ kind: 'ws-rename', workspace: payload })
         else if (kind === 'workspace' && id === 'delete') setDialog({ kind: 'ws-delete', workspace: payload })
@@ -1810,7 +1949,7 @@ window.__ModuleLoader__.load({
         return E('div', { className: 'bw-rail' },
           StyleNode(),
           E('button', { type: 'button', className: 'bw-rail-btn', 'aria-label': t('rail.search'), onClick: () => { expandSidebar(); setSearchOpen(true) } }, icon('IconSearchOutline16', 18)),
-          E('button', { type: 'button', className: 'bw-rail-btn', 'aria-label': t('rail.add'), onClick: () => { expandSidebar(); setFlowOpen(true) } }, icon('IconProjectAddOutline16', 18)),
+          E('button', { type: 'button', className: 'bw-rail-btn', 'aria-label': t('rail.add'), onClick: () => { expandSidebar(); setFlowParent(''); setFlowOpen(true) } }, icon('IconProjectAddOutline16', 18)),
         )
       }
 
@@ -1854,8 +1993,8 @@ window.__ModuleLoader__.load({
           key: 'folder-new',
           title: t('folder.new.title'),
           hint: t('folder.new.hint'),
-          initial: '',
-          onConfirm: submitFolderNew,
+          initial: dialog.parentPath ? dialog.parentPath + '/' : '',
+          onConfirm: (v) => submitFolderNew(dialog.parentPath || '', v),
           onClose: () => setDialog(null),
           t,
         })
@@ -1904,13 +2043,13 @@ window.__ModuleLoader__.load({
             onBlur: () => { if (query === '') setSearchOpen(false) },
           }) : null,
           E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('search.placeholder'), onClick: () => setSearchOpen(v => !v) }, icon('IconSearchOutline16')),
-          E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('newFolder'), onClick: () => setDialog({ kind: 'folder-new' }) }, E(FolderPlusIcon, { size: 16 })),
-          E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('add'), onClick: () => setFlowOpen(true) }, icon('IconProjectAddOutline16')),
+          E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('add'), onClick: () => { setFlowParent(''); setFlowOpen(true) } }, icon('IconProjectAddOutline16')),
         ),
         E('div', { className: 'bw-tree', role: 'tree', 'aria-label': t('title') }, bodyRows),
         E(BetterFlow, {
           open: flowOpen,
           busy: false,
+          initialParent: flowParent,
           onPicked: flowOwner.onPicked,
           onCancel: flowOwner.onCancel,
           onError: flowOwner.onError,
@@ -1954,6 +2093,13 @@ window.__ModuleLoader__.load({
           onClose: () => setCustomize(null),
           t,
         }),
+        toasts.length > 0 ? E('div', { className: 'bw-toasts', role: 'status', 'aria-live': 'polite' },
+          toasts.map(x => E('div', { key: x.key, className: 'bw-toast' },
+            typeof ui.StateDot === 'function' ? E(ui.StateDot, { state: 'done', size: 10 }) : null,
+            E('span', { className: 'bw-toast-title', title: x.title }, x.title),
+            E('span', { className: 'bw-toast-kind' }, t('toast.completed')),
+          )),
+        ) : null,
         E(ui.Modal, {
           open: errorText !== null,
           onClose: () => setErrorText(null),

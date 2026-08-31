@@ -21,9 +21,9 @@ web/                 <- virtual folder (naming only, not a real directory)
 
 After you pick a directory for a new workspace, a small dialog asks for the parent group — type one (`web`), pick an existing level from the datalist, or leave it empty for the root. The plugin creates the workspace and writes the prefix into its title, so it lands on the right branch of the tree.
 
-### New-folder button
+### Folder create/delete via context menu
 
-Create explicit empty folders (multi-level paths welcome) that persist in the browser until workspaces live inside them.
+Right-click any folder row: new subfolder (parent prefix pre-filled), new workspace here (the add-flow group field pre-fills with this folder), rename folder, delete empty folder — no standalone header button anymore. Explicit empty folders persist in the browser until workspaces live inside them.
 
 ### Sessions follow the same rule
 
@@ -43,7 +43,7 @@ Session titles nest on `/` too (e.g. `test1/plugin maintenance`). Session groups
 <table>
 <tr>
 <td align="center" width="58%"><img src="docs/screenshots/5-context-menu.png" alt="Context menu"/></td>
-<td valign="top"><b>Context menu everywhere</b><br/>Actions live in the right-click menu: workspace rows — rename / delete / fork / archive / customize; folder rows — rename group (updates all descendant workspaces) / delete empty group / customize; session &amp; session-group rows — rename / fork / archive / customize.</td>
+<td valign="top"><b>Context menu everywhere</b><br/>Actions live in the right-click menu: workspace rows — rename / delete / fork / archive / customize; folder rows — new subfolder / new workspace here / rename group (updates all descendant workspaces) / delete empty group / customize; session &amp; session-group rows — rename / fork / archive / customize.</td>
 </tr>
 </table>
 
@@ -58,7 +58,8 @@ Session titles nest on `/` too (e.g. `test1/plugin maintenance`). Session groups
 
 - **Folder-style collapse**: clicking a workspace row collapses/expands all of its sessions (the row keeps a session counter when collapsed); session groups collapse too; search force-expands everything.
 - **Native drag restored**: drag a workspace row above/below another to reorder (writes back the host registry order) or onto a folder row to move it into that group; drag session rows to reorder within the same workspace or onto a session group to move. Display order = host manual order, drag results are visible immediately. While dragging a workspace, merged single-chain rows (e.g. work/A) temporarily re-expand into folder rows — every level of the path becomes a drop target, and chains merge back when the drag ends.
-- **Native capabilities kept**: open/rename/fork/archive sessions, per-workspace new-session, current-session highlight, official status dots (blue running ring / amber pending / green done), **active-schedule badge** (alarm clock icon for sessions with active Schedule records, matching the official rows), ungrouped-session fallback, zh/en localization.
+- **Native capabilities kept**: open/rename/fork/archive sessions, per-workspace new-session (the + button always expands the workspace first so the new session is immediately visible), current-session highlight, official status dots (blue running ring / amber pending / green done), **completion toasts** (a session finishing inside a collapsed workspace pops a brief non-blocking toast in the sidebar; never intercepts typing, off-able in settings), **active-schedule badge** (alarm clock icon for sessions with active Schedule records, matching the official rows), ungrouped-session fallback, zh/en localization.
+- **URL-aware titles**: URLs in session/workspace titles (e.g. `https://host/api/v1/x`) split the way URLs mean it — scheme://host as one segment, each path segment a level — so same-prefix URLs nest together instead of shredding into pseudo-folders.
 - **Conversation hero too**: the empty-state “Add workspace” menu uses the same picking interaction with the same group popup.
 
 ## Install

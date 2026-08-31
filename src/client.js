@@ -237,12 +237,15 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * Title → hierarchy segments, QUOTE-AWARE: spans wrapped in “…” (or "…")
-     * are verbatim — slashes inside quotes never split. Quoted spans stay one
-     * leaf including the quotes; text between quoted spans splits through
-     * splitPlainSegs (URL-tail opaque). An unterminated opening quote makes
-     * the rest of the title one verbatim span. Grouping is a pure projection,
-     * so previously shredded titles re-flow on reload.
+     * Title → hierarchy segments, QUOTE-AWARE: a PAIRED “…” (or "…") span is
+     * verbatim — slashes inside quotes never split, the quotes stay part of
+     * the leaf. Text outside paired spans splits through splitPlainSegs
+     * (URL-tail opaque). A LONE quote character — an opener with no matching
+     * closer, or a closer without an opener — is an ORDINARY character and
+     * splits normally around it (0.9.1 swallowed the tail after an
+     * unterminated opener; the user wants lone quotes as plain text).
+     * Grouping is a pure projection, so previously shredded titles re-flow
+     * on reload.
      */
     const splitTitleSegs = (title) => {
       const s = String(title || '')
@@ -253,11 +256,16 @@ window.__ModuleLoader__.load({
       while (i < s.length) {
         const ch = s[i]
         if (ch === '"' || ch === '“') {
-          for (const seg of splitPlainSegs(plain)) out.push(seg)
-          plain = ''
           const close = ch === '“' ? '”' : '"'
           const j = s.indexOf(close, i + 1)
-          const end = j === -1 ? s.length : j + 1
+          if (j === -1) { // lone opener: ordinary character, keep scanning
+            plain += ch
+            i += 1
+            continue
+          }
+          for (const seg of splitPlainSegs(plain)) out.push(seg)
+          plain = ''
+          const end = j + 1
           const quoted = s.slice(i, end).trim()
           if (quoted !== '') out.push(quoted)
           i = end
@@ -1314,44 +1322,97 @@ window.__ModuleLoader__.load({
       // source element, and Chromium cancels the whole gesture. dragEnd clears
       // the timer so a same-tick cancel never leaves a ghost drag behind.
       const wsDragArmTimer = React.useRef(null)
-      // Session ids that have EVER had a durable title this mount. The
-      // blank→titled transition marks the host's automatic title landing
-      // (LLM provider or deterministic fallback — the wire shape is the
-      // same); user renames always happen AFTER landing and never re-trigger.
-      // The FIRST snapshot only registers: titles that predate this mount may
-      // be deliberate user groupings and must never be touched.
-      const titledSeenRef = React.useRef(null)
+      // Quote-on-land eligibility sets (mount-scoped):
+      // - blankSeen: ids observed BLANK in any snapshot. A blank row is a
+      //   freshly created New Session, so ONLY these may ever receive an
+      //   automatic quote. A titled row missing from blankSeen — rows that
+      //   stream into the store after mount, fork children (born titled),
+      //   rows hidden by load-time filtering — predates this mount or was
+      //   named deliberately, and is NEVER touched. (0.9.1 keyed "fresh" off
+      //   the first snapshot instead, so late-arriving OLD sessions were
+      //   misquoted; blank is the only trustworthy birth mark.)
+      // - humanTouched: ids renamed through THIS component's user actions
+      //   (rename dialog, drag into a group, group prefix rewrite). A
+      //   user-written "/" is a deliberate grouping; a user-written quote
+      //   pair is the verbatim escape. The host pins user titles (a later
+      //   automatic name is superseded), so the mark is final.
+      // - autoStable: id → { title, since } for freshly landed automatic
+      //   titles waiting out the stabilization window below.
+      const blankSeenRef = React.useRef(null)
+      const humanTouchedRef = React.useRef(null)
+      const autoStableRef = React.useRef(null)
+      const stableTimerRef = React.useRef(null)
+      const [stableTick, setStableTick] = React.useState(0)
+      // The wire cannot tell the deterministic fallback title (first user
+      // message echo, "/"-prone) from the async LLM name that replaces it
+      // seconds later — SessionSummary carries no source field. So a landed
+      // "/"-bearing title is quoted only after it survives 20s unchanged;
+      // any rename resets the window, and the common slash-free LLM name
+      // simply releases the session untouched. Only the "new session
+      // auto-title stayed slashy" case gets wrapped.
+      const TITLE_STABLE_MS = 20000
 
-      // Quote-on-land: when a freshly landed automatic title contains "/",
-      // wrap the WHOLE title in “…” so splitTitleSegs keeps it verbatim (the
-      // AI/fallback title echoing a URL must not nest). Idempotent — quoted
-      // titles and already-seen sessions are skipped — and best-effort: a
-      // failed rename never retries (the unquoted URL-tail fallback in
-      // splitPlainSegs still keeps the display flat).
+      // User-driven renames funnel through here: mark first so the
+      // quote-on-land effect never second-guesses a deliberate title.
+      const renameByUser = (sessionId, title) => {
+        if (humanTouchedRef.current === null) humanTouchedRef.current = new Set()
+        humanTouchedRef.current.add(String(sessionId))
+        if (autoStableRef.current) autoStableRef.current.delete(String(sessionId))
+        return renameSession(sessionId, title)
+      }
+
       React.useEffect(() => {
         if (!list || !list.byId || typeof renameSession !== 'function') return
-        let seen = titledSeenRef.current
-        const first = seen === null
-        if (first) { seen = new Set(); titledSeenRef.current = seen }
+        if (blankSeenRef.current === null) blankSeenRef.current = new Set()
+        if (humanTouchedRef.current === null) humanTouchedRef.current = new Set()
+        if (autoStableRef.current === null) autoStableRef.current = new Map()
+        const blankSeen = blankSeenRef.current
+        const touched = humanTouchedRef.current
+        const stable = autoStableRef.current
+        const now = Date.now()
         const fixes = []
+        let deadline = Infinity
         for (const id of Object.keys(list.byId)) {
           const summary = list.byId[id]
-          if (!summary || summary.blank) continue
-          const title = summary.title
-          if (!title || String(title).trim() === '') continue
-          if (seen.has(id)) continue
-          seen.add(id)
-          if (first) continue // pre-existing on load: register only
-          const text = String(title)
-          if (!text.includes('/')) continue
-          if (text.includes('“') || text.includes('"')) continue
-          fixes.push([id, '“' + text + '”'])
+          if (!summary) continue
+          if (summary.blank) { blankSeen.add(id); stable.delete(id); continue }
+          if (!blankSeen.has(id) || touched.has(id)) { stable.delete(id); continue }
+          const text = String(summary.title || '')
+          if (text.trim() === '' || text.includes('“') || text.includes('"') || !text.includes('/')) {
+            stable.delete(id) // quoted already, or the LLM name arrived slash-free: done
+            continue
+          }
+          const prev = stable.get(id)
+          if (prev && prev.title === text) {
+            if (now - prev.since >= TITLE_STABLE_MS) {
+              stable.delete(id)
+              fixes.push([id, '“' + text + '”'])
+            } else {
+              deadline = Math.min(deadline, prev.since + TITLE_STABLE_MS)
+            }
+            continue
+          }
+          stable.set(id, { title: text, since: now }) // new landing or fallback→LLM rename: reset
+          deadline = Math.min(deadline, now + TITLE_STABLE_MS)
+        }
+        for (const id of Array.from(stable.keys())) {
+          if (!list.byId[id]) stable.delete(id) // session vanished (archived/deleted): drop the wait
+        }
+        if (stableTimerRef.current !== null) { clearTimeout(stableTimerRef.current); stableTimerRef.current = null }
+        if (deadline !== Infinity) {
+          stableTimerRef.current = setTimeout(() => {
+            stableTimerRef.current = null
+            setStableTick(t => t + 1) // re-evaluate through the effect, never rename from a stale closure
+          }, Math.max(1, deadline - now))
         }
         if (fixes.length === 0) return
         Promise.resolve()
           .then(async () => { for (const [id, next] of fixes) await renameSession(id, next) })
-          .catch(() => { /* keep the flat fallback display */ })
-      }, [list])
+          .catch(() => { /* display-layer fallback keeps the row flat; a later snapshot re-evaluates */ })
+      }, [list, stableTick])
+      React.useEffect(() => () => {
+        if (stableTimerRef.current !== null) clearTimeout(stableTimerRef.current)
+      }, [])
       const normalizedQuery = query.trim().toLowerCase()
       const now = Date.now()
 
@@ -1730,7 +1791,7 @@ window.__ModuleLoader__.load({
         const newTitle = groupPath !== '' ? groupPath + '/' + source.leaf : source.leaf
         if (newTitle === source.title) return
         Promise.resolve()
-          .then(() => renameSession(source.sessionId, newTitle))
+          .then(() => renameByUser(source.sessionId, newTitle))
           .catch(fail)
       }
 
@@ -1756,7 +1817,7 @@ window.__ModuleLoader__.load({
         const title = String(nextTitle || '').trim()
         if (title === '' || title === session.title) { setDialog(null); return }
         Promise.resolve()
-          .then(() => renameSession(session.id, title))
+          .then(() => renameByUser(session.id, title))
           .then(() => setDialog(null))
           .catch(fail)
       }
@@ -1778,7 +1839,7 @@ window.__ModuleLoader__.load({
             for (const row of affected) {
               if (row.blank) continue
               const nextTitle = nextPath + row.title.slice(target.path.length)
-              await renameSession(row.id, nextTitle)
+              await renameByUser(row.id, nextTitle)
             }
           })
           .then(() => setDialog(null))

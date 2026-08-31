@@ -82,6 +82,55 @@ test('client half stays plain JavaScript (no import/JSX/TS syntax)', () => {
   new Function(text)
 })
 
+/**
+ * Extract the pure title-splitting helpers from the client bundle and run
+ * them for real. Everything between splitPlainSegs and normPath is plain,
+ * dependency-free JavaScript, so evaluating the slice in one Function scope
+ * executes exactly what ships.
+ */
+const loadTitleSegs = () => {
+  const text = read('src/client.js')
+  const start = text.indexOf('const splitPlainSegs = (text) => {')
+  const end = text.indexOf('const normPath =')
+  assert.ok(start !== -1 && end !== -1 && start < end, 'splitting helpers not found')
+  const scope = new Function(text.slice(start, end) + '\nreturn { splitTitleSegs }')
+  return scope()
+}
+
+test('splitTitleSegs: paired quotes verbatim, lone quotes are plain text', () => {
+  const { splitTitleSegs } = loadTitleSegs()
+  // Unquoted slashes split (deliberate user grouping).
+  assert.deepEqual(splitTitleSegs('插件开发/更好的左侧边栏'), ['插件开发', '更好的左侧边栏'])
+  // Paired quotes: one verbatim leaf including the quote characters.
+  assert.deepEqual(splitTitleSegs('“插件开发/更好的左侧边栏”'), ['“插件开发/更好的左侧边栏”'])
+  assert.deepEqual(splitTitleSegs('"a/b" and c/d'), ['"a/b"', 'and c', 'd'])
+  // A lone opener (no matching closer) is an ORDINARY character — 0.9.1
+  // swallowed the rest of the title instead.
+  assert.deepEqual(splitTitleSegs('插件开发/"abc'), ['插件开发', '"abc'])
+  assert.deepEqual(splitTitleSegs('say “hello'), ['say “hello'])
+  // A closer without an opener never started a span.
+  assert.deepEqual(splitTitleSegs('a/b”c'), ['a', 'b”c'])
+  // URL tail stays opaque from the first :// onward.
+  assert.deepEqual(splitTitleSegs('see https://x.dev/a/b'), ['see https://x.dev/a/b'])
+})
+
+test('quote-on-land effect: blank-born only, user renames pinned, stability window', () => {
+  const text = read('src/client.js')
+  // Eligibility is keyed off an observed BLANK snapshot, not "first time seen".
+  assert.match(text, /blankSeen\.add\(id\)/, 'blank birth mark must be recorded')
+  assert.match(text, /!blankSeen\.has\(id\) \|\| touched\.has\(id\)/, 'untouched blankSeen/human guard')
+  assert.doesNotMatch(text, /titledSeenRef/, '0.9.1 first-snapshot heuristic must be gone')
+  // User renames route through the pinning wrapper; the automatic path alone
+  // keeps the raw injected renameSession.
+  assert.match(text, /const renameByUser = \(sessionId, title\) => \{/)
+  assert.equal((text.match(/renameByUser\(/g) || []).length, 3, 'exactly 3 user call sites')
+  // The automatic quote waits out a stabilization window instead of racing
+  // the async LLM name.
+  assert.match(text, /TITLE_STABLE_MS = 20000/)
+  assert.match(text, /prev\.title === text/, 'title change resets the window')
+  assert.match(text, /\[list, stableTick\]/, 'stability tick re-runs the effect')
+})
+
 test('host half imports cleanly and applies without side effects', async () => {
   const plugin = await import('../src/index.js')
   assert.equal(plugin.name, 'dsh-better-workspace')

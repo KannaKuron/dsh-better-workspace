@@ -68,7 +68,7 @@ test('client half registers the three expected slots', () => {
 test('client plugin exports the cordis plugin triple', () => {
   const text = read('src/client.js')
   assert.match(text, /name: 'dsh-better-workspace'/)
-  assert.match(text, /inject: \['slots', 'sessions', 'workspaces', 'locale', 'connection', 'uiWorkspace'\]/)
+  assert.match(text, /inject: \['slots', 'sessions', 'workspaces', 'locale', 'uiWorkspace'\]/)
   assert.match(text, /function apply\(ctx\)/)
 })
 

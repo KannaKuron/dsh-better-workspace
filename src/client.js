@@ -2294,7 +2294,6 @@ window.__ModuleLoader__.load({
       const sessions = ctx.get('sessions')
       const workspaces = ctx.get('workspaces')
       const uiWorkspace = ctx.get('uiWorkspace')
-      const connection = ctx.get('connection')
       if (!sessions || !workspaces || !uiWorkspace) {
         console.error('[dsh-better-workspace] required services missing', {
           sessions: !!sessions, workspaces: !!workspaces, uiWorkspace: !!uiWorkspace,
@@ -2354,7 +2353,6 @@ window.__ModuleLoader__.load({
         pickDirectory: () => uiWorkspace.pickDirectory(),
         hooks: {
           directoryFlow: flowSource(slots, 'sidebar.workspaces.directoryFlow'),
-          connectionGeneration: connection ? connection.generation : undefined,
         },
       })
       const flowInjected = (hole) => () => ({
@@ -2426,7 +2424,7 @@ window.__ModuleLoader__.load({
 
     return {
       name: 'dsh-better-workspace',
-      inject: ['slots', 'sessions', 'workspaces', 'locale', 'connection', 'uiWorkspace'],
+      inject: ['slots', 'sessions', 'workspaces', 'locale', 'uiWorkspace'],
       apply,
     }
   },

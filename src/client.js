@@ -47,7 +47,6 @@ window.__ModuleLoader__.load({
       'time.years': '{n} 年',
       'status.running': '生成中',
       'status.completed': '已完成',
-      'toast.completed': '会话已完成',
       'status.approval': '等待批准',
       'status.planReview': '等待计划确认',
       'status.question': '等待回答',
@@ -68,8 +67,8 @@ window.__ModuleLoader__.load({
       'settings.collapse': '收起',
       'settings.compactChains': '单链分组折叠显示',
       'settings.compactChains.hint': '单层链合并为一行,出现多个子级时自动展开为树状;拖拽工作区期间单链临时展开回文件夹树,可放入任意一级;展开状态与自定义外观保存在当前浏览器。',
-      'settings.completionToasts': '完成提醒浮窗',
-      'settings.completionToasts.hint': '工作区处于折叠状态时,其中的会话完成后在侧边栏弹出数秒的非阻塞提醒(不打断输入等任何操作);默认开启,可在此关闭。',
+      'settings.statusPulse': '状态呼吸灯',
+      'settings.statusPulse.hint': '被折叠藏起的状态灯(完成绿 / 运行蓝 / 待交互琥珀)沿层级向外冒泡:工作区与分组行以图标呼吸发光(颜色随状态,自定义过发光的标题一起呼吸),会话分组行显示呼吸状态灯;默认开启,可在此关闭。',
       'custom.title': '自定义外观',
       'custom.color': '颜色',
       'custom.glow': '发光',
@@ -137,7 +136,6 @@ window.__ModuleLoader__.load({
       'time.years': '{n}y',
       'status.running': 'Running',
       'status.completed': 'Completed',
-      'toast.completed': 'Session completed',
       'status.approval': 'Waiting for approval',
       'status.planReview': 'Waiting for plan review',
       'status.question': 'Waiting for answer',
@@ -158,8 +156,8 @@ window.__ModuleLoader__.load({
       'settings.collapse': 'Collapse',
       'settings.compactChains': 'Merge single-child chains',
       'settings.compactChains.hint': 'Single-child chains merge into one row; levels with multiple children expand as a tree. Chains re-expand into folder rows while you drag a workspace, so it can drop into any level. State and custom styling persist in this browser.',
-      'settings.completionToasts': 'Completion toasts',
-      'settings.completionToasts.hint': 'When its workspace row is collapsed, a finishing session pops a brief non-blocking toast in the sidebar (never intercepts typing); on by default, turn it off here.',
+      'settings.statusPulse': 'Status breathing light',
+      'settings.statusPulse.hint': 'Status dots hidden by collapse (done green / running blue / pending amber) bubble outward: workspace and folder rows breathe on their icon in the status color (custom-glow labels breathe along), session-group rows show a breathing dot; on by default, turn it off here.',
       'custom.title': 'Customize',
       'custom.color': 'Color',
       'custom.glow': 'Glow',
@@ -615,11 +613,10 @@ window.__ModuleLoader__.load({
       '.bw-preview-icon{flex:none;display:grid;place-items:center;width:20px;height:20px;color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-preview-icon svg{width:18px;height:18px}',
       '.bw-preview-label{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:18px}',
-      '.bw-toasts{position:absolute;right:10px;bottom:14px;display:flex;flex-direction:column;gap:6px;z-index:30;pointer-events:none;max-width:280px}',
-      '.bw-toast{display:flex;align-items:center;gap:8px;max-width:280px;padding:8px 10px;border-radius:8px;background:var(--dsw-specific-menu,var(--dsw-alias-bg-overlay,rgba(28,28,32,.72)));-webkit-backdrop-filter:var(--dsh-any-blur-card-panels,blur(12px) saturate(1.15));backdrop-filter:var(--dsh-any-blur-card-panels,blur(12px) saturate(1.15));border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.3));box-shadow:0 8px 24px rgba(0,0,0,.35);animation:bw-toast-in .18s ease}',
-      '@keyframes bw-toast-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}',
-      '.bw-toast-title{font-size:12.5px;color:var(--dsw-alias-label-primary,#e6e6e6);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '.bw-toast-kind{flex:none;font-size:11px;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
+      '.bw-pulse{animation:bw-breathe 1.8s ease-in-out infinite}',
+      '@keyframes bw-breathe{0%,100%{filter:drop-shadow(0 0 1px var(--bw-pulse-color));opacity:.55}50%{filter:drop-shadow(0 0 6px var(--bw-pulse-color));opacity:1}}',
+      '.bw-pulse-text{animation:bw-breathe-text 1.8s ease-in-out infinite}',
+      '@keyframes bw-breathe-text{0%,100%{text-shadow:0 0 1px var(--bw-pulse-color);opacity:.65}50%{text-shadow:0 0 7px var(--bw-pulse-color);opacity:1}}',
     ].join('')
 
     const StyleNode = () => E('style', null, CSS_TEXT)
@@ -868,11 +865,17 @@ window.__ModuleLoader__.load({
       .map(n => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0'))
       .join('')
 
-    function FolderRow({ node, depth, expanded, onToggle, onContextMenu, dropInto, dragEvents, custStyle, iconMode, t }) {
+    function FolderRow({ node, depth, expanded, onToggle, onContextMenu, dropInto, dragEvents, custStyle, iconMode, pulse, t }) {
       const total = countWorkspaces(node)
+      const iconEl = iconOf(iconMode, expanded)
+      // Hidden status dots breathe on the icon; with the icon hidden (mode
+      // "none" or a missing primitive) the official StateDot stands in.
+      const iconChild = pulse
+        ? E(PulseGlow, { state: pulse }, iconEl || (typeof ui.StateDot === 'function' ? E(ui.StateDot, { state: pulse, size: 10 }) : null))
+        : iconEl
       return E('div', {
         className: cls('bw-row', dropInto && 'bw-drop-into'),
-        style: { paddingLeft: 4 + depth * 12, ...(custStyle || {}) },
+        style: { paddingLeft: 4 + depth * 12, ...(custStyle || {}), ...(pulse ? { '--bw-pulse-color': PULSE_COLORS[pulse] || PULSE_COLORS.ongoing } : null) },
         onClick: onToggle,
         onContextMenu: onContextMenu,
         role: 'treeitem',
@@ -880,16 +883,21 @@ window.__ModuleLoader__.load({
         ...(dragEvents || {}),
       },
         E('span', { className: cls('bw-chevron', expanded && 'bw-chevron-open') }, icon('IconTriangleRightFill14', 14)),
-        E('span', { className: 'bw-row-icon' }, iconOf(iconMode, expanded)),
-        E('span', { className: 'bw-row-label' }, node.name),
+        E('span', { className: 'bw-row-icon' }, iconChild),
+        // A row that already carries a custom label glow breathes in sync.
+        E('span', { className: cls('bw-row-label', pulse && custStyle && custStyle.textShadow && 'bw-pulse-text') }, node.name),
         total > 0 ? E('span', { className: 'bw-row-count' }, String(total)) : null,
       )
     }
 
-    function WorkspaceRow({ workspace, depth, count, sessionsOpen, onToggle, onStart, onContextMenu, currentInside, dropHalf, dragEvents, custStyle, iconMode, t }) {
+    function WorkspaceRow({ workspace, depth, count, sessionsOpen, onToggle, onStart, onContextMenu, currentInside, dropHalf, dragEvents, custStyle, iconMode, pulse, t }) {
+      const iconEl = iconOf(iconMode, sessionsOpen)
+      const iconChild = pulse
+        ? E(PulseGlow, { state: pulse }, iconEl || (typeof ui.StateDot === 'function' ? E(ui.StateDot, { state: pulse, size: 10 }) : null))
+        : iconEl
       return E('div', {
         className: cls('bw-row', currentInside && 'bw-row-current', dropHalf === 'before' && 'bw-drop-before', dropHalf === 'after' && 'bw-drop-after'),
-        style: { paddingLeft: 6 + depth * 12, ...(custStyle || {}) },
+        style: { paddingLeft: 6 + depth * 12, ...(custStyle || {}), ...(pulse ? { '--bw-pulse-color': PULSE_COLORS[pulse] || PULSE_COLORS.ongoing } : null) },
         onClick: onToggle,
         onContextMenu: onContextMenu,
         role: 'treeitem',
@@ -897,8 +905,8 @@ window.__ModuleLoader__.load({
         ...(dragEvents || {}),
       },
         E('span', { className: cls('bw-chevron', sessionsOpen && 'bw-chevron-open') }, icon('IconTriangleRightFill14', 14)),
-        E('span', { className: 'bw-row-icon' }, iconOf(iconMode, sessionsOpen)),
-        E('span', { className: 'bw-row-label', title: workspace.title || workspace.leaf }, workspace.leaf),
+        E('span', { className: 'bw-row-icon' }, iconChild),
+        E('span', { className: cls('bw-row-label', pulse && custStyle && custStyle.textShadow && 'bw-pulse-text'), title: workspace.title || workspace.leaf }, workspace.leaf),
         count > 0 ? E('span', { className: 'bw-row-count' }, String(count)) : null,
         E('span', { className: 'bw-row-actions', onClick: (e) => e.stopPropagation() },
           E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('session.new'), onClick: (e) => { e.stopPropagation(); onStart() } }, icon('IconPlusOutline16')),
@@ -906,16 +914,53 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function SessionRow({ node, depth, current, onOpen, onContextMenu, now, dropHalf, dragEvents, custStyle, t }) {
-      // Official status priority: pending interaction > running > running
-      // subagents > completed reminder; idle rows show no dot at all.
-      let status = null
-      if (node.pending === 'approval' || node.pending === 'plan-review' || node.pending === 'question') {
-        status = { state: 'warning', title: t('status.' + (node.pending === 'plan-review' ? 'planReview' : node.pending)) }
-      } else if (node.running || node.subagents > 0) {
-        status = { state: 'ongoing', title: node.running ? t('status.running') : t('status.subagents', { n: node.subagents }) }
-      } else if (node.completed) {
-        status = { state: 'done', title: t('status.completed') }
+    // Official status priority: pending interaction > running > running
+    // subagents > completed reminder; idle rows show no dot at all.
+    const sessionStateOf = (row) => {
+      if (!row) return null
+      if (row.pending === 'approval' || row.pending === 'plan-review' || row.pending === 'question') return 'warning'
+      if (row.running || row.subagents > 0) return 'ongoing'
+      if (row.completed) return 'done'
+      return null
+    }
+
+    /**
+     * Status breathing light (preference-controlled, default ON): status dots
+     * hidden by a collapse bubble outward to the nearest visible container
+     * row. Workspace/folder rows breathe on their icon (drop-shadow glow in
+     * the status color; a hidden/no icon falls back to the official StateDot);
+     * session-group rows carry a breathing StateDot in front of the label.
+     * Colors mirror the official dots: warning amber > ongoing blue > done
+     * green, so the glow always matches the lamp it relays.
+     */
+    const PULSE_RANK = { warning: 3, ongoing: 2, done: 1 }
+    const PULSE_COLORS = { warning: '#d29922', ongoing: '#5b8def', done: '#3fb950' }
+    const pulseRank = (state) => (state ? (PULSE_RANK[state] || 0) : 0)
+
+    function PulseGlow({ state, children }) {
+      return E('span', {
+        className: 'bw-pulse',
+        style: { '--bw-pulse-color': PULSE_COLORS[state] || PULSE_COLORS.ongoing },
+      }, children)
+    }
+
+    // RUNNING deliberately stays on the session row itself (its official ring
+    // breathes blue there) and does NOT bubble outward — the user found the
+    // ongoing relay noisy. Only pending-amber and done-green propagate.
+    const relayStateOf = (row) => {
+      const s = sessionStateOf(row)
+      return s === 'ongoing' ? null : s
+    }
+
+    function SessionRow({ node, depth, current, onOpen, onContextMenu, now, dropHalf, dragEvents, custStyle, breathing, t }) {
+      const state = sessionStateOf(node)
+      const status = state === null ? null : {
+        state,
+        title: state === 'warning'
+          ? t('status.' + (node.pending === 'plan-review' ? 'planReview' : node.pending))
+          : state === 'ongoing'
+            ? (node.running ? t('status.running') : t('status.subagents', { n: node.subagents }))
+            : t('status.completed'),
       }
       return E('div', {
         className: cls('bw-row', 'bw-session-row', current && 'bw-row-current', dropHalf === 'before' && 'bw-drop-before', dropHalf === 'after' && 'bw-drop-after'),
@@ -927,7 +972,11 @@ window.__ModuleLoader__.load({
       },
         E('span', { className: 'bw-row-icon', title: status ? status.title : undefined },
           status && typeof ui.StateDot === 'function'
-            ? E(ui.StateDot, { state: status.state, size: 10 })
+            ? (state === 'ongoing' && breathing
+              // Running breathes blue ON the session row only (never relays);
+              // the settings toggle covers this breathing too.
+              ? E(PulseGlow, { state: 'ongoing' }, E(ui.StateDot, { state: status.state, size: 10 }))
+              : E(ui.StateDot, { state: status.state, size: 10 }))
             : E('span', { className: 'bw-dot' }),
         ),
         E('span', { className: 'bw-row-label' }, node.leaf || node.title),
@@ -943,7 +992,7 @@ window.__ModuleLoader__.load({
      * titles). Deliberately NOT styled like a workspace folder — no folder
      * icon, tertiary color — so a session level never reads as a workspace.
      */
-    function SessionGroupRow({ name, depth, expanded, count, onToggle, onContextMenu, dropInto, dragEvents, custStyle, t }) {
+    function SessionGroupRow({ name, depth, expanded, count, onToggle, onContextMenu, dropInto, dragEvents, custStyle, pulse, t }) {
       return E('div', {
         className: cls('bw-row', 'bw-sgroup-row', dropInto && 'bw-drop-into'),
         style: { paddingLeft: 10 + depth * 12, ...(custStyle || {}) },
@@ -954,6 +1003,9 @@ window.__ModuleLoader__.load({
         ...(dragEvents || {}),
       },
         E('span', { className: cls('bw-chevron', expanded && 'bw-chevron-open') }, icon('IconTriangleRightFill14', 14)),
+        // Session groups have no icon slot: a collapsed group with hidden
+        // status relays through a breathing official StateDot instead.
+        pulse ? E(PulseGlow, { state: pulse }, typeof ui.StateDot === 'function' ? E(ui.StateDot, { state: pulse, size: 10 }) : null) : null,
         E('span', { className: 'bw-row-label' }, name),
         count > 0 ? E('span', { className: 'bw-row-count' }, String(count)) : null,
       )
@@ -1146,7 +1198,7 @@ window.__ModuleLoader__.load({
     function BetterWorkspaceSettings({ useStore, actions, t }) {
       const prefs = useStore ? (useStore(s => s.prefs) || {}) : {}
       const compactChains = prefs.compactChains !== false
-      const completionToasts = prefs.completionToasts !== false
+      const statusPulse = prefs.statusPulse !== false
       return E('div', { className: 'bw-settings' },
         StyleNode(),
         E('div', { className: 'bw-setting-row' },
@@ -1162,17 +1214,17 @@ window.__ModuleLoader__.load({
         ),
         E('div', { className: 'bw-hint' }, t('settings.compactChains.hint')),
         E('div', { className: 'bw-setting-row', style: { marginTop: 10 } },
-          E('div', { className: 'bw-setting-label' }, t('settings.completionToasts')),
+          E('div', { className: 'bw-setting-label' }, t('settings.statusPulse')),
           E('button', {
             type: 'button',
             role: 'switch',
-            'aria-checked': completionToasts,
-            'aria-label': t('settings.completionToasts'),
-            className: cls('bw-switch', completionToasts && 'bw-switch-on'),
-            onClick: () => { actions.setPref('completionToasts', !completionToasts) },
+            'aria-checked': statusPulse,
+            'aria-label': t('settings.statusPulse'),
+            className: cls('bw-switch', statusPulse && 'bw-switch-on'),
+            onClick: () => { actions.setPref('statusPulse', !statusPulse) },
           }, E('span', { className: 'bw-switch-thumb' })),
         ),
-        E('div', { className: 'bw-hint' }, t('settings.completionToasts.hint')),
+        E('div', { className: 'bw-hint' }, t('settings.statusPulse.hint')),
       )
     }
 
@@ -1230,7 +1282,7 @@ window.__ModuleLoader__.load({
       const prefsMap = useStore ? (useStore(s => s.prefs) || {}) : {}
       const stylingMap = useStore ? (useStore(s => s.styling) || {}) : {}
       const compactChains = prefsMap.compactChains !== false
-      const completionToasts = prefsMap.completionToasts !== false
+      const statusPulse = prefsMap.statusPulse !== false
       const archivedSet = React.useMemo(() => new Set(archivedSessionIds), [archivedSessionIds])
       const subCounts = React.useMemo(() => subagentRunningCounts(list ? list.byId : {}), [list ? list.byId : null])
 
@@ -1242,8 +1294,6 @@ window.__ModuleLoader__.load({
       const [ctx, setCtx] = React.useState(null) // context menu { kind, payload, x, y }
       const [customize, setCustomize] = React.useState(null) // { kind, entryKey, name }
       const [errorText, setErrorText] = React.useState(null)
-      const [toasts, setToasts] = React.useState([]) // completion relays: { key, title }
-      const toastTimers = React.useRef([])
       const [drag, setDrag] = React.useState(null) // { kind: 'workspace'|'session', source, over } | null
       // Workspace drags arm their state one frame LATE (see workspaceDragEvents):
       // arming synchronously re-renders during the dragstart dispatch, the chain
@@ -1251,42 +1301,8 @@ window.__ModuleLoader__.load({
       // source element, and Chromium cancels the whole gesture. dragEnd clears
       // the timer so a same-tick cancel never leaves a ghost drag behind.
       const wsDragArmTimer = React.useRef(null)
-      const completedSeenRef = React.useRef(null) // previous render's completed session ids
-      // Declared BEFORE the completion effect: its dependency array evaluates
-      // during render, so referencing a later const would be a TDZ crash.
       const normalizedQuery = query.trim().toLowerCase()
       const now = Date.now()
-
-      // Completion relay (preference-controlled, default ON): when a session
-      // flips to completed===true while its workspace row is COLLAPSED, the
-      // official green dot is invisible, so a brief non-blocking toast pops in
-      // the sidebar. Edge-triggered against the previous snapshot (no storm on
-      // reload), skipped while searching (rows are force-expanded there), and
-      // pointer-events:none keeps typing and clicks completely uninterrupted.
-      React.useEffect(() => {
-        const cur = new Set()
-        if (list && list.byId) {
-          for (const id of Object.keys(list.byId)) {
-            const summary = list.byId[id]
-            if (summary && summary.completed === true && sessionVisible(summary, list.current, archivedSet)) cur.add(id)
-          }
-        }
-        const prev = completedSeenRef.current
-        completedSeenRef.current = cur
-        if (prev === null || !completionToasts) return // first snapshot records only
-        for (const id of cur) {
-          if (prev.has(id)) continue
-          const workspace = (items || []).find(w => (w.sessionIds || []).includes(id))
-          if (!workspace) continue
-          if (normalizedQuery === '' && sessionsOpenOf(workspace.workspaceId)) continue // green dot already visible
-          const toast = { key: id + ':' + String(Date.now()), title: sessionTitleOf(list.byId[id], t) }
-          setToasts(current => current.concat([toast]))
-          toastTimers.current.push(setTimeout(() => {
-            setToasts(current => current.filter(x => x.key !== toast.key))
-          }, 5200))
-        }
-      }, [list, items, normalizedQuery !== '', completionToasts, sessionsExpandedMap, archivedSet])
-      React.useEffect(() => () => { for (const timer of toastTimers.current) clearTimeout(timer) }, [])
 
       const fail = (text) => { setFlowOpen(false); setDialog(null); setErrorText(String(text || 'unknown error')) }
 
@@ -1401,6 +1417,45 @@ window.__ModuleLoader__.load({
       }
       const searched = normalizedQuery ? searchAgent(tree) : null
       const searching = normalizedQuery !== ''
+
+      /* --------------------- status breathing relay -------------------- */
+
+      // Highest-priority status across a whole session subtree (groups + rows).
+      const nodePulseOf = (sessionNode) => {
+        let best = null
+        for (const group of sessionNode.groups || []) {
+          const s = nodePulseOf(group)
+          if (pulseRank(s) > pulseRank(best)) best = s
+        }
+        for (const row of sessionNode.sessions || []) {
+          const s = relayStateOf(row)
+          if (pulseRank(s) > pulseRank(best)) best = s
+        }
+        return best
+      }
+      // A COLLAPSED workspace row relays its whole session tree; an open row
+      // shows the real dots (deeper collapsed groups relay on their own rows).
+      const wsPulseOf = (workspace) => (!statusPulse || searching || sessionsOpenOf(workspace.workspaceId))
+        ? null
+        : nodePulseOf(buildSessionTree(sessionsOf(workspace)))
+      // A collapsed FOLDER hides everything below — including open workspaces —
+      // so its aggregation ignores inner expansion states entirely.
+      const wsAllPulseOf = (workspace) => (!statusPulse || searching)
+        ? null
+        : nodePulseOf(buildSessionTree(sessionsOf(workspace)))
+      const folderPulseOf = (node) => {
+        if (node.kind === 'ws') return wsAllPulseOf(node.workspace)
+        let best = null
+        for (const child of node.folders) {
+          const s = folderPulseOf(child)
+          if (pulseRank(s) > pulseRank(best)) best = s
+        }
+        for (const w of node.workspaces) {
+          const s = wsAllPulseOf(w)
+          if (pulseRank(s) > pulseRank(best)) best = s
+        }
+        return best
+      }
 
       const folderExpanded = (path) => (expandedMap ? expandedMap[path] !== false : true)
       const sessionsOpenOf = (workspaceId) => (sessionsExpandedMap ? sessionsExpandedMap[workspaceId] !== false : true)
@@ -1765,6 +1820,7 @@ window.__ModuleLoader__.load({
             name: group.name,
             depth,
             expanded: open,
+            pulse: (statusPulse && !open) ? nodePulseOf(group) : null,
             count: countSessionTree(group),
             onToggle: () => { if (!searching) actions.setSessionGroupExpanded(key, !open) },
             onContextMenu: (e) => openCtx('sgroup', { workspaceId, path: group.path, name: group.name }, e),
@@ -1790,10 +1846,11 @@ window.__ModuleLoader__.load({
         dropHalf: workspaceId ? sessDropHalf(session.id) : null,
         dragEvents: workspaceId ? sessionDragEvents(session, workspaceId) : undefined,
         custStyle: rowStyleOf('session:' + session.id),
+        breathing: statusPulse,
         t,
       })
 
-      const renderWorkspaceEntry = (entry, depth) => {
+      const renderWorkspaceEntry = (entry, depth, pulse) => {
         const { workspace } = entry
         const count = countSessionTree(buildSessionTree(sessionsOf(workspace)))
         const rows = [E(WorkspaceRow, {
@@ -1812,6 +1869,7 @@ window.__ModuleLoader__.load({
           dragEvents: workspaceDragEvents(workspace),
           custStyle: rowStyleOf('workspace:' + workspace.workspaceId),
           iconMode: (styleEntry('workspace:' + workspace.workspaceId) || {}).icon || 'solid',
+          pulse,
           t,
         })]
         rows.push(...renderSessionTree(workspace, depth + 1))
@@ -1819,7 +1877,7 @@ window.__ModuleLoader__.load({
       }
 
       const renderPlainFolder = (node, depth) => {
-        if (node.kind === 'ws') return renderWorkspaceEntry({ workspace: node.workspace }, depth)
+        if (node.kind === 'ws') return renderWorkspaceEntry({ workspace: node.workspace }, depth, wsPulseOf(node.workspace))
         const expanded = searching || folderExpanded(node.path)
         const rows = [E(FolderRow, {
           key: 'f-' + node.path,
@@ -1832,11 +1890,12 @@ window.__ModuleLoader__.load({
           dragEvents: folderDropEvents(node.path),
           custStyle: rowStyleOf('folder:' + node.path),
           iconMode: (styleEntry('folder:' + node.path) || {}).icon || 'solid',
+          pulse: expanded ? null : folderPulseOf(node),
           t,
         })]
         if (expanded) {
           for (const child of node.folders) rows.push(...renderPlainFolder(child, depth + 1))
-          for (const workspace of node.workspaces) rows.push(...renderWorkspaceEntry({ workspace }, depth + 1))
+          for (const workspace of node.workspaces) rows.push(...renderWorkspaceEntry({ workspace }, depth + 1, wsPulseOf(workspace)))
         }
         return rows
       }
@@ -1869,7 +1928,7 @@ window.__ModuleLoader__.load({
         }
       } else {
         for (const folder of tree.folders) bodyRows.push(...renderPlainFolder(folder, 0))
-        for (const workspace of tree.workspaces) bodyRows.push(...renderWorkspaceEntry({ workspace }, 0))
+        for (const workspace of tree.workspaces) bodyRows.push(...renderWorkspaceEntry({ workspace }, 0, wsPulseOf(workspace)))
         if (ungrouped.length > 0) {
           bodyRows.push(E('div', { key: 'ungrouped-label', className: 'bw-header-title', style: { padding: '10px 6px 2px' } }, t('group.ungrouped')))
           for (const s of ungrouped) bodyRows.push(renderSessionRow(s, 0))
@@ -2093,13 +2152,6 @@ window.__ModuleLoader__.load({
           onClose: () => setCustomize(null),
           t,
         }),
-        toasts.length > 0 ? E('div', { className: 'bw-toasts', role: 'status', 'aria-live': 'polite' },
-          toasts.map(x => E('div', { key: x.key, className: 'bw-toast' },
-            typeof ui.StateDot === 'function' ? E(ui.StateDot, { state: 'done', size: 10 }) : null,
-            E('span', { className: 'bw-toast-title', title: x.title }, x.title),
-            E('span', { className: 'bw-toast-kind' }, t('toast.completed')),
-          )),
-        ) : null,
         E(ui.Modal, {
           open: errorText !== null,
           onClose: () => setErrorText(null),

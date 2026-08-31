@@ -217,44 +217,57 @@ window.__ModuleLoader__.load({
       return i === -1 ? s : s.slice(i + 1)
     }
     /**
-     * URL-aware segment splitting for titles. A bare "/" split shreds URLs
-     * ("https:" → empty → host → path...), so when a "://" shows up the tail is
-     * parsed as a URL and split the way URLs mean it: scheme://host is ONE
-     * segment (the authority is not a hierarchy level), each pathname segment
-     * is a level, and query/hash glue to the last segment. Consequences:
-     * several sessions sharing a URL prefix (".../v1/m", ".../v1/n") nest
-     * under the same derived folder instead of piling up as long flat rows,
-     * while "docs/see https://x/a/b" keeps the plain "docs" head. Titles whose
-     * URL-looking tail does not parse stay opaque from the last "/" before the
-     * scheme marker. Grouping is a pure projection of titles, so sessions that
-     * were previously shredded into pseudo-folders re-flow on reload.
+     * Plain-text splitting with the URL tail kept opaque: a bare "/" split
+     * shreds URLs ("https:" → empty → host → path...), so from the first
+     * "://" onward the tail is ONE leaf; text before the marker splits
+     * normally at the last "/" before it. This is the FALLBACK guard —
+     * freshly generated titles get their whole "/"-bearing title wrapped in
+     * quotes by the quote-on-land effect (see BetterBrowser), which is the
+     * primary mechanism.
      */
-    const urlSegsOf = (raw) => {
-      let u = null
-      try { u = new URL(raw) } catch { return null }
-      const host = u.protocol + '//' + u.host
-      const pathSegs = u.pathname.split('/').filter(Boolean)
-      const tail = (u.search || '') + (u.hash || '')
-      if (pathSegs.length === 0) return [host + tail]
-      if (tail !== '') pathSegs[pathSegs.length - 1] += tail
-      return [host].concat(pathSegs)
-    }
-
-    const splitTitleSegs = (title) => {
-      const s = String(title || '')
+    const splitPlainSegs = (text) => {
+      const s = String(text || '')
       const schemeAt = s.indexOf('://')
       if (schemeAt === -1) return s.split('/').map(x => x.trim()).filter(Boolean)
-      let start = schemeAt
-      while (start > 0 && /[a-zA-Z0-9+.-]/.test(s[start - 1])) start--
-      const head = s.slice(0, start).split('/').map(x => x.trim()).filter(Boolean)
-      const urlSegs = urlSegsOf(s.slice(start).trim())
-      if (urlSegs !== null) return head.concat(urlSegs)
-      // Not a parseable URL after all: opaque from the last "/" before the marker.
       const cut = s.lastIndexOf('/', schemeAt)
       const segs = (cut === -1 ? '' : s.slice(0, cut)).split('/').map(x => x.trim()).filter(Boolean)
-      const tailText = s.slice(cut + 1).trim()
-      if (tailText !== '') segs.push(tailText)
+      const tail = s.slice(cut + 1).trim()
+      if (tail !== '') segs.push(tail)
       return segs
+    }
+
+    /**
+     * Title → hierarchy segments, QUOTE-AWARE: spans wrapped in “…” (or "…")
+     * are verbatim — slashes inside quotes never split. Quoted spans stay one
+     * leaf including the quotes; text between quoted spans splits through
+     * splitPlainSegs (URL-tail opaque). An unterminated opening quote makes
+     * the rest of the title one verbatim span. Grouping is a pure projection,
+     * so previously shredded titles re-flow on reload.
+     */
+    const splitTitleSegs = (title) => {
+      const s = String(title || '')
+      if (!/["“]/.test(s)) return splitPlainSegs(s)
+      const out = []
+      let plain = ''
+      let i = 0
+      while (i < s.length) {
+        const ch = s[i]
+        if (ch === '"' || ch === '“') {
+          for (const seg of splitPlainSegs(plain)) out.push(seg)
+          plain = ''
+          const close = ch === '“' ? '”' : '"'
+          const j = s.indexOf(close, i + 1)
+          const end = j === -1 ? s.length : j + 1
+          const quoted = s.slice(i, end).trim()
+          if (quoted !== '') out.push(quoted)
+          i = end
+          continue
+        }
+        plain += ch
+        i += 1
+      }
+      for (const seg of splitPlainSegs(plain)) out.push(seg)
+      return out
     }
     const normPath = (p) => splitTitleSegs(p).join('/')
 
@@ -1301,6 +1314,44 @@ window.__ModuleLoader__.load({
       // source element, and Chromium cancels the whole gesture. dragEnd clears
       // the timer so a same-tick cancel never leaves a ghost drag behind.
       const wsDragArmTimer = React.useRef(null)
+      // Session ids that have EVER had a durable title this mount. The
+      // blank→titled transition marks the host's automatic title landing
+      // (LLM provider or deterministic fallback — the wire shape is the
+      // same); user renames always happen AFTER landing and never re-trigger.
+      // The FIRST snapshot only registers: titles that predate this mount may
+      // be deliberate user groupings and must never be touched.
+      const titledSeenRef = React.useRef(null)
+
+      // Quote-on-land: when a freshly landed automatic title contains "/",
+      // wrap the WHOLE title in “…” so splitTitleSegs keeps it verbatim (the
+      // AI/fallback title echoing a URL must not nest). Idempotent — quoted
+      // titles and already-seen sessions are skipped — and best-effort: a
+      // failed rename never retries (the unquoted URL-tail fallback in
+      // splitPlainSegs still keeps the display flat).
+      React.useEffect(() => {
+        if (!list || !list.byId || typeof renameSession !== 'function') return
+        let seen = titledSeenRef.current
+        const first = seen === null
+        if (first) { seen = new Set(); titledSeenRef.current = seen }
+        const fixes = []
+        for (const id of Object.keys(list.byId)) {
+          const summary = list.byId[id]
+          if (!summary || summary.blank) continue
+          const title = summary.title
+          if (!title || String(title).trim() === '') continue
+          if (seen.has(id)) continue
+          seen.add(id)
+          if (first) continue // pre-existing on load: register only
+          const text = String(title)
+          if (!text.includes('/')) continue
+          if (text.includes('“') || text.includes('"')) continue
+          fixes.push([id, '“' + text + '”'])
+        }
+        if (fixes.length === 0) return
+        Promise.resolve()
+          .then(async () => { for (const [id, next] of fixes) await renameSession(id, next) })
+          .catch(() => { /* keep the flat fallback display */ })
+      }, [list])
       const normalizedQuery = query.trim().toLowerCase()
       const now = Date.now()
 

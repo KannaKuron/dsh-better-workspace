@@ -43,6 +43,7 @@
    - **关键事实**:hydration 是整值替换(attachPersistence 直接 setState(JSON.parse(raw))),不会合并 init。新增 state 键必须同时:(a) 初始化默认值;(b) action 里容错缺失键;(c) selector 读取带回退。2026-08 曾因 sessionGroups 未容错导致「会话分组点不开合」——这是本仓库的硬性纪律。
 7. **拖拽语义**(原生 HTML5 DnD,drag 状态机 { kind, source, over }):
    - 工作区:同分组拖到工作区行上/下半 → insertWorkspaceBefore(anchor);跨分组 → renameWorkspace(新前缀标题) + insertBefore(组尾);拖到分组行 → 移入该分组(rename + append)。root 分组 = 无前缀标题。搜索中禁用拖拽;
+   - **工作区拖拽激活期间 compressTree 暂停**(drag.kind==='workspace' 时 tree memo 跳过压缩,依赖是 draggingWorkspace 布尔而非整个 drag 对象——over 高频变化不该重建树):合并行把链上所有分组层级藏进名字里,恰好删掉了「移入该分组」的投放目标;拖拽期间单链展开回文件夹行、任意一级可投放,拖完自动合并回去。**拖拽源身份(leaf/folderPath)必须从原始 title 按 / 切分推导**,绝不能读合并行的显示 leaf(其 folderPath 被重置为 ''),否则拖着合并行做移入/跨组放置会拼出 x/组/工作区 这类双重前缀标题;
    - 会话:同工作区内拖到会话行上/下半 → insertSessionBefore(以扁平 sessionIds 序为锚);拖到会话子分组行 → renameSession(新前缀标题)。跨工作区拖拽被守卫拒绝。
    - 显示顺序 = 宿主手动序(sessionIds / registry 序);buildTree/buildSessionTree 只排序分组名,绝不按名称/时间重排成员行(否则拖拽结果不可见)。
 7. **词典纪律**:NS = betterWorkspace;zh/en 两个词典 key 必须完全对齐,且覆盖文件里每个静态 t(...) 调用——冒烟测试逐 key 校验。动态拼 key(如 time. + unit、status. + kind)的取值集合也要在词典里配齐。
@@ -57,7 +58,7 @@
 
 ## v0.4 追加不变量(设置页 / 压缩树 / 右键外观)
 
-10. **压缩树**(compressTree):仅当一层恰好一个子级时合并——单文件夹链合成一行(名字用 / 连接,path 取最深 = 展开状态键);单工作区链合成工作区行(leaf 拼接,kind=ws)。**只对根的子文件夹应用,根自身绝不合并**;纯展示层变换,工作区原 title/workspaceId 不动。ws-kind 在工作区/会话树遍历处都要处理(搜索、渲染、计数)。
+10. **压缩树**(compressTree):仅当一层恰好一个子级时合并——单文件夹链合成一行(名字用 / 连接,path 取最深 = 展开状态键);单工作区链合成工作区行(leaf 拼接,kind=ws)。**只对根的子文件夹应用,根自身绝不合并**;纯展示层变换,工作区原 title/workspaceId 不动。ws-kind 在工作区/会话树遍历处都要处理(搜索、渲染、计数)。**工作区拖拽期间压缩暂停是特性不是 bug**(见不变量 7):合并行藏掉了链上所有分组的投放目标。
 11. **右键即操作**:全行 onContextMenu 打开自绘菜单(fixed overlay,坐标来自事件),原 ⋯ 按钮已移除、不要加回;菜单动作与旧 ellipsis 完全一致(rename/delete/fork/archive/rename-sgroup)。文件夹的「删除分组」仅对显式空分组显示。
 12. **外观自定义**:store.styling 键约定 folder:/workspace:/session:/sgroup: <id|path>;值 { color, glow(整数 0..14,连续), icon, weight(400/500/600/700,可选), shadow(bool,可选) }。**icon 只对 folder/workspace 行有意义**(2026-08:会话行图标位被官方 StateDot 状态灯占用、会话子分组行无图标位,自定义 icon 从来不会显示;因此 CustomizeDialog 对 session/sgroup 不渲染图标网格、提交不带 icon——重存会顺带清掉旧遗留的 icon 字段)。icon 兼容矩阵:legacy 三值 solid/outline/none(实心/空心文件夹/无)或任意 primitives 图标名(ICON_CHOICES 网格,**69 个**:3 legacy + 66 primitives;`@deepseek-ai/dsh-client-ui-primitives` 是 `export * from './icons'`,全量导出,ui[name] 都能解析)。**发光只有文字**:textShadow 光晕只作用于行内文字,禁止行外圈 boxShadow(用户明确不要外框发光);**字体阴影是独立的第二个 textShadow**(`1px 1px 2px rgba(0,0,0,.85)`,与发光叠加)。外观对话框底部带**实时预览**(改颜色/发光/粗细/阴影/图标即时反映最终行效果)。default 提交 = null 清除;删除条目 = setStyling(key, null)。
 13. **设置入口只有一个:settings.plugin.item 卡片**(2026-08 已删除左侧导航 settings.section 注册;settings.section 相关纪律——store 传**共享 handle**(apply 创建一次的 viewStore,同 persist 名多个 handle 会交叉污染)、组件用 useStore 读 prefs/actions.setPref 写——对卡片同样适用)。

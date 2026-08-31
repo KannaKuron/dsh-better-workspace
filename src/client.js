@@ -65,7 +65,7 @@ window.__ModuleLoader__.load({
       'settings.expand': '展开',
       'settings.collapse': '收起',
       'settings.compactChains': '单链分组折叠显示',
-      'settings.compactChains.hint': '单层链合并为一行,出现多个子级时自动展开为树状;展开状态与自定义外观保存在当前浏览器。',
+      'settings.compactChains.hint': '单层链合并为一行,出现多个子级时自动展开为树状;拖拽工作区期间单链临时展开回文件夹树,可放入任意一级;展开状态与自定义外观保存在当前浏览器。',
       'custom.title': '自定义外观',
       'custom.color': '颜色',
       'custom.glow': '发光',
@@ -151,7 +151,7 @@ window.__ModuleLoader__.load({
       'settings.expand': 'Expand',
       'settings.collapse': 'Collapse',
       'settings.compactChains': 'Merge single-child chains',
-      'settings.compactChains.hint': 'Single-child chains merge into one row; levels with multiple children expand as a tree. State and custom styling persist in this browser.',
+      'settings.compactChains.hint': 'Single-child chains merge into one row; levels with multiple children expand as a tree. Chains re-expand into folder rows while you drag a workspace, so it can drop into any level. State and custom styling persist in this browser.',
       'custom.title': 'Customize',
       'custom.color': 'Color',
       'custom.glow': 'Glow',
@@ -1209,11 +1209,19 @@ window.__ModuleLoader__.load({
         ungrouped.sort((a, b) => b.updatedAt - a.updatedAt)
       }
 
+      // While a workspace drag is active, single-child chains render UNCOMPRESSED:
+      // a merged "group/workspace" row hides every folder level of the chain inside
+      // its label, and those levels are exactly the drop targets for "move into
+      // this group". Suspending the merge for the drag's duration re-exposes each
+      // level as a real folder row (folder expansion defaults apply); when the
+      // drag ends, the chains merge back. Session drags keep the merged view —
+      // their drop targets live inside workspace rows, which compression merges.
+      const draggingWorkspace = drag !== null && drag.kind === 'workspace'
       const tree = React.useMemo(() => {
         const built = buildTree(items, storeFolders)
-        if (!compactChains) return built
+        if (!compactChains || draggingWorkspace) return built
         return { ...built, folders: built.folders.map(compressTree), workspaces: built.workspaces }
-      }, [items, storeFolders, compactChains])
+      }, [items, storeFolders, compactChains, draggingWorkspace])
 
       const sessionsOf = (workspace) => {
         const rows = []
@@ -1316,7 +1324,15 @@ window.__ModuleLoader__.load({
             event.dataTransfer.effectAllowed = 'move'
             event.dataTransfer.setData('text/plain', workspace.workspaceId)
           } catch { /* drag payload is best-effort */ }
-          setDrag({ kind: 'workspace', source: { workspaceId: workspace.workspaceId, leaf: workspace.leaf, folderPath: workspace.folderPath || '' }, over: null })
+          // Drag identity derives from the RAW title, never the displayed leaf:
+          // a compressed single-chain row shows "group/workspace" as its leaf with
+          // folderPath '' — carrying that would make move-into / cross-folder
+          // drops rebuild titles like "x/group/workspace". The real leaf and
+          // folder keep every drop target's rename correct.
+          const segs = splitTitleSegs(workspace.title)
+          const sourceLeaf = segs.length > 0 ? segs[segs.length - 1] : (workspace.leaf || String(workspace.workspaceId))
+          const sourceFolder = segs.length > 1 ? segs.slice(0, -1).join('/') : ''
+          setDrag({ kind: 'workspace', source: { workspaceId: workspace.workspaceId, leaf: sourceLeaf, folderPath: sourceFolder }, over: null })
         },
         onDragEnd: () => setDrag(null),
         onDragOver: (event) => {

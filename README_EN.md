@@ -57,7 +57,7 @@ Session titles nest on `/` too (e.g. `test1/plugin maintenance`). Session groups
 ### More highlights
 
 - **Folder-style collapse**: clicking a workspace row collapses/expands all of its sessions (the row keeps a session counter when collapsed); session groups collapse too; search force-expands everything.
-- **Native drag restored**: drag a workspace row above/below another to reorder (writes back the host registry order) or onto a folder row to move it into that group; drag session rows to reorder within the same workspace or onto a session group to move. Display order = host manual order, drag results are visible immediately.
+- **Native drag restored**: drag a workspace row above/below another to reorder (writes back the host registry order) or onto a folder row to move it into that group; drag session rows to reorder within the same workspace or onto a session group to move. Display order = host manual order, drag results are visible immediately. While dragging a workspace, merged single-chain rows (e.g. work/A) temporarily re-expand into folder rows — every level of the path becomes a drop target, and chains merge back when the drag ends.
 - **Native capabilities kept**: open/rename/fork/archive sessions, per-workspace new-session, current-session highlight, official status dots (blue running ring / amber pending / green done), **active-schedule badge** (alarm clock icon for sessions with active Schedule records, matching the official rows), ungrouped-session fallback, zh/en localization.
 - **Conversation hero too**: the empty-state “Add workspace” menu uses the same picking interaction with the same group popup.
 

@@ -304,9 +304,17 @@ window.__ModuleLoader__.load({
       return p.kind || p.status || p.type || 'pending'
     }
 
-    const sessionTitleOf = (summary, t) => {
+    const sessionTitleOf = (summary, t, rememberedTitle) => {
       if (!summary) return ''
       if (summary.blank) return t('session.new')
+      if (summary.title) return String(summary.title)
+      // Cold-restart window: when the wire omits title, displayTitle is the
+      // host's basename fallback (dsh list only serves the projection cache,
+      // and fork-born/never-checkpointed sessions always miss it — the durable
+      // title stays in the session log, unread for a list row). A title
+      // remembered from an earlier snapshot restores the "/" grouping until
+      // the session opens and the wire catches up.
+      if (typeof rememberedTitle === 'string' && rememberedTitle !== '') return rememberedTitle
       return String(summary.displayTitle || summary.title || '')
     }
 
@@ -672,6 +680,44 @@ window.__ModuleLoader__.load({
           const nn = newPath + '/'
           const next = d.folders.map(f => (f === oldPath ? newPath : (f.startsWith(oo) ? nn + f.slice(oo.length) : f)))
           d.folders = Array.from(new Set(next))
+        },
+      },
+    })
+
+    /* ========================= title cache store ====================== */
+
+    // Cold-restart title fallback. The host list serves titles only from the
+    // persisted projection cache: sessions that never wrote a checkpoint —
+    // and every fork-born (seeded) session, which the list skips entirely —
+    // come back after a restart with title absent and displayTitle already
+    // degraded to the workspace basename (dsh displayTitleOf: title → cwd
+    // basename → id). The durable titles live on in each session's log, but
+    // nothing reads a log for a cheap list row. This store remembers the
+    // last REAL wire title per session id (learned only from snapshots where
+    // summary.title exists — never from displayTitle, which is basename
+    // degraded in exactly the window being patched), so the tree restores
+    // the "/" grouping until the wire catches up. Same-value writes are
+    // no-ops (immer produces the same state, nothing persists); entries
+    // evict oldest-at past the hard cap. A stale remembered title (renamed
+    // elsewhere, cleared browser storage) self-heals the moment the wire
+    // carries the truth again; a missing entry just leaves today's fallback.
+    const TITLE_CACHE_LIMIT = 3000
+    const TITLE_CACHE_KEEP = 2400
+    const createTitleCacheStore = () => storeKit.defineStore({
+      init: () => ({ byId: {} }),
+      persist: 'dsh.betterWorkspace.titles.v1',
+      actions: {
+        rememberTitle: (d, id, title, at) => {
+          if (typeof id !== 'string' || id === '' || typeof title !== 'string' || title === '') return
+          if (!d.byId) d.byId = {}
+          const prev = d.byId[id]
+          if (prev && prev.title === title) return
+          d.byId[id] = { title: title, at: typeof at === 'number' ? at : Date.now() }
+          const keys = Object.keys(d.byId)
+          if (keys.length > TITLE_CACHE_LIMIT) {
+            keys.sort((a, b) => ((d.byId[a] && d.byId[a].at) || 0) - ((d.byId[b] && d.byId[b].at) || 0))
+            for (let i = 0; i < keys.length - TITLE_CACHE_KEEP; i++) delete d.byId[keys[i]]
+          }
         },
       },
     })
@@ -1306,6 +1352,36 @@ window.__ModuleLoader__.load({
       const statusPulse = prefsMap.statusPulse !== false
       const archivedSet = React.useMemo(() => new Set(archivedSessionIds), [archivedSessionIds])
       const subCounts = React.useMemo(() => subagentRunningCounts(list ? list.byId : {}), [list ? list.byId : null])
+      // Last-known real titles for the cold-restart fallback window (see
+      // createTitleCacheStore). Read per render via getSnapshot: no
+      // subscription, because a cache write only happens when summary.title
+      // exists — at that moment the row already renders the wire truth and
+      // no re-render is wanted.
+      const remembered = (titleCacheRef && typeof titleCacheRef.getSnapshot === 'function')
+        ? (titleCacheRef.getSnapshot().byId || {})
+        : {}
+      const rememberedTitleOf = (id) => (remembered[id] ? remembered[id].title : undefined)
+
+      // Learn real titles from every snapshot: remember exactly what the
+      // wire carried (summary.title), never displayTitle — that is already
+      // basename-degraded in the very window this patches. Blank rows are
+      // provisional New Sessions and never learn. rememberTitle itself
+      // no-ops on unchanged values, so the loop is cheap when idle.
+      React.useEffect(() => {
+        if (!list || !list.byId) return
+        const remember = titleCacheRef && titleCacheRef.actions
+          ? titleCacheRef.actions.rememberTitle
+          : null
+        if (typeof remember !== 'function') return
+        const now = Date.now()
+        for (const id of Object.keys(list.byId)) {
+          const summary = list.byId[id]
+          if (!summary || summary.blank) continue
+          const title = summary.title
+          if (typeof title !== 'string' || title === '') continue
+          remember(String(id), title, now)
+        }
+      }, [list ? list.byId : null])
 
       const [query, setQuery] = React.useState('')
       const [searchOpen, setSearchOpen] = React.useState(false)
@@ -1451,8 +1527,8 @@ window.__ModuleLoader__.load({
           if (accounted.has(id) || !sessionVisible(summary, list.current, archivedSet)) continue
           ungrouped.push({
             id,
-            title: sessionTitleOf(summary, t),
-            leaf: sessionTitleOf(summary, t),
+            title: sessionTitleOf(summary, t, rememberedTitleOf(id)),
+            leaf: sessionTitleOf(summary, t, rememberedTitleOf(id)),
             blank: !!summary.blank,
             running: !!summary.running,
             completed: summary.completed === true,
@@ -1486,8 +1562,8 @@ window.__ModuleLoader__.load({
           if (!sessionVisible(summary, list ? list.current : undefined, archivedSet)) continue
           rows.push({
             id,
-            title: sessionTitleOf(summary, t),
-            leaf: sessionTitleOf(summary, t),
+            title: sessionTitleOf(summary, t, rememberedTitleOf(id)),
+            leaf: sessionTitleOf(summary, t, rememberedTitleOf(id)),
             blank: !!summary.blank,
             running: !!summary.running,
             completed: summary.completed === true,
@@ -2276,6 +2352,15 @@ window.__ModuleLoader__.load({
 
     /* ============================ plugin ============================== */
 
+    // Live title-cache store instance, set once per apply() and read directly
+    // by BetterBrowser. NOT a registration store seat: remembered titles only
+    // matter before the wire catches up, and every write happens when the
+    // wire already carries the same truth, so selector-hook re-renders would
+    // be pure noise. One instance per activation (never per mount) keeps the
+    // persist key single-writer — dsh-client-store warns same-key instances
+    // cross-pollinate one localStorage entry.
+    let titleCacheRef = null
+
     const flowSource = (slots, hole) => ({
       getSnapshot: () => {
         try { return slots.entries(hole).length > 0 } catch { return false }
@@ -2392,6 +2477,12 @@ window.__ModuleLoader__.load({
       // One shared store handle: the browser and the settings page must see the
       // same persisted state (expansion, folder list, prefs, styling).
       const viewStore = createViewStore()
+
+      // Cold-restart title fallback instance (see createTitleCacheStore).
+      // getSnapshot() during render is intentional: hydration reads
+      // localStorage synchronously at create(), so the first render after a
+      // restart already sees every remembered title.
+      titleCacheRef = createTitleCacheStore().create()
 
       // Settings → Plugins card only (the tab dispatches the intersection of
       // served namespaces — registered host-side — and settings.plugin.item

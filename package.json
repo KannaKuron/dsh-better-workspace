@@ -16,7 +16,8 @@
     "./client": "./src/client.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=18",
+    "dsh": ">=0.1.0"
   },
   "dsh": {
     "bundle": {

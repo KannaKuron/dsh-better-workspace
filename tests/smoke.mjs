@@ -36,6 +36,12 @@ test('cordis.patch.yml inserts exactly one plugin row', () => {
   assert.equal(insertRows.length, 2) // comment example + real row
 })
 
+test('package.json declares the dsh engine floor (plugin market requirement)', () => {
+  const pkg = JSON.parse(read('package.json'))
+  assert.equal(pkg.engines.node, '>=18')
+  assert.equal(pkg.engines.dsh, '>=0.1.0')
+})
+
 test('client half is a __ModuleLoader__ bundle with baseline requires only', () => {
   const text = read('src/client.js')
   assert.match(text, /window\.__ModuleLoader__\.load\(/)
@@ -166,4 +172,62 @@ test('locale dictionaries cover every static t() key in both languages', () => {
   for (const unit of ['minutes', 'hours', 'days', 'months', 'years']) {
     assert.ok(zhKeys.has('time.' + unit) && enKeys.has('time.' + unit), 'missing time.' + unit)
   }
+})
+
+/**
+ * Cold-restart title fallback (0.9.4). The host list serves titles only from
+ * the persisted projection cache; fork-born and never-checkpointed sessions
+ * restart with title absent and displayTitle degraded to the workspace
+ * basename. The plugin remembers last-known real wire titles and feeds them
+ * through sessionTitleOf's third parameter.
+ */
+test('sessionTitleOf: wire title wins, remembered fills the cold-restart window', () => {
+  const text = read('src/client.js')
+  const start = text.indexOf('const sessionTitleOf =')
+  const end = text.indexOf('/**', start)
+  assert.ok(start !== -1 && end !== -1, 'sessionTitleOf not found')
+  const { sessionTitleOf } = new Function(text.slice(start, end) + '\nreturn { sessionTitleOf }')()
+  const t = (k) => k
+  assert.equal(sessionTitleOf({ blank: true }, t, 'x'), 'session.new', 'blank stays New Session')
+  assert.equal(sessionTitleOf({ title: 'wire/real' }, t, 'old/name'), 'wire/real', 'wire title beats memory')
+  assert.equal(sessionTitleOf({ displayTitle: 'basename' }, t, 'web/前端'), 'web/前端', 'remembered beats the basename fallback')
+  assert.equal(sessionTitleOf({ displayTitle: 'basename' }, t), 'basename', 'no memory: fallback stands')
+  assert.equal(sessionTitleOf({ displayTitle: 'basename' }, t, ''), 'basename', 'blank memory never masks the fallback')
+  assert.equal(sessionTitleOf(undefined, t, 'x'), '', 'no summary renders nothing')
+})
+
+test('title cache store: persisted key, no-op writes, bounded eviction, learning discipline', () => {
+  const text = read('src/client.js')
+  assert.match(text, /persist: 'dsh\.betterWorkspace\.titles\.v1'/)
+  // Learning effect: only real wire titles (summary.title), never blank rows.
+  assert.match(text, /if \(!summary \|\| summary\.blank\) continue/)
+  assert.match(text, /typeof title !== 'string' \|\| title === ''\) continue/)
+  assert.match(text, /remember\(String\(id\), title, now\)/)
+  // Rows render through the remembered fallback.
+  assert.match(text, /sessionTitleOf\(summary, t, rememberedTitleOf\(id\)\)/)
+  // Drive the real declaration: capture the spec through a fake storeKit.
+  const start = text.indexOf('const TITLE_CACHE_LIMIT =')
+  const end = text.indexOf('/* ============================ flow dialog')
+  assert.ok(start !== -1 && end !== -1 && start < end, 'title cache store block not found')
+  let spec = null
+  const fakeDefineStore = (s) => { spec = s; return {} }
+  const scope = new Function('storeKit', text.slice(start, end) + '\nreturn { createTitleCacheStore, TITLE_CACHE_LIMIT, TITLE_CACHE_KEEP }')
+  const api = scope({ defineStore: fakeDefineStore })
+  api.createTitleCacheStore()
+  assert.ok(spec, 'defineStore must be called with the decl')
+  assert.deepEqual(spec.init(), { byId: {} })
+  const remember = spec.actions.rememberTitle
+  const state = spec.init()
+  remember(state, 's1', 'a/b', 1)
+  assert.equal(state.byId.s1.title, 'a/b')
+  remember(state, 's1', 'a/b', 2) // same value: no-op, at untouched
+  assert.equal(state.byId.s1.at, 1)
+  remember(state, '', 'x', 3)
+  remember(state, 's2', '', 3) // invalid id/title: ignored
+  assert.ok(!state.byId.s2 && !state.byId[''])
+  // Eviction past the cap keeps the newest TITLE_CACHE_KEEP entries.
+  for (let i = 0; i < api.TITLE_CACHE_LIMIT; i++) remember(state, 'k' + i, 't' + i, 10 + i)
+  assert.equal(Object.keys(state.byId).length, api.TITLE_CACHE_KEEP)
+  assert.ok(state.byId['k' + (api.TITLE_CACHE_LIMIT - 1)], 'newest survives')
+  assert.ok(!state.byId.k0 && !state.byId.s1, 'oldest evicted')
 })

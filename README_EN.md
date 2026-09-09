@@ -31,6 +31,8 @@ Right-click any folder row: new subfolder (parent prefix pre-filled), new worksp
 
 Session titles nest on `/` too (e.g. `test1/plugin maintenance`). Session groups render in a secondary color without a folder icon, so they are clearly distinct from workspace folders; a session group can be renamed as a whole (rewrites member titles).
 
+**No title regression after a restart**: the cold list right after a DSH restart only carries titles for sessions that hit the persisted projection cache — fork-born and never-checkpointed sessions temporarily fall back to the workspace *basename*, even though the real title still lives in the session log. This plugin remembers each session's **last real wire title** in the browser (dsh client store) and renders from memory during that window, so `/` grouping keeps working; the moment a session opens, the official data takes over and self-heals.
+
 <table>
 <tr>
 <td align="center" width="58%"><img src="docs/screenshots/3-appearance-dialog.png" alt="Appearance dialog with live preview"/></td>

@@ -41,6 +41,7 @@
 5. **会话层级**:会话标题同样按 / 分层(buildSessionTree);会话子分组**必须**与工作区文件夹视觉可辨——次级配色(tertiary)、无文件夹图标、只有 chevron。分组重命名 = 批量改写成员标题前缀(renameSession)。
 6. **持久化**只用 dsh 客户端 store(defineStore + persist,浏览器本地),两个 key:**dsh.betterWorkspace.view.v1**(显式空分组 folders、折叠状态 expanded/sessionsExpanded/sessionGroups、prefs、styling)+ **dsh.betterWorkspace.titles.v1**(0.9.4 冷重启标题缓存,{ byId: { id: { title, at } } })。不要为动态实验另起持久化。
    - **关键事实**:hydration 是整值替换(attachPersistence 直接 setState(JSON.parse(raw))),不会合并 init。新增 state 键必须同时:(a) 初始化默认值;(b) action 里容错缺失键;(c) selector 读取带回退。2026-08 曾因 sessionGroups 未容错导致「会话分组点不开合」——这是本仓库的硬性纪律。
+   - **跨端同步(0.9.5)是手动的,绝不自动镜像/自动迁移**(用户明确决定):宿主 settings 命名空间 better-workspace(~/.dsh/settings.yaml,web 与桌面共享 DSH_HOME)承载 styling(dict)/folders(array)/compactChains/statusPulse,作为第三层持久化;折叠状态永远每端本地。写路径 makeSharedWrites 双写(本地 action 即时回显 + scopeSet 写宿主);读路径不变(全走本地 store,拉取时 importHost/mergeHost 把宿主值灌进本地)。设置卡片同步区按 IS_DESKTOP_SURFACE(location.protocol==='dsh-app:')显示「从客户端获取」/「从 Web 获取」+ 覆盖(importHost 整值替换)/合并(mergeHost 并集、拉取方键冲突获胜)模式 + 「发送本设备数据」按钮(旧版本历史数据首次同步必须显式推一次)。scope 在 apply() 里 ctx.settingsScope.bind({namespace:'better-workspace'}) 一次;bind 失败/服务缺失 → 全本地降级(= 0.9.4 行为)。宿主落地条件:settingsScope persistence 由宿主 isLoopback 决定(web 127.0.0.1 与桌面 dsh-app transport ownsHost:true 都写宿主;远程非 loopback 页面为 memory 不落盘)。schema 仍必须 schemastery(host 半动态 import),styling 用 Schema.dict(Schema.any())——形状由插件自己管。
    - **title 缓存(0.9.4)机制与红线**:学习 effect 只记 summary.title(wire 真值,非空字符串;blank 行不学),**绝不学 displayTitle**(它正是回退产物);rememberTitle 同值 no-op(immer 产同引用,零通知零写盘);超 TITLE_CACHE_LIMIT(3000)按 at 淘汰到 2400。渲染经 sessionTitleOf 第三参兜底,**优先级:wire title > remembered > displayTitle 回退**。实例在 apply() 里 create 一次、模块级 titleCacheRef 持有、组件 getSnapshot() 直读**不订阅**——写缓存那一刻 wire 已带同一真值,订阅重渲纯属噪声;dsh-client-store 警告同 persist key 多实例交叉污染 localStorage,所以绝不能在组件里 per-mount create。stale 记忆(他端改名)在 wire 到达后自愈。
 7. **拖拽语义**(原生 HTML5 DnD,drag 状态机 { kind, source, over }):
    - 工作区:同分组拖到工作区行上/下半 → insertWorkspaceBefore(anchor);跨分组 → renameWorkspace(新前缀标题) + insertBefore(组尾);拖到分组行 → 移入该分组(rename + append)。root 分组 = 无前缀标题。搜索中禁用拖拽;
@@ -69,7 +70,7 @@
     - **settingsNamespace() 时代(v0.6.0)**:dsh >= 0.1.2-alpha.2 的 @deepseek-ai/dsh-settings **移除了 settingsNamespace() 导出**(installSettingsSection/deepEqualJson 一并移除),register() 改为接受普通字符串。src/index.js 用 `typeof ds.settingsNamespace === 'function'` 探测 —— 新 register() 接受普通字符串,旧 register() 也接受(helper 只是编译期 branding),单次调用双 era 兼容。**改 register() 调用必须先过这个探测**,不要假设 helper 还存在。
 14. **透明/磨砂适配纪律**(第三方主题插件(dsh-any-background)实测):自绘表面一律走「主题 token + 插件 CSS 变量」链,禁止写死不透明背景。右键菜单底色 = var(--dsw-specific-menu, var(--dsw-alias-bg-overlay, rgba(28,28,32,.72)))(官方菜单同款 token,插件覆盖它时自动生效);磨砂 = backdrop-filter: var(--dsh-any-blur-card-panels, blur(12px) saturate(1.15))(-webkit- 同步)。其他表面同理:行透明 / 输入用 bg-layer-2 / 弹窗用 primitives Modal(官方面)。新增自绘面板必须复用该链,v0.4.1 已全仓扫过无残留硬背景。
 - flat 视图未接管。
-- 显式空分组持久在浏览器本地,跨设备不共享。
+- 折叠状态与标题缓存每端本地(设计如此);外观/分组/开关 0.9.5 起可经设置卡片手动跨端同步。
 
 ## 验证清单(改动后)
 
@@ -82,5 +83,6 @@
    - 会话:打开/重命名/分叉/归档、新会话按钮、当前高亮、运行圆点;
    - **重启标题不回退(0.9.4)**:让若干会话带 / 标题(含一个 fork 出来的),重启 DSH 后不打开它们,树里应显示 remembered 标题且分组正确(而非工作区名);打开任一会话后标题与官方一致;清掉 localStorage 的 dsh.betterWorkspace.titles.v1 后重启,行为退回官方 basename 回退(兜底不劣化);
    - 对话空态页「添加工作区」同样带分组弹窗;
+   - **跨端手动同步(0.9.5)**:web 端自定义若干外观 → 设置卡片点「发送本设备数据」→ 桌面端(装同版本插件)设置卡片点「从 Web 获取」(覆盖模式)→ 外观/分组/开关一致;合并模式下两端独有条目并集保留;宿主 ~/.dsh/settings.yaml 的 better-workspace 段可查;宿主 settings 不可用时卡片提示不支持、行为回纯本地;
    - 卸载/禁用本插件 → 回到官方浏览器,hero 流回退官方默认。
 3. 升级 dsh 后:对照 packages/client/ui-workspace/src/client/contract/slots.ts 复核 slot 契约与注入面是否漂移(重点:GlobalStandardProps、directoryFlow owner props、single 槽 priority 语义)。

@@ -33,6 +33,8 @@ Session titles nest on `/` too (e.g. `test1/plugin maintenance`). Session groups
 
 **No title regression after a restart**: the cold list right after a DSH restart only carries titles for sessions that hit the persisted projection cache — fork-born and never-checkpointed sessions temporarily fall back to the workspace *basename*, even though the real title still lives in the session log. This plugin remembers each session's **last real wire title** in the browser (dsh client store) and renders from memory during that window, so `/` grouping keeps working; the moment a session opens, the official data takes over and self-heals.
 
+**Manual cross-device sync (web ↔ desktop app)**: appearance, explicit folders, and toggles live in each device's own browser by default. The settings card adds a "Cross-device sync" section — "Pull from desktop app" on the web / "Pull from web" in the desktop app, with an **overwrite-this-device** or **merge-both-sides** mode (the union keeps each side's unique entries); the other surface's data travels through the host settings store (~/.dsh/settings.yaml, shared by both surfaces). A "Send this device's data" button next to it covers history created before this version — push once, and afterwards every edit is written to the host automatically for the other surface to pull. Expansion state stays per-device.
+
 <table>
 <tr>
 <td align="center" width="58%"><img src="docs/screenshots/3-appearance-dialog.png" alt="Appearance dialog with live preview"/></td>

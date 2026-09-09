@@ -49,7 +49,17 @@ export function apply(ctx) {
         const ns = typeof ds.settingsNamespace === 'function'
           ? ds.settingsNamespace('better-workspace')
           : 'better-workspace'
-        settings.register(ns, Schema.object({ compactChains: Schema.boolean().default(true) }))
+        settings.register(ns, Schema.object({
+          // Cross-device preferences live in the HOST settings store
+          // (~/.dsh/settings.yaml): web and the desktop app share one
+          // DSH_HOME, so appearance (styling), explicit folders, and the two
+          // toggles follow the user across surfaces. Per-device view state
+          // (expansion) and the cold-restart title cache stay browser-local.
+          compactChains: Schema.boolean().default(true),
+          statusPulse: Schema.boolean().default(true),
+          folders: Schema.array(Schema.string()).default([]),
+          styling: Schema.dict(Schema.any()).default({}),
+        }))
         log('[dsh-better-workspace] settings namespace registered: better-workspace')
       })
       .catch((error) => {

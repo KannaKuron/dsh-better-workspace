@@ -74,7 +74,7 @@ test('client half registers the three expected slots', () => {
 test('client plugin exports the cordis plugin triple', () => {
   const text = read('src/client.js')
   assert.match(text, /name: 'dsh-better-workspace'/)
-  assert.match(text, /inject: \['slots', 'sessions', 'workspaces', 'locale', 'uiWorkspace'\]/)
+  assert.match(text, /inject: \['slots', 'sessions', 'workspaces', 'locale', 'uiWorkspace', 'settingsScope'\]/)
   assert.match(text, /function apply\(ctx\)/)
 })
 
@@ -207,7 +207,7 @@ test('title cache store: persisted key, no-op writes, bounded eviction, learning
   assert.match(text, /sessionTitleOf\(summary, t, rememberedTitleOf\(id\)\)/)
   // Drive the real declaration: capture the spec through a fake storeKit.
   const start = text.indexOf('const TITLE_CACHE_LIMIT =')
-  const end = text.indexOf('/* ============================ flow dialog')
+  const end = text.indexOf('/* ======================= host settings sync')
   assert.ok(start !== -1 && end !== -1 && start < end, 'title cache store block not found')
   let spec = null
   const fakeDefineStore = (s) => { spec = s; return {} }
@@ -230,4 +230,28 @@ test('title cache store: persisted key, no-op writes, bounded eviction, learning
   assert.equal(Object.keys(state.byId).length, api.TITLE_CACHE_KEEP)
   assert.ok(state.byId['k' + (api.TITLE_CACHE_LIMIT - 1)], 'newest survives')
   assert.ok(!state.byId.k0 && !state.byId.s1, 'oldest evicted')
+})
+
+
+test('manual cross-device sync: host scope bind, dual writes, pull modes', () => {
+  const text = read('src/client.js')
+  // Scope bound once per activation; failures degrade to browser-local.
+  assert.match(text, /ctx\.settingsScope && typeof ctx\.settingsScope\.bind === 'function'/)
+  assert.match(text, /bind\(\{ namespace: 'better-workspace' \}\)/)
+  // Dual-write wrappers exist and route every preference mutation through them.
+  assert.match(text, /const makeSharedWrites = \(actions, stylingMap, foldersList\)/)
+  assert.equal((text.match(/shared\.(setStyling|addFolder|removeFolder|renameFolder)\(/g) || []).length, 6,
+    'browser (5) + flow (1) preference writes all go through the shared wrappers')
+  // Pull modes: overwrite replaces, merge unions with the pulled copy winning.
+  assert.match(text, /importHost: \(d, host\)/)
+  assert.match(text, /mergeHost: \(d, host\)/)
+  // Surface detection picks the pull label direction.
+  assert.match(text, /location\.protocol === 'dsh-app:'/)
+  assert.match(text, /t\(IS_DESKTOP_SURFACE \? 'sync\.pull\.web' : 'sync\.pull\.desktop'\)/)
+  // No automatic mirror/migration remains: sync is manual by user decision.
+  assert.doesNotMatch(text, /useHostMirror/)
+  assert.doesNotMatch(text, /HOST_SYNC_MARK/)
+  for (const key of ['sync.pull.desktop', 'sync.pull.web', 'sync.mode.overwrite', 'sync.mode.merge', 'sync.push']) {
+    assert.ok(text.includes("'" + key + "':"), 'missing dictionary key ' + key)
+  }
 })

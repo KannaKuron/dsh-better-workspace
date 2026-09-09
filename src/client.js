@@ -92,6 +92,17 @@ window.__ModuleLoader__.load({
       'custom.done': '完成',
       'settings.on': '开',
       'settings.off': '关',
+      'sync.title': '跨端同步',
+      'sync.desc': '外观自定义、显式分组与开关保存在本设备的浏览器里;通过宿主设置存储与另一端互传。平时的新修改会自动写入宿主,另一端点「获取」即可拿到;旧版本的历史数据首次需要点一次「发送」。',
+      'sync.mode.overwrite': '覆盖本设备',
+      'sync.mode.merge': '合并两端',
+      'sync.pull.desktop': '从客户端获取',
+      'sync.pull.web': '从 Web 获取',
+      'sync.push': '发送本设备数据',
+      'sync.done': '已同步',
+      'sync.empty': '另一端暂无数据可获取',
+      'sync.off': '当前环境不支持同步(需要宿主设置服务)',
+      'sync.loading': '正在连接宿主设置…',
       'flow.title': '添加工作区',
       'flow.picked': '所选文件夹',
       'flow.parent': '所属分组',
@@ -181,6 +192,17 @@ window.__ModuleLoader__.load({
       'custom.done': 'Done',
       'settings.on': 'On',
       'settings.off': 'Off',
+      'sync.title': 'Cross-device sync',
+      'sync.desc': "Appearance, explicit folders, and toggles live in this device's browser; they exchange with the other surface (web / desktop app) through the host settings store. New edits are written to the host automatically — the other surface just pulls. History created before this version needs one explicit Send.",
+      'sync.mode.overwrite': 'Overwrite this device',
+      'sync.mode.merge': 'Merge both sides',
+      'sync.pull.desktop': 'Pull from desktop app',
+      'sync.pull.web': 'Pull from web',
+      'sync.push': "Send this device's data",
+      'sync.done': 'Synced',
+      'sync.empty': 'No data on the other surface yet',
+      'sync.off': 'Sync unavailable here (requires the host settings service)',
+      'sync.loading': 'Connecting to host settings…',
       'flow.title': 'Add workspace',
       'flow.picked': 'Chosen folder',
       'flow.parent': 'Parent group',
@@ -646,6 +668,13 @@ window.__ModuleLoader__.load({
       '@keyframes bw-breathe{0%,100%{filter:drop-shadow(0 0 1px var(--bw-pulse-color));opacity:.55}50%{filter:drop-shadow(0 0 6px var(--bw-pulse-color));opacity:1}}',
       '.bw-pulse-text{animation:bw-breathe-text 1.8s ease-in-out infinite}',
       '@keyframes bw-breathe-text{0%,100%{text-shadow:0 0 1px var(--bw-pulse-color);opacity:.65}50%{text-shadow:0 0 7px var(--bw-pulse-color);opacity:1}}',
+      '.bw-sync-modes{display:flex;gap:6px;margin-top:8px}',
+      '.bw-sync-mode{flex:1;padding:5px 10px;border-radius:6px;border:1px solid var(--dsw-alias-border-l2,rgba(127,127,127,.3));background:transparent;color:var(--dsw-alias-label-secondary,#b8b8b8);cursor:pointer;font-size:12px}',
+      '.bw-sync-mode-on{border-color:var(--dsw-alias-brand-primary,#5b8def);color:var(--dsw-alias-label-primary,#e6e6e6);background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.12))}',
+      '.bw-sync-actions{display:flex;gap:8px;margin-top:8px}',
+      '.bw-sync-btn{padding:5px 12px;border-radius:6px;border:1px solid var(--dsw-alias-border-l2,rgba(127,127,127,.3));background:transparent;color:var(--dsw-alias-label-secondary,#b8b8b8);cursor:pointer;font-size:12px}',
+      '.bw-sync-btn:disabled{opacity:.45;cursor:default}',
+      '.bw-sync-btn-primary{border-color:var(--dsw-alias-brand-primary,#5b8def);color:var(--dsw-alias-label-primary,#e6e6e6)}',
     ].join('')
 
     const StyleNode = () => E('style', null, CSS_TEXT)
@@ -660,6 +689,30 @@ window.__ModuleLoader__.load({
       // every selector read takes a fallback.
       persist: 'dsh.betterWorkspace.view.v1',
       actions: {
+        // Manual-sync pull targets (overwrite / merge): the host settings
+        // values land in the local store, and rendering keeps reading the
+        // local selectors, so scope-less hosts keep working unchanged.
+        importHost: (d, host) => {
+          if (!host || typeof host !== 'object') return
+          if (host.styling && typeof host.styling === 'object') d.styling = host.styling
+          if (Array.isArray(host.folders)) d.folders = host.folders.slice()
+          if (!d.prefs) d.prefs = {}
+          if (host.compactChains !== undefined) d.prefs.compactChains = host.compactChains !== false
+          if (host.statusPulse !== undefined) d.prefs.statusPulse = host.statusPulse !== false
+        },
+        // Merge mode: union of both sides, the PULLED (host) copy wins any
+        // per-key conflict; prefs take the pulled booleans when present.
+        mergeHost: (d, host) => {
+          if (!host || typeof host !== 'object') return
+          if (host.styling && typeof host.styling === 'object') d.styling = { ...(d.styling || {}), ...host.styling }
+          if (Array.isArray(host.folders)) {
+            const merged = new Set([...(Array.isArray(d.folders) ? d.folders : []), ...host.folders])
+            d.folders = Array.from(merged)
+          }
+          if (!d.prefs) d.prefs = {}
+          if (host.compactChains !== undefined) d.prefs.compactChains = host.compactChains !== false
+          if (host.statusPulse !== undefined) d.prefs.statusPulse = host.statusPulse !== false
+        },
         setExpanded: (d, key, value) => { if (!d.expanded) d.expanded = {}; d.expanded[key] = value },
         setSessionsExpanded: (d, key, value) => { if (!d.sessionsExpanded) d.sessionsExpanded = {}; d.sessionsExpanded[key] = value },
         setSessionGroupExpanded: (d, key, value) => { if (!d.sessionGroups) d.sessionGroups = {}; d.sessionGroups[key] = value },
@@ -719,6 +772,97 @@ window.__ModuleLoader__.load({
             for (let i = 0; i < keys.length - TITLE_CACHE_KEEP; i++) delete d.byId[keys[i]]
           }
         },
+      },
+    })
+
+    /* ======================= host settings sync ======================= */
+
+    // Cross-device preferences: styling / explicit folders / the two toggles
+    // live in the HOST settings store (~/.dsh/settings.yaml through the
+    // better-workspace namespace). Web and the desktop app share one DSH_HOME,
+    // so a style set in the browser follows the user into the Electron app and
+    // back. The browser localStorage view store stays the rendering source and
+    // the fallback: host values are MIRRORED into it one-way, and every write
+    // goes to BOTH stores (local action for immediate echo, scope.set for
+    // durable cross-device persistence). Hosts without the settingsScope
+    // service — or non-loopback pages where the scope stays process-local —
+    // simply never mirror and never sync, which is exactly the pre-0.9.5
+    // browser-local behavior.
+    let prefsScopeRef = null
+    const HOST_SNAP_UNAVAILABLE = { status: 'unavailable', value: undefined }
+    const hostPrefsOf = (snap) => (snap && snap.status === 'ready' && snap.value && typeof snap.value === 'object'
+      ? snap.value
+      : null)
+    const scopeSet = (field, value) => {
+      const scope = prefsScopeRef
+      if (!scope || typeof scope.set !== 'function') return
+      try {
+        Promise.resolve(scope.set(field, value)).catch((error) => {
+          console.warn('[dsh-better-workspace] host settings write failed: ' + field, error)
+        })
+      } catch (error) {
+        console.warn('[dsh-better-workspace] host settings write threw: ' + field, error)
+      }
+    }
+    // React hook over the scope snapshot; degrades to a stable "unavailable"
+    // constant when the scope is absent so useSyncExternalStore never re-binds.
+    // The hook call itself is unconditional (React discipline: no conditional
+    // hooks) — capability probing lives inside the callbacks.
+    const HAS_USE_SYNC_EXTERNAL_STORE = typeof React.useSyncExternalStore === 'function'
+    const useHostScope = () => {
+      const scope = prefsScopeRef
+      return HAS_USE_SYNC_EXTERNAL_STORE
+        ? React.useSyncExternalStore(
+          (onChange) => (scope && typeof scope.subscribe === 'function' ? scope.subscribe(onChange) : () => {}),
+          () => {
+            try { return scope && typeof scope.getSnapshot === 'function' ? scope.getSnapshot() : HOST_SNAP_UNAVAILABLE } catch { return HOST_SNAP_UNAVAILABLE }
+          },
+        )
+        : HOST_SNAP_UNAVAILABLE
+    }
+
+    // MANUAL cross-device sync (user-chosen, never automatic): the settings
+    // card offers a pull button ("从客户端获取" on the web / "从 Web 获取" in
+    // the desktop app — the other surface's copy arrives through the host
+    // settings store) with an overwrite-or-merge mode choice, plus a push
+    // button that uploads THIS device's current values (pre-0.9.5 history was
+    // never uploaded, so a first explicit push is needed once). Routine new
+    // writes already dual-write through makeSharedWrites, so the host copy
+    // stays fresh after the first push.
+
+    // Shared write wrappers: local action first (immediate echo + fallback
+    // store), then the durable host write computed from the CURRENT rendered
+    // values — after a manual pull the local store already holds the host
+    // copy, so host-only entries written on the other surface survive.
+    const makeSharedWrites = (actions, stylingMap, foldersList) => ({
+      setStyling: (key, value) => {
+        if (actions && typeof actions.setStyling === 'function') actions.setStyling(key, value)
+        const next = { ...stylingMap }
+        if (value === null) delete next[key]
+        else next[key] = value
+        scopeSet('styling', next)
+      },
+      addFolder: (path) => {
+        if (actions && typeof actions.addFolder === 'function') actions.addFolder(path)
+        const p = normPath(path)
+        const base = Array.isArray(foldersList) ? foldersList : []
+        if (p !== '' && !base.includes(p)) scopeSet('folders', [...base, p])
+      },
+      removeFolder: (path) => {
+        if (actions && typeof actions.removeFolder === 'function') actions.removeFolder(path)
+        const base = Array.isArray(foldersList) ? foldersList : []
+        scopeSet('folders', base.filter(f => f !== path))
+      },
+      renameFolder: (oldPath, newPath) => {
+        if (actions && typeof actions.renameFolder === 'function') actions.renameFolder(oldPath, newPath)
+        const base = Array.isArray(foldersList) ? foldersList : []
+        const oo = oldPath + '/'
+        const nn = newPath + '/'
+        scopeSet('folders', Array.from(new Set(base.map(f => (f === oldPath ? newPath : (f.startsWith(oo) ? nn + f.slice(oo.length) : f))))))
+      },
+      setPref: (key, value) => {
+        if (actions && typeof actions.setPref === 'function') actions.setPref(key, value)
+        scopeSet(key, value)
       },
     })
 
@@ -813,6 +957,8 @@ window.__ModuleLoader__.load({
       // while closed, but its hook sequence must stay stable.
       const snapshotItems = typeof useWorkspaces === 'function' ? useWorkspaces(s => s.items) : []
       const storeFolders = typeof useStore === 'function' ? (useStore(s => s.folders) || []) : []
+      const storeStyling = typeof useStore === 'function' ? (useStore(s => s.styling) || {}) : {}
+      const shared = makeSharedWrites(actions, storeStyling, storeFolders)
 
       React.useEffect(() => {
         if (!open) {
@@ -867,7 +1013,7 @@ window.__ModuleLoader__.load({
               onCancel()
               return
             }
-            if (prefix !== '' && actions && typeof actions.addFolder === 'function') actions.addFolder(prefix)
+            if (prefix !== '') shared.addFolder(prefix)
             onCancel()
           })
           .catch((reason) => {
@@ -1262,10 +1408,53 @@ window.__ModuleLoader__.load({
 
     /* ------------------------- settings page ------------------------- */
 
+    // The desktop renderer serves the shell over the private dsh-app: scheme;
+    // every other context (http/https) is the web profile.
+    const IS_DESKTOP_SURFACE = typeof location !== 'undefined' && location.protocol === 'dsh-app:'
+
     function BetterWorkspaceSettings({ useStore, actions, t }) {
       const prefs = useStore ? (useStore(s => s.prefs) || {}) : {}
+      const localStyling = useStore ? (useStore(s => s.styling) || {}) : {}
+      const localFolders = useStore ? (useStore(s => s.folders) || []) : []
       const compactChains = prefs.compactChains !== false
       const statusPulse = prefs.statusPulse !== false
+      const setPref = (key, value) => {
+        if (actions && typeof actions.setPref === 'function') actions.setPref(key, value)
+        scopeSet(key, value)
+      }
+      // Manual cross-device sync state.
+      const [syncMode, setSyncMode] = React.useState('overwrite')
+      const [syncMsg, setSyncMsg] = React.useState(null)
+      const snap = useHostScope()
+      const host = hostPrefsOf(snap)
+      const scopeLive = prefsScopeRef !== null
+      const onPull = () => {
+        if (host === null) { setSyncMsg(t('sync.empty')); return }
+        if (syncMode === 'merge' && actions && typeof actions.mergeHost === 'function') actions.mergeHost(host)
+        else if (actions && typeof actions.importHost === 'function') actions.importHost(host)
+        else { setSyncMsg(t('sync.off')); return }
+        setSyncMsg(t('sync.done'))
+      }
+      const onPush = () => {
+        const folders = Array.isArray(localFolders) ? localFolders.slice() : []
+        scopeSet('styling', localStyling)
+        scopeSet('folders', folders)
+        scopeSet('compactChains', prefs.compactChains !== false)
+        scopeSet('statusPulse', prefs.statusPulse !== false)
+        setSyncMsg(t('sync.done'))
+      }
+      const modeButton = (id, label) => E('button', {
+        type: 'button',
+        className: cls('bw-sync-mode', syncMode === id && 'bw-sync-mode-on'),
+        'aria-pressed': syncMode === id,
+        onClick: () => { setSyncMode(id); setSyncMsg(null) },
+      }, label)
+      const syncActionButton = (label, onClick, primary, disabled) => E('button', {
+        type: 'button',
+        className: cls('bw-sync-btn', primary && 'bw-sync-btn-primary'),
+        disabled,
+        onClick,
+      }, label)
       return E('div', { className: 'bw-settings' },
         StyleNode(),
         E('div', { className: 'bw-setting-row' },
@@ -1276,7 +1465,7 @@ window.__ModuleLoader__.load({
             'aria-checked': compactChains,
             'aria-label': t('settings.compactChains'),
             className: cls('bw-switch', compactChains && 'bw-switch-on'),
-            onClick: () => { actions.setPref('compactChains', !compactChains) },
+            onClick: () => { setPref('compactChains', !compactChains) },
           }, E('span', { className: 'bw-switch-thumb' })),
         ),
         E('div', { className: 'bw-hint' }, t('settings.compactChains.hint')),
@@ -1288,10 +1477,23 @@ window.__ModuleLoader__.load({
             'aria-checked': statusPulse,
             'aria-label': t('settings.statusPulse'),
             className: cls('bw-switch', statusPulse && 'bw-switch-on'),
-            onClick: () => { actions.setPref('statusPulse', !statusPulse) },
+            onClick: () => { setPref('statusPulse', !statusPulse) },
           }, E('span', { className: 'bw-switch-thumb' })),
         ),
         E('div', { className: 'bw-hint' }, t('settings.statusPulse.hint')),
+        E('div', { className: 'bw-setting-label', style: { marginTop: 16 } }, t('sync.title')),
+        E('div', { className: 'bw-hint' }, t('sync.desc')),
+        E('div', { className: 'bw-sync-modes' },
+          modeButton('overwrite', t('sync.mode.overwrite')),
+          modeButton('merge', t('sync.mode.merge')),
+        ),
+        E('div', { className: 'bw-sync-actions' },
+          syncActionButton(t(IS_DESKTOP_SURFACE ? 'sync.pull.web' : 'sync.pull.desktop'), onPull, true, !scopeLive || snap.status === 'loading'),
+          syncActionButton(t('sync.push'), onPush, false, !scopeLive),
+        ),
+        syncMsg !== null ? E('div', { className: 'bw-hint' }, syncMsg)
+          : (scopeLive ? null : E('div', { className: 'bw-hint' }, t('sync.off'))),
+        scopeLive && snap.status === 'loading' ? E('div', { className: 'bw-hint' }, t('sync.loading')) : null,
       )
     }
 
@@ -1348,6 +1550,11 @@ window.__ModuleLoader__.load({
       const sessionGroupsMap = useStore ? (useStore(s => s.sessionGroups) || {}) : {}
       const prefsMap = useStore ? (useStore(s => s.prefs) || {}) : {}
       const stylingMap = useStore ? (useStore(s => s.styling) || {}) : {}
+      // Dual-write wrappers: every preference mutation lands in the local
+      // store (immediate echo + scope-less fallback) AND the host settings
+      // store (durable cross-device copy for the manual pull on the other
+      // surface). Computed from the CURRENT rendered values.
+      const shared = makeSharedWrites(actions, stylingMap, storeFolders)
       const compactChains = prefsMap.compactChains !== false
       const statusPulse = prefsMap.statusPulse !== false
       const archivedSet = React.useMemo(() => new Set(archivedSessionIds), [archivedSessionIds])
@@ -1944,7 +2151,7 @@ window.__ModuleLoader__.load({
           for (let i = 1; i < segs.length; i++) derived.add(segs.slice(0, i).join('/'))
         }
         if (storeFolders.includes(p) || derived.has(p)) { setErrorText(t('folder.error.exists')); return }
-        actions.addFolder(p)
+        shared.addFolder(p)
         setDialog(null)
       }
 
@@ -1965,14 +2172,14 @@ window.__ModuleLoader__.load({
               await renameWorkspace(w.workspaceId, nextTitle)
             }
           })
-          .then(() => { actions.renameFolder(oldPath, newPath); setDialog(null) })
+          .then(() => { shared.renameFolder(oldPath, newPath); setDialog(null) })
           .catch(fail)
       }
 
       const submitFolderDelete = (path) => {
         const node = findTreeNode(tree, path)
         if (node && countWorkspaces(node) > 0) { setErrorText(t('folder.error.notEmpty')); return }
-        actions.removeFolder(path)
+        shared.removeFolder(path)
         setDialog(null)
       }
 
@@ -2335,8 +2542,8 @@ window.__ModuleLoader__.load({
           open: customize !== null,
           kind: customize ? customize.kind : undefined,
           initial: customize ? styleEntry(customize.entryKey) : undefined,
-          onChange: (style) => { if (customize) actions.setStyling(customize.entryKey, style) },
-          onReset: () => { if (customize) actions.setStyling(customize.entryKey, null) },
+          onChange: (style) => { if (customize) shared.setStyling(customize.entryKey, style) },
+          onReset: () => { if (customize) shared.setStyling(customize.entryKey, null) },
           onClose: () => setCustomize(null),
           t,
         }),
@@ -2484,6 +2691,19 @@ window.__ModuleLoader__.load({
       // restart already sees every remembered title.
       titleCacheRef = createTitleCacheStore().create()
 
+      // Cross-device settings scope (manual sync, see the host-settings-sync
+      // block). Binding is best-effort: a missing/failed bind leaves the
+      // plugin fully browser-local — the pre-0.9.5 behavior.
+      prefsScopeRef = null
+      try {
+        if (ctx.settingsScope && typeof ctx.settingsScope.bind === 'function') {
+          prefsScopeRef = ctx.settingsScope.bind({ namespace: 'better-workspace' })
+        }
+      } catch (error) {
+        console.warn('[dsh-better-workspace] settings scope bind failed; sync stays local', error)
+        prefsScopeRef = null
+      }
+
       // Settings → Plugins card only (the tab dispatches the intersection of
       // served namespaces — registered host-side — and settings.plugin.item
       // cards). The old left-nav settings.section entry was removed: the
@@ -2515,7 +2735,7 @@ window.__ModuleLoader__.load({
 
     return {
       name: 'dsh-better-workspace',
-      inject: ['slots', 'sessions', 'workspaces', 'locale', 'uiWorkspace'],
+      inject: ['slots', 'sessions', 'workspaces', 'locale', 'uiWorkspace', 'settingsScope'],
       apply,
     }
   },

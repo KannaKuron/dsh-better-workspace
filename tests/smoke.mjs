@@ -196,40 +196,55 @@ test('sessionTitleOf: wire title wins, remembered fills the cold-restart window'
   assert.equal(sessionTitleOf(undefined, t, 'x'), '', 'no summary renders nothing')
 })
 
-test('title cache store: persisted key, no-op writes, bounded eviction, learning discipline', () => {
+test('title cache: persisted key, batch learning, debounced save, bounded eviction (0.9.6)', async () => {
   const text = read('src/client.js')
-  assert.match(text, /persist: 'dsh\.betterWorkspace\.titles\.v1'/)
-  // Learning effect: only real wire titles (summary.title), never blank rows.
+  // 0.9.6 shape (issue #1): the cache is plain module state — no reactive
+  // store, no per-session dispatch; one batch pass + one debounced save.
+  assert.doesNotMatch(text, /createTitleCacheStore|actions\.rememberTitle/)
+  assert.match(text, /const TITLE_CACHE_KEY = 'dsh\.betterWorkspace\.titles\.v1'/)
+  // Learning discipline kept: only real wire titles (summary.title), never blank rows.
   assert.match(text, /if \(!summary \|\| summary\.blank\) continue/)
   assert.match(text, /typeof title !== 'string' \|\| title === ''\) continue/)
-  assert.match(text, /remember\(String\(id\), title, now\)/)
+  assert.match(text, /titleCacheRef\.rememberAllTitles\(list\)/)
   // Rows render through the remembered fallback.
   assert.match(text, /sessionTitleOf\(summary, t, rememberedTitleOf\(id\)\)/)
-  // Drive the real declaration: capture the spec through a fake storeKit.
+  // Drive the real block with a mocked localStorage.
   const start = text.indexOf('const TITLE_CACHE_LIMIT =')
   const end = text.indexOf('/* ======================= host settings sync')
-  assert.ok(start !== -1 && end !== -1 && start < end, 'title cache store block not found')
-  let spec = null
-  const fakeDefineStore = (s) => { spec = s; return {} }
-  const scope = new Function('storeKit', text.slice(start, end) + '\nreturn { createTitleCacheStore, TITLE_CACHE_LIMIT, TITLE_CACHE_KEEP }')
-  const api = scope({ defineStore: fakeDefineStore })
-  api.createTitleCacheStore()
-  assert.ok(spec, 'defineStore must be called with the decl')
-  assert.deepEqual(spec.init(), { byId: {} })
-  const remember = spec.actions.rememberTitle
-  const state = spec.init()
-  remember(state, 's1', 'a/b', 1)
-  assert.equal(state.byId.s1.title, 'a/b')
-  remember(state, 's1', 'a/b', 2) // same value: no-op, at untouched
-  assert.equal(state.byId.s1.at, 1)
-  remember(state, '', 'x', 3)
-  remember(state, 's2', '', 3) // invalid id/title: ignored
-  assert.ok(!state.byId.s2 && !state.byId[''])
+  assert.ok(start !== -1 && end !== -1 && start < end, 'title cache block not found')
+  const saved = new Map()
+  const fakeLocalStorage = {
+    getItem: (k) => (saved.has(k) ? saved.get(k) : null),
+    setItem: (k, v) => { saved.set(k, String(v)) },
+  }
+  const scope = new Function('localStorage', 'setTimeout', 'clearTimeout',
+    text.slice(start, end)
+    + '\nreturn { titleCache, loadTitleCache, rememberAllTitles, TITLE_CACHE_LIMIT, TITLE_CACHE_KEEP }')
+  const api = scope(fakeLocalStorage, setTimeout, clearTimeout)
+  // Hydration: existing persisted state replaces the empty seed.
+  saved.set('dsh.betterWorkspace.titles.v1', JSON.stringify({ byId: { old: { title: 'a/b', at: 1 } } }))
+  api.loadTitleCache()
+  assert.equal(api.titleCache.byId.old.title, 'a/b')
+  // Batch learning: blank and empty-title rows never learn; real titles do.
+  const list = { byId: { a: { title: 'web/one' }, b: { blank: true }, c: { title: '' }, d: { title: 'web/two' } } }
+  assert.equal(api.rememberAllTitles(list), true, 'first pass learns')
+  assert.ok(api.titleCache.byId.a && api.titleCache.byId.d)
+  assert.ok(!api.titleCache.byId.b && !api.titleCache.byId.c)
+  assert.equal(typeof api.titleCache.byId.a.at, 'number')
+  // Same values again: nothing changes, nothing schedules a save.
+  assert.equal(api.rememberAllTitles(list), false, 'unchanged pass is a no-op')
   // Eviction past the cap keeps the newest TITLE_CACHE_KEEP entries.
-  for (let i = 0; i < api.TITLE_CACHE_LIMIT; i++) remember(state, 'k' + i, 't' + i, 10 + i)
-  assert.equal(Object.keys(state.byId).length, api.TITLE_CACHE_KEEP)
-  assert.ok(state.byId['k' + (api.TITLE_CACHE_LIMIT - 1)], 'newest survives')
-  assert.ok(!state.byId.k0 && !state.byId.s1, 'oldest evicted')
+  const big = { byId: {} }
+  for (let i = 0; i < api.TITLE_CACHE_LIMIT + 1; i++) big.byId['k' + i] = { title: 't' + i }
+  api.rememberAllTitles(big)
+  assert.equal(Object.keys(api.titleCache.byId).length, api.TITLE_CACHE_KEEP)
+  assert.ok(api.titleCache.byId['k' + api.TITLE_CACHE_LIMIT], 'newest survives')
+  assert.ok(!api.titleCache.byId.old, 'oldest evicted')
+  // Debounced save lands under the same persist key (~200 ms).
+  await new Promise((r) => setTimeout(r, 260))
+  assert.ok(saved.has('dsh.betterWorkspace.titles.v1'), 'debounced save persisted')
+  const persisted = JSON.parse(saved.get('dsh.betterWorkspace.titles.v1'))
+  assert.ok(persisted && typeof persisted.byId === 'object')
 })
 
 

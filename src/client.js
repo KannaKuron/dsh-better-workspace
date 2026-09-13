@@ -749,31 +749,61 @@ window.__ModuleLoader__.load({
     // last REAL wire title per session id (learned only from snapshots where
     // summary.title exists — never from displayTitle, which is basename
     // degraded in exactly the window being patched), so the tree restores
-    // the "/" grouping until the wire catches up. Same-value writes are
-    // no-ops (immer produces the same state, nothing persists); entries
-    // evict oldest-at past the hard cap. A stale remembered title (renamed
+    // the "/" grouping until the wire catches up. 0.9.6: plain module
+    // state with one debounced whole-file save per real change batch
+    // (issue #1: per-session reactive-store dispatches cost O(sessions)
+    // immer produces per snapshot tick and froze large installs). Same-
+    // value scans allocate nothing; entries evict oldest-at past the hard
+    // cap. A stale remembered title (renamed
     // elsewhere, cleared browser storage) self-heals the moment the wire
     // carries the truth again; a missing entry just leaves today's fallback.
     const TITLE_CACHE_LIMIT = 3000
     const TITLE_CACHE_KEEP = 2400
-    const createTitleCacheStore = () => storeKit.defineStore({
-      init: () => ({ byId: {} }),
-      persist: 'dsh.betterWorkspace.titles.v1',
-      actions: {
-        rememberTitle: (d, id, title, at) => {
-          if (typeof id !== 'string' || id === '' || typeof title !== 'string' || title === '') return
-          if (!d.byId) d.byId = {}
-          const prev = d.byId[id]
-          if (prev && prev.title === title) return
-          d.byId[id] = { title: title, at: typeof at === 'number' ? at : Date.now() }
-          const keys = Object.keys(d.byId)
-          if (keys.length > TITLE_CACHE_LIMIT) {
-            keys.sort((a, b) => ((d.byId[a] && d.byId[a].at) || 0) - ((d.byId[b] && d.byId[b].at) || 0))
-            for (let i = 0; i < keys.length - TITLE_CACHE_KEEP; i++) delete d.byId[keys[i]]
-          }
-        },
-      },
-    })
+    const TITLE_CACHE_KEY = 'dsh.betterWorkspace.titles.v1'
+    const titleCache = { byId: {} }
+    let titleSaveTimer = null
+    const loadTitleCache = () => {
+      try {
+        const raw = localStorage.getItem(TITLE_CACHE_KEY)
+        if (raw !== null) {
+          const parsed = JSON.parse(raw)
+          if (parsed && typeof parsed.byId === 'object' && parsed.byId !== null) titleCache.byId = parsed.byId
+        }
+      } catch (e) { /* storage unavailable/corrupt: cold start without cache */ }
+    }
+    const scheduleTitleSave = () => {
+      clearTimeout(titleSaveTimer)
+      titleSaveTimer = setTimeout(() => {
+        try { localStorage.setItem(TITLE_CACHE_KEY, JSON.stringify(titleCache)) } catch (e) {}
+      }, 200)
+    }
+    // One plain-object batch pass per snapshot (issue #1). Unchanged scans
+    // cost one loop with zero allocation; only real changes mark dirty;
+    // eviction runs once per changed batch followed by ONE debounced save.
+    const rememberAllTitles = (list) => {
+      if (!list || !list.byId) return false
+      const byId = titleCache.byId
+      const now = Date.now()
+      let changed = false
+      for (const id of Object.keys(list.byId)) {
+        const summary = list.byId[id]
+        if (!summary || summary.blank) continue
+        const title = summary.title
+        if (typeof title !== 'string' || title === '') continue
+        const prev = byId[id]
+        if (prev && prev.title === title) continue
+        byId[id] = { title: title, at: now }
+        changed = true
+      }
+      if (!changed) return false
+      const keys = Object.keys(byId)
+      if (keys.length > TITLE_CACHE_LIMIT) {
+        keys.sort((a, b) => ((byId[a] && byId[a].at) || 0) - ((byId[b] && byId[b].at) || 0))
+        for (let i = 0; i < keys.length - TITLE_CACHE_KEEP; i++) delete byId[keys[i]]
+      }
+      scheduleTitleSave()
+      return true
+    }
 
     /* ======================= host settings sync ======================= */
 
@@ -1560,7 +1590,7 @@ window.__ModuleLoader__.load({
       const archivedSet = React.useMemo(() => new Set(archivedSessionIds), [archivedSessionIds])
       const subCounts = React.useMemo(() => subagentRunningCounts(list ? list.byId : {}), [list ? list.byId : null])
       // Last-known real titles for the cold-restart fallback window (see
-      // createTitleCacheStore). Read per render via getSnapshot: no
+      // the title-cache block). Read per render via getSnapshot: no
       // subscription, because a cache write only happens when summary.title
       // exists — at that moment the row already renders the wire truth and
       // no re-render is wanted.
@@ -1572,21 +1602,13 @@ window.__ModuleLoader__.load({
       // Learn real titles from every snapshot: remember exactly what the
       // wire carried (summary.title), never displayTitle — that is already
       // basename-degraded in the very window this patches. Blank rows are
-      // provisional New Sessions and never learn. rememberTitle itself
-      // no-ops on unchanged values, so the loop is cheap when idle.
+      // provisional New Sessions and never learn. One plain-object batch
+      // call per snapshot (issue #1): unchanged scans cost one loop with
+      // zero allocation, real changes schedule one debounced save.
       React.useEffect(() => {
         if (!list || !list.byId) return
-        const remember = titleCacheRef && titleCacheRef.actions
-          ? titleCacheRef.actions.rememberTitle
-          : null
-        if (typeof remember !== 'function') return
-        const now = Date.now()
-        for (const id of Object.keys(list.byId)) {
-          const summary = list.byId[id]
-          if (!summary || summary.blank) continue
-          const title = summary.title
-          if (typeof title !== 'string' || title === '') continue
-          remember(String(id), title, now)
+        if (titleCacheRef && typeof titleCacheRef.rememberAllTitles === 'function') {
+          titleCacheRef.rememberAllTitles(list)
         }
       }, [list ? list.byId : null])
 
@@ -2685,11 +2707,11 @@ window.__ModuleLoader__.load({
       // same persisted state (expansion, folder list, prefs, styling).
       const viewStore = createViewStore()
 
-      // Cold-restart title fallback instance (see createTitleCacheStore).
-      // getSnapshot() during render is intentional: hydration reads
-      // localStorage synchronously at create(), so the first render after a
-      // restart already sees every remembered title.
-      titleCacheRef = createTitleCacheStore().create()
+      // Cold-restart title fallback (see the title-cache block). Hydration
+      // reads localStorage synchronously here, before the first render, so a
+      // restart's first tree already shows every remembered title.
+      loadTitleCache()
+      titleCacheRef = { getSnapshot: () => titleCache, rememberAllTitles }
 
       // Cross-device settings scope (manual sync, see the host-settings-sync
       // block). Binding is best-effort: a missing/failed bind leaves the

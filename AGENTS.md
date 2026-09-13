@@ -12,6 +12,16 @@
 - 发布双通道同家族惯例:npm test → npm version → git push --tags → gh release create → Release published 触发 OIDC 自动发 npm(node 24 + id-token: write,见 .github/workflows/npm-publish.yml)。发布后 curl -X PUT https://registry.npmmirror.com/dsh-better-workspace/sync 同步 npmmirror。
 - 本机 web profile 装本地开发版:npm pack 出 tarball → 在 (dsh home)/profiles/web 里 pnpm add <tarball> → profile cordis.patch.yml 加挂载行(- insert: - id: better-workspace / name: dsh-better-workspace)→ 重启 DSH。
 
+## 变更记录纪律(2026-09-13 起)
+
+- **所有版本发布、修复、事故复盘、复现/验证记录一律写进本仓库 `CHANGELOG.md`**,不再追加进本文件;
+  本文件只保留仍然有效的规则、不变量与当前事实,历史叙事由 CHANGELOG 承载(需引用时写
+  「见 CHANGELOG vX.Y.Z」)。
+- **发版流程新增强制步骤**:更新 CHANGELOG(写好新版本条目)→ 随版本提交 → 再打 tag /
+  发 Release;顺序不能反。
+- CHANGELOG 条目格式:倒序排列;`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+
+  要点 bullet + 相关链接(issue / PR / discussion / Release)。
+
 ## 目录地图
 
 | 路径 | 作用 |

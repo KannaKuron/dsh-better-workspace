@@ -18,6 +18,8 @@
 - 冒烟测试 20 → **21 项**:新增一项直接驱动 capability 模块的四个分支(browse 判定与缓存、native 判定、未归类失败不缓存且可被硬路径改写、拒绝分类的两侧形状),并断言两处入口都注入了 browse 原语、流程确实查询探测结果。
 - 文档:README 双语补上「用哪种选择器跟随宿主实际组装的后端」一段,并写明想强行走原生选择器的代价(LAN 客户端点不到、弹在服务器桌面)。
 
+- 相关:[Release v0.11.3](https://github.com/KannaKuron/dsh-better-workspace/releases/tag/v0.11.3) · [上游讨论 deepseek-harness#6785](https://github.com/deepseek-ai/deepseek-harness/discussions/6785)(客户端拿不到 capability 的缺口已上报)
+
 ## v0.11.2 — 2026-09-15
 
 **类型**:fix(回退 0.11.1 的描边实现)

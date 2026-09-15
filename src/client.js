@@ -127,6 +127,9 @@ window.__ModuleLoader__.load({
       'browse.showHidden': '显示隐藏文件',
       'browse.editPath': '编辑路径',
       'browse.select': '选择此文件夹',
+      'browse.enter': '进入',
+      'browse.drives': '盘符',
+      'browse.selectNamed': '选择「{name}」',
       'error.title': '出错了',
       'cancel': '取消',
       'create': '创建',
@@ -246,6 +249,9 @@ window.__ModuleLoader__.load({
       'browse.showHidden': 'Show hidden files',
       'browse.editPath': 'Edit path',
       'browse.select': 'Use this folder',
+      'browse.enter': 'Open',
+      'browse.drives': 'Drives',
+      'browse.selectNamed': 'Use "{name}"',
       'error.title': 'Something went wrong',
       'cancel': 'Cancel',
       'create': 'Create',
@@ -373,6 +379,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': 'إظهار الملفات المخفية',
         'browse.editPath': 'تعديل المسار',
         'browse.select': 'استخدام هذا المجلد',
+        'browse.enter': 'فتح',
+        'browse.drives': 'الأقراص',
+        'browse.selectNamed': 'استخدام "{name}"',
         'error.title': 'حدث خطأ ما',
         'cancel': 'إلغاء',
         'create': 'إنشاء',
@@ -492,6 +501,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': 'Versteckte Dateien anzeigen',
         'browse.editPath': 'Pfad bearbeiten',
         'browse.select': 'Diesen Ordner verwenden',
+        'browse.enter': 'Öffnen',
+        'browse.drives': 'Laufwerke',
+        'browse.selectNamed': '"{name}" verwenden',
         'error.title': 'Etwas ist schiefgelaufen',
         'cancel': 'Abbrechen',
         'create': 'Erstellen',
@@ -611,6 +623,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': 'Afficher les fichiers cachés',
         'browse.editPath': 'Modifier le chemin',
         'browse.select': 'Utiliser ce dossier',
+        'browse.enter': 'Ouvrir',
+        'browse.drives': 'Lecteurs',
+        'browse.selectNamed': 'Utiliser « {name} »',
         'error.title': 'Une erreur est survenue',
         'cancel': 'Annuler',
         'create': 'Créer',
@@ -730,6 +745,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': 'छिपी फ़ाइलें दिखाएँ',
         'browse.editPath': 'पथ संपादित करें',
         'browse.select': 'यह फ़ोल्डर चुनें',
+        'browse.enter': 'खोलें',
+        'browse.drives': 'ड्राइव',
+        'browse.selectNamed': '"{name}" चुनें',
         'error.title': 'कुछ गड़बड़ हो गई',
         'cancel': 'रद्द करें',
         'create': 'बनाएँ',
@@ -849,6 +867,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': 'Tampilkan file tersembunyi',
         'browse.editPath': 'Edit jalur',
         'browse.select': 'Gunakan folder ini',
+        'browse.enter': 'Buka',
+        'browse.drives': 'Drive',
+        'browse.selectNamed': 'Gunakan "{name}"',
         'error.title': 'Terjadi kesalahan',
         'cancel': 'Batal',
         'create': 'Buat',
@@ -968,6 +989,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': 'Mostra file nascosti',
         'browse.editPath': 'Modifica percorso',
         'browse.select': 'Usa questa cartella',
+        'browse.enter': 'Apri',
+        'browse.drives': 'Unità',
+        'browse.selectNamed': 'Usa "{name}"',
         'error.title': 'Si è verificato un errore',
         'cancel': 'Annulla',
         'create': 'Crea',
@@ -1087,6 +1111,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': '隠しファイルを表示',
         'browse.editPath': 'パスを編集',
         'browse.select': 'このフォルダーを選択',
+        'browse.enter': '開く',
+        'browse.drives': 'ドライブ',
+        'browse.selectNamed': '「{name}」を選択',
         'error.title': 'エラーが発生しました',
         'cancel': 'キャンセル',
         'create': '作成',
@@ -1206,6 +1233,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': '숨김 파일 표시',
         'browse.editPath': '경로 편집',
         'browse.select': '이 폴더 선택',
+        'browse.enter': '열기',
+        'browse.drives': '드라이브',
+        'browse.selectNamed': '"{name}" 선택',
         'error.title': '문제가 발생했습니다',
         'cancel': '취소',
         'create': '만들기',
@@ -1325,6 +1355,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': 'Verborgen bestanden tonen',
         'browse.editPath': 'Pad bewerken',
         'browse.select': 'Deze map gebruiken',
+        'browse.enter': 'Openen',
+        'browse.drives': 'Stations',
+        'browse.selectNamed': '"{name}" gebruiken',
         'error.title': 'Er is iets misgegaan',
         'cancel': 'Annuleren',
         'create': 'Aanmaken',
@@ -1444,6 +1477,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': 'Pokaż ukryte pliki',
         'browse.editPath': 'Edytuj ścieżkę',
         'browse.select': 'Użyj tego folderu',
+        'browse.enter': 'Otwórz',
+        'browse.drives': 'Dyski',
+        'browse.selectNamed': 'Użyj "{name}"',
         'error.title': 'Coś poszło nie tak',
         'cancel': 'Anuluj',
         'create': 'Utwórz',
@@ -1563,6 +1599,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': 'Mostrar arquivos ocultos',
         'browse.editPath': 'Editar caminho',
         'browse.select': 'Usar esta pasta',
+        'browse.enter': 'Abrir',
+        'browse.drives': 'Unidades',
+        'browse.selectNamed': 'Usar "{name}"',
         'error.title': 'Algo deu errado',
         'cancel': 'Cancelar',
         'create': 'Criar',
@@ -1682,6 +1721,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': 'Показывать скрытые файлы',
         'browse.editPath': 'Изменить путь',
         'browse.select': 'Выбрать эту папку',
+        'browse.enter': 'Открыть',
+        'browse.drives': 'Диски',
+        'browse.selectNamed': 'Выбрать «{name}»',
         'error.title': 'Что-то пошло не так',
         'cancel': 'Отмена',
         'create': 'Создать',
@@ -1801,6 +1843,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': 'Visa dolda filer',
         'browse.editPath': 'Redigera sökväg',
         'browse.select': 'Använd den här mappen',
+        'browse.enter': 'Öppna',
+        'browse.drives': 'Enheter',
+        'browse.selectNamed': 'Använd "{name}"',
         'error.title': 'Något gick fel',
         'cancel': 'Avbryt',
         'create': 'Skapa',
@@ -1920,6 +1965,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': 'แสดงไฟล์ที่ซ่อนอยู่',
         'browse.editPath': 'แก้ไขเส้นทาง',
         'browse.select': 'ใช้โฟลเดอร์นี้',
+        'browse.enter': 'เปิด',
+        'browse.drives': 'ไดรฟ์',
+        'browse.selectNamed': 'ใช้ "{name}"',
         'error.title': 'เกิดข้อผิดพลาด',
         'cancel': 'ยกเลิก',
         'create': 'สร้าง',
@@ -2039,6 +2087,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': 'Gizli dosyaları göster',
         'browse.editPath': 'Yolu düzenle',
         'browse.select': 'Bu klasörü kullan',
+        'browse.enter': 'Aç',
+        'browse.drives': 'Sürücüler',
+        'browse.selectNamed': '"{name}" kullan',
         'error.title': 'Bir şeyler ters gitti',
         'cancel': 'İptal',
         'create': 'Oluştur',
@@ -2158,6 +2209,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': 'Hiện tệp ẩn',
         'browse.editPath': 'Sửa đường dẫn',
         'browse.select': 'Dùng thư mục này',
+        'browse.enter': 'Mở',
+        'browse.drives': 'Ổ đĩa',
+        'browse.selectNamed': 'Dùng "{name}"',
         'error.title': 'Đã xảy ra lỗi',
         'cancel': 'Hủy',
         'create': 'Tạo',
@@ -2277,6 +2331,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': '顯示隱藏檔案',
         'browse.editPath': '編輯路徑',
         'browse.select': '揀呢個資料夾',
+        'browse.enter': '入去',
+        'browse.drives': '磁碟',
+        'browse.selectNamed': '揀「{name}」',
         'error.title': '出咗錯',
         'cancel': '取消',
         'create': '建立',
@@ -2396,6 +2453,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': '顯示隱藏檔案',
         'browse.editPath': '編輯路徑',
         'browse.select': '揀呢個資料夾',
+        'browse.enter': '入去',
+        'browse.drives': '磁碟',
+        'browse.selectNamed': '揀「{name}」',
         'error.title': '出咗錯',
         'cancel': '取消',
         'create': '建立',
@@ -2515,6 +2575,9 @@ window.__ModuleLoader__.load({
         'browse.showHidden': '顯示隱藏檔案',
         'browse.editPath': '編輯路徑',
         'browse.select': '選擇此資料夾',
+        'browse.enter': '進入',
+        'browse.drives': '磁碟',
+        'browse.selectNamed': '選擇「{name}」',
         'error.title': '發生錯誤',
         'cancel': '取消',
         'create': '建立',
@@ -3048,10 +3111,17 @@ window.__ModuleLoader__.load({
       '.bw-browse-edit svg{width:14px;height:14px}',
       '.bw-browse-edit-row{display:flex;gap:6px;align-items:center}',
       '.bw-browse-list{display:flex;flex-direction:column;gap:1px;height:240px;overflow:auto;padding:4px;box-sizing:border-box;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.22));border-radius:8px;background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.06))}',
-      '.bw-browse-row{display:flex;align-items:center;gap:8px;width:100%;flex:none;text-align:left;border:none;background:transparent;color:var(--dsw-alias-label-primary,#e6e6e6);font:inherit;font-size:12.5px;padding:5px 8px;border-radius:6px;cursor:pointer}',
+      '.bw-browse-row{display:flex;align-items:center;gap:8px;width:100%;flex:none;text-align:left;border:none;background:transparent;color:var(--dsw-alias-label-primary,#e6e6e6);font:inherit;font-size:12.5px;padding:5px 8px;border-radius:6px;cursor:pointer;user-select:none}',
       '.bw-browse-row:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12))}',
       '.bw-browse-row:focus-visible{outline:2px solid var(--dsw-alias-brand-primary,#5b8def);outline-offset:-2px}',
       '.bw-browse-row svg{width:15px;height:15px;flex:none;color:var(--dsw-alias-label-secondary,#b8b8b8)}',
+      '.bw-browse-row-on{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12));box-shadow:inset 0 0 0 1px var(--dsw-alias-brand-primary,#5b8def)}',
+      '.bw-browse-open{flex:none;width:22px;height:22px;padding:0;border:none;border-radius:5px;background:transparent;color:var(--dsw-alias-label-tertiary,#9a9a9a);font:inherit;font-size:15px;line-height:1;cursor:pointer}',
+      '.bw-browse-open:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.16));color:var(--dsw-alias-label-primary,#e6e6e6)}',
+      '.bw-browse-drives{display:flex;align-items:center;gap:4px;margin-left:auto}',
+      '.bw-browse-drive{min-width:30px;padding:3px 6px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));border-radius:5px;background:transparent;color:var(--dsw-alias-label-secondary,#b8b8b8);font:inherit;font-size:11.5px;cursor:pointer}',
+      '.bw-browse-drive:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12));color:var(--dsw-alias-label-primary,#e6e6e6)}',
+      '.bw-browse-drive-on{border-color:var(--dsw-alias-brand-primary,#5b8def);color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-browse-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
       '.bw-browse-note{font-size:12px;color:var(--dsw-alias-label-tertiary,#9a9a9a);padding:10px 8px;text-align:center}',
       '.bw-browse-new-row{display:flex;gap:6px;align-items:center}',
@@ -3439,6 +3509,14 @@ window.__ModuleLoader__.load({
      * owner's error surface belongs to the pick/create conversation, and a
      * denied listing must never close the flow.
      */
+    /**
+     * Page-lifetime cache of the Windows drive letters this Host actually
+     * serves. The browse API can only list a path, so the first open probes the
+     * usual letters once (six cheap listings, a missing drive fails silently)
+     * and every later open renders the chips straight from here.
+     */
+    const browseDrives = { probed: false, probing: false, list: [] }
+
     function DirectoryBrowseDialog(props) {
       const { open, busy, listDirectory, createDirectory, onPick, onClose, t } = props
       const [listing, setListing] = React.useState(null)
@@ -3451,14 +3529,18 @@ window.__ModuleLoader__.load({
       const [createName, setCreateName] = React.useState('')
       const [createBusy, setCreateBusy] = React.useState(false)
       const [createError, setCreateError] = React.useState('')
+      const [selected, setSelected] = React.useState('')
+      const [drives, setDrives] = React.useState(browseDrives.list)
       // Guards a superseded scan: a slow level must not overwrite a newer one.
       const seqRef = React.useRef(0)
+      const crumbsRef = React.useRef(null)
 
-      const go = (path) => {
+      const go = (path, keepSelected) => {
         const seq = seqRef.current + 1
         seqRef.current = seq
         setLoading(true)
         setError('')
+        if (keepSelected !== true) setSelected('')
         Promise.resolve()
           .then(() => listDirectory(path, undefined))
           .then((next) => {
@@ -3484,27 +3566,59 @@ window.__ModuleLoader__.load({
         setCreateBusy(false)
         setCreateError('')
         setShowHidden(false)
+        setSelected('')
         go(undefined)
         return () => { seqRef.current += 1 }
       }, [open])
 
+      const currentPath = listing && typeof listing.path === 'string' ? listing.path : ''
+      const homePath = listing && typeof listing.home === 'string' ? listing.home : ''
+      const windowsHost = homePath.indexOf('\\') !== -1
+      const hasListing = listing !== null
+
+      // Windows drives are separate filesystem roots and the browse API can only
+      // list a path, so probe the usual letters once per page (cached above) and
+      // offer the ones that answered. A drive nobody probed is still reachable
+      // through the path editor, which is the only general answer anyway.
+      React.useEffect(() => {
+        if (!open || !hasListing || !windowsHost) return undefined
+        if (browseDrives.probed || browseDrives.probing) {
+          if (browseDrives.list.length > 0) setDrives(browseDrives.list)
+          return undefined
+        }
+        browseDrives.probing = true
+        let alive = true
+        const letters = ['C:', 'D:', 'E:', 'F:', 'G:', 'H:']
+        Promise.all(letters.map((letter) => Promise.resolve()
+          .then(() => listDirectory(letter + '\\', undefined))
+          .then(() => letter, () => null)))
+          .then((found) => {
+            browseDrives.list = found.filter(Boolean)
+            browseDrives.probed = true
+            browseDrives.probing = false
+            if (alive) setDrives(browseDrives.list)
+          }, () => { browseDrives.probing = false })
+        return () => { alive = false }
+      }, [open, hasListing, windowsHost])
+
+      // A deep path must show its TAIL — that is where you are — so the chain
+      // keeps its right edge in view instead of cutting the last crumb off.
+      React.useEffect(() => {
+        const node = crumbsRef.current
+        if (node) node.scrollLeft = node.scrollWidth
+      }, [listing])
+
       if (!open) return null
 
-      // Home-rooted chain: inside the host account's home subtree the display
-      // starts at a localized Home crumb, outside it the full ancestry shows.
-      const crumbs = (() => {
-        const all = listing && Array.isArray(listing.crumbs) ? listing.crumbs : []
-        const home = listing && typeof listing.home === 'string' ? listing.home : ''
-        const at = home === '' ? -1 : all.findIndex((crumb) => crumb.path === home)
-        const tail = at === -1 ? all : all.slice(at)
-        return tail.map((crumb, index) => (index === 0 && at !== -1
-          ? { path: crumb.path, name: t('browse.home') }
-          : crumb))
-      })()
-      const currentPath = listing && typeof listing.path === 'string' ? listing.path : ''
+      // The whole ancestry from the filesystem ROOT: rooting the chain at Home
+      // (the official dialog's choice) hides where the listed level actually is,
+      // and the drive crumb answers "which disk am I on" at a glance.
+      const crumbs = listing && Array.isArray(listing.crumbs) ? listing.crumbs : []
       const parentPath = crumbs.length > 1 ? crumbs[crumbs.length - 2].path : ''
       const entries = (listing && Array.isArray(listing.entries) ? listing.entries : [])
         .filter((entry) => showHidden || !entry.hidden)
+      const selectedEntry = entries.find((entry) => entry.path === selected) || null
+      const targetPath = selectedEntry ? selectedEntry.path : currentPath
 
       const submitDraft = () => {
         const path = draft.trim()
@@ -3518,12 +3632,14 @@ window.__ModuleLoader__.load({
         setCreateBusy(true)
         setCreateError('')
         Promise.resolve()
-          .then(() => createDirectory(currentPath, name))
-          .then(() => {
+          .then((created) => {
             setCreateBusy(false)
             setCreating(false)
             setCreateName('')
-            go(currentPath)
+            // Land on the folder just made: it is almost always the one the
+            // operator wants to adopt next.
+            if (typeof created === 'string' && created !== '') setSelected(created)
+            go(currentPath, true)
           })
           .catch((reason) => {
             setCreateBusy(false)
@@ -3556,7 +3672,7 @@ window.__ModuleLoader__.load({
             disabled: parentPath === '',
             onClick: () => { if (parentPath !== '') go(parentPath) },
           }, '↑'),
-          E('div', { className: 'bw-browse-crumbs' },
+          E('div', { className: 'bw-browse-crumbs', ref: crumbsRef },
             crumbs.map((crumb, index) => (index === crumbs.length - 1
               ? E('span', { key: crumb.path, className: 'bw-browse-crumb bw-browse-current', title: crumb.path }, crumb.name)
               : E('button', {
@@ -3576,13 +3692,32 @@ window.__ModuleLoader__.load({
           }, icon('IconEditOutline16')),
         )
 
-      const rows = entries.map((entry) => E('button', {
+      // One click SELECTS a row (the footer button then adopts it — no need to
+      // step inside just to pick a folder), a double click or the row's chevron
+      // enters it. Touch needs the chevron: a double tap is not a gesture.
+      const rows = entries.map((entry) => E('div', {
         key: entry.path,
-        type: 'button',
-        className: 'bw-browse-row',
+        className: cls('bw-browse-row', selected === entry.path && 'bw-browse-row-on'),
         title: entry.path,
-        onClick: () => go(entry.path),
-      }, icon('IconFolderClose16'), E('span', { className: 'bw-browse-name' }, entry.name)))
+        role: 'button',
+        tabIndex: 0,
+        onClick: () => setSelected((current) => (current === entry.path ? '' : entry.path)),
+        onDoubleClick: () => go(entry.path),
+        onKeyDown: (event) => {
+          if (event.key === 'Enter') go(entry.path)
+          else if (event.key === ' ') { event.preventDefault(); setSelected((current) => (current === entry.path ? '' : entry.path)) }
+        },
+      },
+        icon('IconFolderClose16'),
+        E('span', { className: 'bw-browse-name' }, entry.name),
+        E('button', {
+          type: 'button',
+          className: 'bw-browse-open',
+          title: t('browse.enter'),
+          'aria-label': t('browse.enter'),
+          onClick: (event) => { event.stopPropagation(); go(entry.path) },
+        }, '›'),
+      ))
 
       const body = loading
         ? E('div', { className: 'bw-browse-note' }, t('browse.loading'))
@@ -3621,6 +3756,12 @@ window.__ModuleLoader__.load({
       const tools = E('div', { className: 'bw-browse-tools' },
         E('button', {
           type: 'button',
+          className: cls('bw-browse-tool', currentPath !== '' && currentPath === homePath && 'bw-browse-tool-on'),
+          disabled: homePath === '' || currentPath === homePath,
+          onClick: () => { if (homePath !== '') go(homePath) },
+        }, t('browse.home')),
+        E('button', {
+          type: 'button',
           className: cls('bw-browse-tool', showHidden && 'bw-browse-tool-on'),
           'aria-pressed': showHidden ? 'true' : 'false',
           onClick: () => setShowHidden((value) => !value),
@@ -3631,15 +3772,29 @@ window.__ModuleLoader__.load({
           disabled: creating || currentPath === '',
           onClick: () => { setCreating(true); setCreateName(''); setCreateError('') },
         }, t('browse.newFolder')),
+        drives.length > 1
+          ? E('div', {
+            className: 'bw-browse-drives',
+            title: t('browse.drives'),
+            role: 'group',
+            'aria-label': t('browse.drives'),
+          }, drives.map((drive) => E('button', {
+            key: drive,
+            type: 'button',
+            className: cls('bw-browse-drive', currentPath.slice(0, 2).toUpperCase() === drive && 'bw-browse-drive-on'),
+            title: drive + '\\',
+            onClick: () => go(drive + '\\'),
+          }, drive)))
+          : null,
       )
 
       const footer = E('div', { className: 'bw-browse-actions' },
         E(BTN, { variant: 'outline', onClick: onClose, disabled: busy === true }, t('cancel')),
         E(BTN, {
           variant: 'primary',
-          disabled: busy === true || currentPath === '',
-          onClick: () => { if (currentPath !== '') onPick(currentPath) },
-        }, t('browse.select')),
+          disabled: busy === true || targetPath === '',
+          onClick: () => { if (targetPath !== '') onPick(targetPath) },
+        }, selectedEntry !== null ? t('browse.selectNamed', { name: selectedEntry.name }) : t('browse.select')),
       )
 
       return E(ui.Modal, {

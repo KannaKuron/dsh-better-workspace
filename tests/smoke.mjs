@@ -595,3 +595,30 @@ test('directory picker: capability probe drives chooser or in-app browser (0.11.
   }
 })
 
+/**
+ * In-app browser usability (0.11.4). The 0.11.3 dialog rooted its breadcrumb at
+ * Home (the official dialog's choice), entered on a single click, and had no
+ * Windows drive entry at all — all three were real usability complaints.
+ */
+test('in-app browser: full path, drive chips, click-to-select (0.11.4)', () => {
+  const text = read('src/client.js')
+  // The chain is the full ancestry now: no re-rooting at the host home.
+  assert.doesNotMatch(text, /index === 0 && at !== -1/, 'the chain must not be re-rooted at Home')
+  assert.match(text, /const crumbs = listing && Array\.isArray\(listing\.crumbs\) \? listing\.crumbs : \[\]/)
+  assert.match(text, /node\.scrollLeft = node\.scrollWidth/, 'a deep path keeps its tail in view')
+  // Rows SELECT on click; entering needs a double click or the row chevron,
+  // because a touch screen has no double click.
+  assert.match(text, /onClick: \(\) => setSelected\(\(current\) => \(current === entry\.path \? '' : entry\.path\)\)/)
+  assert.match(text, /onDoubleClick: \(\) => go\(entry\.path\)/)
+  assert.match(text, /className: 'bw-browse-open'/)
+  assert.match(text, /bw-browse-row-on/)
+  assert.match(text, /t\('browse\.selectNamed', \{ name: selectedEntry\.name \}\)/, 'the footer adopts the selected row')
+  // Windows drives: one probe per page, missing letters silent, cached module-side.
+  assert.match(text, /const browseDrives = \{ probed: false, probing: false, list: \[\] \}/)
+  assert.match(text, /const letters = \['C:', 'D:', 'E:', 'F:', 'G:', 'H:'\]/)
+  assert.match(text, /browseDrives\.probed = true/)
+  for (const key of ['browse.enter', 'browse.drives', 'browse.selectNamed']) {
+    assert.ok(text.includes("'" + key + "':"), 'missing dictionary key ' + key)
+  }
+})
+

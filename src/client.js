@@ -69,6 +69,9 @@ window.__ModuleLoader__.load({
       'settings.compactChains.hint': '单层链合并为一行,出现多个子级时自动展开为树状;拖拽工作区期间单链临时展开回文件夹树,可放入任意一级;展开状态与自定义外观保存在当前浏览器。',
       'settings.statusPulse': '状态呼吸灯',
       'settings.statusPulse.hint': '被折叠藏起的状态灯(完成绿 / 运行蓝 / 待交互琥珀)沿层级向外冒泡:工作区与分组行以图标呼吸发光(颜色随状态,自定义过发光的标题一起呼吸),会话分组行显示呼吸状态灯;默认开启,可在此关闭。',
+      'settings.appearance': '默认外观',
+      'settings.appearance.hint': '没有单独自定义过的行使用这套外观;字体描边默认开启——背景画面下不描边文字常常看不清。字体颜色留空即跟随主题。',
+      'settings.appearance.reset': '恢复默认外观',
       'custom.title': '自定义外观',
       'custom.color': '颜色',
       'custom.glow': '发光',
@@ -80,6 +83,9 @@ window.__ModuleLoader__.load({
       'custom.weight.semibold': '半粗',
       'custom.weight.bold': '粗',
       'custom.shadow': '字体阴影',
+      'custom.stroke': '字体描边',
+      'custom.stroke.hint': '描边颜色自动取字体颜色的反差色(浅色字配黑描边、深色字配白描边),跟随主题明暗与背景插件的界面明暗,无需手动指定。',
+      'custom.strokeWidth': '描边粗细',
       'custom.weak': '弱',
       'custom.medium': '中',
       'custom.strong': '强',
@@ -169,6 +175,9 @@ window.__ModuleLoader__.load({
       'settings.compactChains.hint': 'Single-child chains merge into one row; levels with multiple children expand as a tree. Chains re-expand into folder rows while you drag a workspace, so it can drop into any level. State and custom styling persist in this browser.',
       'settings.statusPulse': 'Status breathing light',
       'settings.statusPulse.hint': 'Status dots hidden by collapse (done green / running blue / pending amber) bubble outward: workspace and folder rows breathe on their icon in the status color (custom-glow labels breathe along), session-group rows show a breathing dot; on by default, turn it off here.',
+      'settings.appearance': 'Default appearance',
+      'settings.appearance.hint': 'Rows that were never customized use this appearance; the outline is on by default — text without it is often unreadable over a background image. Leave the color empty to follow the theme.',
+      'settings.appearance.reset': 'Reset to default',
       'custom.title': 'Customize',
       'custom.color': 'Color',
       'custom.glow': 'Glow',
@@ -180,6 +189,9 @@ window.__ModuleLoader__.load({
       'custom.weight.semibold': 'Semi-bold',
       'custom.weight.bold': 'Bold',
       'custom.shadow': 'Font shadow',
+      'custom.stroke': 'Font outline',
+      'custom.stroke.hint': 'The outline color is derived from the font color (light text gets a black outline, dark text a white one) and follows the theme or a background plugin\'s light/dark switch — no manual color to pick.',
+      'custom.strokeWidth': 'Outline width',
       'custom.weak': 'Subtle',
       'custom.medium': 'Medium',
       'custom.strong': 'Strong',
@@ -647,6 +659,8 @@ window.__ModuleLoader__.load({
       '.bw-rail-btn:hover{background:var(--dsw-specific-sidebar-nav-item-hover,var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12)));color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-modal-body{display:flex;flex-direction:column;gap:10px;min-width:300px;max-width:380px;box-sizing:border-box}',
       '.bw-field{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--dsw-alias-label-secondary,#b8b8b8)}',
+      '.bw-appearance{display:flex;flex-direction:column;gap:10px}',
+      '.bw-appearance-box{margin-top:8px;padding:10px 12px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.22));border-radius:8px;background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.06))}',
       '.bw-hint{font-size:11px;color:var(--dsw-alias-label-quaternary,#8a8a8a);line-height:1.5;white-space:normal;word-break:break-word}',
       '.bw-path-echo{font-size:11px;color:var(--dsw-alias-label-tertiary,#9a9a9a);word-break:break-all;max-width:380px}',
       '.bw-modal-actions{display:flex;justify-content:flex-end;gap:8px}',
@@ -699,6 +713,7 @@ window.__ModuleLoader__.load({
           if (!d.prefs) d.prefs = {}
           if (host.compactChains !== undefined) d.prefs.compactChains = host.compactChains !== false
           if (host.statusPulse !== undefined) d.prefs.statusPulse = host.statusPulse !== false
+          if (host.appearance && typeof host.appearance === 'object') d.prefs.appearance = host.appearance
         },
         // Merge mode: union of both sides, the PULLED (host) copy wins any
         // per-key conflict; prefs take the pulled booleans when present.
@@ -712,6 +727,7 @@ window.__ModuleLoader__.load({
           if (!d.prefs) d.prefs = {}
           if (host.compactChains !== undefined) d.prefs.compactChains = host.compactChains !== false
           if (host.statusPulse !== undefined) d.prefs.statusPulse = host.statusPulse !== false
+          if (host.appearance && typeof host.appearance === 'object') d.prefs.appearance = { ...(d.prefs.appearance || {}), ...host.appearance }
         },
         setExpanded: (d, key, value) => { if (!d.expanded) d.expanded = {}; d.expanded[key] = value },
         setSessionsExpanded: (d, key, value) => { if (!d.sessionsExpanded) d.sessionsExpanded = {}; d.sessionsExpanded[key] = value },
@@ -1108,6 +1124,83 @@ window.__ModuleLoader__.load({
       .map(n => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0'))
       .join('')
 
+    /* ------------------- appearance: defaults + outline ------------------- */
+
+    // Text outline. Width and color are DERIVED, never hand-picked: an outline
+    // only helps when it contrasts with the label, and the label color is
+    // whatever the theme — or a background plugin's light/dark switch — hands
+    // us at that moment. contrastStrokeColor() reads the effective font color
+    // and returns the opposite pole; rows without a custom color inherit
+    // --bw-stroke-color, sampled from the live computed style (see the sampler
+    // in BetterBrowser) so a palette flip needs no React render.
+    const STROKE_MAX = 4
+    const DEFAULT_APPEARANCE = { color: '', glow: 0, weight: 0, shadow: false, stroke: true, strokeWidth: 1 }
+    const APPEARANCE_FIELDS = ['color', 'glow', 'weight', 'shadow', 'stroke', 'strokeWidth']
+    const clampStrokeWidth = (raw) => {
+      const n = Number(raw)
+      if (!isFinite(n) || n <= 0) return DEFAULT_APPEARANCE.strokeWidth
+      return Math.min(STROKE_MAX, Math.max(0.5, Math.round(n * 2) / 2))
+    }
+    // Persisted values arrive from older plugin versions and from the other
+    // surface: every read tolerates missing keys and falls back to the default
+    // (hydration replaces state wholesale — the 0.9.x hard rule).
+    const readAppearance = (raw) => {
+      const src = raw && typeof raw === 'object' ? raw : {}
+      return {
+        color: typeof src.color === 'string' ? src.color : '',
+        glow: Math.max(0, Number(src.glow) || 0),
+        weight: Number(src.weight) || 0,
+        shadow: src.shadow === true,
+        stroke: src.stroke !== false,
+        strokeWidth: src.strokeWidth === undefined ? DEFAULT_APPEARANCE.strokeWidth : clampStrokeWidth(src.strokeWidth),
+      }
+    }
+    // A row's own entry overrides the default appearance FIELD BY FIELD, so a
+    // row customized before this version (no stroke key) still inherits the new
+    // default outline instead of losing it.
+    const mergeAppearance = (base, entry) => {
+      if (!entry || typeof entry !== 'object') return readAppearance(base)
+      const merged = { ...base }
+      for (const field of APPEARANCE_FIELDS) {
+        if (entry[field] !== undefined) merged[field] = entry[field]
+      }
+      return readAppearance(merged)
+    }
+    const parseCssColor = (css) => {
+      const text = String(css || '')
+      const rgb = /^rgba?\(\s*([0-9.]+)[,\s]+([0-9.]+)[,\s]+([0-9.]+)/.exec(text)
+      if (rgb) return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])]
+      const srgb = /^color\(srgb\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)/.exec(text)
+      if (srgb) return [Number(srgb[1]) * 255, Number(srgb[2]) * 255, Number(srgb[3]) * 255]
+      return null
+    }
+    const relativeLuminance = (rgb) => {
+      const [r, g, b] = rgb.map((channel) => {
+        const s = Math.max(0, Math.min(255, Number(channel) || 0)) / 255
+        return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4)
+      })
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b
+    }
+    // WCAG contrast against both poles: the outline takes whichever of black /
+    // white stands out more from the label color.
+    const contrastStrokeColor = (rgb) => {
+      if (!rgb) return '#000000'
+      const luminance = relativeLuminance(rgb)
+      return (luminance + 0.05) / 0.05 >= 1.05 / (luminance + 0.05) ? '#000000' : '#ffffff'
+    }
+    const STROKE_FALLBACK = 'var(--bw-stroke-color, rgba(0,0,0,.75))'
+    // paint-order keeps the stroke UNDER the fill, so the glyph does not thin
+    // out — the whole point of an outer outline.
+    const strokeStyleOf = (appearance) => {
+      if (!appearance || appearance.stroke === false) return null
+      const rgb = appearance.color ? colorToRgb(appearance.color) : null
+      return {
+        WebkitTextStrokeWidth: clampStrokeWidth(appearance.strokeWidth) + 'px',
+        WebkitTextStrokeColor: rgb ? contrastStrokeColor(rgb) : STROKE_FALLBACK,
+        paintOrder: 'stroke fill',
+      }
+    }
+
     function FolderRow({ node, depth, expanded, onToggle, onContextMenu, dropInto, dragEvents, custStyle, iconMode, pulse, t }) {
       const total = countWorkspaces(node)
       const iconEl = iconOf(iconMode, expanded)
@@ -1281,51 +1374,208 @@ window.__ModuleLoader__.load({
     ]
 
     /**
-     * Per-row appearance: color swatches (+ native picker), glow intensity,
-     * folder-glyph mode. Committing the defaults clears the entry; Reset
-     * removes it entirely.
+     * Appearance controls shared by the per-row dialog and the settings card's
+     * "default appearance" section: color, glow, weight, shadow, the text
+     * outline (on/off + width) and — where the row actually renders one — the
+     * folder glyph. The outline color is never picked by hand (see the
+     * appearance block above): it is derived from the effective font color, so
+     * it keeps working when the palette flips.
      */
-    function CustomizeDialog({ open, initial, kind, onChange, onReset, onClose, t }) {
-      // Icons render only for workspace / workspace-folder rows. Session rows
-      // already carry the official status dot (pending/running/done) in the
-      // leading slot, and session sub-group rows have no icon either — so the
-      // icon grid is offered only where it actually displays.
-      const allowIcon = kind === 'folder' || kind === 'workspace'
-      const [color, setColor] = React.useState('')
-      const [glow, setGlow] = React.useState(0)
-      const [iconMode, setIconMode] = React.useState('solid')
-      const [weight, setWeight] = React.useState(0)
-      const [shadow, setShadow] = React.useState(false)
-      React.useEffect(() => {
-        if (!open) return
-        setColor(initial && initial.color ? initial.color : '')
-        setGlow(initial && initial.glow ? Number(initial.glow) || 0 : 0)
-        setIconMode(initial && initial.icon ? initial.icon : 'solid')
-        setWeight(initial && initial.weight ? Number(initial.weight) || 0 : 0)
-        setShadow(initial && initial.shadow === true)
-      }, [open, initial])
-      if (!open) return null
-      const commit = () => {
-        const empty = allowIcon
-          ? (color === '' && glow === 0 && iconMode === 'solid' && weight === 0 && !shadow)
-          : (color === '' && glow === 0 && weight === 0 && !shadow)
-        const style = empty
-          ? null
-          : { color, glow, weight: weight > 0 ? weight : undefined, shadow: shadow || undefined, ...(allowIcon ? { icon: iconMode } : {}) }
-        onChange(style)
-        onClose()
-      }
+    function AppearanceControls({ value, onChange, allowIcon, t }) {
+      const appearance = readAppearance(value)
+      const color = appearance.color || ''
+      const glow = appearance.glow
+      const weight = appearance.weight
+      const shadow = appearance.shadow
+      const stroke = appearance.stroke
+      const strokeWidth = appearance.strokeWidth
+      const iconMode = value && value.icon ? value.icon : 'solid'
+      const patch = (next) => { if (typeof onChange === 'function') onChange(next) }
       const channels = colorToRgb(color)
       const setChannel = (index, raw) => {
         const n = Math.max(0, Math.min(255, parseInt(raw, 10) || 0))
         const base = channels || [0, 0, 0]
         const next = base.slice()
         next[index] = n
-        setColor(rgbToHex(next[0], next[1], next[2]))
+        patch({ color: rgbToHex(next[0], next[1], next[2]) })
       }
       const previewShadows = []
       if (glow > 0 && color) previewShadows.push('0 0 ' + glow + 'px ' + color)
       if (shadow) previewShadows.push('1px 1px 2px rgba(0,0,0,.85)')
+      // The preview must show the REAL outline: with no custom color the pole
+      // comes from the preview text's own computed color, so it reads correctly
+      // in the current theme (including a background plugin's light/dark flip).
+      const previewRef = React.useRef(null)
+      React.useEffect(() => {
+        const el = previewRef.current
+        if (!el || typeof getComputedStyle !== 'function') return undefined
+        const sample = () => {
+          try {
+            const rgb = parseCssColor(getComputedStyle(el).color)
+            if (rgb) el.style.setProperty('--bw-stroke-color', contrastStrokeColor(rgb))
+          } catch (error) { /* best effort: the CSS fallback stays in place */ }
+        }
+        sample()
+        const poll = setInterval(sample, 1500)
+        return () => clearInterval(poll)
+      }, [color, stroke])
+      const previewStroke = strokeStyleOf(appearance)
+      return E('div', { className: 'bw-appearance' },
+        E('div', { className: 'bw-field' },
+          t('custom.color'),
+          E('div', { className: 'bw-dialog-input-row' },
+            SWATCHES.map((swatch) => E('button', {
+              key: swatch || 'none',
+              type: 'button',
+              className: cls('bw-swatch', color === swatch && 'bw-swatch-active'),
+              style: swatch === '' ? undefined : { background: swatch },
+              'aria-label': swatch === '' ? t('custom.reset') : swatch,
+              onClick: () => patch({ color: swatch }),
+            })),
+            E('input', {
+              type: 'color',
+              className: 'bw-color-input',
+              value: color || '#5b8def',
+              onChange: (e) => patch({ color: e.target.value }),
+            }),
+          ),
+          E('div', { className: 'bw-rgb-row' },
+            ['R', 'G', 'B'].map((label, index) => E('label', { key: label, className: 'bw-rgb-label' },
+              label,
+              E('input', {
+                type: 'number',
+                className: 'bw-rgb-input',
+                min: 0,
+                max: 255,
+                value: channels ? channels[index] : '',
+                placeholder: '—',
+                onChange: (e) => setChannel(index, e.target.value),
+              }),
+            )),
+          ),
+        ),
+        E('div', { className: 'bw-field' },
+          t('custom.glow'),
+          E('div', { className: 'bw-glow-row' },
+            E('input', {
+              type: 'range',
+              className: 'bw-slider',
+              min: 0,
+              max: GLOW_MAX,
+              step: 1,
+              value: glow,
+              'aria-label': t('custom.glow'),
+              onChange: (e) => patch({ glow: Number(e.target.value) }),
+            }),
+            E('span', { className: 'bw-glow-value' }, glow === 0 ? t('custom.none') : glow + 'px'),
+          ),
+        ),
+        E('div', { className: 'bw-field' },
+          t('custom.weight'),
+          E('div', { className: 'bw-seg' },
+            [400, 500, 600, 700].map((wt) => E('button', {
+              key: String(wt),
+              type: 'button',
+              className: cls('bw-seg-btn', weight === wt && 'bw-seg-btn-active'),
+              onClick: () => patch({ weight: wt }),
+            }, wt === 400 ? t('custom.weight.regular') : wt === 500 ? t('custom.weight.medium') : wt === 600 ? t('custom.weight.semibold') : t('custom.weight.bold'))),
+          ),
+        ),
+        E('div', { className: 'bw-field' },
+          t('custom.shadow'),
+          E('div', { className: 'bw-seg' },
+            E('button', { type: 'button', className: cls('bw-seg-btn', !shadow && 'bw-seg-btn-active'), onClick: () => patch({ shadow: false }) }, t('custom.none')),
+            E('button', { type: 'button', className: cls('bw-seg-btn', shadow && 'bw-seg-btn-active'), onClick: () => patch({ shadow: true }) }, t('settings.on')),
+          ),
+        ),
+        E('div', { className: 'bw-field' },
+          t('custom.stroke'),
+          E('div', { className: 'bw-seg' },
+            E('button', { type: 'button', className: cls('bw-seg-btn', !stroke && 'bw-seg-btn-active'), onClick: () => patch({ stroke: false }) }, t('settings.off')),
+            E('button', { type: 'button', className: cls('bw-seg-btn', stroke && 'bw-seg-btn-active'), onClick: () => patch({ stroke: true }) }, t('settings.on')),
+          ),
+          E('div', { className: 'bw-glow-row' },
+            E('input', {
+              type: 'range',
+              className: 'bw-slider',
+              min: 0.5,
+              max: STROKE_MAX,
+              step: 0.5,
+              value: strokeWidth,
+              'aria-label': t('custom.strokeWidth'),
+              onChange: (e) => patch({ strokeWidth: Number(e.target.value) }),
+            }),
+            E('span', { className: 'bw-glow-value' }, strokeWidth + 'px'),
+          ),
+          E('div', { className: 'bw-hint' }, t('custom.stroke.hint')),
+        ),
+        allowIcon ? E('div', { className: 'bw-field' },
+          t('custom.icon'),
+          E('div', { className: 'bw-icon-grid' },
+            ICON_CHOICES.map((mode) => E('button', {
+              key: mode,
+              type: 'button',
+              className: cls('bw-icon-cell', iconMode === mode && 'bw-icon-cell-active'),
+              title: mode === 'solid' ? t('custom.icon.solid') : (mode === 'outline' ? t('custom.icon.outline') : mode),
+              'aria-label': mode === 'solid' ? t('custom.icon.solid') : (mode === 'outline' ? t('custom.icon.outline') : mode),
+              onClick: () => patch({ icon: mode }),
+            }, mode === 'none' ? E('span', { className: 'bw-icon-none' }) : iconOf(mode, false))),
+          ),
+        ) : null,
+        E('div', { className: 'bw-field' },
+          t('custom.preview'),
+          E('div', {
+            ref: previewRef,
+            className: 'bw-preview',
+            style: {
+              color: color || undefined,
+              fontWeight: weight > 0 ? weight : undefined,
+              textShadow: previewShadows.length > 0 ? previewShadows.join(',') : undefined,
+              ...(previewStroke || null),
+            },
+          },
+            allowIcon ? E('span', { className: 'bw-preview-icon' }, iconOf(iconMode, true)) : null,
+            E('span', { className: 'bw-preview-label' }, t('custom.preview.sample')),
+          ),
+        ),
+      )
+    }
+
+    /**
+     * Per-row appearance dialog: the shared controls plus the commit / reset
+     * semantics. Committing exactly the default appearance (with the default
+     * solid icon) clears the row's entry instead of pinning a redundant copy;
+     * Reset removes the entry outright.
+     */
+    function CustomizeDialog({ open, initial, defaults, kind, onChange, onReset, onClose, t }) {
+      // Icons render only for workspace / workspace-folder rows. Session rows
+      // already carry the official status dot (pending/running/done) in the
+      // leading slot, and session sub-group rows have no icon either — so the
+      // icon grid is offered only where it actually displays.
+      const allowIcon = kind === 'folder' || kind === 'workspace'
+      const fallback = readAppearance(defaults)
+      const [draft, setDraft] = React.useState(DEFAULT_APPEARANCE)
+      React.useEffect(() => {
+        if (!open) return
+        const base = readAppearance(initial)
+        setDraft({ ...base, icon: (initial && initial.icon) || 'solid' })
+      }, [open, initial])
+      if (!open) return null
+      const unchanged = APPEARANCE_FIELDS.every((field) => draft[field] === fallback[field])
+        && (!allowIcon || (draft.icon || 'solid') === 'solid')
+      const commit = () => {
+        const entry = {
+          color: draft.color,
+          glow: draft.glow,
+          weight: draft.weight > 0 ? draft.weight : undefined,
+          shadow: draft.shadow || undefined,
+          stroke: draft.stroke,
+          strokeWidth: draft.strokeWidth,
+          ...(allowIcon ? { icon: draft.icon || 'solid' } : {}),
+        }
+        onChange(unchanged ? null : entry)
+        onClose()
+      }
       return E(ui.Modal, {
         open: true,
         onClose,
@@ -1337,100 +1587,12 @@ window.__ModuleLoader__.load({
         ),
       },
         E('div', { className: 'bw-modal-body' },
-          E('div', { className: 'bw-field' },
-            t('custom.color'),
-            E('div', { className: 'bw-dialog-input-row' },
-              SWATCHES.map((swatch) => E('button', {
-                key: swatch || 'none',
-                type: 'button',
-                className: cls('bw-swatch', color === swatch && 'bw-swatch-active'),
-                style: swatch === '' ? undefined : { background: swatch },
-                'aria-label': swatch === '' ? t('custom.reset') : swatch,
-                onClick: () => setColor(swatch),
-              })),
-              E('input', {
-                type: 'color',
-                className: 'bw-color-input',
-                value: color || '#5b8def',
-                onChange: (e) => setColor(e.target.value),
-              }),
-            ),
-            E('div', { className: 'bw-rgb-row' },
-              ['R', 'G', 'B'].map((label, index) => E('label', { key: label, className: 'bw-rgb-label' },
-                label,
-                E('input', {
-                  type: 'number',
-                  className: 'bw-rgb-input',
-                  min: 0,
-                  max: 255,
-                  value: channels ? channels[index] : '',
-                  placeholder: '—',
-                  onChange: (e) => setChannel(index, e.target.value),
-                }),
-              )),
-            ),
-          ),
-          E('div', { className: 'bw-field' },
-            t('custom.glow'),
-            E('div', { className: 'bw-glow-row' },
-              E('input', {
-                type: 'range',
-                className: 'bw-slider',
-                min: 0,
-                max: GLOW_MAX,
-                step: 1,
-                value: glow,
-                'aria-label': t('custom.glow'),
-                onChange: (e) => setGlow(Number(e.target.value)),
-              }),
-              E('span', { className: 'bw-glow-value' }, glow === 0 ? t('custom.none') : glow + 'px'),
-            ),
-          ),
-          E('div', { className: 'bw-field' },
-            t('custom.weight'),
-            E('div', { className: 'bw-seg' },
-              [400, 500, 600, 700].map((wt) => E('button', {
-                key: String(wt),
-                type: 'button',
-                className: cls('bw-seg-btn', weight === wt && 'bw-seg-btn-active'),
-                onClick: () => setWeight(wt),
-              }, wt === 400 ? t('custom.weight.regular') : wt === 500 ? t('custom.weight.medium') : wt === 600 ? t('custom.weight.semibold') : t('custom.weight.bold'))),
-            ),
-          ),
-          E('div', { className: 'bw-field' },
-            t('custom.shadow'),
-            E('div', { className: 'bw-seg' },
-              E('button', { type: 'button', className: cls('bw-seg-btn', !shadow && 'bw-seg-btn-active'), onClick: () => setShadow(false) }, t('custom.none')),
-              E('button', { type: 'button', className: cls('bw-seg-btn', shadow && 'bw-seg-btn-active'), onClick: () => setShadow(true) }, t('settings.on')),
-            ),
-          ),
-          allowIcon ? E('div', { className: 'bw-field' },
-            t('custom.icon'),
-            E('div', { className: 'bw-icon-grid' },
-              ICON_CHOICES.map((mode) => E('button', {
-                key: mode,
-                type: 'button',
-                className: cls('bw-icon-cell', iconMode === mode && 'bw-icon-cell-active'),
-                title: mode === 'solid' ? t('custom.icon.solid') : (mode === 'outline' ? t('custom.icon.outline') : mode),
-                'aria-label': mode === 'solid' ? t('custom.icon.solid') : (mode === 'outline' ? t('custom.icon.outline') : mode),
-                onClick: () => setIconMode(mode),
-              }, mode === 'none' ? E('span', { className: 'bw-icon-none' }) : iconOf(mode, false))),
-            ),
-          ) : null,
-          E('div', { className: 'bw-field' },
-            t('custom.preview'),
-            E('div', {
-              className: 'bw-preview',
-              style: {
-                color: color || undefined,
-                fontWeight: weight > 0 ? weight : undefined,
-                textShadow: previewShadows.length > 0 ? previewShadows.join(',') : undefined,
-              },
-            },
-              allowIcon ? E('span', { className: 'bw-preview-icon' }, iconOf(iconMode, true)) : null,
-              E('span', { className: 'bw-preview-label' }, t('custom.preview.sample')),
-            ),
-          ),
+          E(AppearanceControls, {
+            value: draft,
+            onChange: (patch) => setDraft((prev) => ({ ...readAppearance(prev), ...patch, icon: prev.icon || 'solid' })),
+            allowIcon,
+            t,
+          }),
         ),
         StyleNode(),
       )
@@ -1448,10 +1610,15 @@ window.__ModuleLoader__.load({
       const localFolders = useStore ? (useStore(s => s.folders) || []) : []
       const compactChains = prefs.compactChains !== false
       const statusPulse = prefs.statusPulse !== false
+      // Default appearance: the base every row inherits unless it carries its
+      // own per-row entry. The outline ships ON — text over a background image
+      // is often unreadable without it.
+      const appearance = readAppearance(prefs.appearance)
       const setPref = (key, value) => {
         if (actions && typeof actions.setPref === 'function') actions.setPref(key, value)
         scopeSet(key, value)
       }
+      const setAppearance = (next) => setPref('appearance', readAppearance(next))
       // Manual cross-device sync state.
       const [syncMode, setSyncMode] = React.useState('overwrite')
       const [syncMsg, setSyncMsg] = React.useState(null)
@@ -1471,6 +1638,7 @@ window.__ModuleLoader__.load({
         scopeSet('folders', folders)
         scopeSet('compactChains', prefs.compactChains !== false)
         scopeSet('statusPulse', prefs.statusPulse !== false)
+        scopeSet('appearance', appearance)
         setSyncMsg(t('sync.done'))
       }
       const modeButton = (id, label) => E('button', {
@@ -1511,6 +1679,19 @@ window.__ModuleLoader__.load({
           }, E('span', { className: 'bw-switch-thumb' })),
         ),
         E('div', { className: 'bw-hint' }, t('settings.statusPulse.hint')),
+        E('div', { className: 'bw-setting-label', style: { marginTop: 16 } }, t('settings.appearance')),
+        E('div', { className: 'bw-hint' }, t('settings.appearance.hint')),
+        E('div', { className: 'bw-appearance-box' },
+          E(AppearanceControls, {
+            value: appearance,
+            onChange: (patch) => setAppearance({ ...appearance, ...patch }),
+            allowIcon: false,
+            t,
+          }),
+          E('div', { style: { marginTop: 10 } },
+            E(BTN, { variant: 'outline', onClick: () => setAppearance(DEFAULT_APPEARANCE) }, t('settings.appearance.reset')),
+          ),
+        ),
         E('div', { className: 'bw-setting-label', style: { marginTop: 16 } }, t('sync.title')),
         E('div', { className: 'bw-hint' }, t('sync.desc')),
         E('div', { className: 'bw-sync-modes' },
@@ -1611,6 +1792,48 @@ window.__ModuleLoader__.load({
           titleCacheRef.rememberAllTitles(list)
         }
       }, [list ? list.byId : null])
+
+      // Outline color sampler. The outline has to contrast with the LABEL
+      // color, and the palette can flip (theme, or a background plugin's
+      // light/dark switch) without any React render. So sample the tree's live
+      // computed color into --bw-stroke-color: attribute mutations on
+      // <html>/<body> catch class- and style-driven flips at once, and the slow
+      // poll catches stylesheet-only rewrites (CSSOM variable swaps). Rows with
+      // their own color compute the pole in JS and never read the variable.
+      const treeRef = React.useRef(null)
+      React.useEffect(() => {
+        const el = treeRef.current
+        if (!el || typeof getComputedStyle !== 'function') return undefined
+        let stopped = false
+        let pending = null
+        const sample = () => {
+          if (stopped) return
+          try {
+            const rgb = parseCssColor(getComputedStyle(el).color)
+            if (rgb) el.style.setProperty('--bw-stroke-color', contrastStrokeColor(rgb))
+          } catch (error) { /* best effort: the CSS fallback stays in place */ }
+        }
+        const schedule = () => {
+          if (stopped || pending !== null) return
+          pending = setTimeout(() => { pending = null; sample() }, 150)
+        }
+        sample()
+        let observer = null
+        if (typeof MutationObserver === 'function') {
+          observer = new MutationObserver(schedule)
+          try {
+            observer.observe(document.documentElement, { attributes: true })
+            if (document.body && document.body !== document.documentElement) observer.observe(document.body, { attributes: true })
+          } catch (error) { /* observing is optional */ }
+        }
+        const poll = setInterval(sample, 1500)
+        return () => {
+          stopped = true
+          if (pending !== null) clearTimeout(pending)
+          clearInterval(poll)
+          if (observer) observer.disconnect()
+        }
+      }, [])
 
       const [query, setQuery] = React.useState('')
       const [searchOpen, setSearchOpen] = React.useState(false)
@@ -1724,20 +1947,26 @@ window.__ModuleLoader__.load({
       const fail = (text) => { setFlowOpen(false); setDialog(null); setErrorText(String(text || 'unknown error')) }
 
       const styleEntry = (key) => stylingMap[key] || null
+      // Effective appearance = the settings card's default, overridden field by
+      // field by this row's own entry.
+      const defaultAppearance = readAppearance(prefsMap.appearance)
+      const appearanceOf = (key) => mergeAppearance(defaultAppearance, styleEntry(key))
       const rowStyleOf = (key) => {
-        const entry = styleEntry(key)
-        if (!entry || !entry.color) return null
-        const glow = Number(entry.glow) || 0
-        const weight = Number(entry.weight) || 0
-        const shadow = entry.shadow === true
+        const appearance = appearanceOf(key)
+        const color = appearance.color || ''
+        const glow = Number(appearance.glow) || 0
+        const weight = Number(appearance.weight) || 0
+        const shadow = appearance.shadow === true
         const shadows = []
-        if (glow > 0) shadows.push('0 0 ' + glow + 'px ' + entry.color)
+        if (glow > 0 && color) shadows.push('0 0 ' + glow + 'px ' + color)
         if (shadow) shadows.push('1px 1px 2px rgba(0,0,0,.85)')
-        return {
-          color: entry.color,
-          fontWeight: weight > 0 ? weight : undefined,
-          textShadow: shadows.length > 0 ? shadows.join(',') : undefined,
-        }
+        const style = {}
+        if (color) style.color = color
+        if (weight > 0) style.fontWeight = weight
+        if (shadows.length > 0) style.textShadow = shadows.join(',')
+        const stroke = strokeStyleOf(appearance)
+        if (stroke) Object.assign(style, stroke)
+        return Object.keys(style).length > 0 ? style : null
       }
       const keyOf = (kind, payload) => {
         if (kind === 'folder') return 'folder:' + payload.path
@@ -2521,7 +2750,7 @@ window.__ModuleLoader__.load({
           E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('search.placeholder'), onClick: () => setSearchOpen(v => !v) }, icon('IconSearchOutline16')),
           E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('add'), onClick: () => { setFlowParent(''); setFlowOpen(true) } }, icon('IconProjectAddOutline16')),
         ),
-        E('div', { className: 'bw-tree', role: 'tree', 'aria-label': t('title') }, bodyRows),
+        E('div', { ref: treeRef, className: 'bw-tree', role: 'tree', 'aria-label': t('title') }, bodyRows),
         E(BetterFlow, {
           open: flowOpen,
           busy: false,
@@ -2563,7 +2792,10 @@ window.__ModuleLoader__.load({
         E(CustomizeDialog, {
           open: customize !== null,
           kind: customize ? customize.kind : undefined,
-          initial: customize ? styleEntry(customize.entryKey) : undefined,
+          defaults: defaultAppearance,
+          initial: customize
+            ? { ...appearanceOf(customize.entryKey), icon: (styleEntry(customize.entryKey) || {}).icon || 'solid' }
+            : undefined,
           onChange: (style) => { if (customize) shared.setStyling(customize.entryKey, style) },
           onReset: () => { if (customize) shared.setStyling(customize.entryKey, null) },
           onClose: () => setCustomize(null),

@@ -59,6 +59,11 @@ export function apply(ctx) {
           statusPulse: Schema.boolean().default(true),
           folders: Schema.array(Schema.string()).default([]),
           styling: Schema.dict(Schema.any()).default({}),
+          // Default appearance (color / glow / weight / shadow / outline) for
+          // rows without their own entry — shared with the other surface like
+          // the rest of the prefs. The client half owns the shape, so it stays
+          // a permissive dict.
+          appearance: Schema.dict(Schema.any()).default({}),
         }))
         log('[dsh-better-workspace] settings namespace registered: better-workspace')
       })

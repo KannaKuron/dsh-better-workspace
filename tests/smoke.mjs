@@ -270,3 +270,59 @@ test('manual cross-device sync: host scope bind, dual writes, pull modes', () =>
     assert.ok(text.includes("'" + key + "':"), 'missing dictionary key ' + key)
   }
 })
+
+/**
+ * Appearance defaults + the derived text outline (0.10.0). The outline color is
+ * never picked by hand: it is the pole that contrasts with the label color, so
+ * it survives a theme or background-plugin light/dark flip.
+ */
+test('appearance: default outline on, derived contrast pole, field-by-field merge (0.10.0)', () => {
+  const text = read('src/client.js')
+  const start = text.indexOf('const colorToRgb =')
+  const end = text.indexOf('function FolderRow(')
+  assert.ok(start !== -1 && end !== -1 && start < end, 'appearance helpers not found')
+  const loaded = new Function(text.slice(start, end) +
+    '\nreturn { DEFAULT_APPEARANCE, readAppearance, mergeAppearance, contrastStrokeColor, parseCssColor, strokeStyleOf }')()
+  const { DEFAULT_APPEARANCE, readAppearance, mergeAppearance, contrastStrokeColor, parseCssColor, strokeStyleOf } = loaded
+  // The outline ships ON — text over a background image is unreadable without it.
+  assert.equal(DEFAULT_APPEARANCE.stroke, true)
+  assert.equal(DEFAULT_APPEARANCE.strokeWidth, 1)
+  assert.equal(DEFAULT_APPEARANCE.color, '')
+  // Hydration replaces state wholesale: every read tolerates missing keys.
+  assert.deepEqual(readAppearance(undefined), DEFAULT_APPEARANCE)
+  assert.equal(readAppearance({}).stroke, true, 'a missing stroke key keeps the default outline')
+  assert.equal(readAppearance({ stroke: false }).stroke, false, 'an explicit off survives')
+  assert.equal(readAppearance({ strokeWidth: 99 }).strokeWidth, 4, 'width clamps to the slider range')
+  assert.equal(readAppearance({ strokeWidth: 0 }).strokeWidth, 1, 'a zero width falls back to the default')
+  // Row entries override the default FIELD BY FIELD: entries written before the
+  // outline existed still inherit it.
+  const merged = mergeAppearance(DEFAULT_APPEARANCE, { color: '#f85149', glow: 6 })
+  assert.equal(merged.color, '#f85149')
+  assert.equal(merged.glow, 6)
+  assert.equal(merged.stroke, true, 'older entries inherit the default outline')
+  assert.equal(merged.strokeWidth, 1)
+  assert.equal(mergeAppearance(DEFAULT_APPEARANCE, { stroke: false }).stroke, false, 'a row can turn it off')
+  // The pole follows the LABEL color (WCAG contrast against both poles).
+  assert.equal(contrastStrokeColor([255, 255, 255]), '#000000')
+  assert.equal(contrastStrokeColor([0, 0, 0]), '#ffffff')
+  assert.equal(contrastStrokeColor([230, 230, 230]), '#000000')
+  assert.equal(contrastStrokeColor([91, 141, 239]), '#000000')
+  assert.equal(contrastStrokeColor(null), '#000000')
+  assert.equal(parseCssColor('rgb(230, 230, 230)')[0], 230)
+  assert.equal(parseCssColor('rgba(18, 18, 20, 0.9)')[2], 20)
+  assert.equal(parseCssColor('color(srgb 0.9 0.9 0.9)')[0], 229.5, 'color(srgb ...) is understood too')
+  assert.equal(parseCssColor('nonsense'), null)
+  // Custom colors compute their own pole; rows without one read the sampled
+  // variable so a palette flip needs no React render.
+  assert.equal(strokeStyleOf({ color: '#ffffff', stroke: true, strokeWidth: 2 }).WebkitTextStrokeColor, '#000000')
+  assert.equal(strokeStyleOf({ color: '#0b0b0b', stroke: true, strokeWidth: 1 }).WebkitTextStrokeColor, '#ffffff')
+  assert.match(strokeStyleOf({ color: '', stroke: true, strokeWidth: 1 }).WebkitTextStrokeColor, /--bw-stroke-color/)
+  assert.equal(strokeStyleOf({ color: '#ffffff', stroke: true, strokeWidth: 2 }).WebkitTextStrokeWidth, '2px')
+  assert.equal(strokeStyleOf({ color: '#ffffff', stroke: true, strokeWidth: 2 }).paintOrder, 'stroke fill')
+  assert.equal(strokeStyleOf({ color: '#fff', stroke: false }), null, 'off renders no stroke style')
+  // Host schema + cross-device sync carry the new field.
+  assert.match(read('src/index.js'), /appearance: Schema\.dict/, 'host namespace must declare appearance')
+  assert.match(text, /host\.appearance && typeof host\.appearance === 'object'/, 'pull paths must carry appearance')
+  assert.match(text, /scopeSet\('appearance'/, 'the push path must carry appearance')
+  assert.match(text, /--bw-stroke-color/, 'the sampled variable is what unattributed rows read')
+})

@@ -38,6 +38,7 @@
 2. **slot 契约**(对照 dsh 源码 packages/client/ui-workspace/src/client/):
    - sidebar.workspaces 是 **single** 槽;same-priority 二次注册会抛错,官方占用者优先级 0,本插件用 priority: -1(ascending, lowest renders)压制。
    - conversation.hero.workspace.directoryFlow 与 sidebar.workspaces.directoryFlow 是官方 **directoryFlow** 洞:owner 持有触发器/busy/错误弹窗(open/busy/onPicked/onCancel/onError),占位者拥有「open 之后、交付路径之前」的一切。本插件**自己 create + rename,然后调 onCancel() 收尾**;失败走 onError(message) 让 owner 显示错误弹窗。**绝不调用 onPicked**(那会让 owner 再 create 一次)。
+   - **目录交互必须先探测宿主组装的后端(v0.11.3 起,红线)**:宿主只组装一个后端(`@deepseek-ai/dsh-host-directory-picker-auto`)——`bindHost === '127.0.0.1'` 且非 SSH、有可用显示会话才是 `native`,**其余一切绑定(含 `0.0.0.0`/局域网)都是 `browse`**,后者的 wire 动词只有 `list` / `createDirectory`,`pick` 会被拒为 `directory-picker/unavailable`。流程一律先 `pickerCapabilityNow()`:`list` 成功即 browse、以能力码被拒即 native、无法归类则**不缓存**并照旧试 `pick`(`pickerRefusal` 命中就 `markPickerBrowse()` 切浏览器)。**绝不再假定 native**——≤0.11.2 正是这一假定让 LAN 绑定下「添加工作区」必然失败。browse 侧由 `DirectoryBrowseDialog` 承载,浏览失败留在对话框内,不占用 owner 的 `onError`;两处入口(两个洞 + 侧栏内联流)必须注入同一组 `pickDirectory`/`listDirectory`/`createDirectory`。
    - 本插件自己的浏览器**直接内联** BetterFlow(不经子 slot),因此它的「添加」按钮**不得**以 directoryFlow 占用率为门控(自己就是流)。
    - sidebar.workspaces.directoryFlow 的注册包在 try/catch 里:该洞只在本插件浏览器未占用父槽时才被声明,过渡期消失是正常路径。
 3. **数据事实**(dsh 0.1.2-alpha.1 实测):
@@ -95,6 +96,7 @@
    - 会话:打开/重命名/分叉/归档、新会话按钮、当前高亮、运行圆点;
    - **重启标题不回退(0.9.4,0.9.6 重写后行为不变)**:让若干会话带 / 标题(含一个 fork 出来的),重启 DSH 后不打开它们,树里应显示 remembered 标题且分组正确(而非工作区名);打开任一会话后标题与官方一致;清掉 localStorage 的 dsh.betterWorkspace.titles.v1 后重启,行为退回官方 basename 回退(兜底不劣化);agent 运行中侧栏应无卡顿(0.9.6 修复 issue #1 的回归点);
    - 对话空态页「添加工作区」同样带分组弹窗;
+   - **browse 后端(LAN 绑定)**:把 cordis.patch.yml 的 webserver `host` 改成 `0.0.0.0` 重启 → 侧栏与对话空态的「添加工作区」都应出现**应用内目录浏览器**(而 0.11.2 是错误弹窗),能进目录、能新建文件夹、能显示隐藏文件,选完目录仍弹「所属分组」;改回 `127.0.0.1` 重启应回到宿主桌面上的原生选择器。隔离验证做法:独立 DSH_HOME + 独立端口(别动用户实例),headless Chrome over CDP;收尾要按端口 kill 掉残留 node 进程——后台 job 被杀不会带走 dsh 子进程。
    - **跨端手动同步(0.9.5)**:web 端自定义若干外观 → 设置卡片点「发送本设备数据」→ 桌面端(装同版本插件)设置卡片点「从 Web 获取」(覆盖模式)→ 外观/分组/开关一致;合并模式下两端独有条目并集保留;宿主 ~/.dsh/settings.yaml 的 better-workspace 段可查;宿主 settings 不可用时卡片提示不支持、行为回纯本地;
    - 卸载/禁用本插件 → 回到官方浏览器,hero 流回退官方默认。
 3. 升级 dsh 后:对照 packages/client/ui-workspace/src/client/contract/slots.ts 复核 slot 契约与注入面是否漂移(重点:GlobalStandardProps、directoryFlow owner props、single 槽 priority 语义)。

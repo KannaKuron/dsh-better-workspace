@@ -508,3 +508,90 @@ test('session reorder: host action preferred, browser-local order as the fallbac
     'the host channel is tried first in the drop commit')
 })
 
+/**
+ * Directory-picker capability (0.11.3). The Host composes exactly ONE backend:
+ * a loopback-only webserver bind on a display-bearing host gets `native` (an OS
+ * chooser on the HOST's screen), every other bind — all-interfaces/LAN, SSH,
+ * headless — gets `browse`, whose wire verbs are list/createDirectory only and
+ * whose `pick` is refused by design. The flow used to assume the chooser, so on
+ * a LAN bind "Add workspace" died with "needs the native capability" and no
+ * workspace could be added. The probe rides `list` (served by browse alone) and
+ * the flow keeps both interactions; this drives every branch of that decision.
+ */
+test('directory picker: capability probe drives chooser or in-app browser (0.11.3)', async () => {
+  const text = read('src/client.js')
+  const start = text.indexOf('const pickerState = ')
+  const end = text.indexOf('/* ============================ flow dialog')
+  assert.ok(start !== -1 && end !== -1 && start < end, 'capability module not found')
+  const messageOf = (reason) => (reason instanceof Error ? reason.message : String(reason))
+  const load = () => new Function('messageOf', text.slice(start, end)
+    + '\nreturn { pickerState, pickerRefusal, pickerCapabilityNow, markPickerBrowse }')(messageOf)
+
+  const listing = { path: '/home/u', home: '/home/u', crumbs: [], entries: [], truncated: false }
+
+  // 1. browse: the listing answers, so the flow renders the in-app browser.
+  const browse = load()
+  browse.pickerState.api = { listDirectory: () => Promise.resolve(listing) }
+  assert.equal(await browse.pickerCapabilityNow(), 'browse')
+  // The verdict is cached: a settled page never re-probes on every open.
+  let calls = 0
+  browse.pickerState.api = { listDirectory: () => { calls += 1; return Promise.resolve(listing) } }
+  assert.equal(await browse.pickerCapabilityNow(), 'browse')
+  assert.equal(calls, 0, 'a settled verdict must not re-probe')
+
+  // 2. native: the browse verb is refused with the capability code.
+  const native = load()
+  native.pickerState.api = {
+    listDirectory: () => Promise.reject(Object.assign(new Error('refused'), {
+      rpcError: { code: 'directory-picker/unavailable' },
+    })),
+  }
+  assert.equal(await native.pickerCapabilityNow(), 'native')
+
+  // 3. unclassified failure (a carrier still connecting) is NOT cached: the
+  //    next open re-probes instead of pinning a wrong verdict for the page.
+  const retry = load()
+  let attempts = 0
+  retry.pickerState.api = {
+    listDirectory: () => { attempts += 1; return Promise.reject(new Error('carrier connecting')) },
+  }
+  assert.equal(await retry.pickerCapabilityNow(), 'unknown')
+  assert.equal(await retry.pickerCapabilityNow(), 'unknown')
+  assert.equal(attempts, 2, 'an unclassified failure must re-probe')
+  // 4. the hard way: a refused pick flips the cached verdict to browse.
+  retry.markPickerBrowse()
+  assert.equal(await retry.pickerCapabilityNow(), 'browse')
+  assert.equal(attempts, 2, 'a committed verdict stops probing')
+
+  // 5. refusal classification covers both shapes the flow can see: the raw
+  //    wire failure, and the plain Error uiWorkspace wraps it in.
+  const classify = load()
+  assert.equal(classify.pickerRefusal(new Error(
+    'directory picker failed: directoryPicker.pick needs the native capability; the composed picker serves "browse"',
+  )), true)
+  assert.equal(classify.pickerRefusal(Object.assign(new Error('x'), {
+    rpcError: { code: 'directory-picker/unavailable' },
+  })), true)
+  assert.equal(classify.pickerRefusal(new Error(
+    'directory browse failed: directory-picker/unreadable: denied',
+  )), false, 'a browse failure is not a capability refusal')
+  assert.equal(classify.pickerRefusal(new Error('connection lost')), false)
+
+  // Wiring: the dialog exists, the flow branches on the verdict, and BOTH
+  // entry surfaces (the sidebar's inlined flow + the two directoryFlow holes)
+  // inject the browse primitives the dialog drives.
+  assert.match(text, /function DirectoryBrowseDialog\(props\)/)
+  assert.match(text, /if \(phase === 'browsing'\)/)
+  assert.equal(
+    (text.match(/listDirectory: \(path, signal\) => uiWorkspace\.listDirectory\(path, signal\)/g) || []).length,
+    2,
+    'both entry surfaces inject the browse primitives',
+  )
+  assert.match(text, /pickerState\.api = uiWorkspace/, 'the probe needs the service handle')
+  assert.match(text, /pickerCapabilityNow\(\)/, 'the flow must consult the probe')
+  assert.match(text, /markPickerBrowse\(\)/, 'a refused pick must commit the browse verdict')
+  for (const key of ['browse.title', 'browse.home', 'browse.select', 'browse.newFolder', 'browse.showHidden', 'browse.truncated']) {
+    assert.ok(text.includes("'" + key + "':"), 'missing dictionary key ' + key)
+  }
+})
+

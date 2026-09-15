@@ -25,6 +25,8 @@ web/                 <- virtual folder (naming only, not a real directory)
 
 After you pick a directory for a new workspace, a small dialog asks for the parent group — type one (`web`), pick an existing level from the datalist, or leave it empty for the root. The plugin creates the workspace and writes the prefix into its title, so it lands on the right branch of the tree.
 
+**Which picker you get follows the backend the host actually composes.** A loopback-only webserver bind gives you the host's **native OS chooser**; an all-interfaces/LAN bind, an SSH launch, or a host without a usable display session composes the `browse` backend instead — listing and directory creation only, with `pick` refused by design — and the plugin then uses an **in-app directory browser** (Home-rooted breadcrumbs, editable path, inline new-folder row, hidden-file toggle) before the very same parent-group dialog. Forcing the native chooser under such a bind means pinning the host's native backend package yourself, and that dialog opens on the **server's** desktop, out of reach for LAN clients.
+
 ### Folder create/delete via context menu
 
 Right-click any folder row: new subfolder (parent prefix pre-filled), new workspace here (the add-flow group field pre-fills with this folder), rename folder, delete empty folder — no standalone header button anymore. Explicit empty folders persist in the browser until workspaces live inside them.

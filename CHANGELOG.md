@@ -3,6 +3,21 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.11.3 — 2026-09-16
+
+**类型**:fix(webserver 非 loopback 绑定时「添加工作区」必然失败)
+
+- **根因:把「宿主一定组装 native 目录选择器」当成前提。** 宿主侧的 `@deepseek-ai/dsh-host-directory-picker-auto` 只在 `bindHost === '127.0.0.1'`、非 SSH 启动、且平台有可用显示会话时才组装 `native`;其余一切绑定(含 `0.0.0.0`、局域网、SSH 端口转发、无头)一律组装 `browse`——它的 wire 动词**只有** `list` / `createDirectory`,`pick` 被 `DirectoryPickerController.requireCapability('native','pick')` 明确拒绝为 `directory-picker/unavailable`。本插件两个 `directoryFlow` 洞以 `priority: -1` 压过官方 `browse` 占位者(该 profile 下 boot graph 里只有 `dsh-client-ui-directory-picker-browse`),而 BetterFlow 无条件 `pickDirectory()` → 客户端走原生流程、宿主只服务 browse,于是**必然**报错、一个工作区也加不上。**本机 web profile 的 webserver 正是 `host: '0.0.0.0'`**,所以从桌面浏览器走 loopback 访问同样中招——这不是手机/远程独有。
+- **修法:先探测宿主组装的后端,再决定交互。** 新增 `pickerState` 与 `pickerCapabilityNow()`:用 `list`(只有 browse 后端会成功)做一次性探测,`native` 侧以能力码拒绝即判定 `native`;无法归类的失败(连接尚未就绪)**不缓存**,下次打开重探并照旧尝试 `pick`;`pickerRefusal()` 同时认「能力码」与「宿主那句固定文案」两种形状,`markPickerBrowse()` 供「pick 被拒」这条硬路径回写判定。判定结果同时决定两处入口(两个 `directoryFlow` 洞 + 侧栏内联流,二者共用同一状态)。
+- **browse 后端下改用应用内目录浏览器(`DirectoryBrowseDialog`)**:Home 起点的可点面包屑链、可编辑路径、行内新建文件夹、隐藏文件开关、截断提示;一行 = 进入该目录,底部「选择此文件夹」= 采用当前层。浏览失败(例如 Windows 上 `「开始」菜单` 这类 junction 报 `EPERM`)**留在对话框内**显示,既不关闭流程、也不占用 owner 的 `onError`。选定目录后**照旧弹「所属分组」**,功能一点没少。
+- 宿主组装的是未知 kind 时不猜测:直接把宿主的拒绝交给 owner 的错误面(与官方「未知 kind 默认隐藏 picking 交互」的取向一致)。
+- **顺带修掉的窄对话框布局**:浏览工具(显示隐藏文件 / 新建文件夹)移到列表上方独立一行,footer 只留「取消 / 选择此文件夹」——0.11.2 的四个按钮在 460px 宽里会挤成两行。
+- **A/B 真机实录**(隔离 DSH_HOME、同一台机器、webserver `0.0.0.0`、headless Chrome over CDP,全程不碰用户正在跑的实例):
+  - 对照组 `dsh-better-workspace@0.11.2`:点「添加工作区」→ 错误弹窗逐字复现上报文案 `directory picker failed: directoryPicker.pick needs the native capability; the composed picker serves "browse"`,应用内浏览器不存在;
+  - 修复版 `0.11.3`:同一操作 → 应用内浏览器列出宿主主目录 → 进入 `Desktop` → 「选择此文件夹」→ 「所属分组」弹窗(填入 `web/验证`)→ 「创建」→ 侧栏树出现 **`web/验证/Desktop`**,控制台零错误、零异常。
+- 冒烟测试 20 → **21 项**:新增一项直接驱动 capability 模块的四个分支(browse 判定与缓存、native 判定、未归类失败不缓存且可被硬路径改写、拒绝分类的两侧形状),并断言两处入口都注入了 browse 原语、流程确实查询探测结果。
+- 文档:README 双语补上「用哪种选择器跟随宿主实际组装的后端」一段,并写明想强行走原生选择器的代价(LAN 客户端点不到、弹在服务器桌面)。
+
 ## v0.11.2 — 2026-09-15
 
 **类型**:fix(回退 0.11.1 的描边实现)

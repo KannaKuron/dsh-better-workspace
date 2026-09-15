@@ -2699,16 +2699,16 @@ window.__ModuleLoader__.load({
       '.bw-row-icon{flex:none;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
       '.bw-chevron{flex:none;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary,#9a9a9a);transition:transform .15s ease}',
       '.bw-chevron-open{transform:rotate(90deg)}',
-      // The outline is a text-shadow now, and overflow:hidden clips shadows just
-      // as it clipped the stroke: 3px of padding covers the diagonal reach of the
-      // widest rim. margin cancels it, so text starts and truncates where it did.
+      // overflow:hidden (needed for the ellipsis) clips the outline: 3px of
+      // padding covers the widest rim (2px at the top of the slider). margin
+      // cancels it, so text still starts and truncates where it did.
       '.bw-row-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:3px;margin:-3px}',
       '.bw-row-count{flex:none;font-size:11px;color:var(--dsw-alias-label-quaternary,#8a8a8a)}',
       '.bw-row-time{flex:none;font-size:11px;color:var(--dsw-alias-label-quaternary,#8a8a8a)}',
-      // The rim is inherited from the row through text-shadow, and the 11px meta
-      // column (session count / relative time) opts out of it — stroked meta text
-      // outshines the title it supports — while keeping the halo the row carries.
-      '.bw-row-count,.bw-row-time{text-shadow:var(--bw-glow-shadow,none)}',
+      // The outline is inherited from the row: the 11px meta column (session
+      // count / relative time) opts out — stroked meta text outshines the title
+      // it is supposed to support.
+      '.bw-row-count,.bw-row-time{-webkit-text-stroke-width:0}',
       '.bw-schedule-badge{flex:none;display:inline-flex;align-items:center;color:var(--dsw-alias-label-tertiary,#9a9a9a);margin:0 6px}',
       '.bw-row-actions{flex:none;display:none;align-items:center;gap:2px}',
       '.bw-row:hover .bw-row-actions{display:flex}',
@@ -2790,10 +2790,7 @@ window.__ModuleLoader__.load({
       '.bw-pulse{animation:bw-breathe 1.8s ease-in-out infinite}',
       '@keyframes bw-breathe{0%,100%{filter:drop-shadow(0 0 1px var(--bw-pulse-color));opacity:.55}50%{filter:drop-shadow(0 0 6px var(--bw-pulse-color));opacity:1}}',
       '.bw-pulse-text{animation:bw-breathe-text 1.8s ease-in-out infinite}',
-      // The keyframes replace text-shadow wholesale, so the row's rim rides along
-      // in --bw-stroke-shadow (set by rowStyleOf, comma-terminated) and the empty
-      // fallback keeps a row without an outline breathing exactly as before.
-      '@keyframes bw-breathe-text{0%,100%{text-shadow:var(--bw-stroke-shadow,) 0 0 1px var(--bw-pulse-color);opacity:.65}50%{text-shadow:var(--bw-stroke-shadow,) 0 0 7px var(--bw-pulse-color);opacity:1}}',
+      '@keyframes bw-breathe-text{0%,100%{text-shadow:0 0 1px var(--bw-pulse-color);opacity:.65}50%{text-shadow:0 0 7px var(--bw-pulse-color);opacity:1}}',
       '.bw-sync-modes{display:flex;gap:6px;margin-top:8px}',
       '.bw-sync-mode{flex:1;padding:5px 10px;border-radius:6px;border:1px solid var(--dsw-alias-border-l2,rgba(127,127,127,.3));background:transparent;color:var(--dsw-alias-label-secondary,#b8b8b8);cursor:pointer;font-size:12px}',
       '.bw-sync-mode-on{border-color:var(--dsw-alias-brand-primary,#5b8def);color:var(--dsw-alias-label-primary,#e6e6e6);background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.12))}',
@@ -3259,7 +3256,9 @@ window.__ModuleLoader__.load({
     // and returns the opposite pole; rows without a custom color inherit
     // --bw-stroke-color, sampled from the live computed style (see the sampler
     // in BetterBrowser) so a palette flip needs no React render.
-    const STROKE_MAX = 4
+    // The slider is the rim the eye actually sees (0.5..2px). strokeStyleOf
+    // paints twice that because paint-order hides the inner half of the band.
+    const STROKE_MAX = 2
     // The outline color defaults to a plain gray: it reads on light and dark
     // backgrounds alike without shouting like pure black/white. "auto" derives
     // the contrasting pole from the font color instead.
@@ -3334,33 +3333,26 @@ window.__ModuleLoader__.load({
       }
       return colorToRgb(picked) ? picked : DEFAULT_APPEARANCE.strokeColor
     }
-    // The outline is painted as eight offset copies of the glyph mask instead of
-    // with -webkit-text-stroke. That stroke is a GEOMETRIC band centred on the
-    // glyph outline: the fill (paint-order: stroke fill) covers its inner half,
-    // and the surviving outer half lands wherever the outline happens to sit —
-    // usually between device pixels. The rasteriser then spreads that half pixel
-    // over two or three of them, the rim never reaches its own colour, and the
-    // edge reads as pale and uneven — the "jagged" outline.
+    // paint-order keeps the stroke UNDER the fill so the glyph does not thin out
+    // — the whole point of an outer outline. The price is half the band:
+    // -webkit-text-stroke centres it on the outline and the fill covers the inner
+    // half, so the painted width must be TWICE the rim the slider promises.
+    // Painting the configured value (0.10.x) left a 0.5px rim that antialiasing
+    // blended away into a pale, uneven edge.
     //
-    // An offset glyph copy snaps to whole device pixels instead (0.5px at 2x is
-    // exactly one device pixel), so the rim is solid. Measured on the same 13px
-    // row at 2x, the share of rim pixels reaching the picked colour goes
-    // 0.19 -> 0.69 while the painted area grows by only ~10%: the outline keeps
-    // its width and simply stops being blended away. Cost is nil — a 400-row
-    // scroll repaints at the same 16.7ms median either way.
-    const STROKE_DIRECTIONS = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, 1], [1, -1], [-1, -1]]
-    // One device pixel expressed in CSS pixels. An offset below it is blended
-    // away again, so a thin setting floors here instead of fading out.
-    const strokeOffsetOf = (appearance) => {
-      const width = clampStrokeWidth(appearance.strokeWidth)
-      const dpr = typeof window !== 'undefined' && window.devicePixelRatio > 0 ? window.devicePixelRatio : 1
-      return Math.max(width / 2, 1 / dpr)
-    }
-    const strokeShadowsOf = (appearance) => {
-      if (!appearance || appearance.stroke === false) return []
-      const color = strokeColorOf(appearance)
-      const offset = strokeOffsetOf(appearance)
-      return STROKE_DIRECTIONS.map(([dx, dy]) => (dx * offset) + 'px ' + (dy * offset) + 'px ' + color)
+    // 0.11.1 replaced this with eight offset glyph copies. It measured better and
+    // looked worse: eight directions are only four diagonal samples, so every
+    // slope and curve came out as a string of detached blocks instead of a filled
+    // rim. A geometric stroke is continuous by construction — it really is a path
+    // stroke — so the answer is to give it enough width to survive antialiasing,
+    // not to fake it out of copies.
+    const strokeStyleOf = (appearance) => {
+      if (!appearance || appearance.stroke === false) return null
+      return {
+        WebkitTextStrokeWidth: clampStrokeWidth(appearance.strokeWidth) * 2 + 'px',
+        WebkitTextStrokeColor: strokeColorOf(appearance),
+        paintOrder: 'stroke fill',
+      }
     }
 
     function FolderRow({ node, depth, expanded, onToggle, onContextMenu, dropInto, dragEvents, custStyle, iconMode, pulse, t }) {
@@ -3383,7 +3375,7 @@ window.__ModuleLoader__.load({
         E('span', { className: cls('bw-chevron', expanded && 'bw-chevron-open') }, icon('IconTriangleRightFill14', 14)),
         E('span', { className: 'bw-row-icon' }, iconChild),
         // A row that already carries a custom label glow breathes in sync.
-        E('span', { className: cls('bw-row-label', pulse && custStyle && custStyle['--bw-text-glow'] && 'bw-pulse-text') }, node.name),
+        E('span', { className: cls('bw-row-label', pulse && custStyle && custStyle.textShadow && 'bw-pulse-text') }, node.name),
         total > 0 ? E('span', { className: 'bw-row-count' }, String(total)) : null,
       )
     }
@@ -3404,7 +3396,7 @@ window.__ModuleLoader__.load({
       },
         E('span', { className: cls('bw-chevron', sessionsOpen && 'bw-chevron-open') }, icon('IconTriangleRightFill14', 14)),
         E('span', { className: 'bw-row-icon' }, iconChild),
-        E('span', { className: cls('bw-row-label', pulse && custStyle && custStyle['--bw-text-glow'] && 'bw-pulse-text'), title: workspace.title || workspace.leaf }, workspace.leaf),
+        E('span', { className: cls('bw-row-label', pulse && custStyle && custStyle.textShadow && 'bw-pulse-text'), title: workspace.title || workspace.leaf }, workspace.leaf),
         count > 0 ? E('span', { className: 'bw-row-count' }, String(count)) : null,
         E('span', { className: 'bw-row-actions', onClick: (e) => e.stopPropagation() },
           E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('session.new'), onClick: (e) => { e.stopPropagation(); onStart() } }, icon('IconPlusOutline16')),
@@ -3591,7 +3583,7 @@ window.__ModuleLoader__.load({
         next[index] = n
         patch({ color: rgbToHex(next[0], next[1], next[2]) })
       }
-      const previewShadows = strokeShadowsOf(appearance)
+      const previewShadows = []
       if (glow > 0 && color) previewShadows.push('0 0 ' + glow + 'px ' + color)
       if (shadow) previewShadows.push('1px 1px 2px rgba(0,0,0,.85)')
       // The preview must show the REAL outline: with no custom color the pole
@@ -3611,6 +3603,7 @@ window.__ModuleLoader__.load({
         const poll = setInterval(sample, 1500)
         return () => clearInterval(poll)
       }, [color, stroke])
+      const previewStroke = strokeStyleOf(appearance)
       return E('div', { className: 'bw-appearance' },
         E('div', { className: 'bw-field' },
           t('custom.color'),
@@ -3751,6 +3744,7 @@ window.__ModuleLoader__.load({
               color: color || undefined,
               fontWeight: weight > 0 ? weight : undefined,
               textShadow: previewShadows.length > 0 ? previewShadows.join(',') : undefined,
+              ...(previewStroke || null),
             },
           },
             allowIcon ? E('span', { className: 'bw-preview-icon' }, iconOf(iconMode, true)) : null,
@@ -4177,27 +4171,15 @@ window.__ModuleLoader__.load({
         const glow = Number(appearance.glow) || 0
         const weight = Number(appearance.weight) || 0
         const shadow = appearance.shadow === true
-        // text-shadow paints its first entry on top, so the rim goes in front of
-        // the halo and the drop shadow that sit outside it.
-        const outline = strokeShadowsOf(appearance)
-        const halos = []
-        if (glow > 0 && color) halos.push('0 0 ' + glow + 'px ' + color)
-        if (shadow) halos.push('1px 1px 2px rgba(0,0,0,.85)')
-        const shadows = outline.concat(halos)
+        const shadows = []
+        if (glow > 0 && color) shadows.push('0 0 ' + glow + 'px ' + color)
+        if (shadow) shadows.push('1px 1px 2px rgba(0,0,0,.85)')
         const style = {}
         if (color) style.color = color
         if (weight > 0) style.fontWeight = weight
         if (shadows.length > 0) style.textShadow = shadows.join(',')
-        // The rim is published twice: inside the row's own text-shadow, and as a
-        // variable for the places that cannot inherit it. The trailing comma is
-        // load-bearing — the pulse keyframes append the halo after it.
-        if (outline.length > 0) style['--bw-stroke-shadow'] = outline.join(',') + ','
-        // Meta text (session count / relative time) opts out of the rim but keeps
-        // the halo, which it can only read from here.
-        if (halos.length > 0) style['--bw-glow-shadow'] = halos.join(',')
-        // The label breathes its text only when the row actually carries a halo;
-        // a rim alone is not a reason to pulse.
-        if (halos.length > 0) style['--bw-text-glow'] = '1'
+        const stroke = strokeStyleOf(appearance)
+        if (stroke) Object.assign(style, stroke)
         return Object.keys(style).length > 0 ? style : null
       }
       const keyOf = (kind, payload) => {

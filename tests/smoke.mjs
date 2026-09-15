@@ -335,8 +335,8 @@ test('appearance: outline on (gray default), pick or auto, field-by-field merge 
   const end = text.indexOf('function FolderRow(')
   assert.ok(start !== -1 && end !== -1 && start < end, 'appearance helpers not found')
   const loaded = new Function(text.slice(start, end) +
-    '\nreturn { DEFAULT_APPEARANCE, readAppearance, mergeAppearance, contrastStrokeColor, parseCssColor, strokeShadowsOf, strokeOffsetOf }')()
-  const { DEFAULT_APPEARANCE, readAppearance, mergeAppearance, contrastStrokeColor, parseCssColor, strokeShadowsOf, strokeOffsetOf } = loaded
+    '\nreturn { DEFAULT_APPEARANCE, readAppearance, mergeAppearance, contrastStrokeColor, parseCssColor, strokeStyleOf }')()
+  const { DEFAULT_APPEARANCE, readAppearance, mergeAppearance, contrastStrokeColor, parseCssColor, strokeStyleOf } = loaded
   // The outline ships ON — text over a background image is unreadable without it.
   assert.equal(DEFAULT_APPEARANCE.stroke, true)
   assert.equal(DEFAULT_APPEARANCE.strokeWidth, 1)
@@ -347,7 +347,7 @@ test('appearance: outline on (gray default), pick or auto, field-by-field merge 
   assert.equal(readAppearance({}).stroke, true, 'a missing stroke key keeps the default outline')
   assert.equal(readAppearance({}).strokeColor, '#808080', 'a missing color key keeps the gray default')
   assert.equal(readAppearance({ stroke: false }).stroke, false, 'an explicit off survives')
-  assert.equal(readAppearance({ strokeWidth: 99 }).strokeWidth, 4, 'width clamps to the slider range')
+  assert.equal(readAppearance({ strokeWidth: 99 }).strokeWidth, 2, 'width clamps to the slider range')
   assert.equal(readAppearance({ strokeWidth: 0 }).strokeWidth, 1, 'a zero width falls back to the default')
   // Row entries override the default FIELD BY FIELD: entries written before the
   // outline existed still inherit it.
@@ -369,27 +369,22 @@ test('appearance: outline on (gray default), pick or auto, field-by-field merge 
   assert.equal(parseCssColor('nonsense'), null)
   // Custom colors compute their own pole; rows without one read the sampled
   // variable so a palette flip needs no React render.
-  assert.equal(strokeShadowsOf({ color: '#ffffff', stroke: true, strokeWidth: 2 }).length, 8, 'the rim is painted in eight directions')
-  assert.ok(strokeShadowsOf({ color: '#ffffff', stroke: true, strokeWidth: 2 }).every((s) => s.endsWith(' #808080')), 'gray is the default pick')
-  assert.ok(strokeShadowsOf({ color: '#ffffff', stroke: true, strokeWidth: 2 }).includes('1px 1px #808080'), 'the diagonal reach is covered')
-  assert.ok(strokeShadowsOf({ color: '#ffffff', stroke: true, strokeWidth: 2, strokeColor: '#f85149' }).every((s) => s.endsWith(' #f85149')), 'a picked color wins')
-  assert.ok(strokeShadowsOf({ color: '#ffffff', stroke: true, strokeWidth: 2, strokeColor: 'not-a-color' }).every((s) => s.endsWith(' #808080')), 'a malformed pick falls back to gray')
-  assert.ok(strokeShadowsOf({ color: '#ffffff', stroke: true, strokeWidth: 2, strokeColor: 'auto' }).every((s) => s.endsWith(' #000000')), 'auto derives the pole')
-  assert.ok(strokeShadowsOf({ color: '#0b0b0b', stroke: true, strokeWidth: 1, strokeColor: 'auto' }).every((s) => s.endsWith(' #ffffff')))
-  assert.match(strokeShadowsOf({ color: '', stroke: true, strokeWidth: 1, strokeColor: 'auto' })[0], /--bw-stroke-color/)
-  assert.deepEqual(strokeShadowsOf({ color: '#fff', stroke: false }), [], 'off paints no rim')
-  // The offset is half the slider value but never below ONE device pixel: a
-  // narrower offset is blended away again, which is the bug this replaced.
-  assert.equal(strokeOffsetOf({ strokeWidth: 4 }), 2)
-  assert.equal(strokeOffsetOf({ strokeWidth: 1 }), 1, 'thin settings floor at one device pixel')
-  globalThis.window = { devicePixelRatio: 2 }
-  try {
-    assert.equal(strokeOffsetOf({ strokeWidth: 1 }), 0.5, 'at 2x a 1px setting is exactly one device pixel')
-    assert.equal(strokeOffsetOf({ strokeWidth: 0.5 }), 0.5, 'and the floor never sits below one device pixel')
-    assert.equal(strokeOffsetOf({ strokeWidth: 4 }), 2, 'wide settings still scale with the slider')
-  } finally {
-    delete globalThis.window
-  }
+  assert.equal(strokeStyleOf({ color: '#ffffff', stroke: true, strokeWidth: 2 }).WebkitTextStrokeColor, '#808080', 'gray is the default pick')
+  assert.equal(strokeStyleOf({ color: '#ffffff', stroke: true, strokeWidth: 2, strokeColor: '#f85149' }).WebkitTextStrokeColor, '#f85149', 'a picked color wins')
+  assert.equal(strokeStyleOf({ color: '#ffffff', stroke: true, strokeWidth: 2, strokeColor: 'not-a-color' }).WebkitTextStrokeColor, '#808080', 'a malformed pick falls back to gray')
+  assert.equal(strokeStyleOf({ color: '#ffffff', stroke: true, strokeWidth: 2, strokeColor: 'auto' }).WebkitTextStrokeColor, '#000000', 'auto derives the pole')
+  assert.equal(strokeStyleOf({ color: '#0b0b0b', stroke: true, strokeWidth: 1, strokeColor: 'auto' }).WebkitTextStrokeColor, '#ffffff')
+  assert.match(strokeStyleOf({ color: '', stroke: true, strokeWidth: 1, strokeColor: 'auto' }).WebkitTextStrokeColor, /--bw-stroke-color/)
+  // paint-order hides the inner half of the band, so the painted width is TWICE
+  // the rim the slider promises: painting the configured value left a 0.5px rim
+  // that antialiasing blended away into the pale, uneven edge users reported.
+  assert.equal(strokeStyleOf({ color: '#ffffff', stroke: true, strokeWidth: 1 }).WebkitTextStrokeWidth, '2px', 'a 1px rim is painted 2px wide')
+  assert.equal(strokeStyleOf({ color: '#ffffff', stroke: true, strokeWidth: 2 }).WebkitTextStrokeWidth, '4px')
+  assert.equal(strokeStyleOf({ color: '#ffffff', stroke: true, strokeWidth: 2 }).paintOrder, 'stroke fill')
+  assert.equal(strokeStyleOf({ color: '#fff', stroke: false }), null, 'off renders no stroke style')
+  // 0.11.1's offset-copy rim is gone: eight directions are four diagonal
+  // samples, so slopes and curves came out as detached blocks.
+  assert.doesNotMatch(text, /STROKE_DIRECTIONS|strokeShadowsOf/, 'the rim must stay a real geometric stroke')
   // Host schema + cross-device sync carry the new field.
   assert.match(read('src/index.js'), /appearance: Schema\.dict/, 'host namespace must declare appearance')
   assert.match(text, /host\.appearance && typeof host\.appearance === 'object'/, 'pull paths must carry appearance')
@@ -402,18 +397,16 @@ test('appearance: outline on (gray default), pick or auto, field-by-field merge 
  * glyph box, so the label's overflow:hidden (needed for the ellipsis) cut it off
  * at the left edge; the 11px meta column must not be stroked at all.
  */
-test('outline: label keeps a bleed, meta column drops the rim only (0.10.1)', () => {
+test('outline: label keeps a bleed, meta column stays unstroked (0.10.1)', () => {
   const text = read('src/client.js')
   assert.match(text, /\.bw-row-label\{[^}]*padding:3px;margin:-3px/, 'the label needs a bleed for the rim')
   assert.match(text, /\.bw-row-label\{[^}]*overflow:hidden/, 'the ellipsis overflow must stay')
   assert.match(text, /\.bw-preview-label\{[^}]*padding:3px;margin:-3px/, 'the preview label bleeds too')
-  assert.match(text, /\.bw-row-count,\.bw-row-time\{text-shadow:var\(--bw-glow-shadow,none\)\}/, 'count/time drop the rim but keep the halo')
-  // The rim is a text-shadow now, so the pulse keyframes — which replace
-  // text-shadow wholesale — have to put it back from the row variable.
-  assert.match(text, /@keyframes bw-breathe-text\{[^}]*var\(--bw-stroke-shadow,\)/, 'the pulse keyframes restore the rim')
-  assert.match(text, /'--bw-stroke-shadow'\] = outline\.join\(','\) \+ ','/, 'the rim variable stays comma-terminated for the keyframes')
-  assert.match(text, /custStyle\['--bw-text-glow'\]/, 'only a haled row breathes its text')
-  assert.doesNotMatch(text, /-webkit-text-stroke-width:/, 'the geometric stroke is gone from the stylesheet')
+  assert.match(text, /\.bw-row-count,\.bw-row-time\{-webkit-text-stroke-width:0\}/, 'count/time must not be stroked')
+  // The rim never travels through text-shadow, so the halo and the breathing
+  // keyframes keep working exactly as they did before 0.11.1.
+  assert.doesNotMatch(text, /--bw-stroke-shadow|--bw-glow-shadow|--bw-text-glow/, 'the rim must not ride in text-shadow')
+  assert.match(text, /@keyframes bw-breathe-text\{0%,100%\{text-shadow:0 0 1px var\(--bw-pulse-color\)/, 'the pulse keyframes are untouched')
 })
 
 /**

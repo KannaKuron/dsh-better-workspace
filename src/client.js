@@ -84,8 +84,10 @@ window.__ModuleLoader__.load({
       'custom.weight.bold': '粗',
       'custom.shadow': '字体阴影',
       'custom.stroke': '字体描边',
-      'custom.stroke.hint': '描边颜色自动取字体颜色的反差色(浅色字配黑描边、深色字配白描边),跟随主题明暗与背景插件的界面明暗,无需手动指定。',
+      'custom.stroke.hint': '描边颜色默认灰色,可改黑 / 白 / 任意取色,或选「自动」按字体颜色取反差色(浅色字配黑边、深色字配白边);自动模式跟随主题明暗与背景插件的界面明暗。',
       'custom.strokeWidth': '描边粗细',
+      'custom.strokeColor': '描边颜色',
+      'custom.strokeColor.auto': '自动',
       'custom.weak': '弱',
       'custom.medium': '中',
       'custom.strong': '强',
@@ -190,8 +192,10 @@ window.__ModuleLoader__.load({
       'custom.weight.bold': 'Bold',
       'custom.shadow': 'Font shadow',
       'custom.stroke': 'Font outline',
-      'custom.stroke.hint': 'The outline color is derived from the font color (light text gets a black outline, dark text a white one) and follows the theme or a background plugin\'s light/dark switch — no manual color to pick.',
+      'custom.stroke.hint': 'The outline is gray by default — pick black, white, any color, or Auto to derive the contrasting pole from the font color (light text gets a black rim, dark text a white one); Auto follows the theme and a background plugin\'s light/dark switch.',
       'custom.strokeWidth': 'Outline width',
+      'custom.strokeColor': 'Outline color',
+      'custom.strokeColor.auto': 'Auto',
       'custom.weak': 'Subtle',
       'custom.medium': 'Medium',
       'custom.strong': 'Strong',
@@ -598,9 +602,13 @@ window.__ModuleLoader__.load({
       '.bw-row-icon{flex:none;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
       '.bw-chevron{flex:none;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary,#9a9a9a);transition:transform .15s ease}',
       '.bw-chevron-open{transform:rotate(90deg)}',
-      '.bw-row-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.bw-row-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:1px;margin:-1px}',
       '.bw-row-count{flex:none;font-size:11px;color:var(--dsw-alias-label-quaternary,#8a8a8a)}',
       '.bw-row-time{flex:none;font-size:11px;color:var(--dsw-alias-label-quaternary,#8a8a8a)}',
+      // The outline is inherited from the row: the 11px meta column (session
+      // count / relative time) opts out — stroked meta text outshines the title
+      // it is supposed to support.
+      '.bw-row-count,.bw-row-time{-webkit-text-stroke-width:0}',
       '.bw-schedule-badge{flex:none;display:inline-flex;align-items:center;color:var(--dsw-alias-label-tertiary,#9a9a9a);margin:0 6px}',
       '.bw-row-actions{flex:none;display:none;align-items:center;gap:2px}',
       '.bw-row:hover .bw-row-actions{display:flex}',
@@ -612,6 +620,7 @@ window.__ModuleLoader__.load({
       '.bw-session-row:hover{color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-empty{padding:28px 12px;text-align:center;font-size:12px;color:var(--dsw-alias-label-dimmed,#7a7a7a)}',
       '.bw-swatch{width:20px;height:20px;border-radius:6px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));cursor:pointer;flex:none;background:transparent;padding:0}',
+      '.bw-swatch-wide{width:auto;min-width:38px;padding:0 8px;font-size:11px;color:var(--dsw-alias-label-secondary,#b8b8b8)}',
       '.bw-swatch-active{outline:2px solid var(--dsw-alias-brand-primary,#5b8def);outline-offset:1px}',
       '.bw-color-input{width:36px;height:26px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));border-radius:6px;background:transparent;cursor:pointer;padding:0}',
       '.bw-seg{display:flex;gap:6px;flex-wrap:wrap}',
@@ -1134,8 +1143,11 @@ window.__ModuleLoader__.load({
     // --bw-stroke-color, sampled from the live computed style (see the sampler
     // in BetterBrowser) so a palette flip needs no React render.
     const STROKE_MAX = 4
-    const DEFAULT_APPEARANCE = { color: '', glow: 0, weight: 0, shadow: false, stroke: true, strokeWidth: 1 }
-    const APPEARANCE_FIELDS = ['color', 'glow', 'weight', 'shadow', 'stroke', 'strokeWidth']
+    // The outline color defaults to a plain gray: it reads on light and dark
+    // backgrounds alike without shouting like pure black/white. "auto" derives
+    // the contrasting pole from the font color instead.
+    const DEFAULT_APPEARANCE = { color: '', glow: 0, weight: 0, shadow: false, stroke: true, strokeWidth: 1, strokeColor: '#808080' }
+    const APPEARANCE_FIELDS = ['color', 'glow', 'weight', 'shadow', 'stroke', 'strokeWidth', 'strokeColor']
     const clampStrokeWidth = (raw) => {
       const n = Number(raw)
       if (!isFinite(n) || n <= 0) return DEFAULT_APPEARANCE.strokeWidth
@@ -1153,6 +1165,7 @@ window.__ModuleLoader__.load({
         shadow: src.shadow === true,
         stroke: src.stroke !== false,
         strokeWidth: src.strokeWidth === undefined ? DEFAULT_APPEARANCE.strokeWidth : clampStrokeWidth(src.strokeWidth),
+        strokeColor: typeof src.strokeColor === 'string' && src.strokeColor !== '' ? src.strokeColor : DEFAULT_APPEARANCE.strokeColor,
       }
     }
     // A row's own entry overrides the default appearance FIELD BY FIELD, so a
@@ -1189,14 +1202,28 @@ window.__ModuleLoader__.load({
       return (luminance + 0.05) / 0.05 >= 1.05 / (luminance + 0.05) ? '#000000' : '#ffffff'
     }
     const STROKE_FALLBACK = 'var(--bw-stroke-color, rgba(0,0,0,.75))'
+    const STROKE_AUTO = 'auto'
+    // A picked color wins; "auto" derives the contrasting pole from the row's
+    // font color — computed in JS when the row carries one, read from the
+    // sampled --bw-stroke-color variable otherwise (so a theme or background
+    // plugin flip needs no render).
+    const strokeColorOf = (appearance) => {
+      const picked = appearance && typeof appearance.strokeColor === 'string' && appearance.strokeColor !== ''
+        ? appearance.strokeColor
+        : DEFAULT_APPEARANCE.strokeColor
+      if (picked === STROKE_AUTO) {
+        const rgb = appearance.color ? colorToRgb(appearance.color) : null
+        return rgb ? contrastStrokeColor(rgb) : STROKE_FALLBACK
+      }
+      return colorToRgb(picked) ? picked : DEFAULT_APPEARANCE.strokeColor
+    }
     // paint-order keeps the stroke UNDER the fill, so the glyph does not thin
     // out — the whole point of an outer outline.
     const strokeStyleOf = (appearance) => {
       if (!appearance || appearance.stroke === false) return null
-      const rgb = appearance.color ? colorToRgb(appearance.color) : null
       return {
         WebkitTextStrokeWidth: clampStrokeWidth(appearance.strokeWidth) + 'px',
-        WebkitTextStrokeColor: rgb ? contrastStrokeColor(rgb) : STROKE_FALLBACK,
+        WebkitTextStrokeColor: strokeColorOf(appearance),
         paintOrder: 'stroke fill',
       }
     }
@@ -1350,6 +1377,10 @@ window.__ModuleLoader__.load({
     /* --------------------- customization dialog ----------------------- */
 
     const SWATCHES = ['', '#5b8def', '#3fb950', '#d29922', '#f85149', '#a371f7', '#39c5cf', '#ec6cb9', '#ff9f45', '#6e7681']
+    // Outline-color presets: gray (the default), black, white, brand blue — the
+    // native picker next to them covers everything else, and "auto" derives the
+    // contrasting pole from the font color.
+    const STROKE_PRESETS = ['#808080', '#000000', '#ffffff', '#5b8def']
     const GLOW_MAX = 14
     const ICON_CHOICES = [
       'solid', 'outline', 'none',
@@ -1389,6 +1420,7 @@ window.__ModuleLoader__.load({
       const shadow = appearance.shadow
       const stroke = appearance.stroke
       const strokeWidth = appearance.strokeWidth
+      const strokeColor = appearance.strokeColor
       const iconMode = value && value.icon ? value.icon : 'solid'
       const patch = (next) => { if (typeof onChange === 'function') onChange(next) }
       const channels = colorToRgb(color)
@@ -1506,6 +1538,32 @@ window.__ModuleLoader__.load({
               onChange: (e) => patch({ strokeWidth: Number(e.target.value) }),
             }),
             E('span', { className: 'bw-glow-value' }, strokeWidth + 'px'),
+          ),
+        ),
+        E('div', { className: 'bw-field' },
+          t('custom.strokeColor'),
+          E('div', { className: 'bw-dialog-input-row' },
+            E('button', {
+              type: 'button',
+              className: cls('bw-swatch', 'bw-swatch-wide', strokeColor === STROKE_AUTO && 'bw-swatch-active'),
+              title: t('custom.strokeColor.auto'),
+              onClick: () => patch({ strokeColor: STROKE_AUTO }),
+            }, t('custom.strokeColor.auto')),
+            STROKE_PRESETS.map((value) => E('button', {
+              key: value,
+              type: 'button',
+              className: cls('bw-swatch', strokeColor === value && 'bw-swatch-active'),
+              style: { background: value },
+              'aria-label': value,
+              title: value,
+              onClick: () => patch({ strokeColor: value }),
+            })),
+            E('input', {
+              type: 'color',
+              className: 'bw-color-input',
+              value: colorToRgb(strokeColor) ? strokeColor : DEFAULT_APPEARANCE.strokeColor,
+              onChange: (e) => patch({ strokeColor: e.target.value }),
+            }),
           ),
           E('div', { className: 'bw-hint' }, t('custom.stroke.hint')),
         ),

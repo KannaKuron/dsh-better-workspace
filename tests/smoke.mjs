@@ -276,7 +276,7 @@ test('manual cross-device sync: host scope bind, dual writes, pull modes', () =>
  * never picked by hand: it is the pole that contrasts with the label color, so
  * it survives a theme or background-plugin light/dark flip.
  */
-test('appearance: default outline on, derived contrast pole, field-by-field merge (0.10.0)', () => {
+test('appearance: outline on (gray default), pick or auto, field-by-field merge (0.10.0)', () => {
   const text = read('src/client.js')
   const start = text.indexOf('const colorToRgb =')
   const end = text.indexOf('function FolderRow(')
@@ -288,9 +288,11 @@ test('appearance: default outline on, derived contrast pole, field-by-field merg
   assert.equal(DEFAULT_APPEARANCE.stroke, true)
   assert.equal(DEFAULT_APPEARANCE.strokeWidth, 1)
   assert.equal(DEFAULT_APPEARANCE.color, '')
+  assert.equal(DEFAULT_APPEARANCE.strokeColor, '#808080', 'the outline defaults to gray')
   // Hydration replaces state wholesale: every read tolerates missing keys.
   assert.deepEqual(readAppearance(undefined), DEFAULT_APPEARANCE)
   assert.equal(readAppearance({}).stroke, true, 'a missing stroke key keeps the default outline')
+  assert.equal(readAppearance({}).strokeColor, '#808080', 'a missing color key keeps the gray default')
   assert.equal(readAppearance({ stroke: false }).stroke, false, 'an explicit off survives')
   assert.equal(readAppearance({ strokeWidth: 99 }).strokeWidth, 4, 'width clamps to the slider range')
   assert.equal(readAppearance({ strokeWidth: 0 }).strokeWidth, 1, 'a zero width falls back to the default')
@@ -314,9 +316,12 @@ test('appearance: default outline on, derived contrast pole, field-by-field merg
   assert.equal(parseCssColor('nonsense'), null)
   // Custom colors compute their own pole; rows without one read the sampled
   // variable so a palette flip needs no React render.
-  assert.equal(strokeStyleOf({ color: '#ffffff', stroke: true, strokeWidth: 2 }).WebkitTextStrokeColor, '#000000')
-  assert.equal(strokeStyleOf({ color: '#0b0b0b', stroke: true, strokeWidth: 1 }).WebkitTextStrokeColor, '#ffffff')
-  assert.match(strokeStyleOf({ color: '', stroke: true, strokeWidth: 1 }).WebkitTextStrokeColor, /--bw-stroke-color/)
+  assert.equal(strokeStyleOf({ color: '#ffffff', stroke: true, strokeWidth: 2 }).WebkitTextStrokeColor, '#808080', 'gray is the default pick')
+  assert.equal(strokeStyleOf({ color: '#ffffff', stroke: true, strokeWidth: 2, strokeColor: '#f85149' }).WebkitTextStrokeColor, '#f85149', 'a picked color wins')
+  assert.equal(strokeStyleOf({ color: '#ffffff', stroke: true, strokeWidth: 2, strokeColor: 'not-a-color' }).WebkitTextStrokeColor, '#808080', 'a malformed pick falls back to gray')
+  assert.equal(strokeStyleOf({ color: '#ffffff', stroke: true, strokeWidth: 2, strokeColor: 'auto' }).WebkitTextStrokeColor, '#000000', 'auto derives the pole')
+  assert.equal(strokeStyleOf({ color: '#0b0b0b', stroke: true, strokeWidth: 1, strokeColor: 'auto' }).WebkitTextStrokeColor, '#ffffff')
+  assert.match(strokeStyleOf({ color: '', stroke: true, strokeWidth: 1, strokeColor: 'auto' }).WebkitTextStrokeColor, /--bw-stroke-color/)
   assert.equal(strokeStyleOf({ color: '#ffffff', stroke: true, strokeWidth: 2 }).WebkitTextStrokeWidth, '2px')
   assert.equal(strokeStyleOf({ color: '#ffffff', stroke: true, strokeWidth: 2 }).paintOrder, 'stroke fill')
   assert.equal(strokeStyleOf({ color: '#fff', stroke: false }), null, 'off renders no stroke style')
@@ -325,4 +330,16 @@ test('appearance: default outline on, derived contrast pole, field-by-field merg
   assert.match(text, /host\.appearance && typeof host\.appearance === 'object'/, 'pull paths must carry appearance')
   assert.match(text, /scopeSet\('appearance'/, 'the push path must carry appearance')
   assert.match(text, /--bw-stroke-color/, 'the sampled variable is what unattributed rows read')
+})
+
+/**
+ * Outline clipping + meta-column rules (0.10.1): an outer outline overflows the
+ * glyph box, so the label's overflow:hidden (needed for the ellipsis) cut it off
+ * at the left edge; the 11px meta column must not be stroked at all.
+ */
+test('outline: label keeps a 1px bleed, meta column stays unstroked (0.10.1)', () => {
+  const text = read('src/client.js')
+  assert.match(text, /\.bw-row-label\{[^}]*padding:1px;margin:-1px/, 'the label needs a 1px bleed for the outline')
+  assert.match(text, /\.bw-row-label\{[^}]*overflow:hidden/, 'the ellipsis overflow must stay')
+  assert.match(text, /\.bw-row-count,\.bw-row-time\{-webkit-text-stroke-width:0\}/, 'count/time must not be stroked')
 })

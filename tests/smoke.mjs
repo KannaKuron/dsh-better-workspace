@@ -343,3 +343,103 @@ test('outline: label keeps a 1px bleed, meta column stays unstroked (0.10.1)', (
   assert.match(text, /\.bw-row-label\{[^}]*overflow:hidden/, 'the ellipsis overflow must stay')
   assert.match(text, /\.bw-row-count,\.bw-row-time\{-webkit-text-stroke-width:0\}/, 'count/time must not be stroked')
 })
+
+/**
+ * Icon compatibility (0.10.2): dsh 0.1.6-alpha.1 replaced part of the
+ * primitives icon set (IconSendOutline16 -> IconPaperPlaneOutline14 and
+ * friends), so a persisted custom icon naming a retired glyph must resolve to a
+ * surviving equivalent instead of rendering an empty cell.
+ */
+test('icons: retired glyphs resolve to a survivor; the picker follows the host set (0.10.2)', () => {
+  const text = read('src/client.js')
+  const start = text.indexOf('const ICON_ALIASES =')
+  const end = text.indexOf('/** Render a primitives icon by name')
+  assert.ok(start !== -1 && end !== -1 && start < end, 'icon resolution helpers not found')
+  const load = (ui) => new Function('ui', text.slice(start, end) + '\nreturn { resolveIconName }')(ui)
+
+  const oldUi = { IconSendOutline16: () => null, IconSendOutline14: () => null, IconSearchOutline16: () => null }
+  assert.equal(load(oldUi).resolveIconName('IconSendOutline16'), 'IconSendOutline16', 'a live glyph is used as-is')
+  assert.equal(load(oldUi).resolveIconName('IconNope'), '', 'an unknown glyph degrades to empty')
+  assert.equal(load(oldUi).resolveIconName(''), '')
+  assert.equal(load(oldUi).resolveIconName(undefined), '')
+  assert.equal(load(oldUi).resolveIconName('solid'), '', 'legacy slots are not glyph names')
+
+  const added = ['IconPaperPlaneOutline14', 'IconShieldOutline16', 'IconCompactOutline16', 'IconWrapLinesOutline16', 'IconPlanOutline14']
+  const newUi = { IconSendOutline14: () => null }
+  for (const name of added) newUi[name] = () => null
+  assert.equal(load(newUi).resolveIconName('IconSendOutline16'), 'IconSendOutline14', 'a retired glyph follows its alias chain')
+  assert.equal(load(newUi).resolveIconName('IconSendOutline14'), 'IconSendOutline14')
+  assert.equal(load({}).resolveIconName('IconSendOutline16'), '', 'an alias with no survivor stays empty rather than crashing')
+
+  const choicesStart = text.indexOf('const ICON_CHOICES = [')
+  const choicesEnd = text.indexOf('})()', choicesStart) + 4
+  assert.ok(choicesStart !== -1 && choicesEnd > choicesStart, 'icon choice list not found')
+  const aliasCode = text.slice(start, end)
+  const pickerCode = aliasCode + '\n' + text.slice(choicesStart, choicesEnd)
+  const listOf = (ui) => new Function('ui', pickerCode + '\nreturn { ICON_CHOICES, ICON_PICKER_CHOICES }')(ui)
+  const onNew = listOf(newUi)
+  assert.ok(!onNew.ICON_CHOICES.includes('IconSendOutline16'), 'the retired name is gone from the committed list')
+  assert.ok(onNew.ICON_CHOICES.includes('IconSendOutline14'), 'the surviving glyph is committed')
+  assert.ok(onNew.ICON_PICKER_CHOICES.includes('IconSendOutline14'), 'the surviving glyph is offered')
+  assert.equal(new Set(onNew.ICON_PICKER_CHOICES).size, onNew.ICON_PICKER_CHOICES.length, 'no duplicate cells')
+  assert.ok(onNew.ICON_PICKER_CHOICES.includes('solid') && onNew.ICON_PICKER_CHOICES.includes('none'), 'legacy slots always survive')
+  assert.ok(onNew.ICON_PICKER_CHOICES.length < onNew.ICON_CHOICES.length, 'glyphs this host lacks are filtered out')
+  for (const name of added) {
+    assert.ok(onNew.ICON_CHOICES.includes(name), name + ' is part of the committed list')
+    assert.ok(onNew.ICON_PICKER_CHOICES.includes(name), name + ' is offered on a host that exports it')
+  }
+  // A host that lacks the newer glyphs still offers the survivors, never them.
+  const bare = listOf({ IconSendOutline14: () => null })
+  for (const name of added) assert.ok(!bare.ICON_PICKER_CHOICES.includes(name), name + ' must be filtered out on a host that lacks it')
+  assert.ok(bare.ICON_PICKER_CHOICES.includes('IconSendOutline14'), 'the survivor stays offered')
+})
+
+/**
+ * Session reorder fallback (0.10.2): dsh 0.1.6-alpha.1 stopped injecting
+ * insertSessionBefore, which used to be the only reorder channel — the browser
+ * keeps its own flat order so the gesture keeps working.
+ */
+test('session reorder: host action preferred, browser-local order as the fallback (0.10.2)', () => {
+  const text = read('src/client.js')
+
+  const start = text.indexOf('function reorderIds(ids, id, anchor)')
+  const end = text.indexOf('const countSessionTree = (node) =>')
+  assert.ok(start !== -1 && end !== -1 && start < end, 'reorderIds not found')
+  const { reorderIds } = new Function(text.slice(start, end) + '\nreturn { reorderIds }')()
+  assert.deepEqual(reorderIds(['a', 'b', 'c'], 'c', 'a'), ['c', 'a', 'b'], 'move before an anchor')
+  assert.deepEqual(reorderIds(['a', 'b', 'c'], 'a', 'c'), ['b', 'a', 'c'])
+  assert.deepEqual(reorderIds(['a', 'b', 'c'], 'a', undefined), ['b', 'c', 'a'], 'no anchor appends')
+  assert.deepEqual(reorderIds(['a', 'b', 'c'], 'b', 'gone'), ['a', 'c', 'b'], 'a vanished anchor appends')
+  assert.deepEqual(reorderIds([], 'a', undefined), ['a'])
+  assert.deepEqual(reorderIds(undefined, 'a', undefined), ['a'], 'a missing list is tolerated')
+
+  // Store action: hydration replaces state wholesale, so a state persisted
+  // before this key existed must still accept the write.
+  const storeStart = text.indexOf('const createViewStore = () => storeKit.defineStore({')
+  const storeEnd = text.indexOf('/* ========================= title cache store')
+  assert.ok(storeStart !== -1 && storeEnd !== -1 && storeStart < storeEnd, 'view store not found')
+  const def = new Function('storeKit', text.slice(storeStart, storeEnd) + '\nreturn createViewStore()')({ defineStore: (d) => d })
+  assert.deepEqual(def.init().sessionOrder, {}, 'init carries the new key')
+  const setSessionOrder = def.actions.setSessionOrder
+  const stale = { folders: [] }
+  setSessionOrder(stale, 'ws1', ['a', 'b'])
+  assert.deepEqual(stale.sessionOrder.ws1, ['a', 'b'])
+  setSessionOrder(stale, 'ws1', [])
+  assert.equal('ws1' in stale.sessionOrder, false, 'an empty order clears the entry')
+  setSessionOrder(stale, 'ws2', undefined)
+  assert.equal('ws2' in stale.sessionOrder, false)
+  setSessionOrder(stale, 'ws3', 'not-a-list')
+  assert.equal('ws3' in stale.sessionOrder, false)
+
+  // Wiring: the host action stays authoritative; the local order only applies
+  // where the host no longer injects one.
+  assert.match(text, /typeof insertSessionBefore === 'function' \? \[\] : sessionOrderOf\(workspace\.workspaceId\)/,
+    'the host order must win wherever the action exists')
+  assert.match(text, /actions\.setSessionOrder\(workspaceId, reorderIds\(flat\.map/,
+    'the fallback commits the move into the local order')
+  assert.match(text, /const sessionOrderMap = useStore \? \(useStore\(s => s\.sessionOrder\) \|\| \{\}\) : \{\}/,
+    'the browser subscribes to the local order')
+  assert.match(text, /if \(typeof insertSessionBefore === 'function'\) \{\n          Promise\.resolve\(\)/,
+    'the host channel is tried first in the drop commit')
+})
+

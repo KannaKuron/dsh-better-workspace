@@ -90,6 +90,11 @@ View state (folder collapse, session expansion, explicit empty folders), custom 
 
 Same `dsh-better-*` family, zero overlap: [dsh-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar) is the VSCode-like panel on the right; this plugin only takes over the left workspace list. They can be installed together.
 
+## Version compatibility
+
+- **dsh 0.1.6-alpha.1**: both the primitives icon set and the browser injection face changed; this plugin **adapts automatically since 0.10.2**. The icon grid only lists glyphs this host actually exports (the retired `IconSendOutline16` resolves to the equivalent `IconSendOutline14`, so a previously saved choice never turns into an empty icon slot), and session drag-to-reorder falls back to a browser-local order when the host no longer injects `insertSessionBefore` — **no feature is lost**. Either upgrade order (plugin first or dsh first) converges.
+- **Across surfaces**: web and desktop share one set of client assets; appearance / groups / switches sync manually through the settings card, while **collapse state and the local session order stay per-browser** by design.
+
 ## Limitations / roadmap
 
 - A session dragged onto a session row **inside another group** only gets reordered in the flat list (its title group stays); drag onto the group row or rename to move it.

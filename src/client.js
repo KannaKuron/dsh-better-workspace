@@ -317,6 +317,28 @@ window.__ModuleLoader__.load({
     }
     const normPath = (p) => splitTitleSegs(p).join('/')
 
+    /**
+     * Glyphs a host may have RETIRED, mapped to the surviving equivalents in
+     * preference order. dsh 0.1.6-alpha.1 replaced IconSendOutline16 with
+     * IconPaperPlaneOutline14 and deleted the old export, so a saved custom
+     * icon naming it must land on something real rather than an empty cell.
+     */
+    const ICON_ALIASES = { IconSendOutline16: ['IconSendOutline14'] }
+
+    /**
+     * Resolve one configured icon value to a glyph the LOADED primitives
+     * actually export (pure). Retired names follow their alias chain, unknown
+     * names degrade to '' — so both the picker grid and a choice persisted
+     * before an upgrade survive a host that renamed its icon set.
+     */
+    const resolveIconName = (name) => {
+      if (typeof name !== 'string' || name === '') return ''
+      if (ui[name]) return name
+      const aliases = ICON_ALIASES[name]
+      if (aliases) for (const alias of aliases) if (ui[alias]) return alias
+      return ''
+    }
+
     /** Render a primitives icon by name; unknown names degrade to null, never crash. */
     const icon = (name, size) => {
       const C = ui[name]
@@ -454,6 +476,20 @@ window.__ModuleLoader__.load({
       }
       sortRec(root)
       return root
+    }
+
+    /**
+     * Move one id inside a flat list: before `anchor`, or to the end when the
+     * anchor is missing (pure). Mirrors the host action's insertSessionBefore
+     * semantics, so the browser-local fallback orders rows exactly the way the
+     * host would have.
+     */
+    function reorderIds(ids, id, anchor) {
+      const next = (ids || []).filter((x) => x !== id)
+      const at = anchor === undefined ? -1 : next.indexOf(anchor)
+      if (at === -1) next.push(id)
+      else next.splice(at, 0, id)
+      return next
     }
 
     const countSessionTree = (node) => node.sessions.length + node.groups.reduce((sum, group) => sum + countSessionTree(group), 0)
@@ -705,7 +741,7 @@ window.__ModuleLoader__.load({
     /* ========================== view store =========================== */
 
     const createViewStore = () => storeKit.defineStore({
-      init: () => ({ folders: [], expanded: {}, sessionsExpanded: {}, sessionGroups: {}, prefs: { compactChains: true }, styling: {} }),
+      init: () => ({ folders: [], expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true }, styling: {} }),
       // NOTE: hydration REPLACES the state with the persisted whole value —
       // init defaults never merge. Every action must tolerate a missing key
       // (states persisted by older plugin versions lack sessionGroups), and
@@ -743,6 +779,16 @@ window.__ModuleLoader__.load({
         setSessionGroupExpanded: (d, key, value) => { if (!d.sessionGroups) d.sessionGroups = {}; d.sessionGroups[key] = value },
         setPref: (d, key, value) => { if (!d.prefs) d.prefs = {}; d.prefs[key] = value },
         setStyling: (d, key, value) => { if (!d.styling) d.styling = {}; if (value === null) delete d.styling[key]; else d.styling[key] = value },
+        // Browser-local session order (v0.10.2): the fallback channel for
+        // drag-to-reorder on hosts that no longer inject insertSessionBefore
+        // (dsh 0.1.6-alpha.1). Per-workspace and per-browser on purpose — the
+        // host order stays authoritative wherever the action exists, and this
+        // never rides the cross-device sync.
+        setSessionOrder: (d, workspaceId, order) => {
+          if (!d.sessionOrder || typeof d.sessionOrder !== 'object') d.sessionOrder = {}
+          if (!Array.isArray(order) || order.length === 0) delete d.sessionOrder[workspaceId]
+          else d.sessionOrder[workspaceId] = order.slice()
+        },
         addFolder: (d, path) => {
           if (!Array.isArray(d.folders)) d.folders = []
           const p = normPath(path)
@@ -1114,12 +1160,16 @@ window.__ModuleLoader__.load({
     /* ============================== rows ============================== */
 
     /** Folder glyph variants from the primitives family (solid / outline / hidden). */
-    /** Custom icon value → glyph: legacy slots (solid/outline/none) or any primitives icon name. */
+    /**
+     * Custom icon value → glyph: legacy slots (solid/outline/none) or any
+     * primitives icon name, resolved through ICON_ALIASES so a value persisted
+     * before a host renamed its icon set still renders something.
+     */
     const iconOf = (mode, expanded) => {
       if (!mode || mode === 'none') return null
       if (mode === 'solid') return icon(expanded ? 'IconFolderOpen16' : 'IconFolderClose16')
       if (mode === 'outline') return icon('IconFolderOpenOutline16')
-      return icon(mode)
+      return icon(resolveIconName(mode))
     }
 
     const colorToRgb = (hex) => {
@@ -1397,20 +1447,42 @@ window.__ModuleLoader__.load({
       'IconLoadingOutline16', 'IconPanelLeftOutline16', 'IconPaperclipOutline16', 'IconPersonalizationOutline16',
       'IconPlayOutline16', 'IconPauseOutline16', 'IconPlusOutline16', 'IconQuestionOutline14',
       'IconQueueOutline14', 'IconRefreshOutline14', 'IconRefreshOutline16', 'IconRightUpOutline14',
-      'IconSearchOutline16', 'IconSendOutline14', 'IconSendOutline16', 'IconSettingsOutline14',
+      'IconSearchOutline16', 'IconSendOutline14', 'IconSettingsOutline14',
       'IconSettingsOutline16', 'IconShareOutline16', 'IconStopFill16', 'IconThinkOutline14',
       'IconThinkOutline16', 'IconTrashOutline16', 'IconUserOutline16', 'IconWarningOutline16',
       'IconLikeOutline16', 'IconDislikeOutline16', 'IconFollowsystemOutline16',
       'IconAlarmClockOutline16', 'IconClockOutline16', 'IconDatabaseOutline16',
+      // Added with dsh 0.1.6-alpha.1 — absent on older hosts, where the picker
+      // filters them out (see ICON_PICKER_CHOICES).
+      'IconPaperPlaneOutline14', 'IconShieldOutline16', 'IconPlanOutline14',
+      'IconWrapLinesOutline16', 'IconCompactOutline16',
     ]
+
+    /**
+     * What the picker actually offers on THIS host: every legacy slot, plus the
+     * primitives this page's icon module really exports, deduped by resolved
+     * name so a retired alias can never double a cell. Computed once — the icon
+     * module is fixed for the lifetime of the page.
+     */
+    const ICON_PICKER_CHOICES = (() => {
+      const seen = new Set()
+      return ICON_CHOICES.filter((mode) => {
+        if (mode === 'solid' || mode === 'outline' || mode === 'none') return true
+        const name = resolveIconName(mode)
+        if (name === '' || seen.has(name)) return false
+        seen.add(name)
+        return true
+      })
+    })()
 
     /**
      * Appearance controls shared by the per-row dialog and the settings card's
      * "default appearance" section: color, glow, weight, shadow, the text
-     * outline (on/off + width) and — where the row actually renders one — the
-     * folder glyph. The outline color is never picked by hand (see the
-     * appearance block above): it is derived from the effective font color, so
-     * it keeps working when the palette flips.
+     * outline (on/off + width + color) and — where the row actually renders
+     * one — the folder glyph. Since v0.10.1 the outline color is a normal
+     * choice (presets + picker, gray by default); "auto" is the mode that
+     * derives the contrasting pole from the effective font color, so a palette
+     * flip keeps working without a re-render.
      */
     function AppearanceControls({ value, onChange, allowIcon, t }) {
       const appearance = readAppearance(value)
@@ -1422,6 +1494,9 @@ window.__ModuleLoader__.load({
       const strokeWidth = appearance.strokeWidth
       const strokeColor = appearance.strokeColor
       const iconMode = value && value.icon ? value.icon : 'solid'
+      // The glyph this choice actually resolves to on THIS host: a value saved
+      // before the host renamed its icon set still highlights a real cell.
+      const activeGlyph = resolveIconName(iconMode)
       const patch = (next) => { if (typeof onChange === 'function') onChange(next) }
       const channels = colorToRgb(color)
       const setChannel = (index, raw) => {
@@ -1570,10 +1645,13 @@ window.__ModuleLoader__.load({
         allowIcon ? E('div', { className: 'bw-field' },
           t('custom.icon'),
           E('div', { className: 'bw-icon-grid' },
-            ICON_CHOICES.map((mode) => E('button', {
+            ICON_PICKER_CHOICES.map((mode) => E('button', {
               key: mode,
               type: 'button',
-              className: cls('bw-icon-cell', iconMode === mode && 'bw-icon-cell-active'),
+              // A value saved before an alias flip still highlights the cell it
+              // now resolves to, instead of leaving the grid with no selection.
+              className: cls('bw-icon-cell',
+                (iconMode === mode || (activeGlyph !== '' && resolveIconName(mode) === activeGlyph)) && 'bw-icon-cell-active'),
               title: mode === 'solid' ? t('custom.icon.solid') : (mode === 'outline' ? t('custom.icon.outline') : mode),
               'aria-label': mode === 'solid' ? t('custom.icon.solid') : (mode === 'outline' ? t('custom.icon.outline') : mode),
               onClick: () => patch({ icon: mode }),
@@ -1819,6 +1897,7 @@ window.__ModuleLoader__.load({
       const sessionGroupsMap = useStore ? (useStore(s => s.sessionGroups) || {}) : {}
       const prefsMap = useStore ? (useStore(s => s.prefs) || {}) : {}
       const stylingMap = useStore ? (useStore(s => s.styling) || {}) : {}
+      const sessionOrderMap = useStore ? (useStore(s => s.sessionOrder) || {}) : {}
       // Dual-write wrappers: every preference mutation lands in the local
       // store (immediate echo + scope-less fallback) AND the host settings
       // store (durable cross-device copy for the manual pull on the other
@@ -2071,6 +2150,13 @@ window.__ModuleLoader__.load({
         return { ...built, folders: built.folders.map((f) => materializeChain(compressTree(f))), workspaces: built.workspaces }
       }, [items, storeFolders, compactChains, draggingWorkspace])
 
+      /** Browser-local flat session order for one workspace (fallback channel). */
+      const sessionOrderOf = (workspaceId) => {
+        const map = sessionOrderMap && typeof sessionOrderMap === 'object' ? sessionOrderMap : {}
+        const list = map[workspaceId]
+        return Array.isArray(list) ? list : []
+      }
+
       const sessionsOf = (workspace) => {
         const rows = []
         for (const id of workspace.sessionIds || []) {
@@ -2089,7 +2175,21 @@ window.__ModuleLoader__.load({
             pending: pendingKindOf(pending, id),
           })
         }
-        return rows
+        // Browser-local reorder fallback (dsh 0.1.6-alpha.1 stopped injecting
+        // insertSessionBefore): the local flat order wins for the workspaces the
+        // user dragged in, and is empty everywhere else — so a host that still
+        // exposes the action keeps its authoritative order untouched.
+        // Host order stays authoritative wherever the action exists.
+        const local = typeof insertSessionBefore === 'function' ? [] : sessionOrderOf(workspace.workspaceId)
+        if (local.length === 0) return rows
+        const remaining = new Map(rows.map((row) => [row.id, row]))
+        const out = []
+        for (const id of local) {
+          const row = remaining.get(id)
+          if (row) { out.push(row); remaining.delete(id) }
+        }
+        for (const row of rows) if (remaining.has(row.id)) out.push(row)
+        return out
       }
 
       const searchAgent = (agent) => {
@@ -2195,7 +2295,11 @@ window.__ModuleLoader__.load({
       const canDragWorkspace = typeof insertWorkspaceBefore === 'function'
       // Session REORDER needs the host insertSessionBefore action; dragging a
       // session onto a sub-group row (a pure rename) stays available without it.
-      const canReorderSessions = typeof insertSessionBefore === 'function'
+      // Session reorder keeps working either way: the host action is preferred
+      // (authoritative, visible to every surface), while hosts that no longer
+      // inject it — dsh 0.1.6-alpha.1 dropped insertSessionBefore from the
+      // browser contract — fall back to the browser-local flat order.
+      const canReorderSessions = true
 
       /* --------------------- workspace drag & drop -------------------- */
 
@@ -2373,9 +2477,16 @@ window.__ModuleLoader__.load({
         const anchor = half === 'after'
           ? (index === -1 ? undefined : (flat[index + 1] ? flat[index + 1].id : undefined))
           : targetSessionId
-        Promise.resolve()
-          .then(() => (anchor !== undefined ? insertSessionBefore(workspaceId, source.sessionId, anchor) : insertSessionBefore(workspaceId, source.sessionId)))
-          .catch(fail)
+        if (typeof insertSessionBefore === 'function') {
+          Promise.resolve()
+            .then(() => (anchor !== undefined ? insertSessionBefore(workspaceId, source.sessionId, anchor) : insertSessionBefore(workspaceId, source.sessionId)))
+            .catch(fail)
+          return
+        }
+        // Host channel gone: commit the same move into the browser-local order.
+        if (actions && typeof actions.setSessionOrder === 'function') {
+          actions.setSessionOrder(workspaceId, reorderIds(flat.map((s) => s.id), source.sessionId, anchor))
+        }
       }
       const commitSessionMoveInto = (workspaceId, groupPath) => {
         const source = drag.source

@@ -30,7 +30,7 @@
 | src/index.js | host 半,纯占位(有效 Node 入口 + 一行日志);未来宿主侧功能(分组宿主登记、设置页后端)的家 |
 | cordis.patch.yml | dsh plugin add 官方安装通道的挂载声明(insert 一行插件 row) |
 | dsh.plugin.json | 插件注册表清单(id dsh-external/dsh-better-workspace) |
-| tests/smoke.mjs | 冒烟测试(纯文件级,无 Cordis 运行时):清单一致性、基线 require 白名单、slot 注册、zh/en 词典对齐、无 import/JSX/TS 语法 |
+| tests/smoke.mjs | 冒烟测试(纯文件级,无 Cordis 运行时):清单一致性、基线 require 白名单、slot 注册、21 门词典逐门键集对齐、无 import/JSX/TS 语法 |
 
 ## 核心不变量(改代码前必读)
 
@@ -59,7 +59,8 @@
    - **工作区 dragstart 的 setDrag 必须延迟一帧**(wsDragArmTimer setTimeout 0,dragEnd 清理):Chromium 在拖拽手势建立前,若同步重渲染把拖拽源元素从光标下移开(链展开恰好会把新行插到拖拽行上方),会立即取消整个拖拽(0.7.0 回归,参照 react-dnd #3649 的结论与同款 setTimeout 解法)。会话拖拽不改树结构,保持同步 setDrag 不受影响;
    - 会话:同工作区内拖到会话行上/下半 → insertSessionBefore(以扁平 sessionIds 序为锚);拖到会话子分组行 → renameSession(新前缀标题)。跨工作区拖拽被守卫拒绝。**会话行排序有两条通道(v0.10.2)**:宿主注入的 insertSessionBefore 是首选(权威、与其他界面一致),dsh 0.1.6-alpha.1 已把它从浏览器契约移除 → 此时落到**浏览器本地扁平序**(store.sessionOrder,按 workspaceId 存 id 数组;reorderIds 复刻 insertSessionBefore 的锚点语义:锚点缺失即追加)。**本地序只在宿主无该动作时生效**(sessionsOf 里 `typeof insertSessionBefore === 'function' ? [] : sessionOrderOf(...)`),宿主序永远优先。绝不能裸调 undefined(≤0.7.1 拖会话排序即弹 TypeError: insertSessionBefore is not a function,根因是 browserInjected 漏注入该动作);会话行 draggable 从不因此关闭:拖到子分组是纯 rename,永远可用。
    - 显示顺序 = 宿主手动序(sessionIds / registry 序),本地序仅在宿主无 reorder 通道时接管;buildTree/buildSessionTree 只排序分组名,绝不按名称/时间重排成员行(否则拖拽结果不可见)。
-7. **词典纪律**:NS = betterWorkspace;zh/en 两个词典 key 必须完全对齐,且覆盖文件里每个静态 t(...) 调用——冒烟测试逐 key 校验。动态拼 key(如 time. + unit、status. + kind)的取值集合也要在词典里配齐。
+7. **词典纪律**:NS = betterWorkspace。`zh` / `en` 是文件内的两本词典,其余 19 门语言在 `LOCALES` 表里一门一条、每条前一行 `/* locale: <tag> */` 标记(ar / de / fr / hi / id / it / ja / ko / nl / pl / pt / ru / sv / th / tr / vi + zh-HK / zh-MO / zh-TW;繁体港式与台式各一份,zh-MO 与 zh-HK 共用同一份)。**每本词典的 key 集必须与 zh 完全相等**——缺键不报错、查表时静默回退英文,面板会变成半翻译状态,冒烟测试逐门比对键集(缺一个就红);同时覆盖文件里每个静态 t(...) 调用,动态拼 key(如 time. + unit、status. + kind)的取值集合也要配齐。**加文案键时:zh / en 一起加,再给 LOCALES 里每一门语言都加**;加一门语言 = 在 LOCALES 追加一个带标记的条目,不改任何逻辑。词典经 `ctx.locale.register(NS, Object.assign({ zh, en }, LOCALES))` 一次注册给 DSH 的 locale 服务。
+   - **本插件不自己解析词典、也不自己订阅语言变化**:`t` 是宿主渲染器按 slot 注册里的 `locale: NS` 绑好的座位(ui-renderer 的 localeSeat → LocaleRuntime.bind:每次查表读当前 active,语言切换经 locale revision 让每个 outlet 重渲染,React.memo 也按新引用重算),所以这里**不要**引入 dsh-ide-git 那样的 translatorOf / dictionaryFor / LocaleLive——那是给「宿主服务不到的自绘面」(better-sidebar Tab)用的,本插件所有界面都走 slot 座位。语言能否被选中由 DSH 的语言目录(catalog)决定:本插件只登记词典,把某门语言加进可选目录是语言包插件(`ctx.locale.addLanguage`)的事——本插件绝不调 addLanguage,否则会与语言包抢注册直接抛 already registered。
 8. **React 纪律**:纯 React.createElement;组件必须定义在模块层(内联组件定义会在父组件每次渲染时重挂载、丢输入状态);所有 hook 调用必须先于任何 early return。
 9. **防御式边界**:primitives 图标/组件一律经 icon()/BTN() 特征探测降级,不硬崩;require 只允许基线(测试强制)。
 

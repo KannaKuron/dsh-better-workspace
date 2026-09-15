@@ -158,7 +158,7 @@ test('locale dictionaries cover every static t() key in both languages', () => {
   }
   const keysOf = (block) => new Set([...block.matchAll(/'([a-zA-Z][^']*)':/g)].map((m) => m[1]))
   const zhBlock = slice('const zh = {', 'const en = {')
-  const enBlock = slice('const en = {', '/* ============================= helpers')
+  const enBlock = slice('const en = {', 'const LOCALES = {')
   const zhKeys = keysOf(zhBlock)
   const enKeys = keysOf(enBlock)
   assert.ok(zhKeys.size > 20, 'zh dictionary looks too small')
@@ -172,6 +172,59 @@ test('locale dictionaries cover every static t() key in both languages', () => {
   for (const unit of ['minutes', 'hours', 'days', 'months', 'years']) {
     assert.ok(zhKeys.has('time.' + unit) && enKeys.has('time.' + unit), 'missing time.' + unit)
   }
+})
+
+// Same guard as dsh-ide-git's smoke suite. Every third-language block is
+// preceded by a /* locale: <tag> */ marker, so the blocks can be sliced out of
+// the file without parsing it. Equality matters because a key missing from a
+// third language falls back to English at lookup time — a silent
+// half-translated panel, which is exactly what this catches.
+const SHIPPED_LOCALES = [
+  'ar', 'de', 'fr', 'hi', 'id', 'it', 'ja', 'ko', 'nl', 'pl',
+  'pt', 'ru', 'sv', 'th', 'tr', 'vi', 'zh-HK', 'zh-MO', 'zh-TW',
+]
+
+test('every shipped dictionary carries the same key set as zh', () => {
+  const text = read('src/client.js')
+  const keyLines = (segment) => [...segment.matchAll(/^ +'([^']+)': '/gm)].map((m) => m[1]).sort()
+  const zhKeys = keyLines(text.slice(text.indexOf('const zh = {'), text.indexOf('const en = {')))
+  assert.ok(zhKeys.length >= 100, 'the zh dictionary looks truncated: ' + zhKeys.length)
+
+  const start = text.indexOf('const LOCALES = {')
+  const end = text.indexOf('/* ============================= helpers', start)
+  assert.ok(start !== -1 && end !== -1 && start < end, 'the LOCALES table is missing')
+  const parts = text.slice(start, end).split('/* locale: ')
+  assert.ok(
+    parts.length - 1 >= SHIPPED_LOCALES.length,
+    'expected at least ' + SHIPPED_LOCALES.length + ' third-language dictionaries, saw ' + (parts.length - 1),
+  )
+  const tags = []
+  for (let index = 1; index < parts.length; index += 1) {
+    const tag = parts[index].slice(0, parts[index].indexOf(' */'))
+    tags.push(tag)
+    assert.deepEqual(keyLines(parts[index]), zhKeys, 'dictionary ' + tag + ' does not match the zh key set')
+  }
+  assert.deepEqual(tags, SHIPPED_LOCALES, 'the shipped language list changed')
+  // All dictionaries ride the one register call the host locale service reads;
+  // a dropped locale here would leave that language on English.
+  assert.match(
+    text,
+    /ctx\.locale\.register\(NS, Object\.assign\(\{ zh, en \}, LOCALES\)\)/,
+    'every dictionary must be published through ctx.locale.register',
+  )
+
+  // Live switching is the host's job here. `t` is a seat the renderer binds
+  // from the registration's locale: NS and rebuilds on every locale revision,
+  // so nothing may resolve or capture a dictionary plugin-side — a
+  // translatorOf / dictionaryFor (which dsh-ide-git needs only because its
+  // panel is not a DSH slot) would fork that single source of truth and pin
+  // the language until the next page load.
+  assert.match(text, /locale: NS/, 'every registration must name the dictionary namespace')
+  assert.doesNotMatch(
+    text,
+    /translatorOf|dictionaryFor|dictionaryOf\(/,
+    'dictionary resolution belongs to the host locale service, not this plugin',
+  )
 })
 
 /**

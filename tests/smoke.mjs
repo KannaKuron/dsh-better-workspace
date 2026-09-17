@@ -622,3 +622,53 @@ test('in-app browser: full path, drive chips, click-to-select (0.11.4)', () => {
   }
 })
 
+/**
+ * Create-folder regression (0.11.5). v0.11.4 retargeted the selection at the
+ * folder just made and, in the same edit, folded `createDirectory(currentPath,
+ * name)` into the success handler until only the handler was left: the chain
+ * resolved `undefined` on its own, so the form closed with no error while the
+ * browser never sent a single `directoryPicker/*` request and nothing landed on
+ * disk. No rendered state could show it, which is why the seam below is driven
+ * for real — a dropped or renamed call fails here, not in a user's sidebar.
+ */
+test('in-app browser: the create action really calls the wire verb (0.11.5)', async () => {
+  const text = read('src/client.js')
+  const start = text.indexOf('const createFolderIn =')
+  const end = text.indexOf('function DirectoryBrowseDialog(')
+  assert.ok(start !== -1 && end !== -1 && start < end, 'the create seam is missing')
+  const { createFolderIn } = new Function(text.slice(start, end) + '\nreturn { createFolderIn }')()
+
+  const calls = []
+  const created = await createFolderIn((path, name) => {
+    calls.push([path, name])
+    return Promise.resolve(path + '/' + name)
+  }, '/home/u', '新文件夹')
+  assert.deepEqual(calls, [['/home/u', '新文件夹']], 'the verb gets the browsed level and the typed name')
+  assert.equal(created, '/home/u/新文件夹', 'the created path is what the dialog selects')
+
+  // A refusal must stay a refusal: the dialog renders it instead of closing on
+  // what looks like success.
+  const refusal = new Error('directory-exists: /home/u/x already exists')
+  assert.equal(
+    await createFolderIn(() => Promise.reject(refusal), '/home/u', 'x').then(() => null, (reason) => reason),
+    refusal,
+  )
+  assert.equal(
+    await createFolderIn(() => { throw refusal }, '/home/u', 'x').then(() => null, (reason) => reason),
+    refusal,
+    'a synchronous throw (an un-injected prop) must reject as well',
+  )
+
+  // Wiring: the dialog's action runs through the seam exactly once, and the
+  // 0.11.4 shape — a bare chain whose FIRST handler already consumes `created` —
+  // must not come back.
+  const submit = text.slice(text.indexOf('const submitCreate = () => {'), text.indexOf('const head = editing'))
+  assert.ok(submit.length > 0, 'submitCreate not found')
+  assert.equal(
+    (submit.match(/createFolderIn\(createDirectory, currentPath, name\)/g) || []).length,
+    1,
+    'submitCreate must run the create through the seam',
+  )
+  assert.doesNotMatch(submit, /Promise\.resolve\(\)\s*\n\s*\.then\(\(created\)/, 'the dangling chain must not return')
+})
+

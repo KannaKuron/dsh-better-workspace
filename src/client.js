@@ -3517,6 +3517,16 @@ window.__ModuleLoader__.load({
      */
     const browseDrives = { probed: false, probing: false, list: [] }
 
+    /**
+     * Run the one wire verb that actually puts a folder on disk and hand back
+     * the created path. This is deliberately a module-level seam the smoke suite
+     * drives for real: v0.11.4 folded the call into the success handler and
+     * dropped it, so the form closed on a resolved `undefined` — no request, no
+     * error, no folder. A string-level assertion cannot see that; calling it can.
+     */
+    const createFolderIn = (createDirectory, path, name) => Promise.resolve()
+      .then(() => createDirectory(path, name))
+
     function DirectoryBrowseDialog(props) {
       const { open, busy, listDirectory, createDirectory, onPick, onClose, t } = props
       const [listing, setListing] = React.useState(null)
@@ -3631,7 +3641,7 @@ window.__ModuleLoader__.load({
         if (name === '' || createBusy || currentPath === '') return
         setCreateBusy(true)
         setCreateError('')
-        Promise.resolve()
+        createFolderIn(createDirectory, currentPath, name)
           .then((created) => {
             setCreateBusy(false)
             setCreating(false)

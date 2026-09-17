@@ -3,6 +3,19 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.11.5 — 2026-09-17
+
+**类型**:fix(选择目录弹窗「新建文件夹」静默失败:重构丢掉了真正落盘的那一次调用)
+
+- **根因(issue #2,0.11.4 引入)**:0.11.3 的 `submitCreate` 是两条链——`.then(() => createDirectory(currentPath, name))` 负责落盘、`.then(() => {...})` 负责收尾。0.11.4 为了「新建后自动选中刚建的那个目录」把两条**合并成一条**,只留下结果消费端 `.then((created) => {...})`:**发出 `directoryPicker/createDirectory` 的那一步没有了**。于是 `Promise.resolve()` 自己 resolve 出 `undefined`,表单照常收起、`setSelected` 因 `created` 不是字符串而跳过、`go(currentPath, true)` 照常刷新列表——界面一切正常,**宿主文件系统里什么都没有**,Network 面板里也没有任何 `directoryPicker/*` 请求。这正是上报文案的逐字现象,也是它「没有报错」的原因:失败路径根本没被走到。
+- **修法**:把创建动作放回链首,并抽成模块级接缝 `createFolderIn(createDirectory, path, name)`;成功回调仍按宿主 `createDirectory(path, name): Promise<string>` 的契约(browse 后端返回 `join(parent, name)`)选中新目录;重名 `directory-exists`、非法段名、父路径不可写等失败照旧落进 `setCreateError`,留在对话框内。
+- **冒烟测试 22 → 23 项**:0.11.4 那条只钉住 UI 契约,而这次的缺陷**恰恰是字符串级断言看不见的**(函数在、参数在、调用没了)。新测试因此**真的驱动这个接缝**:断言 wire 动词收到浏览层路径与输入名、返回值就是被选中的路径、拒绝与同步抛错都要变成 rejection;接线侧再钉死 `submitCreate` 必须经由接缝、且「链首就消费 `created`」的 0.11.4 形态不得回归。**两条守卫各自反证过**:把 `src/client.js` 换回 0.11.4 的写法 → 红(`the create seam is missing`);只把接缝调用换回空链 → 红(`submitCreate must run the create through the seam`)。
+- **A/B 真机实录**(隔离 DSH_HOME + webserver `0.0.0.0`(宿主组装 browse 后端)+ headless Chrome over CDP,全程不碰用户实例):
+  - 对照组 `dsh-better-workspace@0.11.4`:点「添加工作区」→ 应用内浏览器 → 路径编辑进入目标层 → 「新建文件夹」→ 输入名称 → 「创建」→ **表单收起、零报错、footer 回到「选择此文件夹」**;wire 上只有四条 `POST /api/directoryPicker/list` 而**没有任何 `createDirectory`**,宿主目录里**什么都没建**——上报现象逐条复现。
+  - 修复版 `0.11.5`:同一操作 → wire 上出现 `POST /api/directoryPicker/createDirectory → 200`,宿主目录**真实落盘**,列表刷新后**自动选中新目录**、footer 变成「选择「verify-fixed-folder」」,控制台零错误。
+- **验证边界**:该对话框只在宿主组装 `browse` 后端时出现(非 loopback / SSH / 无显示会话);桌面客户端在 loopback + 有显示会话下走 native `pickDirectory` 分支,本次未触碰该分支(能力探测四分支仍由冒烟测试覆盖),两端共用同一份 `src/client.js`。
+- 相关:[issue #2](https://github.com/KannaKuron/dsh-better-workspace/issues/2) · [Release v0.11.5](https://github.com/KannaKuron/dsh-better-workspace/releases/tag/v0.11.5)
+
 ## v0.11.4 — 2026-09-16
 
 **类型**:fix(应用内目录浏览器的可用性:路径、盘符、选文件夹)

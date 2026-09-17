@@ -63,12 +63,25 @@ test('client half is a __ModuleLoader__ bundle with baseline requires only', () 
   assert.ok(requires.length > 0, 'expected at least one require')
 })
 
-test('client half registers the three expected slots', () => {
+test('client half registers the expected seats (v0.12.0)', () => {
   const text = read('src/client.js')
   assert.match(text, /slots\.inject\('sidebar\.workspaces'/)
   assert.match(text, /priority: -1/, 'browser shadowing needs the lowest rank')
-  assert.match(text, /slots\.inject\('conversation\.hero\.workspace\.directoryFlow'/)
-  assert.match(text, /slots\.inject\('sidebar\.workspaces\.directoryFlow'/)
+  // The registration DECLARES the directory-flow child hole and the browser
+  // consumes it through renderSlot: the official composed picker owns the
+  // whole add-workspace interaction (OS chooser or in-app browser).
+  assert.match(text, /children: \{ 'sidebar\.workspaces\.directoryFlow': \{ kind: 'single', scope: 'root' \} \}/)
+  assert.match(text, /renderSlot\('sidebar\.workspaces\.directoryFlow', flowOwner\)/)
+  // No directory-flow occupancy remains: both the conversation hero flow and
+  // the sidebar flow run the official interaction again.
+  assert.doesNotMatch(text, /slots\.inject\('conversation\.hero\.workspace\.directoryFlow'/)
+  assert.doesNotMatch(text, /slots\.inject\('sidebar\.workspaces\.directoryFlow'/)
+  // Settings ride BOTH host eras: the pre-alpha.2 Settings→Plugins card and
+  // the alpha.2+ Plugins panel bundle page (keyed by PACKAGE name).
+  assert.match(text, /slots\.inject\('settings\.plugin\.item',[\s\S]*?key: 'better-workspace',/)
+  assert.match(text, /slots\.inject\('plugins\.bundle\.config',[\s\S]*?key: 'dsh-better-workspace',/)
+  // The bundle-page seat renders with view: 'page' — no accordion chrome.
+  assert.match(text, /props\.view === 'page'/)
 })
 
 test('client plugin exports the cordis plugin triple', () => {
@@ -186,9 +199,11 @@ const SHIPPED_LOCALES = [
 
 test('every shipped dictionary carries the same key set as zh', () => {
   const text = read('src/client.js')
-  const keyLines = (segment) => [...segment.matchAll(/^ +'([^']+)': '/gm)].map((m) => m[1]).sort()
+  // Values may be single- OR double-quoted (apostrophe-bearing copy), so
+  // the line pattern stops at the key's closing colon.
+  const keyLines = (segment) => [...segment.matchAll(/^ +'([^']+)': (?!\{)/gm)].map((m) => m[1]).sort()
   const zhKeys = keyLines(text.slice(text.indexOf('const zh = {'), text.indexOf('const en = {')))
-  assert.ok(zhKeys.length >= 100, 'the zh dictionary looks truncated: ' + zhKeys.length)
+  assert.ok(zhKeys.length >= 80, 'the zh dictionary looks truncated: ' + zhKeys.length)
 
   const start = text.indexOf('const LOCALES = {')
   const end = text.indexOf('/* ============================= helpers', start)
@@ -307,9 +322,11 @@ test('manual cross-device sync: host scope bind, dual writes, pull modes', () =>
   assert.match(text, /ctx\.settingsScope && typeof ctx\.settingsScope\.bind === 'function'/)
   assert.match(text, /bind\(\{ namespace: 'better-workspace' \}\)/)
   // Dual-write wrappers exist and route every preference mutation through them.
-  assert.match(text, /const makeSharedWrites = \(actions, stylingMap, foldersList\)/)
-  assert.equal((text.match(/shared\.(setStyling|addFolder|removeFolder|renameFolder)\(/g) || []).length, 6,
-    'browser (5) + flow (1) preference writes all go through the shared wrappers')
+  // v0.12.0 dropped the explicit-folder channel with the feature itself.
+  assert.match(text, /const makeSharedWrites = \(actions, stylingMap\)/)
+  assert.equal((text.match(/shared\.setStyling\(/g) || []).length, 2,
+    'the customize dialog writes through the shared wrapper')
+  assert.doesNotMatch(text, /shared\.(addFolder|removeFolder|renameFolder)\(/, 'explicit folders are gone (v0.12.0)')
   // Pull modes: overwrite replaces, merge unions with the pulled copy winning.
   assert.match(text, /importHost: \(d, host\)/)
   assert.match(text, /mergeHost: \(d, host\)/)
@@ -509,166 +526,88 @@ test('session reorder: host action preferred, browser-local order as the fallbac
 })
 
 /**
- * Directory-picker capability (0.11.3). The Host composes exactly ONE backend:
- * a loopback-only webserver bind on a display-bearing host gets `native` (an OS
- * chooser on the HOST's screen), every other bind — all-interfaces/LAN, SSH,
- * headless — gets `browse`, whose wire verbs are list/createDirectory only and
- * whose `pick` is refused by design. The flow used to assume the chooser, so on
- * a LAN bind "Add workspace" died with "needs the native capability" and no
- * workspace could be added. The probe rides `list` (served by browse alone) and
- * the flow keeps both interactions; this drives every branch of that decision.
+ * The two-layer tree (v0.12.0). Disk nesting follows the official
+ * owningParentFolder semantics — a workspace row nests under its nearest
+ * registered ancestor directory, no virtual nodes for unregistered paths —
+ * while name groups ("/" in titles) live INSIDE each level. This drives
+ * buildTree for real across both layers.
  */
-test('directory picker: capability probe drives chooser or in-app browser (0.11.3)', async () => {
+test('buildTree: disk nesting + name groups inside each level (0.12.0)', () => {
   const text = read('src/client.js')
-  const start = text.indexOf('const pickerState = ')
-  const end = text.indexOf('/* ============================ flow dialog')
-  assert.ok(start !== -1 && end !== -1 && start < end, 'capability module not found')
-  const messageOf = (reason) => (reason instanceof Error ? reason.message : String(reason))
-  const load = () => new Function('messageOf', text.slice(start, end)
-    + '\nreturn { pickerState, pickerRefusal, pickerCapabilityNow, markPickerBrowse }')(messageOf)
+  const helpers = new Function(text.slice(
+    text.indexOf('const basename ='),
+    text.indexOf('const splitPlainSegs ='),
+  ) + text.slice(
+    text.indexOf('const splitPlainSegs ='),
+    text.indexOf('const normPath ='),
+  ) + text.slice(
+    text.indexOf('const DISK_SEP ='),
+    text.indexOf('const countWorkspaces ='),
+  ) + '\nreturn { buildTree, diskParentMapOf, normDiskPath }')()
+  const { buildTree, diskParentMapOf, normDiskPath } = helpers
 
-  const listing = { path: '/home/u', home: '/home/u', crumbs: [], entries: [], truncated: false }
+  // Windows paths normalize for comparison without interpreting POSIX
+  // backslashes as separators.
+  assert.equal(normDiskPath('C:\\Users\\kanna'), 'C:/Users/kanna')
+  assert.equal(normDiskPath('/home/u/'), '/home/u')
 
-  // 1. browse: the listing answers, so the flow renders the in-app browser.
-  const browse = load()
-  browse.pickerState.api = { listDirectory: () => Promise.resolve(listing) }
-  assert.equal(await browse.pickerCapabilityNow(), 'browse')
-  // The verdict is cached: a settled page never re-probes on every open.
-  let calls = 0
-  browse.pickerState.api = { listDirectory: () => { calls += 1; return Promise.resolve(listing) } }
-  assert.equal(await browse.pickerCapabilityNow(), 'browse')
-  assert.equal(calls, 0, 'a settled verdict must not re-probe')
+  const items = [
+    { workspaceId: 'a', title: 'web/前端', path: '/home/u/web' },
+    { workspaceId: 'b', title: 'api', path: '/home/u/web/api' },
+    { workspaceId: 'c', title: 'web/后端', path: '/home/u/other' },
+    { workspaceId: 'd', title: 'deep/nested/x', path: '/home/u/web/api/d' },
+    { workspaceId: 'top', title: '独立', path: '/srv' },
+  ]
+  // Disk ancestry: b and d nest under a; nothing nests under c (its
+  // directory /home/u/other has no registered child).
+  const parents = diskParentMapOf(items)
+  assert.equal(parents.get('a'), undefined)
+  assert.equal(parents.get('b'), 'a')
+  assert.equal(parents.get('d'), 'b')
+  assert.equal(parents.get('top'), undefined)
 
-  // 2. native: the browse verb is refused with the capability code.
-  const native = load()
-  native.pickerState.api = {
-    listDirectory: () => Promise.reject(Object.assign(new Error('refused'), {
-      rpcError: { code: 'directory-picker/unavailable' },
-    })),
-  }
-  assert.equal(await native.pickerCapabilityNow(), 'native')
-
-  // 3. unclassified failure (a carrier still connecting) is NOT cached: the
-  //    next open re-probes instead of pinning a wrong verdict for the page.
-  const retry = load()
-  let attempts = 0
-  retry.pickerState.api = {
-    listDirectory: () => { attempts += 1; return Promise.reject(new Error('carrier connecting')) },
-  }
-  assert.equal(await retry.pickerCapabilityNow(), 'unknown')
-  assert.equal(await retry.pickerCapabilityNow(), 'unknown')
-  assert.equal(attempts, 2, 'an unclassified failure must re-probe')
-  // 4. the hard way: a refused pick flips the cached verdict to browse.
-  retry.markPickerBrowse()
-  assert.equal(await retry.pickerCapabilityNow(), 'browse')
-  assert.equal(attempts, 2, 'a committed verdict stops probing')
-
-  // 5. refusal classification covers both shapes the flow can see: the raw
-  //    wire failure, and the plain Error uiWorkspace wraps it in.
-  const classify = load()
-  assert.equal(classify.pickerRefusal(new Error(
-    'directory picker failed: directoryPicker.pick needs the native capability; the composed picker serves "browse"',
-  )), true)
-  assert.equal(classify.pickerRefusal(Object.assign(new Error('x'), {
-    rpcError: { code: 'directory-picker/unavailable' },
-  })), true)
-  assert.equal(classify.pickerRefusal(new Error(
-    'directory browse failed: directory-picker/unreadable: denied',
-  )), false, 'a browse failure is not a capability refusal')
-  assert.equal(classify.pickerRefusal(new Error('connection lost')), false)
-
-  // Wiring: the dialog exists, the flow branches on the verdict, and BOTH
-  // entry surfaces (the sidebar's inlined flow + the two directoryFlow holes)
-  // inject the browse primitives the dialog drives.
-  assert.match(text, /function DirectoryBrowseDialog\(props\)/)
-  assert.match(text, /if \(phase === 'browsing'\)/)
-  assert.equal(
-    (text.match(/listDirectory: \(path, signal\) => uiWorkspace\.listDirectory\(path, signal\)/g) || []).length,
-    2,
-    'both entry surfaces inject the browse primitives',
-  )
-  assert.match(text, /pickerState\.api = uiWorkspace/, 'the probe needs the service handle')
-  assert.match(text, /pickerCapabilityNow\(\)/, 'the flow must consult the probe')
-  assert.match(text, /markPickerBrowse\(\)/, 'a refused pick must commit the browse verdict')
-  for (const key of ['browse.title', 'browse.home', 'browse.select', 'browse.newFolder', 'browse.showHidden', 'browse.truncated']) {
-    assert.ok(text.includes("'" + key + "':"), 'missing dictionary key ' + key)
-  }
+  const tree = buildTree(items)
+  // Root level: one name group (web) holding a and c; the standalone row.
+  assert.deepEqual(tree.folders.map((f) => f.name), ['web'])
+  assert.deepEqual(tree.folders[0].workspaces.map((w) => w.workspaceId), ['a', 'c'])
+  assert.deepEqual(tree.workspaces.map((w) => w.workspaceId), ['top'])
+  // a's disk children form a nested LEVEL with its own name groups.
+  const a = tree.folders[0].workspaces[0]
+  assert.ok(a.sub, 'a has nested workspaces')
+  assert.deepEqual(a.sub.workspaces.map((w) => w.workspaceId), ['b'])
+  assert.deepEqual(a.sub.folders, [], "b's title has no '/', so a's nested level holds no name groups")
+  // Sub-level folder identity keys carry the owning chain so same-named
+  // groups in different levels never share expansion/styling state.
+  // (checked on b's nested level below, where d's title forms groups)
+  // d (b's disk child) sits inside b's sub level, inside the deep group.
+  const b = a.sub.workspaces[0]
+  assert.ok(b.sub)
+  // d's title 'deep/nested/x' forms the chain deep → nested inside b's level.
+  assert.deepEqual(b.sub.folders.map((f) => f.name), ['deep'])
+  assert.deepEqual(b.sub.folders[0].folders.map((f) => f.name), ['nested'])
+  assert.deepEqual(b.sub.folders[0].folders[0].workspaces.map((w) => w.workspaceId), ['d'])
+  assert.equal(b.sub.folders[0].idPath, 'a//b//deep')
+  // c has no nested level: sub is null, the row stays a leaf.
+  assert.equal(tree.folders[0].workspaces[1].sub, null)
 })
 
 /**
- * In-app browser usability (0.11.4). The 0.11.3 dialog rooted its breadcrumb at
- * Home (the official dialog's choice), entered on a single click, and had no
- * Windows drive entry at all — all three were real usability complaints.
+ * The add-workspace flow runs the OFFICIAL interaction (v0.12.0): the
+ * browser is the owner (open/busy/onPicked/onCancel/onError), the composed
+ * picker serves the declared child hole, and a picked directory is adopted
+ * with createWorkspace + startSession — the shipped browser's behavior.
  */
-test('in-app browser: full path, drive chips, click-to-select (0.11.4)', () => {
+test('add-workspace flow: official occupant through the declared child hole (0.12.0)', () => {
   const text = read('src/client.js')
-  // The chain is the full ancestry now: no re-rooting at the host home.
-  assert.doesNotMatch(text, /index === 0 && at !== -1/, 'the chain must not be re-rooted at Home')
-  assert.match(text, /const crumbs = listing && Array\.isArray\(listing\.crumbs\) \? listing\.crumbs : \[\]/)
-  assert.match(text, /node\.scrollLeft = node\.scrollWidth/, 'a deep path keeps its tail in view')
-  // Rows SELECT on click; entering needs a double click or the row chevron,
-  // because a touch screen has no double click.
-  assert.match(text, /onClick: \(\) => setSelected\(\(current\) => \(current === entry\.path \? '' : entry\.path\)\)/)
-  assert.match(text, /onDoubleClick: \(\) => go\(entry\.path\)/)
-  assert.match(text, /className: 'bw-browse-open'/)
-  assert.match(text, /bw-browse-row-on/)
-  assert.match(text, /t\('browse\.selectNamed', \{ name: selectedEntry\.name \}\)/, 'the footer adopts the selected row')
-  // Windows drives: one probe per page, missing letters silent, cached module-side.
-  assert.match(text, /const browseDrives = \{ probed: false, probing: false, list: \[\] \}/)
-  assert.match(text, /const letters = \['C:', 'D:', 'E:', 'F:', 'G:', 'H:'\]/)
-  assert.match(text, /browseDrives\.probed = true/)
-  for (const key of ['browse.enter', 'browse.drives', 'browse.selectNamed']) {
-    assert.ok(text.includes("'" + key + "':"), 'missing dictionary key ' + key)
-  }
+  // Occupancy gates the affordance (both the rail and the wide header).
+  assert.match(text, /useDirectoryFlow\(occupied => occupied\)/)
+  assert.match(text, /if \(flowOpen && !flowAvailable\) setFlowOpen\(false\)/,
+    'an occupant that unloads mid-interaction withdraws the open flow')
+  // Owner conversation shape.
+  assert.match(text, /busy: flowBusy/)
+  assert.match(text, /createWorkspace\(\{ path: String\(path\) \}\)/)
+  assert.match(text, /startSession\(workspace\.workspaceId\)/, 'a picked directory opens a session, like the official flow')
+  // The custom picker flow and its capability probe are gone for good.
+  assert.doesNotMatch(text, /pickerCapabilityNow|DirectoryBrowseDialog|BetterFlow/,
+    'the plugin-owned picking interaction must not return')
 })
-
-/**
- * Create-folder regression (0.11.5). v0.11.4 retargeted the selection at the
- * folder just made and, in the same edit, folded `createDirectory(currentPath,
- * name)` into the success handler until only the handler was left: the chain
- * resolved `undefined` on its own, so the form closed with no error while the
- * browser never sent a single `directoryPicker/*` request and nothing landed on
- * disk. No rendered state could show it, which is why the seam below is driven
- * for real — a dropped or renamed call fails here, not in a user's sidebar.
- */
-test('in-app browser: the create action really calls the wire verb (0.11.5)', async () => {
-  const text = read('src/client.js')
-  const start = text.indexOf('const createFolderIn =')
-  const end = text.indexOf('function DirectoryBrowseDialog(')
-  assert.ok(start !== -1 && end !== -1 && start < end, 'the create seam is missing')
-  const { createFolderIn } = new Function(text.slice(start, end) + '\nreturn { createFolderIn }')()
-
-  const calls = []
-  const created = await createFolderIn((path, name) => {
-    calls.push([path, name])
-    return Promise.resolve(path + '/' + name)
-  }, '/home/u', '新文件夹')
-  assert.deepEqual(calls, [['/home/u', '新文件夹']], 'the verb gets the browsed level and the typed name')
-  assert.equal(created, '/home/u/新文件夹', 'the created path is what the dialog selects')
-
-  // A refusal must stay a refusal: the dialog renders it instead of closing on
-  // what looks like success.
-  const refusal = new Error('directory-exists: /home/u/x already exists')
-  assert.equal(
-    await createFolderIn(() => Promise.reject(refusal), '/home/u', 'x').then(() => null, (reason) => reason),
-    refusal,
-  )
-  assert.equal(
-    await createFolderIn(() => { throw refusal }, '/home/u', 'x').then(() => null, (reason) => reason),
-    refusal,
-    'a synchronous throw (an un-injected prop) must reject as well',
-  )
-
-  // Wiring: the dialog's action runs through the seam exactly once, and the
-  // 0.11.4 shape — a bare chain whose FIRST handler already consumes `created` —
-  // must not come back.
-  const submit = text.slice(text.indexOf('const submitCreate = () => {'), text.indexOf('const head = editing'))
-  assert.ok(submit.length > 0, 'submitCreate not found')
-  assert.equal(
-    (submit.match(/createFolderIn\(createDirectory, currentPath, name\)/g) || []).length,
-    1,
-    'submitCreate must run the create through the seam',
-  )
-  assert.doesNotMatch(submit, /Promise\.resolve\(\)\s*\n\s*\.then\(\(created\)/, 'the dangling chain must not return')
-})
-

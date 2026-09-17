@@ -52,12 +52,11 @@ export function apply(ctx) {
         settings.register(ns, Schema.object({
           // Cross-device preferences live in the HOST settings store
           // (~/.dsh/settings.yaml): web and the desktop app share one
-          // DSH_HOME, so appearance (styling), explicit folders, and the two
-          // toggles follow the user across surfaces. Per-device view state
-          // (expansion) and the cold-restart title cache stay browser-local.
+          // DSH_HOME, so appearance (styling) and the two toggles follow
+          // the user across surfaces. Per-device view state (expansion) and
+          // the cold-restart title cache stay browser-local.
           compactChains: Schema.boolean().default(true),
           statusPulse: Schema.boolean().default(true),
-          folders: Schema.array(Schema.string()).default([]),
           styling: Schema.dict(Schema.any()).default({}),
           // Default appearance (color / glow / weight / shadow / outline) for
           // rows without their own entry — shared with the other surface like

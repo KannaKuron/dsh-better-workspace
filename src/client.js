@@ -1,15 +1,19 @@
 /**
  * dsh-better-workspace — client half (plain JavaScript, no build step).
  *
- * Three registrations:
- *  1. `sidebar.workspaces` (priority -1): replaces the shipped workspace
- *     browser with a hierarchy tree derived from "/" inside workspace titles.
- *  2. `conversation.hero.workspace.directoryFlow`: the add-workspace picking
- *     interaction for the conversation empty-state menu — native directory
- *     pick, then a parent-group popup, then create + rename with the prefix.
- *  3. `sidebar.workspaces.directoryFlow`: the same interaction for the
- *     shipped sidebar browser (fills only when that hole is declared, i.e.
- *     whenever this plugin's own browser is not the occupying entry).
+ * Registrations:
+ *  1. sidebar.workspaces (priority -1): replaces the shipped workspace
+ *     browser with a two-layer hierarchy — disk nesting (a workspace row
+ *     nests under its nearest registered ancestor directory, the official
+ *     0.1.6-alpha.2 workspace-tree semantics) plus "/"-segment name groups
+ *     inside each level (this plugin's founding feature). The registration
+ *     declares the sidebar.workspaces.directoryFlow child hole without
+ *     occupying it, so the official composed picker (OS chooser or in-app
+ *     browser, whichever the Host serves) drives the add-workspace flow.
+ *  2. settings.plugin.item (Settings → Plugins card) and
+ *     plugins.bundle.config (the Plugins panel's bundle page, dsh
+ *     0.1.6-alpha.2+; keyed by package name): the settings card, one seat
+ *     per host era — a seat whose slot is never declared never registers.
  *
  * Every require below is a dsh client baseline module (see
  * @deepseek-ai/dsh-client-web seed.ts): react, @deepseek-ai/dsh-client-store,
@@ -56,10 +60,7 @@ window.__ModuleLoader__.load({
       'menu.delete': '删除',
       'menu.fork': '分叉',
       'menu.archive': '归档',
-      'menu.newSubfolder': '新增子分组',
-      'menu.newSubWorkspace': '新增子工作区',
       'menu.renameFolder': '重命名分组',
-      'menu.removeFolder': '删除分组',
       'menu.renameSgroup': '重命名会话分组',
       'settings.title': '更好的工作区',
       'settings.desc': '工作区树的外观与折叠偏好',
@@ -101,7 +102,7 @@ window.__ModuleLoader__.load({
       'settings.on': '开',
       'settings.off': '关',
       'sync.title': '跨端同步',
-      'sync.desc': '外观自定义、显式分组与开关保存在本设备的浏览器里;通过宿主设置存储与另一端互传。平时的新修改会自动写入宿主,另一端点「获取」即可拿到;旧版本的历史数据首次需要点一次「发送」。',
+      'sync.desc': "外观自定义与开关保存在本设备的浏览器里;通过宿主设置存储与另一端互传。平时的新修改会自动写入宿主,另一端点「获取」即可拿到;旧版本的历史数据首次需要点一次「发送」。",
       'sync.mode.overwrite': '覆盖本设备',
       'sync.mode.merge': '合并两端',
       'sync.pull.desktop': '从客户端获取',
@@ -111,25 +112,6 @@ window.__ModuleLoader__.load({
       'sync.empty': '另一端暂无数据可获取',
       'sync.off': '当前环境不支持同步(需要宿主设置服务)',
       'sync.loading': '正在连接宿主设置…',
-      'flow.title': '添加工作区',
-      'flow.picked': '所选文件夹',
-      'flow.parent': '所属分组',
-      'flow.parentHint': '输入或下拉选择分组路径,留空表示根分组;多级用 / 分隔',
-      'flow.creating': '正在创建…',
-      'browse.title': '选择工作区目录',
-      'browse.home': '主目录',
-      'browse.up': '上一层',
-      'browse.newFolder': '新建文件夹',
-      'browse.folderName': '文件夹名称',
-      'browse.empty': '此文件夹没有子文件夹',
-      'browse.loading': '加载中…',
-      'browse.truncated': '文件夹过多,仅显示开头部分。',
-      'browse.showHidden': '显示隐藏文件',
-      'browse.editPath': '编辑路径',
-      'browse.select': '选择此文件夹',
-      'browse.enter': '进入',
-      'browse.drives': '盘符',
-      'browse.selectNamed': '选择「{name}」',
       'error.title': '出错了',
       'cancel': '取消',
       'create': '创建',
@@ -139,14 +121,9 @@ window.__ModuleLoader__.load({
       'ws.rename.hint': '名称中的 / 即层级分组,例如 web/前端',
       'ws.delete.title': '删除工作区',
       'ws.delete.body': '仅移除工作区登记,目录和会话记录都会保留。确定删除「{name}」?',
-      'folder.new.title': '新建分组',
-      'folder.new.hint': '分组路径,可用 / 表示多级,例如 web/前端',
       'folder.rename.title': '重命名分组',
       'folder.rename.hint': '重命名会同步更新组内所有工作区名称',
-      'folder.delete.body': '删除空分组「{name}」?',
       'folder.error.empty': '分组路径不能为空',
-      'folder.error.exists': '分组已存在',
-      'folder.error.notEmpty': '分组内还有工作区,无法删除',
     }
 
     const en = {
@@ -178,10 +155,7 @@ window.__ModuleLoader__.load({
       'menu.delete': 'Delete',
       'menu.fork': 'Fork',
       'menu.archive': 'Archive',
-      'menu.newSubfolder': 'New subfolder',
-      'menu.newSubWorkspace': 'New workspace here',
       'menu.renameFolder': 'Rename folder',
-      'menu.removeFolder': 'Delete folder',
       'menu.renameSgroup': 'Rename session group',
       'settings.title': 'Better Workspaces',
       'settings.desc': 'Workspace tree appearance and folding preferences',
@@ -223,7 +197,7 @@ window.__ModuleLoader__.load({
       'settings.on': 'On',
       'settings.off': 'Off',
       'sync.title': 'Cross-device sync',
-      'sync.desc': "Appearance, explicit folders, and toggles live in this device's browser; they exchange with the other surface (web / desktop app) through the host settings store. New edits are written to the host automatically — the other surface just pulls. History created before this version needs one explicit Send.",
+      'sync.desc': "Appearance customization and toggles live in this device's browser; they exchange with the other surface (web / desktop app) through the host settings store. New edits are written to the host automatically — the other surface just pulls. History created before this version needs one explicit Send.",
       'sync.mode.overwrite': 'Overwrite this device',
       'sync.mode.merge': 'Merge both sides',
       'sync.pull.desktop': 'Pull from desktop app',
@@ -233,25 +207,6 @@ window.__ModuleLoader__.load({
       'sync.empty': 'No data on the other surface yet',
       'sync.off': 'Sync unavailable here (requires the host settings service)',
       'sync.loading': 'Connecting to host settings…',
-      'flow.title': 'Add workspace',
-      'flow.picked': 'Chosen folder',
-      'flow.parent': 'Parent group',
-      'flow.parentHint': 'Type or pick a group path; empty means root. Nest with /',
-      'flow.creating': 'Creating…',
-      'browse.title': 'Select Workspace Directory',
-      'browse.home': 'Home',
-      'browse.up': 'Up',
-      'browse.newFolder': 'New folder',
-      'browse.folderName': 'Folder name',
-      'browse.empty': 'No subfolders here',
-      'browse.loading': 'Loading…',
-      'browse.truncated': 'Too many folders to list; only the beginning is shown.',
-      'browse.showHidden': 'Show hidden files',
-      'browse.editPath': 'Edit path',
-      'browse.select': 'Use this folder',
-      'browse.enter': 'Open',
-      'browse.drives': 'Drives',
-      'browse.selectNamed': 'Use "{name}"',
       'error.title': 'Something went wrong',
       'cancel': 'Cancel',
       'create': 'Create',
@@ -261,14 +216,9 @@ window.__ModuleLoader__.load({
       'ws.rename.hint': 'Use / inside the name to nest, e.g. web/frontend',
       'ws.delete.title': 'Delete workspace',
       'ws.delete.body': 'Only the workspace registration is removed; the directory and session logs remain. Delete "{name}"?',
-      'folder.new.title': 'New folder',
-      'folder.new.hint': 'Folder path; nest with /, e.g. web/frontend',
       'folder.rename.title': 'Rename folder',
       'folder.rename.hint': 'Renaming updates every workspace title inside the folder',
-      'folder.delete.body': 'Delete empty folder "{name}"?',
       'folder.error.empty': 'Folder path must not be empty',
-      'folder.error.exists': 'Folder already exists',
-      'folder.error.notEmpty': 'Folder still contains workspaces',
     }
 
     /* Third-language dictionaries, keyed by BCP 47 tag. Every entry must carry
@@ -308,10 +258,7 @@ window.__ModuleLoader__.load({
         'menu.delete': 'حذف',
         'menu.fork': 'تفريع',
         'menu.archive': 'أرشفة',
-        'menu.newSubfolder': 'مجلد فرعي جديد',
-        'menu.newSubWorkspace': 'مساحة عمل فرعية هنا',
         'menu.renameFolder': 'إعادة تسمية المجلد',
-        'menu.removeFolder': 'حذف المجلد',
         'menu.renameSgroup': 'إعادة تسمية مجموعة الجلسات',
         'settings.title': 'مساحات عمل أفضل',
         'settings.desc': 'مظهر شجرة مساحات العمل وتفضيلات الطيّ',
@@ -353,7 +300,7 @@ window.__ModuleLoader__.load({
         'settings.on': 'تشغيل',
         'settings.off': 'إيقاف',
         'sync.title': 'المزامنة بين الأجهزة',
-        'sync.desc': 'يبقى المظهر المخصص والمجلدات الصريحة والمفاتيح في متصفح هذا الجهاز، ويجري تبادلها مع الطرف الآخر (الويب / تطبيق سطح المكتب) عبر مخزن إعدادات المضيف. تُكتب التعديلات الجديدة في المضيف تلقائياً، ويكفي أن يضغط الطرف الآخر «جلب»؛ أما بيانات الإصدارات القديمة فتحتاج ضغطة «إرسال» واحدة.',
+      'sync.desc': "يعيش تخصيص المظهر والمفاتيح في متصفح هذا الجهاز، ويجري تبادلها مع الطرف الآخر (الويب / تطبيق سطح المكتب) عبر مخزن إعدادات المضيف. تُكتب التعديلات الجديدة في المضيف تلقائياً، ويكفي أن يضغط الطرف الآخر «جلب»؛ أما بيانات الإصدارات القديمة فتحتاج ضغطة «إرسال» واحدة.",
         'sync.mode.overwrite': 'الكتابة فوق هذا الجهاز',
         'sync.mode.merge': 'دمج الطرفين',
         'sync.pull.desktop': 'الجلب من تطبيق سطح المكتب',
@@ -363,25 +310,6 @@ window.__ModuleLoader__.load({
         'sync.empty': 'لا توجد بيانات لدى الطرف الآخر بعد',
         'sync.off': 'المزامنة غير متاحة هنا (تحتاج خدمة إعدادات المضيف)',
         'sync.loading': 'الاتصال بإعدادات المضيف…',
-        'flow.title': 'إضافة مساحة عمل',
-        'flow.picked': 'المجلد المختار',
-        'flow.parent': 'المجموعة التابعة لها',
-        'flow.parentHint': 'اكتب مسار المجموعة أو اختره؛ الفراغ يعني الجذر؛ تُفصل المستويات بـ /',
-        'flow.creating': 'جارٍ الإنشاء…',
-        'browse.title': 'اختيار مجلد مساحة العمل',
-        'browse.home': 'المجلد الرئيسي',
-        'browse.up': 'المستوى الأعلى',
-        'browse.newFolder': 'مجلد جديد',
-        'browse.folderName': 'اسم المجلد',
-        'browse.empty': 'لا توجد مجلدات فرعية هنا',
-        'browse.loading': 'جارٍ التحميل…',
-        'browse.truncated': 'المجلدات كثيرة جدًا؛ يُعرض الجزء الأول فقط.',
-        'browse.showHidden': 'إظهار الملفات المخفية',
-        'browse.editPath': 'تعديل المسار',
-        'browse.select': 'استخدام هذا المجلد',
-        'browse.enter': 'فتح',
-        'browse.drives': 'الأقراص',
-        'browse.selectNamed': 'استخدام "{name}"',
         'error.title': 'حدث خطأ ما',
         'cancel': 'إلغاء',
         'create': 'إنشاء',
@@ -391,14 +319,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': 'الشرطة المائلة / في الاسم تصنع مستوى المجموعة، مثل web/frontend',
         'ws.delete.title': 'حذف مساحة العمل',
         'ws.delete.body': 'يُزال تسجيل مساحة العمل فقط؛ يبقى الدليل وسجلات الجلسات. هل تريد حذف «{name}»؟',
-        'folder.new.title': 'مجموعة جديدة',
-        'folder.new.hint': 'مسار المجموعة؛ استخدم / لمستويات متعددة، مثل web/frontend',
         'folder.rename.title': 'إعادة تسمية المجموعة',
         'folder.rename.hint': 'تحديث الاسم يعيد تسمية كل مساحات العمل داخل المجموعة',
-        'folder.delete.body': 'هل تريد حذف المجموعة الفارغة «{name}»؟',
         'folder.error.empty': 'لا يمكن أن يكون مسار المجموعة فارغاً',
-        'folder.error.exists': 'المجموعة موجودة بالفعل',
-        'folder.error.notEmpty': 'لا تزال المجموعة تحتوي على مساحات عمل',
       },
       /* locale: de */
       'de': {
@@ -430,10 +353,7 @@ window.__ModuleLoader__.load({
         'menu.delete': 'Löschen',
         'menu.fork': 'Abzweigen',
         'menu.archive': 'Archivieren',
-        'menu.newSubfolder': 'Neuer Unterordner',
-        'menu.newSubWorkspace': 'Unterarbeitsbereich anlegen',
         'menu.renameFolder': 'Ordner umbenennen',
-        'menu.removeFolder': 'Ordner löschen',
         'menu.renameSgroup': 'Sitzungsgruppe umbenennen',
         'settings.title': 'Bessere Arbeitsbereiche',
         'settings.desc': 'Aussehen und Einklappverhalten des Arbeitsbereich-Baums',
@@ -475,7 +395,7 @@ window.__ModuleLoader__.load({
         'settings.on': 'An',
         'settings.off': 'Aus',
         'sync.title': 'Geräteübergreifende Synchronisierung',
-        'sync.desc': 'Aussehen, ausdrückliche Ordner und Schalter liegen im Browser dieses Geräts; über den Host-Einstellungsspeicher werden sie mit der anderen Seite (Web / Desktop-App) ausgetauscht. Neue Änderungen gehen automatisch an den Host, die andere Seite muss nur „Abrufen“; Daten aus älteren Versionen brauchen einmalig „Senden“.',
+      'sync.desc': "Erscheinungsbild-Anpassungen und Schalter leben im Browser dieses Geräts; sie werden über den Host-Einstellungsspeicher mit der anderen Oberfläche (Web / Desktop-App) ausgetauscht. Neue Änderungen werden automatisch zum Host geschrieben — die andere Oberfläche ruft sie nur ab. Vor dieser Version entstandene Daten brauchen einmaliges Senden.",
         'sync.mode.overwrite': 'Dieses Gerät überschreiben',
         'sync.mode.merge': 'Beide Seiten zusammenführen',
         'sync.pull.desktop': 'Von der Desktop-App abrufen',
@@ -485,25 +405,6 @@ window.__ModuleLoader__.load({
         'sync.empty': 'Auf der anderen Seite liegen noch keine Daten',
         'sync.off': 'Hier nicht verfügbar (erfordert den Host-Einstellungsdienst)',
         'sync.loading': 'Verbindung zum Host-Einstellungsspeicher…',
-        'flow.title': 'Arbeitsbereich hinzufügen',
-        'flow.picked': 'Gewählter Ordner',
-        'flow.parent': 'Übergeordnete Gruppe',
-        'flow.parentHint': 'Gruppenpfad eingeben oder auswählen, leer bedeutet Wurzel; Ebenen mit / trennen',
-        'flow.creating': 'Wird erstellt…',
-        'browse.title': 'Arbeitsbereichsordner wählen',
-        'browse.home': 'Home',
-        'browse.up': 'Übergeordnet',
-        'browse.newFolder': 'Neuer Ordner',
-        'browse.folderName': 'Ordnername',
-        'browse.empty': 'Keine Unterordner vorhanden',
-        'browse.loading': 'Wird geladen…',
-        'browse.truncated': 'Zu viele Ordner; nur der Anfang wird angezeigt.',
-        'browse.showHidden': 'Versteckte Dateien anzeigen',
-        'browse.editPath': 'Pfad bearbeiten',
-        'browse.select': 'Diesen Ordner verwenden',
-        'browse.enter': 'Öffnen',
-        'browse.drives': 'Laufwerke',
-        'browse.selectNamed': '"{name}" verwenden',
         'error.title': 'Etwas ist schiefgelaufen',
         'cancel': 'Abbrechen',
         'create': 'Erstellen',
@@ -513,14 +414,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': 'Ein / im Namen bildet die Gruppenebene, z. B. web/frontend',
         'ws.delete.title': 'Arbeitsbereich löschen',
         'ws.delete.body': 'Nur die Registrierung wird entfernt; Verzeichnis und Sitzungsprotokolle bleiben erhalten. „{name}“ löschen?',
-        'folder.new.title': 'Neuer Ordner',
-        'folder.new.hint': 'Ordnerpfad; Ebenen mit /, z. B. web/frontend',
         'folder.rename.title': 'Ordner umbenennen',
         'folder.rename.hint': 'Umbenennen aktualisiert alle Arbeitsbereichsnamen im Ordner',
-        'folder.delete.body': 'Leeren Ordner „{name}“ löschen?',
         'folder.error.empty': 'Der Ordnerpfad darf nicht leer sein',
-        'folder.error.exists': 'Ordner existiert bereits',
-        'folder.error.notEmpty': 'Der Ordner enthält noch Arbeitsbereiche',
       },
       /* locale: fr */
       'fr': {
@@ -552,10 +448,7 @@ window.__ModuleLoader__.load({
         'menu.delete': 'Supprimer',
         'menu.fork': 'Bifurquer',
         'menu.archive': 'Archiver',
-        'menu.newSubfolder': 'Nouveau sous-dossier',
-        'menu.newSubWorkspace': 'Nouvel espace de travail ici',
         'menu.renameFolder': 'Renommer le dossier',
-        'menu.removeFolder': 'Supprimer le dossier',
         'menu.renameSgroup': 'Renommer le groupe de sessions',
         'settings.title': 'Espaces de travail améliorés',
         'settings.desc': 'Apparence et repli de l\'arborescence des espaces de travail',
@@ -597,7 +490,7 @@ window.__ModuleLoader__.load({
         'settings.on': 'Activé',
         'settings.off': 'Désactivé',
         'sync.title': 'Synchronisation entre appareils',
-        'sync.desc': 'L\'apparence, les dossiers explicites et les interrupteurs vivent dans le navigateur de cet appareil; ils s\'échangent avec l\'autre environnement (web / application de bureau) via le stockage de réglages de l\'hôte. Les nouvelles modifications sont écrites automatiquement dans l\'hôte, l\'autre côté n\'a qu\'à « Récupérer »; les données des anciennes versions demandent un premier « Envoyer ».',
+      'sync.desc': "Les personnalisations d'apparence et les interrupteurs vivent dans le navigateur de cet appareil ; ils s'échangent avec l'autre surface (web / application de bureau) via le magasin de paramètres de l'hôte. Les nouvelles modifications sont écrites automatiquement vers l'hôte — l'autre surface se contente de récupérer. Les données antérieures à cette version nécessitent un envoi explicite.",
         'sync.mode.overwrite': 'Écraser cet appareil',
         'sync.mode.merge': 'Fusionner les deux côtés',
         'sync.pull.desktop': 'Récupérer depuis l\'application de bureau',
@@ -607,25 +500,6 @@ window.__ModuleLoader__.load({
         'sync.empty': 'Aucune donnée à récupérer de l\'autre côté',
         'sync.off': 'Synchronisation indisponible ici (service de réglages de l\'hôte requis)',
         'sync.loading': 'Connexion aux réglages de l\'hôte…',
-        'flow.title': 'Ajouter un espace de travail',
-        'flow.picked': 'Dossier choisi',
-        'flow.parent': 'Groupe parent',
-        'flow.parentHint': 'Saisissez ou choisissez un chemin de groupe; vide = racine; niveaux séparés par /',
-        'flow.creating': 'Création…',
-        'browse.title': 'Choisir le dossier de l’espace de travail',
-        'browse.home': 'Dossier personnel',
-        'browse.up': 'Niveau supérieur',
-        'browse.newFolder': 'Nouveau dossier',
-        'browse.folderName': 'Nom du dossier',
-        'browse.empty': 'Aucun sous-dossier ici',
-        'browse.loading': 'Chargement…',
-        'browse.truncated': 'Trop de dossiers ; seul le début est affiché.',
-        'browse.showHidden': 'Afficher les fichiers cachés',
-        'browse.editPath': 'Modifier le chemin',
-        'browse.select': 'Utiliser ce dossier',
-        'browse.enter': 'Ouvrir',
-        'browse.drives': 'Lecteurs',
-        'browse.selectNamed': 'Utiliser « {name} »',
         'error.title': 'Une erreur est survenue',
         'cancel': 'Annuler',
         'create': 'Créer',
@@ -635,14 +509,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': 'Un / dans le nom crée le groupe, par ex. web/frontend',
         'ws.delete.title': 'Supprimer l\'espace de travail',
         'ws.delete.body': 'Seule l\'inscription est supprimée; le dossier et les journaux de session sont conservés. Supprimer « {name} » ?',
-        'folder.new.title': 'Nouveau dossier',
-        'folder.new.hint': 'Chemin du dossier; niveaux séparés par /, par ex. web/frontend',
         'folder.rename.title': 'Renommer le dossier',
         'folder.rename.hint': 'Le renommage met à jour tous les espaces de travail du dossier',
-        'folder.delete.body': 'Supprimer le dossier vide « {name} » ?',
         'folder.error.empty': 'Le chemin du dossier ne doit pas être vide',
-        'folder.error.exists': 'Ce dossier existe déjà',
-        'folder.error.notEmpty': 'Le dossier contient encore des espaces de travail',
       },
       /* locale: hi */
       'hi': {
@@ -674,10 +543,7 @@ window.__ModuleLoader__.load({
         'menu.delete': 'हटाएँ',
         'menu.fork': 'शाखा बनाएँ',
         'menu.archive': 'संग्रह करें',
-        'menu.newSubfolder': 'नया उप-फ़ोल्डर',
-        'menu.newSubWorkspace': 'यहाँ उप-कार्यस्थान',
         'menu.renameFolder': 'फ़ोल्डर का नाम बदलें',
-        'menu.removeFolder': 'फ़ोल्डर हटाएँ',
         'menu.renameSgroup': 'सत्र समूह का नाम बदलें',
         'settings.title': 'बेहतर कार्यस्थान',
         'settings.desc': 'कार्यस्थान वृक्ष का रूप और समेटने की प्राथमिकताएँ',
@@ -719,7 +585,7 @@ window.__ModuleLoader__.load({
         'settings.on': 'चालू',
         'settings.off': 'बंद',
         'sync.title': 'उपकरणों के बीच समन्वयन',
-        'sync.desc': 'अनुकूलित रूप, स्पष्ट फ़ोल्डर और स्विच इस उपकरण के ब्राउज़र में रहते हैं; वे होस्ट सेटिंग भंडार के ज़रिए दूसरे सिरे (वेब / डेस्कटॉप ऐप) से अदल-बदल होते हैं। नए बदलाव अपने-आप होस्ट में लिखे जाते हैं, दूसरे सिरे को केवल «प्राप्त करें» दबाना है; पुराने संस्करण का डेटा एक बार «भेजें» माँगता है।',
+      'sync.desc': "रूप अनुकूलन और टॉगल इस डिवाइस के ब्राउज़र में रहते हैं; वे होस्ट सेटिंग्स स्टोर के माध्यम से दूसरी सतह (वेब / डेस्कटॉप ऐप) के साथ आदान-प्रदान होते हैं। नए बदलाव स्वचालित रूप से होस्ट पर लिखे जाते हैं — दूसरी सतह को बस खींचना है। इस संस्करण से पहले के डेटा को एक बार भेजना होगा।",
         'sync.mode.overwrite': 'इस उपकरण को अधिलेखित करें',
         'sync.mode.merge': 'दोनों सिरे मिलाएँ',
         'sync.pull.desktop': 'डेस्कटॉप ऐप से प्राप्त करें',
@@ -729,25 +595,6 @@ window.__ModuleLoader__.load({
         'sync.empty': 'दूसरे सिरे पर अभी कोई डेटा नहीं',
         'sync.off': 'यहाँ समन्वयन उपलब्ध नहीं (होस्ट सेटिंग सेवा चाहिए)',
         'sync.loading': 'होस्ट सेटिंग से जुड़ रहे हैं…',
-        'flow.title': 'कार्यस्थान जोड़ें',
-        'flow.picked': 'चुना गया फ़ोल्डर',
-        'flow.parent': 'संबंधित समूह',
-        'flow.parentHint': 'समूह पथ लिखें या चुनें; खाली का अर्थ मूल है; कई स्तर / से अलग करें',
-        'flow.creating': 'बनाया जा रहा है…',
-        'browse.title': 'कार्यस्थान फ़ोल्डर चुनें',
-        'browse.home': 'होम',
-        'browse.up': 'ऊपर',
-        'browse.newFolder': 'नया फ़ोल्डर',
-        'browse.folderName': 'फ़ोल्डर का नाम',
-        'browse.empty': 'यहाँ कोई उप-फ़ोल्डर नहीं',
-        'browse.loading': 'लोड हो रहा है…',
-        'browse.truncated': 'बहुत अधिक फ़ोल्डर; केवल शुरुआत दिखाई गई है।',
-        'browse.showHidden': 'छिपी फ़ाइलें दिखाएँ',
-        'browse.editPath': 'पथ संपादित करें',
-        'browse.select': 'यह फ़ोल्डर चुनें',
-        'browse.enter': 'खोलें',
-        'browse.drives': 'ड्राइव',
-        'browse.selectNamed': '"{name}" चुनें',
         'error.title': 'कुछ गड़बड़ हो गई',
         'cancel': 'रद्द करें',
         'create': 'बनाएँ',
@@ -757,14 +604,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': 'नाम में / समूह स्तर बनाता है, जैसे web/frontend',
         'ws.delete.title': 'कार्यस्थान हटाएँ',
         'ws.delete.body': 'केवल पंजीकरण हटता है; निर्देशिका और सत्र लॉग बने रहते हैं। «{name}» हटाएँ?',
-        'folder.new.title': 'नया समूह',
-        'folder.new.hint': 'समूह पथ; कई स्तरों के लिए /, जैसे web/frontend',
         'folder.rename.title': 'समूह का नाम बदलें',
         'folder.rename.hint': 'नाम बदलने पर समूह के सभी कार्यस्थानों के नाम भी बदल जाते हैं',
-        'folder.delete.body': 'खाली समूह «{name}» हटाएँ?',
         'folder.error.empty': 'समूह पथ खाली नहीं हो सकता',
-        'folder.error.exists': 'समूह पहले से मौजूद है',
-        'folder.error.notEmpty': 'समूह में अभी भी कार्यस्थान हैं',
       },
       /* locale: id */
       'id': {
@@ -796,10 +638,7 @@ window.__ModuleLoader__.load({
         'menu.delete': 'Hapus',
         'menu.fork': 'Cabangkan',
         'menu.archive': 'Arsipkan',
-        'menu.newSubfolder': 'Subfolder baru',
-        'menu.newSubWorkspace': 'Ruang kerja baru di sini',
         'menu.renameFolder': 'Ganti nama folder',
-        'menu.removeFolder': 'Hapus folder',
         'menu.renameSgroup': 'Ganti nama grup sesi',
         'settings.title': 'Ruang kerja yang lebih baik',
         'settings.desc': 'Tampilan dan pelipatan pohon ruang kerja',
@@ -841,7 +680,7 @@ window.__ModuleLoader__.load({
         'settings.on': 'Aktif',
         'settings.off': 'Nonaktif',
         'sync.title': 'Sinkronisasi antar perangkat',
-        'sync.desc': 'Tampilan, folder eksplisit, dan tombol simpan di browser perangkat ini; ditukar dengan sisi lain (web / aplikasi desktop) lewat penyimpanan pengaturan host. Perubahan baru otomatis ditulis ke host, sisi lain cukup menekan «Ambil»; data dari versi lama perlu sekali «Kirim».',
+      'sync.desc': "Kustomisasi tampilan dan tombol pengalih tersimpan di peramban perangkat ini; keduanya bertukar dengan permukaan lain (web / aplikasi desktop) melalui penyimpanan pengaturan host. Perubahan baru ditulis ke host secara otomatis — permukaan lain tinggal menarik. Data dari sebelum versi ini perlu satu kali Kirim.",
         'sync.mode.overwrite': 'Timpa perangkat ini',
         'sync.mode.merge': 'Gabungkan kedua sisi',
         'sync.pull.desktop': 'Ambil dari aplikasi desktop',
@@ -851,25 +690,6 @@ window.__ModuleLoader__.load({
         'sync.empty': 'Sisi lain belum punya data',
         'sync.off': 'Sinkronisasi tidak tersedia di sini (perlu layanan pengaturan host)',
         'sync.loading': 'Menyambung ke pengaturan host…',
-        'flow.title': 'Tambah ruang kerja',
-        'flow.picked': 'Folder terpilih',
-        'flow.parent': 'Grup induk',
-        'flow.parentHint': 'Ketik atau pilih jalur grup; kosong = akar; tingkat dipisah dengan /',
-        'flow.creating': 'Membuat…',
-        'browse.title': 'Pilih folder ruang kerja',
-        'browse.home': 'Beranda',
-        'browse.up': 'Naik',
-        'browse.newFolder': 'Folder baru',
-        'browse.folderName': 'Nama folder',
-        'browse.empty': 'Tidak ada subfolder di sini',
-        'browse.loading': 'Memuat…',
-        'browse.truncated': 'Terlalu banyak folder; hanya bagian awal yang ditampilkan.',
-        'browse.showHidden': 'Tampilkan file tersembunyi',
-        'browse.editPath': 'Edit jalur',
-        'browse.select': 'Gunakan folder ini',
-        'browse.enter': 'Buka',
-        'browse.drives': 'Drive',
-        'browse.selectNamed': 'Gunakan "{name}"',
         'error.title': 'Terjadi kesalahan',
         'cancel': 'Batal',
         'create': 'Buat',
@@ -879,14 +699,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': '/ di nama membentuk tingkat grup, mis. web/frontend',
         'ws.delete.title': 'Hapus ruang kerja',
         'ws.delete.body': 'Hanya pendaftarannya yang dihapus; direktori dan log sesi tetap ada. Hapus «{name}»?',
-        'folder.new.title': 'Folder baru',
-        'folder.new.hint': 'Jalur folder; tingkat dengan /, mis. web/frontend',
         'folder.rename.title': 'Ganti nama folder',
         'folder.rename.hint': 'Mengganti nama akan memperbarui semua ruang kerja di folder',
-        'folder.delete.body': 'Hapus folder kosong «{name}»?',
         'folder.error.empty': 'Jalur folder tidak boleh kosong',
-        'folder.error.exists': 'Folder sudah ada',
-        'folder.error.notEmpty': 'Folder masih berisi ruang kerja',
       },
       /* locale: it */
       'it': {
@@ -918,10 +733,7 @@ window.__ModuleLoader__.load({
         'menu.delete': 'Elimina',
         'menu.fork': 'Dirama',
         'menu.archive': 'Archivia',
-        'menu.newSubfolder': 'Nuova sottocartella',
-        'menu.newSubWorkspace': 'Nuova area di lavoro qui',
         'menu.renameFolder': 'Rinomina cartella',
-        'menu.removeFolder': 'Elimina cartella',
         'menu.renameSgroup': 'Rinomina gruppo di sessioni',
         'settings.title': 'Aree di lavoro migliori',
         'settings.desc': 'Aspetto e compressione dell\'albero delle aree di lavoro',
@@ -963,7 +775,7 @@ window.__ModuleLoader__.load({
         'settings.on': 'Attivo',
         'settings.off': 'Disattivo',
         'sync.title': 'Sincronizzazione tra dispositivi',
-        'sync.desc': 'Aspetto, cartelle esplicite e interruttori vivono nel browser di questo dispositivo; si scambiano con l\'altro ambiente (web / app desktop) tramite l\'archivio impostazioni dell\'host. Le nuove modifiche vengono scritte automaticamente nell\'host, l\'altro lato deve solo «Scarica»; i dati delle versioni precedenti richiedono un primo «Invia».',
+      'sync.desc': "Le personalizzazioni dell'aspetto e gli interruttori vivono nel browser di questo dispositivo; si scambiano con l'altra superficie (web / app desktop) tramite l'archivio impostazioni dell'host. Le nuove modifiche vengono scritte automaticamente sull'host — l'altra superficie deve solo recuperarle. I dati precedenti a questa versione richiedono un invio esplicito.",
         'sync.mode.overwrite': 'Sovrascrivi questo dispositivo',
         'sync.mode.merge': 'Unisci i due lati',
         'sync.pull.desktop': 'Scarica dall\'app desktop',
@@ -973,25 +785,6 @@ window.__ModuleLoader__.load({
         'sync.empty': 'Nessun dato da scaricare dall\'altro lato',
         'sync.off': 'Sincronizzazione non disponibile qui (serve il servizio impostazioni dell\'host)',
         'sync.loading': 'Connessione alle impostazioni dell\'host…',
-        'flow.title': 'Aggiungi area di lavoro',
-        'flow.picked': 'Cartella scelta',
-        'flow.parent': 'Gruppo di appartenenza',
-        'flow.parentHint': 'Digita o scegli un percorso di gruppo; vuoto = radice; livelli separati da /',
-        'flow.creating': 'Creazione…',
-        'browse.title': 'Scegli cartella dell’area di lavoro',
-        'browse.home': 'Home',
-        'browse.up': 'Livello superiore',
-        'browse.newFolder': 'Nuova cartella',
-        'browse.folderName': 'Nome cartella',
-        'browse.empty': 'Nessuna sottocartella qui',
-        'browse.loading': 'Caricamento…',
-        'browse.truncated': 'Troppe cartelle; è mostrato solo l’inizio.',
-        'browse.showHidden': 'Mostra file nascosti',
-        'browse.editPath': 'Modifica percorso',
-        'browse.select': 'Usa questa cartella',
-        'browse.enter': 'Apri',
-        'browse.drives': 'Unità',
-        'browse.selectNamed': 'Usa "{name}"',
         'error.title': 'Si è verificato un errore',
         'cancel': 'Annulla',
         'create': 'Crea',
@@ -1001,14 +794,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': 'La / nel nome crea il gruppo, ad es. web/frontend',
         'ws.delete.title': 'Elimina area di lavoro',
         'ws.delete.body': 'Viene rimossa solo la registrazione; cartella e registri delle sessioni restano. Eliminare «{name}»?',
-        'folder.new.title': 'Nuova cartella',
-        'folder.new.hint': 'Percorso della cartella; livelli separati da /, ad es. web/frontend',
         'folder.rename.title': 'Rinomina cartella',
         'folder.rename.hint': 'La rinomina aggiorna tutte le aree di lavoro nella cartella',
-        'folder.delete.body': 'Eliminare la cartella vuota «{name}»?',
         'folder.error.empty': 'Il percorso della cartella non può essere vuoto',
-        'folder.error.exists': 'La cartella esiste già',
-        'folder.error.notEmpty': 'La cartella contiene ancora aree di lavoro',
       },
       /* locale: ja */
       'ja': {
@@ -1040,10 +828,7 @@ window.__ModuleLoader__.load({
         'menu.delete': '削除',
         'menu.fork': 'フォーク',
         'menu.archive': 'アーカイブ',
-        'menu.newSubfolder': '新しいサブフォルダー',
-        'menu.newSubWorkspace': 'サブワークスペースを追加',
         'menu.renameFolder': 'フォルダー名を変更',
-        'menu.removeFolder': 'フォルダーを削除',
         'menu.renameSgroup': 'セッショングループ名を変更',
         'settings.title': 'より良いワークスペース',
         'settings.desc': 'ワークスペースツリーの外観と折りたたみ設定',
@@ -1085,7 +870,7 @@ window.__ModuleLoader__.load({
         'settings.on': 'オン',
         'settings.off': 'オフ',
         'sync.title': 'デバイス間の同期',
-        'sync.desc': '外観のカスタマイズ,明示的なフォルダー,各種スイッチはこのデバイスのブラウザーに保存され,ホスト設定ストアを通じてもう一方の環境(Web / デスクトップアプリ)とやり取りされます。通常の変更は自動でホストに書き込まれ,もう一方で「取得」を押せば反映されます;旧バージョンで作られたデータは初回だけ「送信」が必要です。',
+      'sync.desc': "外観のカスタマイズとトグルはこのデバイスのブラウザに保存され、ホスト設定ストアを通じてもう一方の面(ウェブ/デスクトップアプリ)とやり取りします。新しい変更は自動的にホストへ書き込まれ、もう一方は取得するだけです。このバージョンより前のデータは一度だけ明示的に送信する必要があります。",
         'sync.mode.overwrite': 'このデバイスを上書き',
         'sync.mode.merge': '両方を統合',
         'sync.pull.desktop': 'デスクトップアプリから取得',
@@ -1095,25 +880,6 @@ window.__ModuleLoader__.load({
         'sync.empty': 'もう一方に取得できるデータがありません',
         'sync.off': 'この環境では同期できません(ホスト設定サービスが必要)',
         'sync.loading': 'ホスト設定に接続中…',
-        'flow.title': 'ワークスペースを追加',
-        'flow.picked': '選択したフォルダー',
-        'flow.parent': '所属グループ',
-        'flow.parentHint': 'グループのパスを入力または選択します,空欄はルート,階層は / で区切ります',
-        'flow.creating': '作成中…',
-        'browse.title': 'ワークスペースのフォルダーを選択',
-        'browse.home': 'ホーム',
-        'browse.up': '上の階層',
-        'browse.newFolder': '新しいフォルダー',
-        'browse.folderName': 'フォルダー名',
-        'browse.empty': 'ここにサブフォルダーはありません',
-        'browse.loading': '読み込み中…',
-        'browse.truncated': 'フォルダーが多すぎます。先頭のみ表示しています。',
-        'browse.showHidden': '隠しファイルを表示',
-        'browse.editPath': 'パスを編集',
-        'browse.select': 'このフォルダーを選択',
-        'browse.enter': '開く',
-        'browse.drives': 'ドライブ',
-        'browse.selectNamed': '「{name}」を選択',
         'error.title': 'エラーが発生しました',
         'cancel': 'キャンセル',
         'create': '作成',
@@ -1123,14 +889,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': '名前に含まれる / が階層グループになります(例: web/frontend)',
         'ws.delete.title': 'ワークスペースを削除',
         'ws.delete.body': 'ワークスペースの登録だけを削除します,ディレクトリとセッション記録は残ります。「{name}」を削除しますか?',
-        'folder.new.title': '新しいフォルダー',
-        'folder.new.hint': 'フォルダーのパス;/ で階層化できます(例: web/frontend)',
         'folder.rename.title': 'フォルダー名を変更',
         'folder.rename.hint': '名前を変更すると,フォルダー内のすべてのワークスペース名も更新されます',
-        'folder.delete.body': '空のフォルダー「{name}」を削除しますか?',
         'folder.error.empty': 'フォルダーのパスを入力してください',
-        'folder.error.exists': 'フォルダーはすでに存在します',
-        'folder.error.notEmpty': 'フォルダー内にワークスペースが残っています',
       },
       /* locale: ko */
       'ko': {
@@ -1162,10 +923,7 @@ window.__ModuleLoader__.load({
         'menu.delete': '삭제',
         'menu.fork': '포크',
         'menu.archive': '보관',
-        'menu.newSubfolder': '새 하위 폴더',
-        'menu.newSubWorkspace': '하위 워크스페이스 추가',
         'menu.renameFolder': '폴더 이름 바꾸기',
-        'menu.removeFolder': '폴더 삭제',
         'menu.renameSgroup': '세션 그룹 이름 바꾸기',
         'settings.title': '더 나은 워크스페이스',
         'settings.desc': '워크스페이스 트리의 모양과 접기 설정',
@@ -1207,7 +965,7 @@ window.__ModuleLoader__.load({
         'settings.on': '켜기',
         'settings.off': '끄기',
         'sync.title': '기기 간 동기화',
-        'sync.desc': '모양 사용자 지정, 명시적 폴더, 각종 스위치는 이 기기의 브라우저에 저장되고 호스트 설정 저장소를 통해 반대쪽(Web / 데스크톱 앱)과 주고받습니다. 평소의 변경은 자동으로 호스트에 기록되므로 반대쪽에서 「가져오기」만 누르면 됩니다; 이전 버전에서 만든 기록은 처음 한 번 「보내기」가 필요합니다.',
+      'sync.desc': "외관 사용자 지정과 토글은 이 기기의 브라우저에 저장되며, 호스트 설정 저장소를 통해 다른 표면(웹 / 데스크톱 앱)과 주고받습니다. 새 변경 사항은 자동으로 호스트에 기록되고 다른 표면은 가져오기만 하면 됩니다. 이 버전 이전의 데이터는 한 번 명시적으로 보내야 합니다.",
         'sync.mode.overwrite': '이 기기 덮어쓰기',
         'sync.mode.merge': '양쪽 병합',
         'sync.pull.desktop': '데스크톱 앱에서 가져오기',
@@ -1217,25 +975,6 @@ window.__ModuleLoader__.load({
         'sync.empty': '반대쪽에 가져올 데이터가 없습니다',
         'sync.off': '이 환경에서는 동기화할 수 없습니다(호스트 설정 서비스 필요)',
         'sync.loading': '호스트 설정에 연결하는 중…',
-        'flow.title': '워크스페이스 추가',
-        'flow.picked': '선택한 폴더',
-        'flow.parent': '소속 그룹',
-        'flow.parentHint': '그룹 경로를 입력하거나 선택하세요, 비우면 루트, 여러 단계는 / 로 구분합니다',
-        'flow.creating': '만드는 중…',
-        'browse.title': '워크스페이스 폴더 선택',
-        'browse.home': '홈',
-        'browse.up': '상위',
-        'browse.newFolder': '새 폴더',
-        'browse.folderName': '폴더 이름',
-        'browse.empty': '여기에 하위 폴더가 없습니다',
-        'browse.loading': '불러오는 중…',
-        'browse.truncated': '폴더가 너무 많습니다. 앞부분만 표시합니다.',
-        'browse.showHidden': '숨김 파일 표시',
-        'browse.editPath': '경로 편집',
-        'browse.select': '이 폴더 선택',
-        'browse.enter': '열기',
-        'browse.drives': '드라이브',
-        'browse.selectNamed': '"{name}" 선택',
         'error.title': '문제가 발생했습니다',
         'cancel': '취소',
         'create': '만들기',
@@ -1245,14 +984,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': '이름에 있는 / 가 단계 그룹이 됩니다(예: web/frontend)',
         'ws.delete.title': '워크스페이스 삭제',
         'ws.delete.body': '워크스페이스 등록만 제거하며 디렉터리와 세션 기록은 그대로 남습니다. 「{name}」을(를) 삭제할까요?',
-        'folder.new.title': '새 폴더',
-        'folder.new.hint': '폴더 경로;/ 로 여러 단계를 만들 수 있습니다(예: web/frontend)',
         'folder.rename.title': '폴더 이름 바꾸기',
         'folder.rename.hint': '이름을 바꾸면 폴더 안 모든 워크스페이스 이름도 함께 바뀝니다',
-        'folder.delete.body': '빈 폴더 「{name}」을(를) 삭제할까요?',
         'folder.error.empty': '폴더 경로를 입력해야 합니다',
-        'folder.error.exists': '폴더가 이미 있습니다',
-        'folder.error.notEmpty': '폴더에 워크스페이스가 남아 있습니다',
       },
       /* locale: nl */
       'nl': {
@@ -1284,10 +1018,7 @@ window.__ModuleLoader__.load({
         'menu.delete': 'Verwijderen',
         'menu.fork': 'Afsplitsen',
         'menu.archive': 'Archiveren',
-        'menu.newSubfolder': 'Nieuwe submap',
-        'menu.newSubWorkspace': 'Subwerkruimte toevoegen',
         'menu.renameFolder': 'Mapnaam wijzigen',
-        'menu.removeFolder': 'Map verwijderen',
         'menu.renameSgroup': 'Sessiegroep naam wijzigen',
         'settings.title': 'Betere werkruimten',
         'settings.desc': 'Uiterlijk en inklapgedrag van de werkruimteboom',
@@ -1329,7 +1060,7 @@ window.__ModuleLoader__.load({
         'settings.on': 'Aan',
         'settings.off': 'Uit',
         'sync.title': 'Synchronisatie tussen apparaten',
-        'sync.desc': 'Uiterlijk, expliciete mappen en schakelaars staan in de browser van dit apparaat; ze worden via de instellingenopslag van de host uitgewisseld met de andere kant (web / desktopapp). Nieuwe wijzigingen gaan automatisch naar de host, de andere kant hoeft alleen «Ophalen» te kiezen; gegevens van oudere versies vragen eenmalig «Verzenden».',
+      'sync.desc': "Aanpassingen van het uiterlijk en schakelaars leven in de browser van dit apparaat; ze worden via de host-instellingenopslag uitgewisseld met het andere oppervlak (web / desktop-app). Nieuwe wijzigingen worden automatisch naar de host geschreven — het andere oppervlak hoeft alleen op te halen. Gegevens van vóór deze versie vereisen eenmalig versturen.",
         'sync.mode.overwrite': 'Dit apparaat overschrijven',
         'sync.mode.merge': 'Beide kanten samenvoegen',
         'sync.pull.desktop': 'Ophalen uit desktopapp',
@@ -1339,25 +1070,6 @@ window.__ModuleLoader__.load({
         'sync.empty': 'Aan de andere kant staan nog geen gegevens',
         'sync.off': 'Synchronisatie is hier niet beschikbaar (hostinstellingenservice nodig)',
         'sync.loading': 'Verbinden met hostinstellingen…',
-        'flow.title': 'Werkruimte toevoegen',
-        'flow.picked': 'Gekozen map',
-        'flow.parent': 'Bovenliggende groep',
-        'flow.parentHint': 'Typ of kies een groeppad; leeg betekent hoofdmap; niveaus scheiden met /',
-        'flow.creating': 'Bezig met aanmaken…',
-        'browse.title': 'Werkruimtemap kiezen',
-        'browse.home': 'Home',
-        'browse.up': 'Omhoog',
-        'browse.newFolder': 'Nieuwe map',
-        'browse.folderName': 'Mapnaam',
-        'browse.empty': 'Geen submappen hier',
-        'browse.loading': 'Laden…',
-        'browse.truncated': 'Te veel mappen; alleen het begin wordt getoond.',
-        'browse.showHidden': 'Verborgen bestanden tonen',
-        'browse.editPath': 'Pad bewerken',
-        'browse.select': 'Deze map gebruiken',
-        'browse.enter': 'Openen',
-        'browse.drives': 'Stations',
-        'browse.selectNamed': '"{name}" gebruiken',
         'error.title': 'Er is iets misgegaan',
         'cancel': 'Annuleren',
         'create': 'Aanmaken',
@@ -1367,14 +1079,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': 'Een / in de naam maakt de groepslaag, bijv. web/frontend',
         'ws.delete.title': 'Werkruimte verwijderen',
         'ws.delete.body': 'Alleen de registratie wordt verwijderd; de map en sessielogs blijven bestaan. «{name}» verwijderen?',
-        'folder.new.title': 'Nieuwe map',
-        'folder.new.hint': 'Mappad; niveaus met /, bijv. web/frontend',
         'folder.rename.title': 'Mapnaam wijzigen',
         'folder.rename.hint': 'Naam wijzigen werkt alle werkruimtenamen in de map bij',
-        'folder.delete.body': 'Lege map «{name}» verwijderen?',
         'folder.error.empty': 'Het mappad mag niet leeg zijn',
-        'folder.error.exists': 'Map bestaat al',
-        'folder.error.notEmpty': 'De map bevat nog werkruimten',
       },
       /* locale: pl */
       'pl': {
@@ -1406,10 +1113,7 @@ window.__ModuleLoader__.load({
         'menu.delete': 'Usuń',
         'menu.fork': 'Rozgałęź',
         'menu.archive': 'Zarchiwizuj',
-        'menu.newSubfolder': 'Nowy podfolder',
-        'menu.newSubWorkspace': 'Nowy podobszar roboczy',
         'menu.renameFolder': 'Zmień nazwę folderu',
-        'menu.removeFolder': 'Usuń folder',
         'menu.renameSgroup': 'Zmień nazwę grupy sesji',
         'settings.title': 'Lepsze obszary robocze',
         'settings.desc': 'Wygląd i zwijanie drzewa obszarów roboczych',
@@ -1451,7 +1155,7 @@ window.__ModuleLoader__.load({
         'settings.on': 'Wł.',
         'settings.off': 'Wył.',
         'sync.title': 'Synchronizacja między urządzeniami',
-        'sync.desc': 'Wygląd, jawne foldery i przełączniki mieszkają w przeglądarce tego urządzenia; wymieniają się z drugą stroną (web / aplikacja desktopowa) przez magazyn ustawień hosta. Nowe zmiany trafiają do hosta automatycznie, druga strona musi tylko kliknąć „Pobierz”; dane ze starszych wersji wymagają jednorazowego „Wyślij”.',
+      'sync.desc': "Dostosowania wyglądu i przełączniki żyją w przeglądarce tego urządzenia; wymieniają się z drugą powierzchnią (web / aplikacja desktop) przez magazyn ustawień hosta. Nowe zmiany są zapisywane do hosta automatycznie — druga powierzchnia tylko pobiera. Dane sprzed tej wersji wymagają jednorazowego wysłania.",
         'sync.mode.overwrite': 'Nadpisz to urządzenie',
         'sync.mode.merge': 'Scal obie strony',
         'sync.pull.desktop': 'Pobierz z aplikacji desktopowej',
@@ -1461,25 +1165,6 @@ window.__ModuleLoader__.load({
         'sync.empty': 'Druga strona nie ma jeszcze danych',
         'sync.off': 'Synchronizacja niedostępna (wymaga usługi ustawień hosta)',
         'sync.loading': 'Łączenie z ustawieniami hosta…',
-        'flow.title': 'Dodaj obszar roboczy',
-        'flow.picked': 'Wybrany folder',
-        'flow.parent': 'Grupa nadrzędna',
-        'flow.parentHint': 'Wpisz lub wybierz ścieżkę grupy; puste = główna; poziomy rozdziela /',
-        'flow.creating': 'Tworzenie…',
-        'browse.title': 'Wybierz folder obszaru roboczego',
-        'browse.home': 'Katalog domowy',
-        'browse.up': 'W górę',
-        'browse.newFolder': 'Nowy folder',
-        'browse.folderName': 'Nazwa folderu',
-        'browse.empty': 'Brak podfolderów',
-        'browse.loading': 'Wczytywanie…',
-        'browse.truncated': 'Zbyt wiele folderów; pokazano tylko początek.',
-        'browse.showHidden': 'Pokaż ukryte pliki',
-        'browse.editPath': 'Edytuj ścieżkę',
-        'browse.select': 'Użyj tego folderu',
-        'browse.enter': 'Otwórz',
-        'browse.drives': 'Dyski',
-        'browse.selectNamed': 'Użyj "{name}"',
         'error.title': 'Coś poszło nie tak',
         'cancel': 'Anuluj',
         'create': 'Utwórz',
@@ -1489,14 +1174,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': '/ w nazwie tworzy grupę, np. web/frontend',
         'ws.delete.title': 'Usuń obszar roboczy',
         'ws.delete.body': 'Usuwane jest tylko zgłoszenie; katalog i dzienniki sesji zostają. Usunąć „{name}”?',
-        'folder.new.title': 'Nowy folder',
-        'folder.new.hint': 'Ścieżka folderu; poziomy rozdziela /, np. web/frontend',
         'folder.rename.title': 'Zmień nazwę folderu',
         'folder.rename.hint': 'Zmiana nazwy zaktualizuje wszystkie obszary robocze w folderze',
-        'folder.delete.body': 'Usunąć pusty folder „{name}”?',
         'folder.error.empty': 'Ścieżka folderu nie może być pusta',
-        'folder.error.exists': 'Folder już istnieje',
-        'folder.error.notEmpty': 'Folder wciąż zawiera obszary robocze',
       },
       /* locale: pt */
       'pt': {
@@ -1528,10 +1208,7 @@ window.__ModuleLoader__.load({
         'menu.delete': 'Excluir',
         'menu.fork': 'Bifurcar',
         'menu.archive': 'Arquivar',
-        'menu.newSubfolder': 'Nova subpasta',
-        'menu.newSubWorkspace': 'Novo espaço de trabalho aqui',
         'menu.renameFolder': 'Renomear pasta',
-        'menu.removeFolder': 'Excluir pasta',
         'menu.renameSgroup': 'Renomear grupo de sessões',
         'settings.title': 'Espaços de trabalho melhores',
         'settings.desc': 'Aparência e recolhimento da árvore de espaços de trabalho',
@@ -1573,7 +1250,7 @@ window.__ModuleLoader__.load({
         'settings.on': 'Ativado',
         'settings.off': 'Desativado',
         'sync.title': 'Sincronização entre dispositivos',
-        'sync.desc': 'Aparência, pastas explícitas e chaves ficam no navegador deste dispositivo; são trocadas com o outro lado (web / aplicativo de desktop) pelo armazenamento de configurações do host. As novas alterações vão automaticamente para o host, o outro lado só precisa clicar em «Buscar»; dados de versões antigas exigem um «Enviar» inicial.',
+      'sync.desc': "Personalizações de aparência e interruptores vivem no navegador deste dispositivo; eles trocam com a outra superfície (web / aplicativo de desktop) através do armazenamento de configurações do host. Novas edições são gravadas no host automaticamente — a outra superfície apenas puxa. Dados anteriores a esta versão precisam de um envio explícito.",
         'sync.mode.overwrite': 'Sobrescrever este dispositivo',
         'sync.mode.merge': 'Mesclar os dois lados',
         'sync.pull.desktop': 'Buscar do aplicativo de desktop',
@@ -1583,25 +1260,6 @@ window.__ModuleLoader__.load({
         'sync.empty': 'O outro lado ainda não tem dados',
         'sync.off': 'Sincronização indisponível aqui (requer o serviço de configurações do host)',
         'sync.loading': 'Conectando às configurações do host…',
-        'flow.title': 'Adicionar espaço de trabalho',
-        'flow.picked': 'Pasta escolhida',
-        'flow.parent': 'Grupo pai',
-        'flow.parentHint': 'Digite ou escolha o caminho do grupo; vazio = raiz; níveis separados por /',
-        'flow.creating': 'Criando…',
-        'browse.title': 'Escolher pasta da área de trabalho',
-        'browse.home': 'Início',
-        'browse.up': 'Acima',
-        'browse.newFolder': 'Nova pasta',
-        'browse.folderName': 'Nome da pasta',
-        'browse.empty': 'Nenhuma subpasta aqui',
-        'browse.loading': 'Carregando…',
-        'browse.truncated': 'Pastas demais; apenas o início é exibido.',
-        'browse.showHidden': 'Mostrar arquivos ocultos',
-        'browse.editPath': 'Editar caminho',
-        'browse.select': 'Usar esta pasta',
-        'browse.enter': 'Abrir',
-        'browse.drives': 'Unidades',
-        'browse.selectNamed': 'Usar "{name}"',
         'error.title': 'Algo deu errado',
         'cancel': 'Cancelar',
         'create': 'Criar',
@@ -1611,14 +1269,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': 'A / no nome cria o grupo, por exemplo web/frontend',
         'ws.delete.title': 'Excluir espaço de trabalho',
         'ws.delete.body': 'Apenas o registro é removido; o diretório e os logs de sessão são mantidos. Excluir «{name}»?',
-        'folder.new.title': 'Nova pasta',
-        'folder.new.hint': 'Caminho da pasta; níveis com /, por exemplo web/frontend',
         'folder.rename.title': 'Renomear pasta',
         'folder.rename.hint': 'Renomear atualiza todos os espaços de trabalho da pasta',
-        'folder.delete.body': 'Excluir a pasta vazia «{name}»?',
         'folder.error.empty': 'O caminho da pasta não pode ficar vazio',
-        'folder.error.exists': 'A pasta já existe',
-        'folder.error.notEmpty': 'A pasta ainda contém espaços de trabalho',
       },
       /* locale: ru */
       'ru': {
@@ -1650,10 +1303,7 @@ window.__ModuleLoader__.load({
         'menu.delete': 'Удалить',
         'menu.fork': 'Ответвить',
         'menu.archive': 'В архив',
-        'menu.newSubfolder': 'Новая подпапка',
-        'menu.newSubWorkspace': 'Новая рабочая область здесь',
         'menu.renameFolder': 'Переименовать папку',
-        'menu.removeFolder': 'Удалить папку',
         'menu.renameSgroup': 'Переименовать группу сессий',
         'settings.title': 'Улучшенные рабочие области',
         'settings.desc': 'Внешний вид и сворачивание дерева рабочих областей',
@@ -1695,7 +1345,7 @@ window.__ModuleLoader__.load({
         'settings.on': 'Вкл.',
         'settings.off': 'Выкл.',
         'sync.title': 'Синхронизация между устройствами',
-        'sync.desc': 'Оформление, явные папки и переключатели хранятся в браузере этого устройства и обмениваются с другой стороной (веб / настольное приложение) через хранилище настроек хоста. Новые изменения записываются в хост автоматически, другой стороне достаточно нажать «Получить»; данные старых версий требуют однократной отправки.',
+      'sync.desc': "Настройки внешнего вида и переключатели живут в браузере этого устройства; они обмениваются с другой поверхностью (веб / настольное приложение) через хранилище настроек хоста. Новые правки автоматически записываются на хост — другой поверхности остаётся только получить. Данные, созданные до этой версии, требуют одной явной отправки.",
         'sync.mode.overwrite': 'Перезаписать это устройство',
         'sync.mode.merge': 'Объединить обе стороны',
         'sync.pull.desktop': 'Получить из настольного приложения',
@@ -1705,25 +1355,6 @@ window.__ModuleLoader__.load({
         'sync.empty': 'На другой стороне пока нет данных',
         'sync.off': 'Синхронизация недоступна (нужна служба настроек хоста)',
         'sync.loading': 'Подключение к настройкам хоста…',
-        'flow.title': 'Добавить рабочую область',
-        'flow.picked': 'Выбранная папка',
-        'flow.parent': 'Родительская группа',
-        'flow.parentHint': 'Введите или выберите путь группы; пусто — корень; уровни разделяются /',
-        'flow.creating': 'Создание…',
-        'browse.title': 'Выбор папки рабочей области',
-        'browse.home': 'Домашняя папка',
-        'browse.up': 'На уровень выше',
-        'browse.newFolder': 'Новая папка',
-        'browse.folderName': 'Имя папки',
-        'browse.empty': 'Здесь нет вложенных папок',
-        'browse.loading': 'Загрузка…',
-        'browse.truncated': 'Слишком много папок; показано только начало.',
-        'browse.showHidden': 'Показывать скрытые файлы',
-        'browse.editPath': 'Изменить путь',
-        'browse.select': 'Выбрать эту папку',
-        'browse.enter': 'Открыть',
-        'browse.drives': 'Диски',
-        'browse.selectNamed': 'Выбрать «{name}»',
         'error.title': 'Что-то пошло не так',
         'cancel': 'Отмена',
         'create': 'Создать',
@@ -1733,14 +1364,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': 'Символ / в имени задаёт группу, например web/frontend',
         'ws.delete.title': 'Удалить рабочую область',
         'ws.delete.body': 'Удаляется только регистрация; каталог и журналы сессий остаются. Удалить «{name}»?',
-        'folder.new.title': 'Новая папка',
-        'folder.new.hint': 'Путь папки; уровни через /, например web/frontend',
         'folder.rename.title': 'Переименовать папку',
         'folder.rename.hint': 'Переименование обновит все рабочие области в папке',
-        'folder.delete.body': 'Удалить пустую папку «{name}»?',
         'folder.error.empty': 'Путь папки не может быть пустым',
-        'folder.error.exists': 'Папка уже существует',
-        'folder.error.notEmpty': 'В папке ещё есть рабочие области',
       },
       /* locale: sv */
       'sv': {
@@ -1772,10 +1398,7 @@ window.__ModuleLoader__.load({
         'menu.delete': 'Ta bort',
         'menu.fork': 'Förgrena',
         'menu.archive': 'Arkivera',
-        'menu.newSubfolder': 'Ny undermapp',
-        'menu.newSubWorkspace': 'Ny arbetsyta här',
         'menu.renameFolder': 'Byt namn på mapp',
-        'menu.removeFolder': 'Ta bort mapp',
         'menu.renameSgroup': 'Byt namn på sessionsgrupp',
         'settings.title': 'Bättre arbetsytor',
         'settings.desc': 'Utseende och ihopfällning för arbetsyteträdet',
@@ -1817,7 +1440,7 @@ window.__ModuleLoader__.load({
         'settings.on': 'På',
         'settings.off': 'Av',
         'sync.title': 'Synk mellan enheter',
-        'sync.desc': 'Utseende, uttryckliga mappar och reglage ligger i den här enhetens webbläsare; de utbyts med andra sidan (webb / skrivbordsapp) via värduppläggets inställningslager. Nya ändringar skrivs automatiskt till värden, andra sidan behöver bara välja «Hämta»; data från äldre versioner kräver en första «Skicka».',
+      'sync.desc': "Utseendeanpassningar och växlar lever i den här enhetens webbläsare; de utbyts med den andra ytan (webb / skrivbordsapp) via värdens inställningslagring. Nya ändringar skrivs automatiskt till värden — den andra ytan behöver bara hämta. Data från före den här versionen kräver ett explicit skicka.",
         'sync.mode.overwrite': 'Skriv över denna enhet',
         'sync.mode.merge': 'Slå ihop båda sidor',
         'sync.pull.desktop': 'Hämta från skrivbordsappen',
@@ -1827,25 +1450,6 @@ window.__ModuleLoader__.load({
         'sync.empty': 'Andra sidan har inga data ännu',
         'sync.off': 'Synk är inte tillgänglig här (kräver värduppläggets inställningstjänst)',
         'sync.loading': 'Ansluter till värduppläggets inställningar…',
-        'flow.title': 'Lägg till arbetsyta',
-        'flow.picked': 'Vald mapp',
-        'flow.parent': 'Överordnad grupp',
-        'flow.parentHint': 'Skriv eller välj en gruppsökväg; tomt = rot; nivåer avgränsas med /',
-        'flow.creating': 'Skapar…',
-        'browse.title': 'Välj arbetsyte-mapp',
-        'browse.home': 'Hem',
-        'browse.up': 'Upp',
-        'browse.newFolder': 'Ny mapp',
-        'browse.folderName': 'Mappnamn',
-        'browse.empty': 'Inga undermappar här',
-        'browse.loading': 'Laddar…',
-        'browse.truncated': 'För många mappar; endast början visas.',
-        'browse.showHidden': 'Visa dolda filer',
-        'browse.editPath': 'Redigera sökväg',
-        'browse.select': 'Använd den här mappen',
-        'browse.enter': 'Öppna',
-        'browse.drives': 'Enheter',
-        'browse.selectNamed': 'Använd "{name}"',
         'error.title': 'Något gick fel',
         'cancel': 'Avbryt',
         'create': 'Skapa',
@@ -1855,14 +1459,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': 'Ett / i namnet bildar gruppnivån, t.ex. web/frontend',
         'ws.delete.title': 'Ta bort arbetsyta',
         'ws.delete.body': 'Endast registreringen tas bort; katalogen och sessionsloggarna finns kvar. Ta bort «{name}»?',
-        'folder.new.title': 'Ny mapp',
-        'folder.new.hint': 'Mappsökväg; nivåer med /, t.ex. web/frontend',
         'folder.rename.title': 'Byt namn på mapp',
         'folder.rename.hint': 'Namnbytet uppdaterar alla arbetsytor i mappen',
-        'folder.delete.body': 'Ta bort den tomma mappen «{name}»?',
         'folder.error.empty': 'Mappsökvägen får inte vara tom',
-        'folder.error.exists': 'Mappen finns redan',
-        'folder.error.notEmpty': 'Mappen innehåller fortfarande arbetsytor',
       },
       /* locale: th */
       'th': {
@@ -1894,10 +1493,7 @@ window.__ModuleLoader__.load({
         'menu.delete': 'ลบ',
         'menu.fork': 'แยกสาย',
         'menu.archive': 'เก็บถาวร',
-        'menu.newSubfolder': 'โฟลเดอร์ย่อยใหม่',
-        'menu.newSubWorkspace': 'พื้นที่ทำงานย่อยที่นี่',
         'menu.renameFolder': 'เปลี่ยนชื่อโฟลเดอร์',
-        'menu.removeFolder': 'ลบโฟลเดอร์',
         'menu.renameSgroup': 'เปลี่ยนชื่อกลุ่มเซสชัน',
         'settings.title': 'พื้นที่ทำงานที่ดีขึ้น',
         'settings.desc': 'รูปลักษณ์และการย่อของต้นไม้พื้นที่ทำงาน',
@@ -1939,7 +1535,7 @@ window.__ModuleLoader__.load({
         'settings.on': 'เปิด',
         'settings.off': 'ปิด',
         'sync.title': 'ซิงก์ข้ามอุปกรณ์',
-        'sync.desc': 'รูปลักษณ์ที่กำหนดเอง กลุ่มที่สร้างไว้ และสวิตช์ต่าง ๆ อยู่ในเบราว์เซอร์ของอุปกรณ์นี้ และแลกเปลี่ยนกับอีกฝั่ง (เว็บ / แอปเดสก์ท็อป) ผ่านที่เก็บการตั้งค่าของโฮสต์ การแก้ไขใหม่จะเขียนลงโฮสต์อัตโนมัติ อีกฝั่งเพียงกด «ดึงข้อมูล» ข้อมูลจากเวอร์ชันเก่าต้องกด «ส่งข้อมูล» หนึ่งครั้ง',
+      'sync.desc': "การปรับแต่งหน้าตาและสวิตช์อยู่ในเบราว์เซอร์ของอุปกรณ์นี้ และแลกเปลี่ยนกับอีกฝั่ง (เว็บ / แอปเดสก์ท็อป) ผ่านที่เก็บการตั้งค่าของโฮสต์ การแก้ไขใหม่เขียนไปยังโฮสต์โดยอัตโนมัติ อีกฝั่งแค่ดึงข้อมูล ข้อมูลก่อนเวอร์ชันนี้ต้องส่งครั้งเดียว",
         'sync.mode.overwrite': 'เขียนทับอุปกรณ์นี้',
         'sync.mode.merge': 'รวมทั้งสองฝั่ง',
         'sync.pull.desktop': 'ดึงจากแอปเดสก์ท็อป',
@@ -1949,25 +1545,6 @@ window.__ModuleLoader__.load({
         'sync.empty': 'อีกฝั่งยังไม่มีข้อมูลให้ดึง',
         'sync.off': 'สภาพแวดล้อมนี้ไม่รองรับการซิงก์ (ต้องมีบริการการตั้งค่าของโฮสต์)',
         'sync.loading': 'กำลังเชื่อมต่อการตั้งค่าโฮสต์…',
-        'flow.title': 'เพิ่มพื้นที่ทำงาน',
-        'flow.picked': 'โฟลเดอร์ที่เลือก',
-        'flow.parent': 'กลุ่มต้นทาง',
-        'flow.parentHint': 'พิมพ์หรือเลือกเส้นทางกลุ่ม เว้นว่างคือระดับราก หลายระดับคั่นด้วย /',
-        'flow.creating': 'กำลังสร้าง…',
-        'browse.title': 'เลือกโฟลเดอร์เวิร์กสเปซ',
-        'browse.home': 'โฮม',
-        'browse.up': 'ขึ้นหนึ่งระดับ',
-        'browse.newFolder': 'โฟลเดอร์ใหม่',
-        'browse.folderName': 'ชื่อโฟลเดอร์',
-        'browse.empty': 'ไม่มีโฟลเดอร์ย่อยที่นี่',
-        'browse.loading': 'กำลังโหลด…',
-        'browse.truncated': 'มีโฟลเดอร์มากเกินไป แสดงเฉพาะส่วนต้น',
-        'browse.showHidden': 'แสดงไฟล์ที่ซ่อนอยู่',
-        'browse.editPath': 'แก้ไขเส้นทาง',
-        'browse.select': 'ใช้โฟลเดอร์นี้',
-        'browse.enter': 'เปิด',
-        'browse.drives': 'ไดรฟ์',
-        'browse.selectNamed': 'ใช้ "{name}"',
         'error.title': 'เกิดข้อผิดพลาด',
         'cancel': 'ยกเลิก',
         'create': 'สร้าง',
@@ -1977,14 +1554,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': '/ ในชื่อคือระดับกลุ่ม เช่น web/frontend',
         'ws.delete.title': 'ลบพื้นที่ทำงาน',
         'ws.delete.body': 'ลบเฉพาะทะเบียนพื้นที่ทำงาน ไดเรกทอรีและบันทึกเซสชันยังอยู่ ลบ «{name}» หรือไม่',
-        'folder.new.title': 'กลุ่มใหม่',
-        'folder.new.hint': 'เส้นทางกลุ่ม ใช้ / แบ่งหลายระดับ เช่น web/frontend',
         'folder.rename.title': 'เปลี่ยนชื่อกลุ่ม',
         'folder.rename.hint': 'การเปลี่ยนชื่อจะอัปเดตพื้นที่ทำงานทั้งหมดในกลุ่ม',
-        'folder.delete.body': 'ลบกลุ่มว่าง «{name}» หรือไม่',
         'folder.error.empty': 'เส้นทางกลุ่มต้องไม่ว่าง',
-        'folder.error.exists': 'มีกลุ่มนี้อยู่แล้ว',
-        'folder.error.notEmpty': 'กลุ่มนี้ยังมีพื้นที่ทำงานอยู่',
       },
       /* locale: tr */
       'tr': {
@@ -2016,10 +1588,7 @@ window.__ModuleLoader__.load({
         'menu.delete': 'Sil',
         'menu.fork': 'Çatalla',
         'menu.archive': 'Arşivle',
-        'menu.newSubfolder': 'Yeni alt klasör',
-        'menu.newSubWorkspace': 'Buraya alt çalışma alanı',
         'menu.renameFolder': 'Klasörü yeniden adlandır',
-        'menu.removeFolder': 'Klasörü sil',
         'menu.renameSgroup': 'Oturum grubunu yeniden adlandır',
         'settings.title': 'Daha iyi çalışma alanları',
         'settings.desc': 'Çalışma alanı ağacının görünümü ve daraltma tercihleri',
@@ -2061,7 +1630,7 @@ window.__ModuleLoader__.load({
         'settings.on': 'Açık',
         'settings.off': 'Kapalı',
         'sync.title': 'Cihazlar arası eşitleme',
-        'sync.desc': 'Görünüm, açık klasörler ve anahtarlar bu cihazın tarayıcısında durur; ana makine ayar deposu üzerinden diğer tarafla (web / masaüstü uygulaması) alışveriş edilir. Yeni değişiklikler ana makineye kendiliğinden yazılır, diğer taraf yalnızca «Getir» demelidir; eski sürümlerden kalan veriler için bir kez «Gönder» gerekir.',
+      'sync.desc': "Görünüm özelleştirmeleri ve anahtarlar bu cihazın tarayıcısında yaşar; ana makine ayar deposu aracılığıyla diğer yüzleyle (web / masaüstü uygulaması) alışveriş ederler. Yeni değişiklikler ana makineye otomatik yazılır — diğer yüz yalnızca çeker. Bu sürümden önceki veriler tek seferlik açık bir Gönder gerektirir.",
         'sync.mode.overwrite': 'Bu cihazın üzerine yaz',
         'sync.mode.merge': 'İki tarafı birleştir',
         'sync.pull.desktop': 'Masaüstü uygulamasından getir',
@@ -2071,25 +1640,6 @@ window.__ModuleLoader__.load({
         'sync.empty': 'Diğer tarafta alınacak veri yok',
         'sync.off': 'Bu ortamda eşitleme yok (ana makine ayar servisi gerekir)',
         'sync.loading': 'Ana makine ayarlarına bağlanılıyor…',
-        'flow.title': 'Çalışma alanı ekle',
-        'flow.picked': 'Seçilen klasör',
-        'flow.parent': 'Bağlı olduğu grup',
-        'flow.parentHint': 'Grup yolunu yazın veya seçin; boş = kök; düzeyler / ile ayrılır',
-        'flow.creating': 'Oluşturuluyor…',
-        'browse.title': 'Çalışma alanı klasörünü seç',
-        'browse.home': 'Ana dizin',
-        'browse.up': 'Üst düzey',
-        'browse.newFolder': 'Yeni klasör',
-        'browse.folderName': 'Klasör adı',
-        'browse.empty': 'Burada alt klasör yok',
-        'browse.loading': 'Yükleniyor…',
-        'browse.truncated': 'Çok fazla klasör var; yalnızca başlangıç gösteriliyor.',
-        'browse.showHidden': 'Gizli dosyaları göster',
-        'browse.editPath': 'Yolu düzenle',
-        'browse.select': 'Bu klasörü kullan',
-        'browse.enter': 'Aç',
-        'browse.drives': 'Sürücüler',
-        'browse.selectNamed': '"{name}" kullan',
         'error.title': 'Bir şeyler ters gitti',
         'cancel': 'İptal',
         'create': 'Oluştur',
@@ -2099,14 +1649,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': 'Addaki / grup düzeyini oluşturur, örn. web/frontend',
         'ws.delete.title': 'Çalışma alanını sil',
         'ws.delete.body': 'Yalnızca kayıt kaldırılır; dizin ve oturum kayıtları kalır. «{name}» silinsin mi?',
-        'folder.new.title': 'Yeni klasör',
-        'folder.new.hint': 'Klasör yolu; düzeyler / ile, örn. web/frontend',
         'folder.rename.title': 'Klasörü yeniden adlandır',
         'folder.rename.hint': 'Yeniden adlandırma klasördeki tüm çalışma alanlarını günceller',
-        'folder.delete.body': 'Boş klasör «{name}» silinsin mi?',
         'folder.error.empty': 'Klasör yolu boş olamaz',
-        'folder.error.exists': 'Klasör zaten var',
-        'folder.error.notEmpty': 'Klasörde hâlâ çalışma alanları var',
       },
       /* locale: vi */
       'vi': {
@@ -2138,10 +1683,7 @@ window.__ModuleLoader__.load({
         'menu.delete': 'Xóa',
         'menu.fork': 'Tách nhánh',
         'menu.archive': 'Lưu trữ',
-        'menu.newSubfolder': 'Thư mục con mới',
-        'menu.newSubWorkspace': 'Không gian làm việc con tại đây',
         'menu.renameFolder': 'Đổi tên thư mục',
-        'menu.removeFolder': 'Xóa thư mục',
         'menu.renameSgroup': 'Đổi tên nhóm phiên',
         'settings.title': 'Không gian làm việc tốt hơn',
         'settings.desc': 'Giao diện và cách thu gọn của cây không gian làm việc',
@@ -2183,7 +1725,7 @@ window.__ModuleLoader__.load({
         'settings.on': 'Bật',
         'settings.off': 'Tắt',
         'sync.title': 'Đồng bộ giữa các thiết bị',
-        'sync.desc': 'Giao diện tùy chỉnh, nhóm thư mục rõ ràng và các công tắc nằm trong trình duyệt của thiết bị này; chúng trao đổi với đầu bên kia (web / ứng dụng máy tính) qua kho cài đặt của máy chủ. Thay đổi mới được ghi vào máy chủ tự động, bên kia chỉ cần bấm «Lấy về»; dữ liệu từ phiên bản cũ cần bấm «Gửi đi» một lần.',
+      'sync.desc': "Tùy chỉnh giao diện và các công tắc sống trong trình duyệt của thiết bị này; chúng trao đổi với bề mặt kia (web / ứng dụng máy tính) qua kho cài đặt của máy chủ. Các chỉnh sửa mới được ghi lên máy chủ tự động — bề mặt kia chỉ cần kéo. Dữ liệu từ trước phiên bản này cần một lần Gửi rõ ràng.",
         'sync.mode.overwrite': 'Ghi đè thiết bị này',
         'sync.mode.merge': 'Gộp hai bên',
         'sync.pull.desktop': 'Lấy từ ứng dụng máy tính',
@@ -2193,25 +1735,6 @@ window.__ModuleLoader__.load({
         'sync.empty': 'Bên kia chưa có dữ liệu để lấy',
         'sync.off': 'Môi trường này không hỗ trợ đồng bộ (cần dịch vụ cài đặt của máy chủ)',
         'sync.loading': 'Đang kết nối cài đặt máy chủ…',
-        'flow.title': 'Thêm không gian làm việc',
-        'flow.picked': 'Thư mục đã chọn',
-        'flow.parent': 'Nhóm trực thuộc',
-        'flow.parentHint': 'Nhập hoặc chọn đường dẫn nhóm; để trống là gốc; nhiều tầng cách nhau bằng /',
-        'flow.creating': 'Đang tạo…',
-        'browse.title': 'Chọn thư mục không gian làm việc',
-        'browse.home': 'Thư mục chính',
-        'browse.up': 'Lên một cấp',
-        'browse.newFolder': 'Thư mục mới',
-        'browse.folderName': 'Tên thư mục',
-        'browse.empty': 'Không có thư mục con ở đây',
-        'browse.loading': 'Đang tải…',
-        'browse.truncated': 'Quá nhiều thư mục; chỉ hiển thị phần đầu.',
-        'browse.showHidden': 'Hiện tệp ẩn',
-        'browse.editPath': 'Sửa đường dẫn',
-        'browse.select': 'Dùng thư mục này',
-        'browse.enter': 'Mở',
-        'browse.drives': 'Ổ đĩa',
-        'browse.selectNamed': 'Dùng "{name}"',
         'error.title': 'Đã xảy ra lỗi',
         'cancel': 'Hủy',
         'create': 'Tạo',
@@ -2221,14 +1744,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': 'Dấu / trong tên tạo thành nhóm tầng, ví dụ web/frontend',
         'ws.delete.title': 'Xóa không gian làm việc',
         'ws.delete.body': 'Chỉ xóa đăng ký; thư mục và nhật ký phiên vẫn được giữ. Xóa «{name}»?',
-        'folder.new.title': 'Nhóm mới',
-        'folder.new.hint': 'Đường dẫn nhóm; dùng / cho nhiều tầng, ví dụ web/frontend',
         'folder.rename.title': 'Đổi tên nhóm',
         'folder.rename.hint': 'Đổi tên sẽ cập nhật mọi không gian làm việc trong nhóm',
-        'folder.delete.body': 'Xóa nhóm rỗng «{name}»?',
         'folder.error.empty': 'Đường dẫn nhóm không được để trống',
-        'folder.error.exists': 'Nhóm đã tồn tại',
-        'folder.error.notEmpty': 'Nhóm vẫn còn không gian làm việc',
       },
       /* locale: zh-HK */
       'zh-HK': {
@@ -2260,10 +1778,7 @@ window.__ModuleLoader__.load({
         'menu.delete': '刪除',
         'menu.fork': '分叉',
         'menu.archive': '封存',
-        'menu.newSubfolder': '新增子分組',
-        'menu.newSubWorkspace': '新增子工作區',
         'menu.renameFolder': '重新命名分組',
-        'menu.removeFolder': '刪除分組',
         'menu.renameSgroup': '重新命名對話分組',
         'settings.title': '更好嘅工作區',
         'settings.desc': '工作區樹嘅外觀同收起偏好',
@@ -2305,7 +1820,7 @@ window.__ModuleLoader__.load({
         'settings.on': '開',
         'settings.off': '關',
         'sync.title': '跨端同步',
-        'sync.desc': '外觀自訂、明確分組同開關會保存喺呢部裝置嘅瀏覽器;透過宿主設定儲存同另一端互傳。平時嘅新修改會自動寫入宿主,另一端撳「獲取」就攞到;舊版本嘅歷史資料第一次要撳一次「發送」。',
+      'sync.desc': "外觀自訂與開關儲存在本裝置的瀏覽器裡;透過主機設定存放區與另一端互傳。平時的新修改會自動寫入主機,另一端點「取得」即可拿到;舊版本的歷史資料首次需要點一次「傳送」。",
         'sync.mode.overwrite': '覆蓋呢部裝置',
         'sync.mode.merge': '合併兩端',
         'sync.pull.desktop': '由桌面客户端獲取',
@@ -2315,25 +1830,6 @@ window.__ModuleLoader__.load({
         'sync.empty': '另一端暫時未有資料可以獲取',
         'sync.off': '呢個環境唔支援同步(需要宿主設定服務)',
         'sync.loading': '連接緊宿主設定…',
-        'flow.title': '新增工作區',
-        'flow.picked': '揀咗嘅文件夾',
-        'flow.parent': '所屬分組',
-        'flow.parentHint': '輸入或者揀分組路徑,留空代表根分組;多級用 / 分隔',
-        'flow.creating': '建立緊…',
-        'browse.title': '揀工作區資料夾',
-        'browse.home': '主目錄',
-        'browse.up': '上一層',
-        'browse.newFolder': '新增資料夾',
-        'browse.folderName': '資料夾名稱',
-        'browse.empty': '呢個資料夾冇子資料夾',
-        'browse.loading': '載入緊…',
-        'browse.truncated': '資料夾太多,只顯示開頭部分。',
-        'browse.showHidden': '顯示隱藏檔案',
-        'browse.editPath': '編輯路徑',
-        'browse.select': '揀呢個資料夾',
-        'browse.enter': '入去',
-        'browse.drives': '磁碟',
-        'browse.selectNamed': '揀「{name}」',
         'error.title': '出咗錯',
         'cancel': '取消',
         'create': '建立',
@@ -2343,14 +1839,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': '名稱入面嘅 / 就係層級分組,例如 web/前端',
         'ws.delete.title': '刪除工作區',
         'ws.delete.body': '只會移除工作區登記,目錄同對話記錄都會保留。確定刪除「{name}」?',
-        'folder.new.title': '新增分組',
-        'folder.new.hint': '分組路徑,可以用 / 表示多級,例如 web/前端',
         'folder.rename.title': '重新命名分組',
         'folder.rename.hint': '重新命名會同步更新組內所有工作區名稱',
-        'folder.delete.body': '刪除空分組「{name}」?',
         'folder.error.empty': '分組路徑唔可以係空',
-        'folder.error.exists': '分組已經存在',
-        'folder.error.notEmpty': '分組入面仲有工作區,唔可以刪除',
       },
       /* locale: zh-MO */
       'zh-MO': {
@@ -2382,10 +1873,7 @@ window.__ModuleLoader__.load({
         'menu.delete': '刪除',
         'menu.fork': '分叉',
         'menu.archive': '封存',
-        'menu.newSubfolder': '新增子分組',
-        'menu.newSubWorkspace': '新增子工作區',
         'menu.renameFolder': '重新命名分組',
-        'menu.removeFolder': '刪除分組',
         'menu.renameSgroup': '重新命名對話分組',
         'settings.title': '更好嘅工作區',
         'settings.desc': '工作區樹嘅外觀同收起偏好',
@@ -2427,7 +1915,7 @@ window.__ModuleLoader__.load({
         'settings.on': '開',
         'settings.off': '關',
         'sync.title': '跨端同步',
-        'sync.desc': '外觀自訂、明確分組同開關會保存喺呢部裝置嘅瀏覽器;透過宿主設定儲存同另一端互傳。平時嘅新修改會自動寫入宿主,另一端撳「獲取」就攞到;舊版本嘅歷史資料第一次要撳一次「發送」。',
+      'sync.desc': "外觀自訂與開關儲存在本裝置的瀏覽器裡;透過主機設定存放區與另一端互傳。平時的新修改會自動寫入主機,另一端點「取得」即可拿到;舊版本的歷史資料首次需要點一次「傳送」。",
         'sync.mode.overwrite': '覆蓋呢部裝置',
         'sync.mode.merge': '合併兩端',
         'sync.pull.desktop': '由桌面客户端獲取',
@@ -2437,25 +1925,6 @@ window.__ModuleLoader__.load({
         'sync.empty': '另一端暫時未有資料可以獲取',
         'sync.off': '呢個環境唔支援同步(需要宿主設定服務)',
         'sync.loading': '連接緊宿主設定…',
-        'flow.title': '新增工作區',
-        'flow.picked': '揀咗嘅文件夾',
-        'flow.parent': '所屬分組',
-        'flow.parentHint': '輸入或者揀分組路徑,留空代表根分組;多級用 / 分隔',
-        'flow.creating': '建立緊…',
-        'browse.title': '揀工作區資料夾',
-        'browse.home': '主目錄',
-        'browse.up': '上一層',
-        'browse.newFolder': '新增資料夾',
-        'browse.folderName': '資料夾名稱',
-        'browse.empty': '呢個資料夾冇子資料夾',
-        'browse.loading': '載入緊…',
-        'browse.truncated': '資料夾太多,只顯示開頭部分。',
-        'browse.showHidden': '顯示隱藏檔案',
-        'browse.editPath': '編輯路徑',
-        'browse.select': '揀呢個資料夾',
-        'browse.enter': '入去',
-        'browse.drives': '磁碟',
-        'browse.selectNamed': '揀「{name}」',
         'error.title': '出咗錯',
         'cancel': '取消',
         'create': '建立',
@@ -2465,14 +1934,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': '名稱入面嘅 / 就係層級分組,例如 web/前端',
         'ws.delete.title': '刪除工作區',
         'ws.delete.body': '只會移除工作區登記,目錄同對話記錄都會保留。確定刪除「{name}」?',
-        'folder.new.title': '新增分組',
-        'folder.new.hint': '分組路徑,可以用 / 表示多級,例如 web/前端',
         'folder.rename.title': '重新命名分組',
         'folder.rename.hint': '重新命名會同步更新組內所有工作區名稱',
-        'folder.delete.body': '刪除空分組「{name}」?',
         'folder.error.empty': '分組路徑唔可以係空',
-        'folder.error.exists': '分組已經存在',
-        'folder.error.notEmpty': '分組入面仲有工作區,唔可以刪除',
       },
       /* locale: zh-TW */
       'zh-TW': {
@@ -2504,10 +1968,7 @@ window.__ModuleLoader__.load({
         'menu.delete': '刪除',
         'menu.fork': '分支',
         'menu.archive': '封存',
-        'menu.newSubfolder': '新增子群組',
-        'menu.newSubWorkspace': '新增子工作區',
         'menu.renameFolder': '重新命名群組',
-        'menu.removeFolder': '刪除群組',
         'menu.renameSgroup': '重新命名工作階段群組',
         'settings.title': '更好的工作區',
         'settings.desc': '工作區樹的外觀與收合偏好',
@@ -2549,7 +2010,7 @@ window.__ModuleLoader__.load({
         'settings.on': '開',
         'settings.off': '關',
         'sync.title': '跨裝置同步',
-        'sync.desc': '外觀自訂、明確群組與開關會保存在本裝置的瀏覽器;透過宿主設定儲存與另一端互相傳送。平常的新修改會自動寫入宿主,另一端按「取得」即可拿到;舊版本的歷史資料第一次需要按一次「傳送」。',
+      'sync.desc': "外觀自訂與開關儲存在本裝置的瀏覽器裡;透過主機設定存放區與另一端互傳。平時的新修改會自動寫入主機,另一端點「取得」即可拿到;舊版本的歷史資料首次需要點一次「傳送」。",
         'sync.mode.overwrite': '覆寫本裝置',
         'sync.mode.merge': '合併兩端',
         'sync.pull.desktop': '從桌面用戶端取得',
@@ -2559,25 +2020,6 @@ window.__ModuleLoader__.load({
         'sync.empty': '另一端尚無資料可取得',
         'sync.off': '目前環境不支援同步(需要宿主設定服務)',
         'sync.loading': '正在連線宿主設定…',
-        'flow.title': '新增工作區',
-        'flow.picked': '所選資料夾',
-        'flow.parent': '所屬群組',
-        'flow.parentHint': '輸入或下拉選擇群組路徑,留空表示根群組;多層用 / 分隔',
-        'flow.creating': '正在建立…',
-        'browse.title': '選擇工作區資料夾',
-        'browse.home': '主目錄',
-        'browse.up': '上一層',
-        'browse.newFolder': '新增資料夾',
-        'browse.folderName': '資料夾名稱',
-        'browse.empty': '此資料夾沒有子資料夾',
-        'browse.loading': '載入中…',
-        'browse.truncated': '資料夾過多,僅顯示開頭部分。',
-        'browse.showHidden': '顯示隱藏檔案',
-        'browse.editPath': '編輯路徑',
-        'browse.select': '選擇此資料夾',
-        'browse.enter': '進入',
-        'browse.drives': '磁碟',
-        'browse.selectNamed': '選擇「{name}」',
         'error.title': '發生錯誤',
         'cancel': '取消',
         'create': '建立',
@@ -2587,14 +2029,9 @@ window.__ModuleLoader__.load({
         'ws.rename.hint': '名稱中的 / 即層級群組,例如 web/前端',
         'ws.delete.title': '刪除工作區',
         'ws.delete.body': '僅移除工作區登錄,目錄與工作階段記錄都會保留。確定刪除「{name}」?',
-        'folder.new.title': '新增群組',
-        'folder.new.hint': '群組路徑,可用 / 表示多層,例如 web/前端',
         'folder.rename.title': '重新命名群組',
         'folder.rename.hint': '重新命名會同步更新群組內所有工作區名稱',
-        'folder.delete.body': '刪除空群組「{name}」?',
         'folder.error.empty': '群組路徑不能為空',
-        'folder.error.exists': '群組已存在',
-        'folder.error.notEmpty': '群組內還有工作區,無法刪除',
       },
     }
 
@@ -2865,57 +2302,119 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * Build the folder tree. Folders are virtual: they exist where workspace
-     * titles contain "/", plus the explicit empty folders the user created.
-     * Returns { path, name, folders, workspaces } with workspaces carrying
-     * their leaf display name.
+     * Build the hierarchy tree. Two orthogonal layers, the way the official
+     * 0.1.6-alpha.2 browser composes them:
+     * - the DISK layer nests a workspace under its nearest registered
+     *   ancestor directory (owningParentFolder semantics — workspace rows
+     *   nest, no virtual nodes for paths nobody registered; a filesystem
+     *   fact this UI never changes);
+     * - the NAME layer groups one level's workspaces by the "/" segments
+     *   of their titles (virtual folders, this plugin's founding feature;
+     *   pure projection, re-flows on rename).
+     * Returns the root level { path, name, folders, workspaces }; every
+     * workspace entry carries .sub — the child LEVEL nested under that
+     * workspace's directory (null when it has no nested workspaces).
+     * Folder identity keys (idPath) are prefixed with the owning workspace
+     * id inside sub-levels so expansion/styling state never collides when
+     * two disk levels happen to hold same-named name groups.
      */
-    function buildTree(items, explicitFolders) {
-      const root = { path: '', name: '', folders: [], workspaces: [] }
-      const byPath = new Map([['', root]])
-      // SEGMENT-driven, same as buildSessionTree: the joined path is only a
-      // KEY; parsing it back on "/" would break URL authority segments.
-      const ensure = (segs) => {
-        let node = root
-        let key = ''
-        for (const seg of segs) {
-          key = key === '' ? seg : key + '/' + seg
-          let next = byPath.get(key)
-          if (!next) {
-            next = { path: key, name: seg, folders: [], workspaces: [] }
-            byPath.set(key, next)
-            node.folders.push(next)
+    const DISK_SEP = String.fromCharCode(92) // windows backslash
+    /** Normalize a disk path for prefix comparison: separators to "/", trailing separators stripped. */
+    const normDiskPath = (p) => {
+      const s = String(p || '')
+      const windows = (s.length > 2 && s.charCodeAt(1) === 58 && (s.charAt(2) === '/' || s.charAt(2) === DISK_SEP))
+        || (s.charAt(0) === DISK_SEP && s.charAt(1) === DISK_SEP)
+      const t = windows ? s.split(DISK_SEP).join('/') : s
+      let end = t.length
+      while (end > 0 && t.charAt(end - 1) === '/') end -= 1
+      return t.slice(0, end)
+    }
+    /** Nearest registered ancestor workspace id per workspace (undefined at top level). */
+    const diskParentMapOf = (items) => {
+      const list = items || []
+      const idByPath = new Map()
+      for (const w of list) idByPath.set(normDiskPath(w.path), w.workspaceId)
+      const map = new Map()
+      for (const w of list) {
+        const child = normDiskPath(w.path)
+        let ownerPath
+        let length = -1
+        for (const root of idByPath.keys()) {
+          if (root.length > length && child !== root && child.startsWith(root + '/')) {
+            ownerPath = root
+            length = root.length
           }
-          node = next
         }
-        return node
+        map.set(w.workspaceId, ownerPath !== undefined ? idByPath.get(ownerPath) : undefined)
       }
-      for (const folder of explicitFolders || []) {
-        const segs = splitTitleSegs(normPath(folder))
-        if (segs.length > 0) ensure(segs)
+      return map
+    }
+    function buildTree(items) {
+      const list = items || []
+      const diskParentOf = diskParentMapOf(list)
+      const childrenOf = new Map()
+      for (const w of list) {
+        const parent = diskParentOf.get(w.workspaceId)
+        if (parent === undefined) continue
+        if (!childrenOf.has(parent)) childrenOf.set(parent, [])
+        childrenOf.get(parent).push(w)
       }
-      for (const workspace of items || []) {
-        const segs = splitTitleSegs(workspace.title)
-        const folderPath = segs.slice(0, -1).join('/')
-        const leaf = segs.length > 0 ? segs[segs.length - 1] : (basename(workspace.path) || String(workspace.title || '') || String(workspace.workspaceId || ''))
-        ensure(segs.slice(0, -1)).workspaces.push({
-          workspaceId: workspace.workspaceId,
-          title: String(workspace.title || ''),
-          path: String(workspace.path || ''),
-          sessionIds: Array.isArray(workspace.sessionIds) ? workspace.sessionIds : [],
-          leaf,
-          folderPath,
-        })
+      // NAME layer inside one level: SEGMENT-driven keys (never re-split a
+      // joined path — URL authority segments would shred).
+      const buildLevel = (wsList, idPrefix) => {
+        const root = { path: '', name: '', folders: [], workspaces: [] }
+        const byPath = new Map([['', root]])
+        const ensure = (segs) => {
+          let node = root
+          let key = ''
+          for (const seg of segs) {
+            key = key === '' ? seg : key + '/' + seg
+            let next = byPath.get(key)
+            if (!next) {
+              next = {
+                path: key,
+                name: seg,
+                folders: [],
+                workspaces: [],
+                idPath: (idPrefix !== '' ? idPrefix + '//' : '') + key,
+              }
+              byPath.set(key, next)
+              node.folders.push(next)
+            }
+            node = next
+          }
+          return node
+        }
+        for (const workspace of wsList) {
+          const segs = splitTitleSegs(workspace.title)
+          const folderPath = segs.slice(0, -1).join('/')
+          const leaf = segs.length > 0 ? segs[segs.length - 1] : (basename(workspace.path) || String(workspace.title || '') || String(workspace.workspaceId || ''))
+          const subList = childrenOf.get(workspace.workspaceId)
+          ensure(segs.slice(0, -1)).workspaces.push({
+            workspaceId: workspace.workspaceId,
+            title: String(workspace.title || ''),
+            path: String(workspace.path || ''),
+            sessionIds: Array.isArray(workspace.sessionIds) ? workspace.sessionIds : [],
+            leaf,
+            folderPath,
+            sub: subList ? buildLevel(subList, (idPrefix !== '' ? idPrefix + '//' : '') + workspace.workspaceId) : null,
+          })
+        }
+        const sortRec = (node) => {
+          node.folders.sort((a, b) => a.name.localeCompare(b.name, 'zh'))
+          for (const child of node.folders) sortRec(child)
+        }
+        sortRec(root)
+        return root
       }
-      const sortRec = (node) => {
-        node.folders.sort((a, b) => a.name.localeCompare(b.name, 'zh'))
-        for (const child of node.folders) sortRec(child)
-      }
-      sortRec(root)
-      return root
+      const topLevel = list.filter((w) => diskParentOf.get(w.workspaceId) === undefined)
+      return buildLevel(topLevel, '')
     }
 
-    const countWorkspaces = (node) => (node.kind === 'ws' ? 1 : node.workspaces.length + node.folders.reduce((sum, f) => sum + countWorkspaces(f), 0))
+    const countWorkspaces = (node) => (node.kind === 'ws'
+      ? 1
+      : node.workspaces.reduce((sum, w) => sum + 1 + (w.sub ? countWorkspaces(w.sub) : 0), 0)
+        + node.folders.reduce((sum, f) => sum + countWorkspaces(f), 0))
 
     /**
      * VS Code-style single-child chain compression (preference-controlled):
@@ -3065,7 +2564,6 @@ window.__ModuleLoader__.load({
       '.bw-appearance{display:flex;flex-direction:column;gap:10px}',
       '.bw-appearance-box{margin-top:8px;padding:10px 12px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.22));border-radius:8px;background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.06))}',
       '.bw-hint{font-size:11px;color:var(--dsw-alias-label-quaternary,#8a8a8a);line-height:1.5;white-space:normal;word-break:break-word}',
-      '.bw-path-echo{font-size:11px;color:var(--dsw-alias-label-tertiary,#9a9a9a);word-break:break-all;max-width:380px}',
       '.bw-modal-actions{display:flex;justify-content:flex-end;gap:8px}',
       '.bw-btn{height:28px;padding:0 14px;border-radius:6px;font-size:12.5px;cursor:pointer;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));background:transparent;color:var(--dsw-alias-label-primary,#e6e6e6);font-family:inherit}',
       '.bw-btn:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12))}',
@@ -3098,39 +2596,6 @@ window.__ModuleLoader__.load({
        * list panel uses bg-layer-2 so a transparent/background plugin still
        * reads correctly; nothing may hard-code an opaque background.
        */
-      '.bw-browse-body{min-width:360px;max-width:460px}',
-      '.bw-browse-bar{display:flex;align-items:center;gap:4px}',
-      '.bw-browse-crumbs{display:flex;align-items:center;gap:2px;flex:1;min-width:0;overflow-x:auto}',
-      '.bw-browse-crumb{border:none;background:transparent;color:var(--dsw-alias-label-secondary,#b8b8b8);font:inherit;font-size:12px;padding:2px 5px;border-radius:4px;cursor:pointer;white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis;flex:none}',
-      '.bw-browse-crumb:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12));color:var(--dsw-alias-label-primary,#e6e6e6)}',
-      '.bw-browse-crumb:disabled{opacity:.4;cursor:default}',
-      '.bw-browse-current{color:var(--dsw-alias-label-primary,#e6e6e6);font-size:12px;padding:2px 5px;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '.bw-browse-nav{font-size:13px;line-height:1}',
-      '.bw-browse-edit{flex:none;display:grid;place-items:center;width:24px;height:24px;padding:0;border:none;border-radius:5px;background:transparent;color:var(--dsw-alias-label-tertiary,#9a9a9a);cursor:pointer}',
-      '.bw-browse-edit:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12));color:var(--dsw-alias-label-primary,#e6e6e6)}',
-      '.bw-browse-edit svg{width:14px;height:14px}',
-      '.bw-browse-edit-row{display:flex;gap:6px;align-items:center}',
-      '.bw-browse-list{display:flex;flex-direction:column;gap:1px;height:240px;overflow:auto;padding:4px;box-sizing:border-box;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.22));border-radius:8px;background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.06))}',
-      '.bw-browse-row{display:flex;align-items:center;gap:8px;width:100%;flex:none;text-align:left;border:none;background:transparent;color:var(--dsw-alias-label-primary,#e6e6e6);font:inherit;font-size:12.5px;padding:5px 8px;border-radius:6px;cursor:pointer;user-select:none}',
-      '.bw-browse-row:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12))}',
-      '.bw-browse-row:focus-visible{outline:2px solid var(--dsw-alias-brand-primary,#5b8def);outline-offset:-2px}',
-      '.bw-browse-row svg{width:15px;height:15px;flex:none;color:var(--dsw-alias-label-secondary,#b8b8b8)}',
-      '.bw-browse-row-on{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12));box-shadow:inset 0 0 0 1px var(--dsw-alias-brand-primary,#5b8def)}',
-      '.bw-browse-open{flex:none;width:22px;height:22px;padding:0;border:none;border-radius:5px;background:transparent;color:var(--dsw-alias-label-tertiary,#9a9a9a);font:inherit;font-size:15px;line-height:1;cursor:pointer}',
-      '.bw-browse-open:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.16));color:var(--dsw-alias-label-primary,#e6e6e6)}',
-      '.bw-browse-drives{display:flex;align-items:center;gap:4px;margin-left:auto}',
-      '.bw-browse-drive{min-width:30px;padding:3px 6px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));border-radius:5px;background:transparent;color:var(--dsw-alias-label-secondary,#b8b8b8);font:inherit;font-size:11.5px;cursor:pointer}',
-      '.bw-browse-drive:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12));color:var(--dsw-alias-label-primary,#e6e6e6)}',
-      '.bw-browse-drive-on{border-color:var(--dsw-alias-brand-primary,#5b8def);color:var(--dsw-alias-label-primary,#e6e6e6)}',
-      '.bw-browse-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '.bw-browse-note{font-size:12px;color:var(--dsw-alias-label-tertiary,#9a9a9a);padding:10px 8px;text-align:center}',
-      '.bw-browse-new-row{display:flex;gap:6px;align-items:center}',
-      '.bw-browse-tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap}',
-      '.bw-browse-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px}',
-      '.bw-browse-tool{border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));background:transparent;color:var(--dsw-alias-label-secondary,#b8b8b8);font:inherit;font-size:12px;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap}',
-      '.bw-browse-tool:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12));color:var(--dsw-alias-label-primary,#e6e6e6)}',
-      '.bw-browse-tool:disabled{opacity:.45;cursor:default}',
-      '.bw-browse-tool-on{border-color:var(--dsw-alias-brand-primary,#5b8def);color:var(--dsw-alias-label-primary,#e6e6e6)}',
     ].join('')
 
     const StyleNode = () => E('style', null, CSS_TEXT)
@@ -3138,7 +2603,7 @@ window.__ModuleLoader__.load({
     /* ========================== view store =========================== */
 
     const createViewStore = () => storeKit.defineStore({
-      init: () => ({ folders: [], expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true }, styling: {} }),
+      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true }, styling: {} }),
       // NOTE: hydration REPLACES the state with the persisted whole value —
       // init defaults never merge. Every action must tolerate a missing key
       // (states persisted by older plugin versions lack sessionGroups), and
@@ -3151,7 +2616,6 @@ window.__ModuleLoader__.load({
         importHost: (d, host) => {
           if (!host || typeof host !== 'object') return
           if (host.styling && typeof host.styling === 'object') d.styling = host.styling
-          if (Array.isArray(host.folders)) d.folders = host.folders.slice()
           if (!d.prefs) d.prefs = {}
           if (host.compactChains !== undefined) d.prefs.compactChains = host.compactChains !== false
           if (host.statusPulse !== undefined) d.prefs.statusPulse = host.statusPulse !== false
@@ -3162,10 +2626,6 @@ window.__ModuleLoader__.load({
         mergeHost: (d, host) => {
           if (!host || typeof host !== 'object') return
           if (host.styling && typeof host.styling === 'object') d.styling = { ...(d.styling || {}), ...host.styling }
-          if (Array.isArray(host.folders)) {
-            const merged = new Set([...(Array.isArray(d.folders) ? d.folders : []), ...host.folders])
-            d.folders = Array.from(merged)
-          }
           if (!d.prefs) d.prefs = {}
           if (host.compactChains !== undefined) d.prefs.compactChains = host.compactChains !== false
           if (host.statusPulse !== undefined) d.prefs.statusPulse = host.statusPulse !== false
@@ -3185,22 +2645,6 @@ window.__ModuleLoader__.load({
           if (!d.sessionOrder || typeof d.sessionOrder !== 'object') d.sessionOrder = {}
           if (!Array.isArray(order) || order.length === 0) delete d.sessionOrder[workspaceId]
           else d.sessionOrder[workspaceId] = order.slice()
-        },
-        addFolder: (d, path) => {
-          if (!Array.isArray(d.folders)) d.folders = []
-          const p = normPath(path)
-          if (p !== '' && !d.folders.includes(p)) d.folders.push(p)
-        },
-        removeFolder: (d, path) => {
-          if (!Array.isArray(d.folders)) d.folders = []
-          d.folders = d.folders.filter(f => f !== path)
-        },
-        renameFolder: (d, oldPath, newPath) => {
-          if (!Array.isArray(d.folders)) d.folders = []
-          const oo = oldPath + '/'
-          const nn = newPath + '/'
-          const next = d.folders.map(f => (f === oldPath ? newPath : (f.startsWith(oo) ? nn + f.slice(oo.length) : f)))
-          d.folders = Array.from(new Set(next))
         },
       },
     })
@@ -3275,7 +2719,7 @@ window.__ModuleLoader__.load({
 
     /* ======================= host settings sync ======================= */
 
-    // Cross-device preferences: styling / explicit folders / the two toggles
+    // Cross-device preferences: styling / the two toggles
     // live in the HOST settings store (~/.dsh/settings.yaml through the
     // better-workspace namespace). Web and the desktop app share one DSH_HOME,
     // so a style set in the browser follows the user into the Electron app and
@@ -3332,7 +2776,7 @@ window.__ModuleLoader__.load({
     // store), then the durable host write computed from the CURRENT rendered
     // values — after a manual pull the local store already holds the host
     // copy, so host-only entries written on the other surface survive.
-    const makeSharedWrites = (actions, stylingMap, foldersList) => ({
+    const makeSharedWrites = (actions, stylingMap) => ({
       setStyling: (key, value) => {
         if (actions && typeof actions.setStyling === 'function') actions.setStyling(key, value)
         const next = { ...stylingMap }
@@ -3340,88 +2784,11 @@ window.__ModuleLoader__.load({
         else next[key] = value
         scopeSet('styling', next)
       },
-      addFolder: (path) => {
-        if (actions && typeof actions.addFolder === 'function') actions.addFolder(path)
-        const p = normPath(path)
-        const base = Array.isArray(foldersList) ? foldersList : []
-        if (p !== '' && !base.includes(p)) scopeSet('folders', [...base, p])
-      },
-      removeFolder: (path) => {
-        if (actions && typeof actions.removeFolder === 'function') actions.removeFolder(path)
-        const base = Array.isArray(foldersList) ? foldersList : []
-        scopeSet('folders', base.filter(f => f !== path))
-      },
-      renameFolder: (oldPath, newPath) => {
-        if (actions && typeof actions.renameFolder === 'function') actions.renameFolder(oldPath, newPath)
-        const base = Array.isArray(foldersList) ? foldersList : []
-        const oo = oldPath + '/'
-        const nn = newPath + '/'
-        scopeSet('folders', Array.from(new Set(base.map(f => (f === oldPath ? newPath : (f.startsWith(oo) ? nn + f.slice(oo.length) : f))))))
-      },
       setPref: (key, value) => {
         if (actions && typeof actions.setPref === 'function') actions.setPref(key, value)
         scopeSet(key, value)
       },
     })
-
-    /* ==================== directory-picker capability ================== */
-
-    // The host composes exactly ONE directory-picking backend
-    // (@deepseek-ai/dsh-host-directory-picker-auto): a loopback-only webserver
-    // bind on a display-bearing host gets `native` — one OS chooser on the
-    // HOST's own screen — while every other bind (all-interfaces/LAN, SSH,
-    // headless) gets `browse`, whose wire verbs are list/createDirectory ONLY
-    // and whose `pick` is refused BY DESIGN with `directory-picker/unavailable`
-    // ("... needs the native capability; the composed picker serves browse").
-    // A flow that hard-assumed the OS chooser therefore dies on every LAN bind
-    // and no workspace can be added at all. Probe the composed backend once per
-    // page and keep BOTH interactions: the OS chooser, and an in-app browser
-    // driven by the browse primitives (see DirectoryBrowseDialog).
-    const pickerState = { kind: 'unknown', probe: null, api: null }
-    /**
-     * True for the refusal a Host serving the OTHER capability throws: the wire
-     * code when the caller still carries it, the Host's fixed sentence
-     * otherwise (uiWorkspace.pickDirectory wraps the RPC failure in a plain
-     * Error, so the code is gone by the time the flow sees it).
-     */
-    const pickerRefusal = (error) => {
-      if (error && typeof error === 'object' && error.rpcError
-        && error.rpcError.code === 'directory-picker/unavailable') return true
-      const message = messageOf(error)
-      return message.indexOf('needs the native capability') !== -1
-        || message.indexOf('directory-picker/unavailable') !== -1
-    }
-    /**
-     * Resolve which backend this page's Host composes. `list` succeeds exactly
-     * on `browse` and is refused with the capability code on `native`, so one
-     * call answers both worlds without ever opening a chooser or creating a
-     * directory. An unclassified failure (a carrier still connecting at boot)
-     * is NOT cached: the next open re-probes, and the flow falls back to trying
-     * the chooser itself.
-     */
-    const pickerCapabilityNow = () => {
-      if (pickerState.kind !== 'unknown') return Promise.resolve(pickerState.kind)
-      if (pickerState.probe !== null) return pickerState.probe
-      const api = pickerState.api
-      if (!api || typeof api.listDirectory !== 'function') return Promise.resolve('unknown')
-      const probe = Promise.resolve()
-        .then(() => api.listDirectory(undefined, undefined))
-        .then(
-          () => 'browse',
-          (error) => (pickerRefusal(error) ? 'native' : 'unknown'),
-        )
-      pickerState.probe = probe.then((kind) => {
-        if (kind === 'unknown') { pickerState.probe = null; return kind }
-        pickerState.kind = kind
-        return kind
-      })
-      return pickerState.probe
-    }
-    /** Commit a browse verdict the flow discovered the hard way (a refused pick). */
-    const markPickerBrowse = () => {
-      pickerState.kind = 'browse'
-      pickerState.probe = Promise.resolve('browse')
-    }
 
     /* ============================ flow dialog ========================= */
 
@@ -3495,482 +2862,6 @@ window.__ModuleLoader__.load({
       render() {
         return this.state.failed ? null : this.props.children
       }
-    }
-
-    /**
-     * The in-app directory browser: the interaction a `browse`-composed Host can
-     * actually serve. It appears when the probe (or a refused pick) proves the
-     * OS chooser is not this Host's backend — a LAN/all-interfaces bind, an SSH
-     * launch, a headless host — where `pick` is refused by design and
-     * list/createDirectory are the only wire verbs. One level at a time: a
-     * clickable Home-rooted breadcrumb chain, an editable path, an inline
-     * new-folder row and the hidden-entry toggle; the listed level (or any
-     * ancestor crumb) is the pick. Browse failures stay inside the dialog — the
-     * owner's error surface belongs to the pick/create conversation, and a
-     * denied listing must never close the flow.
-     */
-    /**
-     * Page-lifetime cache of the Windows drive letters this Host actually
-     * serves. The browse API can only list a path, so the first open probes the
-     * usual letters once (six cheap listings, a missing drive fails silently)
-     * and every later open renders the chips straight from here.
-     */
-    const browseDrives = { probed: false, probing: false, list: [] }
-
-    /**
-     * Run the one wire verb that actually puts a folder on disk and hand back
-     * the created path. This is deliberately a module-level seam the smoke suite
-     * drives for real: v0.11.4 folded the call into the success handler and
-     * dropped it, so the form closed on a resolved `undefined` — no request, no
-     * error, no folder. A string-level assertion cannot see that; calling it can.
-     */
-    const createFolderIn = (createDirectory, path, name) => Promise.resolve()
-      .then(() => createDirectory(path, name))
-
-    function DirectoryBrowseDialog(props) {
-      const { open, busy, listDirectory, createDirectory, onPick, onClose, t } = props
-      const [listing, setListing] = React.useState(null)
-      const [loading, setLoading] = React.useState(false)
-      const [error, setError] = React.useState('')
-      const [showHidden, setShowHidden] = React.useState(false)
-      const [editing, setEditing] = React.useState(false)
-      const [draft, setDraft] = React.useState('')
-      const [creating, setCreating] = React.useState(false)
-      const [createName, setCreateName] = React.useState('')
-      const [createBusy, setCreateBusy] = React.useState(false)
-      const [createError, setCreateError] = React.useState('')
-      const [selected, setSelected] = React.useState('')
-      const [drives, setDrives] = React.useState(browseDrives.list)
-      // Guards a superseded scan: a slow level must not overwrite a newer one.
-      const seqRef = React.useRef(0)
-      const crumbsRef = React.useRef(null)
-
-      const go = (path, keepSelected) => {
-        const seq = seqRef.current + 1
-        seqRef.current = seq
-        setLoading(true)
-        setError('')
-        if (keepSelected !== true) setSelected('')
-        Promise.resolve()
-          .then(() => listDirectory(path, undefined))
-          .then((next) => {
-            if (seqRef.current !== seq) return
-            setListing(next || null)
-            setLoading(false)
-          })
-          .catch((reason) => {
-            if (seqRef.current !== seq) return
-            setLoading(false)
-            setError(messageOf(reason))
-          })
-      }
-
-      React.useEffect(() => {
-        if (!open) return undefined
-        seqRef.current += 1
-        setListing(null)
-        setError('')
-        setEditing(false)
-        setCreating(false)
-        setCreateName('')
-        setCreateBusy(false)
-        setCreateError('')
-        setShowHidden(false)
-        setSelected('')
-        go(undefined)
-        return () => { seqRef.current += 1 }
-      }, [open])
-
-      const currentPath = listing && typeof listing.path === 'string' ? listing.path : ''
-      const homePath = listing && typeof listing.home === 'string' ? listing.home : ''
-      const windowsHost = homePath.indexOf('\\') !== -1
-      const hasListing = listing !== null
-
-      // Windows drives are separate filesystem roots and the browse API can only
-      // list a path, so probe the usual letters once per page (cached above) and
-      // offer the ones that answered. A drive nobody probed is still reachable
-      // through the path editor, which is the only general answer anyway.
-      React.useEffect(() => {
-        if (!open || !hasListing || !windowsHost) return undefined
-        if (browseDrives.probed || browseDrives.probing) {
-          if (browseDrives.list.length > 0) setDrives(browseDrives.list)
-          return undefined
-        }
-        browseDrives.probing = true
-        let alive = true
-        const letters = ['C:', 'D:', 'E:', 'F:', 'G:', 'H:']
-        Promise.all(letters.map((letter) => Promise.resolve()
-          .then(() => listDirectory(letter + '\\', undefined))
-          .then(() => letter, () => null)))
-          .then((found) => {
-            browseDrives.list = found.filter(Boolean)
-            browseDrives.probed = true
-            browseDrives.probing = false
-            if (alive) setDrives(browseDrives.list)
-          }, () => { browseDrives.probing = false })
-        return () => { alive = false }
-      }, [open, hasListing, windowsHost])
-
-      // A deep path must show its TAIL — that is where you are — so the chain
-      // keeps its right edge in view instead of cutting the last crumb off.
-      React.useEffect(() => {
-        const node = crumbsRef.current
-        if (node) node.scrollLeft = node.scrollWidth
-      }, [listing])
-
-      if (!open) return null
-
-      // The whole ancestry from the filesystem ROOT: rooting the chain at Home
-      // (the official dialog's choice) hides where the listed level actually is,
-      // and the drive crumb answers "which disk am I on" at a glance.
-      const crumbs = listing && Array.isArray(listing.crumbs) ? listing.crumbs : []
-      const parentPath = crumbs.length > 1 ? crumbs[crumbs.length - 2].path : ''
-      const entries = (listing && Array.isArray(listing.entries) ? listing.entries : [])
-        .filter((entry) => showHidden || !entry.hidden)
-      const selectedEntry = entries.find((entry) => entry.path === selected) || null
-      const targetPath = selectedEntry ? selectedEntry.path : currentPath
-
-      const submitDraft = () => {
-        const path = draft.trim()
-        setEditing(false)
-        if (path === '') { go(undefined); return }
-        go(path)
-      }
-      const submitCreate = () => {
-        const name = createName.trim()
-        if (name === '' || createBusy || currentPath === '') return
-        setCreateBusy(true)
-        setCreateError('')
-        createFolderIn(createDirectory, currentPath, name)
-          .then((created) => {
-            setCreateBusy(false)
-            setCreating(false)
-            setCreateName('')
-            // Land on the folder just made: it is almost always the one the
-            // operator wants to adopt next.
-            if (typeof created === 'string' && created !== '') setSelected(created)
-            go(currentPath, true)
-          })
-          .catch((reason) => {
-            setCreateBusy(false)
-            setCreateError(messageOf(reason))
-          })
-      }
-
-      const head = editing
-        ? E('div', { className: 'bw-browse-edit-row' },
-          E('input', {
-            className: 'bw-input',
-            value: draft,
-            autoFocus: true,
-            spellCheck: false,
-            placeholder: currentPath,
-            onChange: (e) => setDraft(e.target.value),
-            onKeyDown: (e) => {
-              if (e.key === 'Enter') submitDraft()
-              else if (e.key === 'Escape') setEditing(false)
-            },
-          }),
-          E(BTN, { variant: 'outline', onClick: () => setEditing(false) }, t('cancel')),
-        )
-        : E('div', { className: 'bw-browse-bar' },
-          E('button', {
-            type: 'button',
-            className: 'bw-browse-crumb bw-browse-nav',
-            title: t('browse.up'),
-            'aria-label': t('browse.up'),
-            disabled: parentPath === '',
-            onClick: () => { if (parentPath !== '') go(parentPath) },
-          }, '↑'),
-          E('div', { className: 'bw-browse-crumbs', ref: crumbsRef },
-            crumbs.map((crumb, index) => (index === crumbs.length - 1
-              ? E('span', { key: crumb.path, className: 'bw-browse-crumb bw-browse-current', title: crumb.path }, crumb.name)
-              : E('button', {
-                key: crumb.path,
-                type: 'button',
-                className: 'bw-browse-crumb',
-                title: crumb.path,
-                onClick: () => go(crumb.path),
-              }, crumb.name))),
-          ),
-          E('button', {
-            type: 'button',
-            className: 'bw-browse-edit',
-            title: t('browse.editPath'),
-            'aria-label': t('browse.editPath'),
-            onClick: () => { setDraft(currentPath); setEditing(true) },
-          }, icon('IconEditOutline16')),
-        )
-
-      // One click SELECTS a row (the footer button then adopts it — no need to
-      // step inside just to pick a folder), a double click or the row's chevron
-      // enters it. Touch needs the chevron: a double tap is not a gesture.
-      const rows = entries.map((entry) => E('div', {
-        key: entry.path,
-        className: cls('bw-browse-row', selected === entry.path && 'bw-browse-row-on'),
-        title: entry.path,
-        role: 'button',
-        tabIndex: 0,
-        onClick: () => setSelected((current) => (current === entry.path ? '' : entry.path)),
-        onDoubleClick: () => go(entry.path),
-        onKeyDown: (event) => {
-          if (event.key === 'Enter') go(entry.path)
-          else if (event.key === ' ') { event.preventDefault(); setSelected((current) => (current === entry.path ? '' : entry.path)) }
-        },
-      },
-        icon('IconFolderClose16'),
-        E('span', { className: 'bw-browse-name' }, entry.name),
-        E('button', {
-          type: 'button',
-          className: 'bw-browse-open',
-          title: t('browse.enter'),
-          'aria-label': t('browse.enter'),
-          onClick: (event) => { event.stopPropagation(); go(entry.path) },
-        }, '›'),
-      ))
-
-      const body = loading
-        ? E('div', { className: 'bw-browse-note' }, t('browse.loading'))
-        : rows.length > 0
-          ? rows
-          : E('div', { className: 'bw-browse-note' }, t('browse.empty'))
-
-      const newRow = creating
-        ? E('div', { className: 'bw-browse-new-row' },
-          E('input', {
-            className: 'bw-input',
-            value: createName,
-            autoFocus: true,
-            spellCheck: false,
-            placeholder: t('browse.folderName'),
-            disabled: createBusy,
-            onChange: (e) => setCreateName(e.target.value),
-            onKeyDown: (e) => {
-              if (e.key === 'Enter') submitCreate()
-              else if (e.key === 'Escape') { setCreating(false); setCreateError('') }
-            },
-          }),
-          E(BTN, {
-            variant: 'outline',
-            disabled: createBusy,
-            onClick: () => { setCreating(false); setCreateError('') },
-          }, t('cancel')),
-          E(BTN, { variant: 'primary', onClick: submitCreate, disabled: createBusy },
-            createBusy ? t('flow.creating') : t('create')),
-        )
-        : null
-
-      // The dialog is deliberately narrower than the official browser, so the
-      // two browsing tools sit on their own row above the list instead of
-      // sharing the footer with the commit pair (they used to wrap there).
-      const tools = E('div', { className: 'bw-browse-tools' },
-        E('button', {
-          type: 'button',
-          className: cls('bw-browse-tool', currentPath !== '' && currentPath === homePath && 'bw-browse-tool-on'),
-          disabled: homePath === '' || currentPath === homePath,
-          onClick: () => { if (homePath !== '') go(homePath) },
-        }, t('browse.home')),
-        E('button', {
-          type: 'button',
-          className: cls('bw-browse-tool', showHidden && 'bw-browse-tool-on'),
-          'aria-pressed': showHidden ? 'true' : 'false',
-          onClick: () => setShowHidden((value) => !value),
-        }, t('browse.showHidden')),
-        E('button', {
-          type: 'button',
-          className: 'bw-browse-tool',
-          disabled: creating || currentPath === '',
-          onClick: () => { setCreating(true); setCreateName(''); setCreateError('') },
-        }, t('browse.newFolder')),
-        drives.length > 1
-          ? E('div', {
-            className: 'bw-browse-drives',
-            title: t('browse.drives'),
-            role: 'group',
-            'aria-label': t('browse.drives'),
-          }, drives.map((drive) => E('button', {
-            key: drive,
-            type: 'button',
-            className: cls('bw-browse-drive', currentPath.slice(0, 2).toUpperCase() === drive && 'bw-browse-drive-on'),
-            title: drive + '\\',
-            onClick: () => go(drive + '\\'),
-          }, drive)))
-          : null,
-      )
-
-      const footer = E('div', { className: 'bw-browse-actions' },
-        E(BTN, { variant: 'outline', onClick: onClose, disabled: busy === true }, t('cancel')),
-        E(BTN, {
-          variant: 'primary',
-          disabled: busy === true || targetPath === '',
-          onClick: () => { if (targetPath !== '') onPick(targetPath) },
-        }, selectedEntry !== null ? t('browse.selectNamed', { name: selectedEntry.name }) : t('browse.select')),
-      )
-
-      return E(ui.Modal, {
-        open: true,
-        onClose: () => { if (busy !== true) onClose() },
-        closeLabel: t('close'),
-        title: t('browse.title'),
-        footer,
-      },
-        E('div', { className: 'bw-modal-body bw-browse-body' },
-          head,
-          createError !== '' ? E('div', { className: 'bw-error-text', role: 'alert' }, createError) : null,
-          tools,
-          newRow,
-          E('div', { className: 'bw-browse-list', role: 'list' }, body),
-          listing && listing.truncated === true ? E('div', { className: 'bw-hint' }, t('browse.truncated')) : null,
-          error !== '' ? E('div', { className: 'bw-error-text', role: 'alert' }, error) : null,
-        ),
-        StyleNode())
-    }
-
-    /**
-     * The add-workspace picking interaction: whichever directory interaction the
-     * Host composes (OS chooser or in-app browser), then a small parent-group
-     * popup, then create + rename with the chosen prefix. Works as a
-     * directoryFlow occupant (owner conversation props) and as the browser's
-     * directly composed flow (same props, owner state lives above).
-     */
-    function BetterFlow(props) {
-      const { open, busy, onPicked, onCancel, onError, createWorkspace, renameWorkspace, pickDirectory, listDirectory, createDirectory, useWorkspaces, useStore, t } = props
-      const initialParent = props.initialParent || ''
-      const actions = props.actions
-      const [phase, setPhase] = React.useState('idle') // idle | picking | browsing | picked | submitting
-      const [pickedPath, setPickedPath] = React.useState('')
-      const [parentInput, setParentInput] = React.useState('')
-      // All hooks run before any early return: the flow unmounts its dialog
-      // while closed, but its hook sequence must stay stable.
-      const snapshotItems = typeof useWorkspaces === 'function' ? useWorkspaces(s => s.items) : []
-      const storeFolders = typeof useStore === 'function' ? (useStore(s => s.folders) || []) : []
-      const storeStyling = typeof useStore === 'function' ? (useStore(s => s.styling) || {}) : {}
-      const shared = makeSharedWrites(actions, storeStyling, storeFolders)
-
-      React.useEffect(() => {
-        if (!open) {
-          setPhase('idle')
-          setPickedPath('')
-          setParentInput('')
-          return
-        }
-        let alive = true
-        setPhase('picking')
-        // Which backend this Host composes decides the whole interaction: a
-        // `browse` Host renders the in-app browser directly (its `pick` is
-        // refused by design, so trying the chooser first would only surface an
-        // error), a `native` Host opens the OS chooser, and an unresolved
-        // verdict still tries the chooser so a silent probe never changes the
-        // behavior this plugin had before the probe existed.
-        pickerCapabilityNow()
-          .then((kind) => {
-            if (!alive) return undefined
-            if (kind === 'browse') { setPhase('browsing'); return undefined }
-            return Promise.resolve()
-              .then(() => pickDirectory())
-              .then((path) => {
-                if (!alive) return
-                if (!path) { onCancel(); return }
-                setPickedPath(String(path))
-                setParentInput(initialParent)
-                setPhase('picked')
-              })
-          })
-          .catch((reason) => {
-            if (!alive) return
-            // A refusal is a backend fact, not a failure: this Host serves the
-            // browse verbs, so switch interactions instead of erroring out.
-            if (pickerRefusal(reason)) { markPickerBrowse(); setPhase('browsing'); return }
-            setPhase('idle')
-            onError(messageOf(reason))
-          })
-        return () => { alive = false }
-      }, [open])
-
-      if (!open) return null
-      if (phase === 'browsing') {
-        return E(DirectoryBrowseDialog, {
-          open: true,
-          busy: busy === true,
-          listDirectory,
-          createDirectory,
-          onPick: (path) => {
-            setPickedPath(String(path))
-            setParentInput(initialParent)
-            setPhase('picked')
-          },
-          onClose: onCancel,
-          t,
-        })
-      }
-      if (phase !== 'picked' && phase !== 'submitting') return null
-
-      const folderOptions = (() => {
-        const set = new Set(storeFolders)
-        for (const w of snapshotItems || []) {
-          const segs = splitTitleSegs(w.title)
-          for (let i = 1; i < segs.length; i++) set.add(segs.slice(0, i).join('/'))
-        }
-        return Array.from(set).sort((a, b) => a.localeCompare(b, 'zh'))
-      })()
-
-      const confirm = () => {
-        if (phase === 'submitting') return
-        const prefix = normPath(parentInput)
-        const base = basename(pickedPath)
-        const fullTitle = prefix !== '' ? prefix + '/' + base : base
-        setPhase('submitting')
-        Promise.resolve()
-          .then(() => createWorkspace({ path: pickedPath }))
-          .then(async (workspace) => {
-            try {
-              await renameWorkspace(workspace.workspaceId, fullTitle)
-            } catch (renameError) {
-              onError(messageOf(renameError))
-              onCancel()
-              return
-            }
-            if (prefix !== '') shared.addFolder(prefix)
-            onCancel()
-          })
-          .catch((reason) => {
-            onError(messageOf(reason))
-            onCancel()
-          })
-      }
-
-      const submitting = phase === 'submitting' || busy === true
-      const datalistId = 'bw-folder-options'
-      const body = E('div', { className: 'bw-modal-body' },
-        E('div', { className: 'bw-field' },
-          t('flow.picked'),
-          E('div', { className: 'bw-path-echo' }, pickedPath),
-        ),
-        E('div', { className: 'bw-field' },
-          t('flow.parent'),
-          E('div', { className: 'bw-dialog-input-row' },
-            E('input', {
-              className: 'bw-input',
-              list: datalistId,
-              value: parentInput,
-              autoFocus: true,
-              placeholder: 'web/frontend',
-              disabled: submitting,
-              onChange: (e) => setParentInput(e.target.value),
-              onKeyDown: (e) => { if (e.key === 'Enter') confirm() },
-            }),
-            E('datalist', { id: datalistId },
-              folderOptions.map((option) => E('option', { key: option, value: option })),
-            ),
-          ),
-          E('div', { className: 'bw-hint' }, t('flow.parentHint')),
-        ),
-      )
-      const footer = E('div', { className: 'bw-modal-actions' },
-        E(BTN, { variant: 'outline', onClick: onCancel, disabled: submitting }, t('cancel')),
-        E(BTN, { variant: 'primary', onClick: confirm, disabled: submitting }, submitting ? t('flow.creating') : t('create')),
-      )
-      return E(ui.Modal, { open: true, onClose: () => { if (!submitting) onCancel() }, closeLabel: t('close'), title: t('flow.title'), footer }, body, StyleNode())
     }
 
     /* ============================== rows ============================== */
@@ -4572,7 +3463,6 @@ window.__ModuleLoader__.load({
     function BetterWorkspaceSettings({ useStore, actions, t }) {
       const prefs = useStore ? (useStore(s => s.prefs) || {}) : {}
       const localStyling = useStore ? (useStore(s => s.styling) || {}) : {}
-      const localFolders = useStore ? (useStore(s => s.folders) || []) : []
       const compactChains = prefs.compactChains !== false
       const statusPulse = prefs.statusPulse !== false
       // Default appearance: the base every row inherits unless it carries its
@@ -4598,9 +3488,7 @@ window.__ModuleLoader__.load({
         setSyncMsg(t('sync.done'))
       }
       const onPush = () => {
-        const folders = Array.isArray(localFolders) ? localFolders.slice() : []
         scopeSet('styling', localStyling)
-        scopeSet('folders', folders)
         scopeSet('compactChains', prefs.compactChains !== false)
         scopeSet('statusPulse', prefs.statusPulse !== false)
         scopeSet('appearance', appearance)
@@ -4675,9 +3563,27 @@ window.__ModuleLoader__.load({
 
     /* --------- settings → plug-ins card (accordion like official cards) --------- */
 
-    function BetterWorkspacePluginCard({ useStore, actions, t }) {
+    function BetterWorkspacePluginCard(props) {
+      const { useStore, actions, t } = props
+      // The bundle page (plugins.bundle.config, dsh 0.1.6-alpha.2+) renders
+      // this card inline with view: 'page' — no accordion chrome there, the
+      // settings body sits directly under a one-line title.
+      const pageView = props.view === 'page'
       const [open, setOpen] = React.useState(false)
       const Chevron = ui.IconChevronDownOutline14
+      if (pageView) {
+        return E('div', { className: 'bw-plugin-card' },
+          E('div', { className: 'bw-plugin-head' },
+            E('span', { className: 'bw-plugin-headtext' },
+              E('span', { className: 'bw-plugin-name' }, t('settings.title')),
+              E('span', { className: 'bw-plugin-desc' }, t('settings.desc')),
+            ),
+          ),
+          E('div', { className: 'bw-plugin-body' },
+            E(BetterWorkspaceSettings, { useStore, actions, t }),
+          ),
+        )
+      }
       return E('li', { className: cls('bw-plugin-card', open && 'bw-plugin-card-open') },
         E('button', {
           type: 'button',
@@ -4706,8 +3612,9 @@ window.__ModuleLoader__.load({
         useSessions, useSessionPendingInteraction, useWorkspaces,
         useStore, actions,
         startSession, open, renameSession, forkSession, renameWorkspace, deleteWorkspace,
-        archiveSession, createWorkspace, pickDirectory, listDirectory, createDirectory,
+        archiveSession, createWorkspace,
         insertWorkspaceBefore, insertSessionBefore,
+        useDirectoryFlow, renderSlot,
         t,
       } = props
 
@@ -4721,7 +3628,6 @@ window.__ModuleLoader__.load({
       const archivedSessionIds = useWorkspaces(s => s.archivedSessionIds) || []
       const list = useSessions(s => s)
       const pending = useSessionPendingInteraction ? useSessionPendingInteraction(s => s) : null
-      const storeFolders = useStore ? (useStore(s => s.folders) || []) : []
       const expandedMap = useStore ? (useStore(s => s.expanded) || {}) : {}
       const sessionsExpandedMap = useStore ? (useStore(s => s.sessionsExpanded) || {}) : {}
       const sessionGroupsMap = useStore ? (useStore(s => s.sessionGroups) || {}) : {}
@@ -4732,7 +3638,7 @@ window.__ModuleLoader__.load({
       // store (immediate echo + scope-less fallback) AND the host settings
       // store (durable cross-device copy for the manual pull on the other
       // surface). Computed from the CURRENT rendered values.
-      const shared = makeSharedWrites(actions, stylingMap, storeFolders)
+      const shared = makeSharedWrites(actions, stylingMap)
       const compactChains = prefsMap.compactChains !== false
       const statusPulse = prefsMap.statusPulse !== false
       const archivedSet = React.useMemo(() => new Set(archivedSessionIds), [archivedSessionIds])
@@ -4805,7 +3711,15 @@ window.__ModuleLoader__.load({
       const [query, setQuery] = React.useState('')
       const [searchOpen, setSearchOpen] = React.useState(false)
       const [flowOpen, setFlowOpen] = React.useState(false)
-      const [flowParent, setFlowParent] = React.useState('') // parent path prefill for the add-workspace flow (context menu entry)
+      const [flowBusy, setFlowBusy] = React.useState(false) // createWorkspace in flight after a pick
+      // Occupancy of this surface's directory-flow hole (the official
+      // composed picker fills the child hole our registration declares):
+      // gates the add affordance exactly like the shipped browser, and an
+      // occupant that unloads mid-interaction withdraws an open flow.
+      const flowAvailable = typeof useDirectoryFlow === 'function' ? useDirectoryFlow(occupied => occupied) : false
+      React.useEffect(() => {
+        if (flowOpen && !flowAvailable) setFlowOpen(false)
+      }, [flowOpen, flowAvailable])
       const [dialog, setDialog] = React.useState(null) // { kind, ... }
       const [ctx, setCtx] = React.useState(null) // context menu { kind, payload, x, y }
       const [customize, setCustomize] = React.useState(null) // { kind, entryKey, name }
@@ -4975,10 +3889,12 @@ window.__ModuleLoader__.load({
       // their drop targets live inside workspace rows, which compression merges.
       const draggingWorkspace = drag !== null && drag.kind === 'workspace'
       const tree = React.useMemo(() => {
-        const built = buildTree(items, storeFolders)
+        const built = buildTree(items)
         if (!compactChains || draggingWorkspace) return built
         return { ...built, folders: built.folders.map((f) => materializeChain(compressTree(f))), workspaces: built.workspaces }
-      }, [items, storeFolders, compactChains, draggingWorkspace])
+      }, [items, compactChains, draggingWorkspace])
+      // Disk-layer ancestry for drag semantics (same derivation as buildTree).
+      const diskParentMap = React.useMemo(() => diskParentMapOf(items), [items])
 
       /** Browser-local flat session order for one workspace (fallback channel). */
       const sessionOrderOf = (workspaceId) => {
@@ -5022,34 +3938,31 @@ window.__ModuleLoader__.load({
         return out
       }
 
-      const searchAgent = (agent) => {
-        // Returns a pruned copy of the tree node, or null when nothing matches.
-        if (!normalizedQuery) return agent
-        if (agent.kind === 'ws') {
-          const ws = agent.workspace
-          const sessions = sessionsOf(ws)
-          const wsHit = ws.leaf.toLowerCase().includes(normalizedQuery) || ws.title.toLowerCase().includes(normalizedQuery)
-          if (wsHit || sessions.some(s => s.title.toLowerCase().includes(normalizedQuery))) {
-            return { ...agent, node: agent, folders: [], workspaces: [ws] }
+      // Search flattens BOTH layers depth-first: every workspace (top level,
+      // name groups, disk-nested levels alike) becomes an independent
+      // candidate row; matches render at the top level. The name-group
+      // structure is a display aid, not a search dimension.
+      const searchCandidates = []
+      {
+        const collect = (node) => {
+          for (const folder of node.folders) collect(folder)
+          for (const w of node.workspaces) {
+            searchCandidates.push(w)
+            if (w.sub) collect(w.sub)
           }
-          return null
         }
-        const folders = []
-        for (const folder of agent.folders) {
-          const hit = searchAgent(folder)
-          if (hit) folders.push(hit)
-        }
-        const workspaces = []
-        for (const workspace of agent.workspaces) {
-          const sessions = sessionsOf(workspace)
-          const wsHit = workspace.leaf.toLowerCase().includes(normalizedQuery) || workspace.title.toLowerCase().includes(normalizedQuery)
-          const matchedSessions = wsHit ? sessions : sessions.filter(s => s.title.toLowerCase().includes(normalizedQuery))
-          if (wsHit || matchedSessions.length > 0) workspaces.push({ workspace, matchedSessions })
-        }
-        if (folders.length === 0 && workspaces.length === 0) return null
-        return { node: agent, folders, workspaces }
+        collect(tree)
       }
-      const searched = normalizedQuery ? searchAgent(tree) : null
+      const searched = []
+      if (normalizedQuery) {
+        for (const w of searchCandidates) {
+          const sessions = sessionsOf(w)
+          const wsHit = w.leaf.toLowerCase().includes(normalizedQuery) || w.title.toLowerCase().includes(normalizedQuery)
+          if (wsHit || sessions.some((s) => s.title.toLowerCase().includes(normalizedQuery))) {
+            searched.push({ workspace: w })
+          }
+        }
+      }
       const searching = normalizedQuery !== ''
 
       /* --------------------- status breathing relay -------------------- */
@@ -5067,16 +3980,26 @@ window.__ModuleLoader__.load({
         }
         return best
       }
-      // A COLLAPSED workspace row relays its whole session tree; an open row
-      // shows the real dots (deeper collapsed groups relay on their own rows).
+      // A COLLAPSED workspace row relays everything it hides — its session
+      // tree AND its disk-nested child levels.
+      const wsAllPulseOf = (workspace) => {
+        if (!statusPulse || searching) return null
+        let best = nodePulseOf(buildSessionTree(sessionsOf(workspace)))
+        if (workspace.sub) {
+          for (const folder of workspace.sub.folders) {
+            const s = folderPulseOf(folder)
+            if (pulseRank(s) > pulseRank(best)) best = s
+          }
+          for (const w of workspace.sub.workspaces) {
+            const s = wsAllPulseOf(w)
+            if (pulseRank(s) > pulseRank(best)) best = s
+          }
+        }
+        return best
+      }
       const wsPulseOf = (workspace) => (!statusPulse || searching || sessionsOpenOf(workspace.workspaceId))
         ? null
-        : nodePulseOf(buildSessionTree(sessionsOf(workspace)))
-      // A collapsed FOLDER hides everything below — including open workspaces —
-      // so its aggregation ignores inner expansion states entirely.
-      const wsAllPulseOf = (workspace) => (!statusPulse || searching)
-        ? null
-        : nodePulseOf(buildSessionTree(sessionsOf(workspace)))
+        : wsAllPulseOf(workspace)
       const folderPulseOf = (node) => {
         if (node.kind === 'ws') return wsAllPulseOf(node.workspace)
         let best = null
@@ -5163,7 +4086,7 @@ window.__ModuleLoader__.load({
           if (wsDragArmTimer.current !== null) clearTimeout(wsDragArmTimer.current)
           wsDragArmTimer.current = setTimeout(() => {
             wsDragArmTimer.current = null
-            setDrag({ kind: 'workspace', source: { workspaceId: workspace.workspaceId, leaf: sourceLeaf, folderPath: sourceFolder }, over: null })
+            setDrag({ kind: 'workspace', source: { workspaceId: workspace.workspaceId, leaf: sourceLeaf, folderPath: sourceFolder, disk: diskParentMap.get(workspace.workspaceId) }, over: null })
           }, 0)
         },
         onDragEnd: () => {
@@ -5215,23 +4138,35 @@ window.__ModuleLoader__.load({
         const source = drag.source
         setDrag(null)
         if (source.workspaceId === targetWorkspace.workspaceId) return
-        const sameFolder = (targetWorkspace.folderPath || '') === source.folderPath
-        const anchor = half === 'after'
-          ? nextWorkspaceAfter(targetWorkspace.folderPath || '', targetWorkspace.workspaceId)
-          : targetWorkspace.workspaceId
+        const targetFolder = targetWorkspace.folderPath || ''
+        const sameFolder = targetFolder === source.folderPath
+        // The disk layer is a filesystem fact and never changes here: an
+        // in-level drop keeps the manual order next to the anchor, a
+        // cross-level drop only re-groups the title (the registry append
+        // lands it at the end of ITS disk level).
+        const sameDisk = source.disk === diskParentMap.get(targetWorkspace.workspaceId)
         const chain = sameFolder
           ? Promise.resolve()
           : Promise.resolve().then(() => {
-            const newTitle = (targetWorkspace.folderPath || '') !== '' ? (targetWorkspace.folderPath || '') + '/' + source.leaf : source.leaf
+            const newTitle = targetFolder !== '' ? targetFolder + '/' + source.leaf : source.leaf
             return renameWorkspace(source.workspaceId, newTitle)
           })
+        const anchor = !sameDisk
+          ? undefined
+          : (half === 'after'
+            ? nextWorkspaceAfter(targetWorkspace.folderPath || '', targetWorkspace.workspaceId)
+            : targetWorkspace.workspaceId)
         chain
           .then(() => (anchor !== undefined ? insertWorkspaceBefore(source.workspaceId, anchor) : insertWorkspaceBefore(source.workspaceId)))
           .catch(fail)
       }
-      const commitWorkspaceMoveInto = (folderPath) => {
+      const commitWorkspaceMoveInto = (folderIdPath) => {
         const source = drag.source
         setDrag(null)
+        // idPath = [<wsId>//]*<namePath>: the name path is everything after
+        // the last separator.
+        const cutAt = folderIdPath.lastIndexOf('//')
+        const folderPath = cutAt === -1 ? folderIdPath : folderIdPath.slice(cutAt + 2)
         if (source.folderPath === folderPath) return
         const newTitle = folderPath !== '' ? folderPath + '/' + source.leaf : source.leaf
         Promise.resolve()
@@ -5380,29 +4315,18 @@ window.__ModuleLoader__.load({
       }
 
       const findTreeNode = (node, path) => {
-        if (node.path === path) return node
+        if (path !== '' && node.path === path) return node
         for (const folder of node.folders) {
           const hit = findTreeNode(folder, path)
           if (hit) return hit
         }
-        return null
-      }
-
-      const submitFolderNew = (parentPath, rawPath) => {
-        const parent = normPath(parentPath)
-        const sub = normPath(rawPath)
-        if (sub === '') { setErrorText(t('folder.error.empty')); return }
-        const p = parent !== '' ? parent + '/' + sub : sub
-        // Existence check covers explicit folders AND every folder derived
-        // from workspace titles, so "already exists" means either kind.
-        const derived = new Set()
-        for (const w of items || []) {
-          const segs = splitTitleSegs(w.title)
-          for (let i = 1; i < segs.length; i++) derived.add(segs.slice(0, i).join('/'))
+        for (const w of node.workspaces || []) {
+          if (w.sub) {
+            const hit = findTreeNode(w.sub, path)
+            if (hit) return hit
+          }
         }
-        if (storeFolders.includes(p) || derived.has(p)) { setErrorText(t('folder.error.exists')); return }
-        shared.addFolder(p)
-        setDialog(null)
+        return null
       }
 
       const submitFolderRename = (oldPath, rawPath) => {
@@ -5422,15 +4346,8 @@ window.__ModuleLoader__.load({
               await renameWorkspace(w.workspaceId, nextTitle)
             }
           })
-          .then(() => { shared.renameFolder(oldPath, newPath); setDialog(null) })
+          .then(() => setDialog(null))
           .catch(fail)
-      }
-
-      const submitFolderDelete = (path) => {
-        const node = findTreeNode(tree, path)
-        if (node && countWorkspaces(node) > 0) { setErrorText(t('folder.error.notEmpty')); return }
-        shared.removeFolder(path)
-        setDialog(null)
       }
 
       /* ---------------------------- rows ----------------------------- */
@@ -5517,24 +4434,41 @@ window.__ModuleLoader__.load({
           pulse,
           t,
         })]
+        // Disk-nested child workspaces render under the SAME expansion
+        // toggle, above the session tree — the nesting is a filesystem
+        // fact; the sessions still belong to this row. Search views are
+        // flattened, so sub levels never render there.
+        if (workspace.sub && !searching && sessionsOpenOf(workspace.workspaceId)) {
+          rows.push(...renderLevelRows(workspace.sub, depth + 1))
+        }
         rows.push(...renderSessionTree(workspace, depth + 1))
+        return rows
+      }
+
+      const renderLevelRows = (level, depth) => {
+        const rows = []
+        for (const folder of level.folders) rows.push(...renderPlainFolder(folder, depth))
+        for (const workspace of level.workspaces) rows.push(...renderWorkspaceEntry({ workspace }, depth, wsPulseOf(workspace)))
         return rows
       }
 
       const renderPlainFolder = (node, depth) => {
         if (node.kind === 'ws') return renderWorkspaceEntry({ workspace: node.workspace }, depth, wsPulseOf(node.workspace))
-        const expanded = searching || folderExpanded(node.path)
+        // idPath disambiguates same-named name groups living in different
+        // disk levels; path stays the semantic key (rename prefix logic).
+        const idPath = node.idPath || node.path
+        const expanded = searching || folderExpanded(idPath)
         const rows = [E(FolderRow, {
-          key: 'f-' + node.path,
+          key: 'f-' + idPath,
           node,
           depth,
           expanded,
-          onToggle: () => { if (!searching) actions.setExpanded(node.path, !expanded) },
-          onContextMenu: (e) => openCtx('folder', { path: node.path, name: node.name }, e),
-          dropInto: wsDropInto(node.path),
-          dragEvents: folderDropEvents(node.path),
-          custStyle: rowStyleOf('folder:' + node.path),
-          iconMode: (styleEntry('folder:' + node.path) || {}).icon || 'solid',
+          onToggle: () => { if (!searching) actions.setExpanded(idPath, !expanded) },
+          onContextMenu: (e) => openCtx('folder', { path: node.path, name: node.name, idPath }, e),
+          dropInto: wsDropInto(idPath),
+          dragEvents: folderDropEvents(idPath),
+          custStyle: rowStyleOf('folder:' + idPath),
+          iconMode: (styleEntry('folder:' + idPath) || {}).icon || 'solid',
           pulse: expanded ? null : folderPulseOf(node),
           t,
         })]
@@ -5544,33 +4478,10 @@ window.__ModuleLoader__.load({
         }
         return rows
       }
-      const renderSearchedFolder = (hit, depth) => {
-        if (hit.kind === 'ws') return renderWorkspaceEntry({ workspace: hit.workspace }, depth)
-        const node = hit.node
-        const rows = [E(FolderRow, {
-          key: 'f-' + node.path,
-          node,
-          depth,
-          expanded: true,
-          onToggle: () => {},
-          onContextMenu: (e) => openCtx('folder', { path: node.path, name: node.name }, e),
-          dropInto: false,
-          dragEvents: undefined,
-          custStyle: rowStyleOf('folder:' + node.path),
-          iconMode: (styleEntry('folder:' + node.path) || {}).icon || 'solid',
-          t,
-        })]
-        for (const child of hit.folders) rows.push(...renderSearchedFolder(child, depth + 1))
-        for (const entry of hit.workspaces) rows.push(...renderWorkspaceEntry(entry, depth + 1))
-        return rows
-      }
 
       let bodyRows = []
       if (searching) {
-        if (searched) {
-          for (const child of searched.folders) bodyRows.push(...renderSearchedFolder(child, 0))
-          for (const entry of searched.workspaces) bodyRows.push(...renderWorkspaceEntry(entry, 0))
-        }
+        for (const entry of searched) bodyRows.push(...renderWorkspaceEntry(entry, 0))
       } else {
         for (const folder of tree.folders) bodyRows.push(...renderPlainFolder(folder, 0))
         for (const workspace of tree.workspaces) bodyRows.push(...renderWorkspaceEntry({ workspace }, 0, wsPulseOf(workspace)))
@@ -5588,17 +4499,11 @@ window.__ModuleLoader__.load({
 
       const ctxItems = () => {
         if (ctx === null) return []
-        if (ctx.kind === 'folder') {
-          const items = [
-            { id: 'new-subfolder', label: t('menu.newSubfolder') },
-            { id: 'new-subworkspace', label: t('menu.newSubWorkspace') },
-            { id: 'rename-folder', label: t('menu.renameFolder') },
-          ]
-          if (storeFolders.includes(ctx.payload.path)) items.push({ id: 'remove-folder', label: t('menu.removeFolder'), danger: true })
-          items.push({ sep: true })
-          items.push({ id: 'customize', label: t('custom.title') })
-          return items
-        }
+        if (ctx.kind === 'folder') return [
+          { id: 'rename-folder', label: t('menu.renameFolder') },
+          { sep: true },
+          { id: 'customize', label: t('custom.title') },
+        ]
         if (ctx.kind === 'workspace') return [
           { id: 'rename', label: t('menu.rename') },
           { id: 'delete', label: t('menu.delete'), danger: true },
@@ -5631,10 +4536,7 @@ window.__ModuleLoader__.load({
         }
         const { kind, payload } = current
         setCtx(null)
-        if (kind === 'folder' && id === 'new-subfolder') setDialog({ kind: 'folder-new', parentPath: payload.path })
-        else if (kind === 'folder' && id === 'new-subworkspace') { setFlowParent(payload.path); setFlowOpen(true) }
-        else if (kind === 'folder' && id === 'rename-folder') setDialog({ kind: 'folder-rename', path: payload.path })
-        else if (kind === 'folder' && id === 'remove-folder') setDialog({ kind: 'folder-delete', path: payload.path })
+        if (kind === 'folder' && id === 'rename-folder') setDialog({ kind: 'folder-rename', path: payload.path })
         else if (kind === 'workspace' && id === 'rename') setDialog({ kind: 'ws-rename', workspace: payload })
         else if (kind === 'workspace' && id === 'delete') setDialog({ kind: 'ws-delete', workspace: payload })
         else if (kind === 'sgroup' && id === 'rename-sgroup') setDialog({ kind: 'sgroup-rename', target: payload })
@@ -5653,7 +4555,7 @@ window.__ModuleLoader__.load({
         return E('div', { className: 'bw-rail' },
           StyleNode(),
           E('button', { type: 'button', className: 'bw-rail-btn', 'aria-label': t('rail.search'), onClick: () => { expandSidebar(); setSearchOpen(true) } }, icon('IconSearchOutline16', 18)),
-          E('button', { type: 'button', className: 'bw-rail-btn', 'aria-label': t('rail.add'), onClick: () => { expandSidebar(); setFlowParent(''); setFlowOpen(true) } }, icon('IconProjectAddOutline16', 18)),
+          flowAvailable ? E('button', { type: 'button', className: 'bw-rail-btn', 'aria-label': t('rail.add'), onClick: () => { expandSidebar(); setFlowOpen(true) } }, icon('IconProjectAddOutline16', 18)) : null,
         )
       }
 
@@ -5693,15 +4595,6 @@ window.__ModuleLoader__.load({
           onClose: () => setDialog(null),
           t,
         })
-        if (dialog.kind === 'folder-new') return E(TextDialog, {
-          key: 'folder-new',
-          title: t('folder.new.title'),
-          hint: t('folder.new.hint'),
-          initial: dialog.parentPath ? dialog.parentPath + '/' : '',
-          onConfirm: (v) => submitFolderNew(dialog.parentPath || '', v),
-          onClose: () => setDialog(null),
-          t,
-        })
         if (dialog.kind === 'folder-rename') return E(TextDialog, {
           key: 'folder-rename',
           title: t('folder.rename.title'),
@@ -5711,23 +4604,29 @@ window.__ModuleLoader__.load({
           onClose: () => setDialog(null),
           t,
         })
-        if (dialog.kind === 'folder-delete') {
-          return E(ConfirmDialog, {
-            key: 'folder-delete',
-            title: t('menu.removeFolder'),
-            body: t('folder.delete.body', { name: dialog.path }),
-            onConfirm: () => submitFolderDelete(dialog.path),
-            onClose: () => setDialog(null),
-            t,
-          })
-        }
         return null
       })()
 
+      // The owner side of the flow conversation: adopt keeps the flow open
+      // (busy) until the Host answers, then startSession — exactly what the
+      // shipped browser does after the same pick.
+      const adoptDirectory = (path) => Promise.resolve()
+        .then(() => createWorkspace({ path: String(path) }))
+        .then((workspace) => {
+          setFlowOpen(false)
+          if (workspace && workspace.workspaceId && typeof startSession === 'function') startSession(workspace.workspaceId)
+        })
+        .catch((reason) => {
+          fail(messageOf(reason))
+          setFlowOpen(false)
+        })
       const flowOwner = {
         open: flowOpen,
-        busy: false,
-        onPicked: () => {},
+        busy: flowBusy,
+        onPicked: (path) => {
+          setFlowBusy(true)
+          Promise.resolve(adoptDirectory(path)).then(() => setFlowBusy(false))
+        },
         onCancel: () => setFlowOpen(false),
         onError: fail,
       }
@@ -5747,26 +4646,13 @@ window.__ModuleLoader__.load({
             onBlur: () => { if (query === '') setSearchOpen(false) },
           }) : null,
           E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('search.placeholder'), onClick: () => setSearchOpen(v => !v) }, icon('IconSearchOutline16')),
-          E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('add'), onClick: () => { setFlowParent(''); setFlowOpen(true) } }, icon('IconProjectAddOutline16')),
+          flowAvailable ? E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('add'), onClick: () => setFlowOpen(true) }, icon('IconProjectAddOutline16')) : null,
         ),
         E('div', { ref: treeRef, className: 'bw-tree', role: 'tree', 'aria-label': t('title') }, bodyRows),
-        E(BetterFlow, {
-          open: flowOpen,
-          busy: false,
-          initialParent: flowParent,
-          onPicked: flowOwner.onPicked,
-          onCancel: flowOwner.onCancel,
-          onError: flowOwner.onError,
-          createWorkspace,
-          renameWorkspace,
-          pickDirectory,
-          listDirectory,
-          createDirectory,
-          useWorkspaces,
-          actions,
-          useStore,
-          t,
-        }),
+        // The official composed picker serves this hole; renderSlot is the
+        // narrowed child-slot share the renderer injects for the children
+        // our registration declares.
+        typeof renderSlot === 'function' ? renderSlot('sidebar.workspaces.directoryFlow', flowOwner) : null,
         dialogElement,
         ctx !== null ? E('div', {
           className: 'bw-ctx-overlay',
@@ -5847,11 +4733,6 @@ window.__ModuleLoader__.load({
         })
         return
       }
-      // The capability probe talks to the composed backend through this
-      // service (list is served by browse alone), so the state module needs
-      // the handle before any flow can open.
-      pickerState.api = uiWorkspace
-
       if (ctx.locale && typeof ctx.locale.register === 'function') {
         ctx.effect(() => {
           try {
@@ -5901,24 +4782,12 @@ window.__ModuleLoader__.load({
           : undefined,
         archiveSession: (sessionId) => uiWorkspace.archiveSession(sessionId),
         createWorkspace: (input) => workspaces.create(input),
-        pickDirectory: () => uiWorkspace.pickDirectory(),
-        // Browse-side primitives: the fallback interaction whenever the Host
-        // composes the browse backend instead of the OS chooser.
-        listDirectory: (path, signal) => uiWorkspace.listDirectory(path, signal),
-        createDirectory: (path, name) => uiWorkspace.createDirectory(path, name),
+        // Occupancy of this surface's directory-flow hole (the official
+        // composed picker fills it): gates the add affordance exactly like
+        // the shipped browser does.
         hooks: {
           directoryFlow: flowSource(slots, 'sidebar.workspaces.directoryFlow'),
         },
-      })
-      const flowInjected = (hole) => () => ({
-        createWorkspace: (input) => workspaces.create(input),
-        renameWorkspace: (workspaceId, title) => workspaces.rename(workspaceId, title),
-        pickDirectory: () => uiWorkspace.pickDirectory(),
-        // Same browse-side primitives as the sidebar flow: the two holes and
-        // the inlined dialog must agree on which interaction they can run.
-        listDirectory: (path, signal) => uiWorkspace.listDirectory(path, signal),
-        createDirectory: (path, name) => uiWorkspace.createDirectory(path, name),
-        hooks: { directoryFlow: flowSource(slots, hole) },
       })
 
       // Registration helper: a thrown register (semantics drift, vanishing
@@ -5933,20 +4802,11 @@ window.__ModuleLoader__.load({
         }
       }
 
-      // 1+2. the two directory-flow holes (hero picker, shipped sidebar browser).
-      // Since dsh 0.1.2-alpha.1 the shell's own directory picker occupies each
-      // hole at priority 0, so shadow at -1 (ascending, lowest renders) exactly
-      // like the sidebar.workspaces browser below.
-      slots.inject('conversation.hero.workspace.directoryFlow', guarded(
-        'conversation.hero.workspace.directoryFlow',
-        { name: 'conversation.hero.workspace.directoryFlow', inject: flowInjected('conversation.hero.workspace.directoryFlow'), locale: NS, priority: -1 },
-        BetterFlow,
-      ))
-      slots.inject('sidebar.workspaces.directoryFlow', guarded(
-        'sidebar.workspaces.directoryFlow',
-        { name: 'sidebar.workspaces.directoryFlow', inject: flowInjected('sidebar.workspaces.directoryFlow'), locale: NS, priority: -1 },
-        BetterFlow,
-      ))
+      // The two directory-flow holes are NOT occupied anymore (v0.12.0): the
+      // official composed picker — the OS chooser on loopbound display hosts,
+      // the official in-app browser everywhere else — serves the conversation
+      // hero flow again, and the sidebar flow through the child hole our own
+      // browser registration declares below.
 
       // One shared store handle: the browser and the settings page must see the
       // same persisted state (expansion, folder list, prefs, styling).
@@ -5986,12 +4846,34 @@ window.__ModuleLoader__.load({
         BetterWorkspacePluginCard,
       ))
 
-      // 3. the browser itself — lowest priority renders, shadowing the shipped entry.
+      // dsh 0.1.6-alpha.2+ moves third-party configuration to the Plugins
+      // panel's bundle page: plugins.bundle.config, keyed by PACKAGE name and
+      // rendered with view: 'page'. The inject waits for the declaration, so
+      // older hosts simply never grow this seat — the settings.plugin.item
+      // card above remains the settings surface there.
+      slots.inject('plugins.bundle.config', guarded(
+        'plugins.bundle.config',
+        {
+          name: 'plugins.bundle.config',
+          key: 'dsh-better-workspace',
+          locale: NS,
+          store: viewStore,
+        },
+        BetterWorkspacePluginCard,
+      ))
+
+      // the browser itself — lowest priority renders, shadowing the shipped
+      // entry. The registration DECLARES the directory-flow child hole without
+      // occupying it: the official composed picker registers into it and the
+      // browser consumes it through its narrowed renderSlot prop (exactly the
+      // official WorkspaceBrowser pattern), so add-workspace runs whichever
+      // interaction the Host actually serves.
       slots.inject('sidebar.workspaces', guarded(
         'sidebar.workspaces',
         {
           name: 'sidebar.workspaces',
           priority: -1,
+          children: { 'sidebar.workspaces.directoryFlow': { kind: 'single', scope: 'root' } },
           store: viewStore,
           inject: browserInjected,
           locale: NS,

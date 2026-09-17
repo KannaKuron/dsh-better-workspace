@@ -3,6 +3,21 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.12.0 — 2026-09-17
+
+**类型**:feat(对齐 dsh 0.1.6-alpha.2:两层树 + 官方添加流回归;自绘拾取交互整体退役)
+
+- **理念**:愿意保留官方的功能,本插件只做增强——v0.11.x 为解决 LAN 绑定下官方流不可用而自建的整套目录拾取(DirectoryBrowseDialog、后端探测、所属分组弹窗),在 alpha.2 有了官方完整实现(ui-directory-picker-browse 双面占用者),全部让位;遮蔽官方 workspace-tree 分组也不再成立,本版把它**吃进树模型**并与名称分组正交组合。
+- **两层树(buildTree 重写)**:**磁盘层**按官方 owningParentFolder 语义嵌套——工作区行嵌在其最近已注册祖先目录的工作区行下(工作区嵌工作区,不凭空造目录节点;文件系统事实,UI 不可改);**名称层**在每个磁盘层内按标题 / 段分组(本插件立身之本)。两层正交:改标题只动名称层,磁盘层永远稳定。子层的分组身份键(idPath = 拥有链前缀)避免同名分组跨层串折叠/样式状态;折叠工作区行的状态呼吸灯聚合扩到整个子树(含嵌套层)。
+- **拖拽语义**:名称层操作原样保留(拖到分组行 = 改前缀移入;拖到工作区行上/下半 = 改前缀 + 手动序);磁盘层不可拖拽改变——**跨磁盘层的放置只重组名称前缀**(注册表追加落位到自身磁盘层末尾),同层放置才走锚点序。
+- **添加工作区回归官方**:删除两处 directoryFlow 洞占用(优先级 -1);sidebar.workspaces 注册改为**声明** directoryFlow 子洞(官方 WorkspaceBrowser 同款 children + renderSlot 模式),对话空态 hero 流与侧栏流都由官方组合占用者承载(loopback+显示 = 原生选择器;其余 = 官方应用内浏览器)。选完目录由本插件 adopt:createWorkspace + startSession(与官方浏览器行为一致);占用率门控添加按钮(无占用者时隐藏,占用者中途卸载自动撤回流)。
+- **显式空分组退役**(与用户理念一致:分组是名称的投影,不留第二份数据):新建空分组 / 新增子分组 / 新增子工作区 / 删除空分组入口删除;store folders 通道与宿主命名空间 folders 字段删除(旧持久化数据含 folders 键无害,不再读取);分组重命名(批量改写成员前缀)保留。
+- **设置卡片双座位**:settings.plugin.item(≤alpha.1 的 设置→插件)与 plugins.bundle.config(alpha.2+ 的 插件面板 bundle 页,按包名 dsh-better-workspace 挂 key,view:'page' 平铺渲染)双注册,slots.inject 各等各的声明,任一宿主年代恰好一个座位活。
+- **词典清理**:27 个死键(flow.* / browse.* / folder.new.* / folder.error.exists|notEmpty / folder.delete.body / menu.newSub* / menu.removeFolder)× 21 门 = 567 行删除;sync.desc 21 门改写(不再提显式分组);bw-browse-*/bw-path-echo 等 35 行死 CSS 删除。
+- **冒烟测试 23 → 22 项**:三个 0.11.x 拾取交互测试随功能删除;新增 buildTree 两层语义真驱动测试(磁盘嵌套 / 名称分组 / sub 层 / idPath 链 / Windows 路径归一)与官方流守卫(children 声明 + renderSlot 消费 + 无 directoryFlow 占用 + 双设置座位 + adopt 行为);键集守卫正则兼容双引号值。
+- **版本兼容**:children 声明与 renderSlot 是 dsh 早期即有的通用槽机制,0.1.2+ 宿主均可跑;plugins.bundle.config 洞仅 alpha.2+ 声明,旧宿主该座位静默不存在(设置卡片仍在)。升级 dsh 与升级插件谁先谁后都收敛。
+- 相关:[Release v0.12.0](https://github.com/KannaKuron/dsh-better-workspace/releases/tag/v0.12.0)
+
 ## v0.11.5 — 2026-09-17
 
 **类型**:fix(选择目录弹窗「新建文件夹」静默失败:重构丢掉了真正落盘的那一次调用)

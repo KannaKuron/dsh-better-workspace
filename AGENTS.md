@@ -4,7 +4,7 @@
 
 ## 项目一句话
 
-「dsh-better-workspace」:DSH 插件,把侧边栏「工作区」列表升级为**两层层级树**——磁盘层按官方 owningParentFolder 语义嵌套(子目录工作区挂父目录工作区行下),名称层在每个磁盘层内按工作区名称的 / 虚拟分组;添加工作区由官方目录流承载(本插件声明洞 + renderSlot 消费);重命名即时重排。v0.12.0 起显式空分组与自绘拾取交互已退役(官方补齐,整体让位)。
+「dsh-better-workspace」:DSH 插件,把侧边栏「工作区」列表升级为**两层层级树**——磁盘层按官方 owningParentFolder 语义嵌套(子目录工作区挂父目录工作区行下),名称层在每个磁盘层内按工作区名称的 / 虚拟分组;添加工作区:侧栏入口由本插件的占用者流承载(原生宿主 = 官方 OS 选择器服务,LAN/无显示宿主 = 自绘应用内浏览器),对话空态入口保持纯官方;重命名即时重排。显式空分组已退役(分组是名称的投影)。
 
 ## 环境与工具
 
@@ -26,7 +26,7 @@
 
 | 路径 | 作用 |
 |---|---|
-| src/client.js | **全部功能所在**。window.__ModuleLoader__.load({ id, factory }) 包装的浏览器插件:sidebar.workspaces 座位(声明 directoryFlow 子洞 + renderSlot 消费官方拾取流)+ 双设置座位 + 两层层级树 UI |
+| src/client.js | **全部功能所在**。window.__ModuleLoader__.load({ id, factory }) 包装的浏览器插件:sidebar.workspaces 座位 + 侧栏 directoryFlow 洞占用者(拾取流)+ 双设置座位 + 两层层级树 UI |
 | src/index.js | host 半,纯占位(有效 Node 入口 + 一行日志);未来宿主侧功能(分组宿主登记、设置页后端)的家 |
 | cordis.patch.yml | dsh plugin add 官方安装通道的挂载声明(insert 一行插件 row) |
 | dsh.plugin.json | 插件注册表清单(id dsh-external/dsh-better-workspace) |
@@ -37,9 +37,9 @@
 1. **无构建,单文件客户端**。src/client.js 必须保持 __ModuleLoader__ 包装;每个 npm 包只有一个 client entry(exports["./client"]),**不能 require 任何非基线模块**。基线白名单(dsh-client-web seed.ts):react、react/jsx-runtime、react-dom、react-dom/client、@deepseek-ai/cordis、@deepseek-ai/dsh-client-store、@deepseek-ai/dsh-client-ui-slots、@deepseek-ai/dsh-client-ui-primitives。冒烟测试强制执行。
 2. **slot 契约**(对照 dsh 源码 packages/client/ui-workspace/src/client/):
    - sidebar.workspaces 是 **single** 槽;same-priority 二次注册会抛错,官方占用者优先级 0,本插件用 priority: -1(ascending, lowest renders)压制。
-   - **v0.12.0 起本插件不再占用任何 directoryFlow 洞**(官方组合占用者承载拾取交互):sidebar.workspaces 注册**声明**子洞 `children: {'sidebar.workspaces.directoryFlow': {kind:'single', scope:'root'}}` 且不占,BetterBrowser 收到收窄的 renderSlot prop,以 owner 身份(open/busy/onPicked/onCancel/onError)渲染官方占用者;onPicked 里 adoptDirectory = createWorkspace({path}) + startSession(workspaceId)(官方浏览器同款),失败 fail() 弹错并收流。占用率(hooks.directoryFlow → useDirectoryFlow)门控添加按钮,占用者中途卸载自动 setFlowOpen(false)。旧宿主(0.1.2+)同样支持 children+renderSlot 机制。
-   - ~~目录交互必须先探测宿主组装的后端(v0.11.3 起,红线)~~(**v0.12.0 整段退役**:pickerCapabilityNow/pickerRefusal/markPickerBrowse/DirectoryBrowseDialog/browseDrives/createFolderIn 已全部删除,官方 in-app browser 补齐;历史背景见 CHANGELOG):宿主只组装一个后端(`@deepseek-ai/dsh-host-directory-picker-auto`)——`bindHost === '127.0.0.1'` 且非 SSH、有可用显示会话才是 `native`,**其余一切绑定(含 `0.0.0.0`/局域网)都是 `browse`**,后者的 wire 动词只有 `list` / `createDirectory`,`pick` 会被拒为 `directory-picker/unavailable`。流程一律先 `pickerCapabilityNow()`:`list` 成功即 browse、以能力码被拒即 native、无法归类则**不缓存**并照旧试 `pick`(`pickerRefusal` 命中就 `markPickerBrowse()` 切浏览器)。**绝不再假定 native**——≤0.11.2 正是这一假定让 LAN 绑定下「添加工作区」必然失败。browse 侧由 `DirectoryBrowseDialog` 承载,**v0.11.4 起的交互契约**(用户实测反馈后定型):面包屑从**文件系统根**开始(绝不以 Home 为根——那会看不到自己在哪)且深路径自动贴右端、**单击选中 / 双击或行尾 › 进入**(触摸没有双击)、底部按钮采用选中项(文案 `browse.selectNamed`)/无选中时用当前层、Windows 盘符在首次打开时探测 C:–H: 一次并按页缓存(模块级 `browseDrives`,漏掉的盘靠路径编辑手输兜底);浏览失败留在对话框内,不占用 owner 的 `onError`;两处入口(两个洞 + 侧栏内联流)必须注入同一组 `pickDirectory`/`listDirectory`/`createDirectory`。
-   - BetterBrowser 的 flowAvailable(hooks.directoryFlow → useDirectoryFlow)是添加按钮的门控:无占用者时按钮隐藏(官方 WorkspaceBrowser 同款);占用者中途卸载时 effect 自动 setFlowOpen(false)。flow hooks 必须在 `if (!wide) return` early return 之前(React hook 纪律)。
+   - **v0.12.1 起侧栏洞由本插件自己的占用者承载(0.11.x 占用模式回归)**,根因是 v0.12.0 事故:**子洞声明互斥**——官方 WorkspaceBrowser 的 entry 输掉渲染竞争但仍在 ledger 上、仍拥有 'sidebar.workspaces.directoryFlow' 的声明,bw 再声明同洞 → register 抛 `slot ... is already declared` → guarded 吞掉 → **bw 浏览器整个不注册,官方浏览器接管**(用户实测:右键菜单没了、/ 不解析)。renderSlot 授权是运行时强制的(SlotOwnershipError),压制官方浏览器与渲染官方流**不可兼得**,绝不要再尝试 children 声明(冒烟测试有防回归断言)。现行形态:bw 占用侧栏洞(priority -1,占用者 = BetterFlow:探测后端,native 宿主调官方 uiWorkspace.pickDirectory() 弹 OS 选择器,browse 宿主渲染自绘 DirectoryBrowseDialog),选完路径 adoptDirectory = createWorkspace + startSession;**hero 洞(conversation.hero.workspace.directoryFlow)绝不占用**——对话空态添加流保持纯官方。占用率(hooks.directoryFlow → useDirectoryFlow)门控添加按钮。
+   - **目录交互必须先探测宿主组装的后端(v0.11.3 起,红线;v0.12.0 曾误删、v0.12.1 恢复——官方流无法被第三方在侧栏渲染,此探测与自绘对话框是必需品)**:宿主只组装一个后端(`@deepseek-ai/dsh-host-directory-picker-auto`)——`bindHost === '127.0.0.1'` 且非 SSH、有可用显示会话才是 `native`,**其余一切绑定(含 `0.0.0.0`/局域网)都是 `browse`**,后者的 wire 动词只有 `list` / `createDirectory`,`pick` 会被拒为 `directory-picker/unavailable`。流程一律先 `pickerCapabilityNow()`:`list` 成功即 browse、以能力码被拒即 native、无法归类则**不缓存**并照旧试 `pick`(`pickerRefusal` 命中就 `markPickerBrowse()` 切浏览器)。**绝不再假定 native**——≤0.11.2 正是这一假定让 LAN 绑定下「添加工作区」必然失败。browse 侧由 `DirectoryBrowseDialog` 承载,**v0.11.4 起的交互契约**(用户实测反馈后定型):面包屑从**文件系统根**开始(绝不以 Home 为根——那会看不到自己在哪)且深路径自动贴右端、**单击选中 / 双击或行尾 › 进入**(触摸没有双击)、底部按钮采用选中项(文案 `browse.selectNamed`)/无选中时用当前层、Windows 盘符在首次打开时探测 C:–H: 一次并按页缓存(模块级 `browseDrives`,漏掉的盘靠路径编辑手输兜底);浏览失败留在对话框内,不占用 owner 的 `onError`;两处入口(两个洞 + 侧栏内联流)必须注入同一组 `pickDirectory`/`listDirectory`/`createDirectory`。
+   - BetterBrowser 的 flowAvailable(hooks.directoryFlow → useDirectoryFlow)是添加按钮的门控(占用者 = 本插件自己,注册成功即真);占用者中途卸载时 effect 自动 setFlowOpen(false)。flow hooks 必须在 `if (!wide) return` early return 之前(React hook 纪律)。BetterBrowser 与 BetterFlow 是直接组合(不经子 slot),props 会话 = owner share(open/busy/onPicked/onCancel/onError)。
 3. **数据事实**(dsh 0.1.2-alpha.1 实测):
    - 分组来源是 WorkspaceView.title(**引号感知 + URL 兜底切分** splitTitleSegs:① “…”/"…" 成对引号段**原样**,段内 / 绝不切(孤立引号——无匹配闭端的开引号或无开端的闭引号——只是普通字符,照常参与切分;0.9.1 曾让未闭合开引号吞到串尾,用户明确不要);② 引号外文字走 splitPlainSegs——从第一个 :// 起尾部整体单 leaf(0.8 曾按 URL 语义聚树,用户实测后明确不要任何 URL 层级,0.9.1 回退),:// 前照常按 / 切)。**会话标题的 quote-on-land effect**(见不变量 4)是主机制,无引号兜底是显示层保险。title 为空回退 basename(path)。**buildTree(v0.12.0 重写)是两层正交**:磁盘层用 diskParentMapOf(normDiskPath:Windows 分隔符归一 + 去尾分隔符,最长真前缀胜出)求「最近已注册祖先工作区」,子工作区构成父 wsEntry 的 .sub 层;名称层 ensure 在每层内做(段数组驱动,join 后的 path 只作 Map 键,绝不再 split 回拆);sub 层的 folder 带 idPath(拥有链前缀 + '//' + 名称路径)作折叠/样式身份键,path 保持语义键(rename 批量改写用)。countWorkspaces/pulse/findTreeNode/renderLevelRows 都递归 sub。**buildSessionTree 的 ensure 同样段数组驱动**。
    - 会话标题是 SessionSummary.displayTitle(blank 会话显示本地化「新会话」);SessionListState = { ids, byId, current, phase, ... };WorkspaceSnapshot.archivedSessionIds 是注册表级归档集。**冷列表 title 缺失事实(0.1.2-alpha.4..0.1.5-alpha.1 溯源,projection-cache/title 包两版本 0 diff)**:列表行的 title 只在命中持久投影缓存时携带;fork(seeded)会话在 dsh list.ts 里被整体跳过必缺,从未写过检查点的低活动会话同样缺;缺失时 displayTitle 已是宿主 basename 回退(displayTitleOf:title → cwd basename → id),真实标题仍在会话日志的 session/title 事件里、只是没有便宜的列表读取路径。0.9.4 的 remembered 兜底只补显示层,不改这个事实。
@@ -89,12 +89,12 @@
 1. npm test 全绿。
 2. 真机(web profile 重启 DSH):
    - 两层树渲染:造 web/前端、web/后端(名称分组)、再把某工作区目录嵌到另一工作区目录下(磁盘层),两层正确且正交;
-   - 添加工作区:官方目录流(loopback = 原生选择器;0.0.0.0 = 官方应用内浏览器)→ 选完目录创建工作区并自动开新会话;
+   - 添加工作区:侧栏 = 本插件占用者流(loopback = 官方 OS 选择器;0.0.0.0 = 自绘应用内浏览器)→ 选完目录创建工作区并自动开新会话;对话空态 = 纯官方流;
    - 重命名工作区:跨分组改名(如 web/前端 → design/前端)后树即时重排;磁盘层不变;
    - 会话:打开/重命名/分叉/归档、新会话按钮、当前高亮、运行圆点;
    - **重启标题不回退(0.9.4,0.9.6 重写后行为不变)**:让若干会话带 / 标题(含一个 fork 出来的),重启 DSH 后不打开它们,树里应显示 remembered 标题且分组正确(而非工作区名);打开任一会话后标题与官方一致;清掉 localStorage 的 dsh.betterWorkspace.titles.v1 后重启,行为退回官方 basename 回退(兜底不劣化);agent 运行中侧栏应无卡顿(0.9.6 修复 issue #1 的回归点);
-   - 对话空态页「添加工作区」同样走官方目录流;
-   - **browse 后端(LAN 绑定)**:把 cordis.patch.yml 的 webserver `host` 改成 `0.0.0.0` 重启 → 侧栏与对话空态的「添加工作区」都应出现**官方应用内目录浏览器**(不再是本插件 0.11.x 的自绘浏览器),能进目录、能新建文件夹、能显示隐藏文件;改回 `127.0.0.1` 重启应回到宿主桌面上的原生选择器。隔离验证做法:独立 DSH_HOME + 独立端口(别动用户实例),headless Chrome over CDP;收尾要按端口 kill 掉残留 node 进程——后台 job 被杀不会带走 dsh 子进程。
+   - 对话空态页「添加工作区」走纯官方目录流(官方原生选择器 / 官方应用内浏览器);
+   - **browse 后端(LAN 绑定)**:把 cordis.patch.yml 的 webserver `host` 改成 `0.0.0.0` 重启 → 侧栏「添加工作区」出现**本插件的应用内目录浏览器**,对话空态出现**官方**应用内浏览器;改回 `127.0.0.1` 重启侧栏回到宿主桌面上的原生选择器。**侧栏添加按钮点击后必须确认 .bw-root 仍在**(bw 浏览器没被官方顶掉)且 console 无 "register skipped for sidebar.workspaces"。隔离验证做法:独立 DSH_HOME + 独立端口(别动用户实例),headless Chrome over CDP;收尾要按端口 kill 掉残留 node 进程——后台 job 被杀不会带走 dsh 子进程。
    - **跨端手动同步(0.9.5)**:web 端自定义若干外观 → 设置卡片点「发送本设备数据」→ 桌面端(装同版本插件)设置卡片点「从 Web 获取」(覆盖模式)→ 外观/分组/开关一致;合并模式下两端独有条目并集保留;宿主 ~/.dsh/settings.yaml 的 better-workspace 段可查;宿主 settings 不可用时卡片提示不支持、行为回纯本地;
    - 卸载/禁用本插件 → 回到官方浏览器,hero 流回退官方默认。
 3. 升级 dsh 后:对照 packages/client/ui-workspace/src/client/contract/slots.ts 复核 slot 契约与注入面是否漂移(重点:GlobalStandardProps、directoryFlow owner props、single 槽 priority 语义)。

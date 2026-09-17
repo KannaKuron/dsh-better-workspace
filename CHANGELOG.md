@@ -3,6 +3,17 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.12.1 — 2026-09-18
+
+**类型**:fix(0.12.0 回归事故:bw 浏览器整个没注册,官方浏览器接管——右键菜单消失、名称 / 不解析)
+
+- **现象(用户实测 v0.12.0)**:升级后右键菜单(自定义外观)打不开、工作区名称的 `/` 不再分组。
+- **根因**:v0.12.0 给 sidebar.workspaces 注册加了 `children` 子洞声明,想以官方 WorkspaceBrowser 的「声明洞 + renderSlot」模式渲染官方拾取流。但**子洞声明互斥**(ui-slots register:childKey 已被声明即抛 `slot ... is already declared`):官方 WorkspaceBrowser 的 entry 输掉渲染竞争(priority 被压制)却仍在 ledger 上、仍拥有 'sidebar.workspaces.directoryFlow' 的声明,bw 再声明同洞 → register 抛错 → guarded 捕获降级 → **bw 浏览器座位整个不注册**,priority 0 的官方浏览器接管渲染。renderSlot 授权是运行时强制的(SlotOwnershipError),**压制官方浏览器与渲染官方流不可兼得**——这是平台约束,0.12.0 的设计在两处官方源码(register 的声明检查 + renderer 的授权检查)交叉验证后彻底证伪。
+- **修法**:注册去掉 children 声明(树、两层模型、右键、外观全部即刻恢复);侧栏添加流回归 0.11.x 占用模式——bw 以 priority -1 占用官方声明的侧栏洞,占用者 BetterFlow 探测后端:native 宿主调**同一个官方宿主服务** uiWorkspace.pickDirectory()(OS 选择器),browse 宿主渲染 v0.11.4/0.11.5 打磨的自绘 DirectoryBrowseDialog;选完路径 adoptDirectory = createWorkspace + startSession(官方浏览器同款行为,**无**所属分组弹窗——分组靠改名/拖拽)。**hero 洞(conversation.hero.workspace.directoryFlow)绝不占用**:对话空态添加流保持纯官方。v0.12.0 的其余成果(两层树/磁盘嵌套、拖拽磁盘层固定、显式空分组退役、设置双座位、词典清理)全部保留。
+- **冒烟测试 23 项**:新增**防回归守卫**——children 声明(带 directoryFlow)必须永远不再出现、侧栏洞占用注册必须存在、hero 洞必须不占;0.11.5 的 createFolderIn 接缝测试恢复(自绘对话框回归,其守卫随之回归)。
+- **隔离真机验证(独立 DSH_HOME + 3180 端口 + 0.0.0.0 绑定 + headless Chrome over CDP,全程不碰用户实例)**:① DOM 断言 `.bw-root` 渲染、console 零 "register skipped"(0.12.0 根因消失);② CDP 点击侧栏「添加工作区」→ **自绘应用内目录浏览器出现**(browse 分支正确);截图留档。
+- 相关:[Release v0.12.1](https://github.com/KannaKuron/dsh-better-workspace/releases/tag/v0.12.1) · 事故根因的官方源码位置:packages/client/ui-slots/src/index.ts register 的 children 检查 + renderer.ts SlotOwnershipError
+
 ## v0.12.0 — 2026-09-17
 
 **类型**:feat(对齐 dsh 0.1.6-alpha.2:两层树 + 官方添加流回归;自绘拾取交互整体退役)

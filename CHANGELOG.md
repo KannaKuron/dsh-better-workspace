@@ -3,6 +3,16 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.13.0 — 2026-09-18
+
+**类型**:feat + fix(dsh 0.1.6-alpha.2 适配:会话导航保留契约迁移;官方视图选项菜单回归 + 会话 / 工作区按 "/" 分组开关)
+
+- **fix(点击会话无法切换,用户实测 alpha.2;Windows 0.1.5 世代正常、mac 更新 dsh 后失效即此根因)**:alpha.2 把会话导航交给视图所有者——`ISessions` 不再有 `open()`(contract 注释 "navigation belongs to view owners"),`SessionListState.current` 字段一并删除。bw 继续调 `sessions.open` → 点击会话行抛 TypeError、静默无反应;`list.current` 恒 undefined → 当前会话永不高亮、blank 会话(新建未命名)被可见性规则整体滤掉。修复四件套:`open` 走 `uiWorkspace.openSession`(replaceMain);`forkSession` 走 `uiWorkspace.forkSession`;当前会话按官方语义从 byId 找 `retainedBy.mainView > 0`(模块级 `mainSessionIdOf`);重命名改用 `sessions.using` + `source: 'workspaceOperation'`(旧 `binding(id)` 只见过已保留会话,改名未打开的会话报 unknown session)。
+- **feat(视图选项菜单)**:侧栏头部新增视图选项按钮,复刻官方 ViewOptionsMenu(primitives Menu:label / separator / selectedIds,dense + portal + end 对齐;`ui.Menu` 特征探测,缺失即按钮不渲染):**分组方式**(按工作区 / 按工作区树 / 单列表)+ **排序方式**(手动排序 / 最近更新)。默认 = 按工作区树 + 手动排序(bw 立身行为,升级不突变)。`updated` = 组内会话按 updatedAt 降序(id tie-break)、当前 blank 会话置顶(官方 pinCurrentBlank 语义)、纯展示层不落盘;recency 期间抑制会话重排锚点(下一次渲染就会被重排的锚点是谎言);工作区行顺序永远宿主序(不变量 7)。
+- **feat(两个 "/" 分组开关)**:菜单内新增「会话按"/"分组」「工作区按"/"分组」(selectedIds 勾选形态,切换不关菜单、可连续操作),默认均开 = 现状。关闭后:工作区行挂磁盘层直取完整名称、会话行平铺完整标题;**磁盘层嵌套永远生效**(文件系统事实,不受开关影响)。无效选项置灰:单列表下会话开关无效;工作区开关只在树模式有意义。状态进 `dsh.betterWorkspace.view.v1`(groupBy / orderBy / sessionTitleSlash / workspaceTitleSlash 四键:init 默认值 + selector 回退,遵守 hydration 整值替换纪律;`'workspace-tree'` 模式即既有两层树,`'workspace'` 平铺磁盘根层,`'flat'` 官方单列表语义——全部可见会话一个深度 0 列表、完整标题、无拖拽锚点)。
+- **词典**:21 门 × 10 键(viewOptions.*)。
+- **测试 23 → 24 项**:新增视图选项守卫(store 契约与回退读取、开关感知的 buildTree / buildSessionTree、菜单装配与置灰、recency 锚点抑制、alpha.2 保留契约 open/mainSessionIdOf)。
+- 相关:[Release v0.13.0](https://github.com/KannaKuron/dsh-better-workspace/releases/tag/v0.13.0)
 ## v0.12.1 — 2026-09-18
 
 **类型**:fix(0.12.0 回归事故:bw 浏览器整个没注册,官方浏览器接管——右键菜单消失、名称 / 不解析)

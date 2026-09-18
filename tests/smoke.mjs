@@ -593,6 +593,77 @@ test('buildTree: disk nesting + name groups inside each level (0.12.0)', () => {
 })
 
 /**
+ * View options (v0.13): the official group/order menu plus the two
+ * slash-grouping toggles. Guards the store contract (defaults in init,
+ * fallback reads), the toggle-aware tree builders, and the menu wiring
+ * (feature-probed primitives Menu, disabled rows for options that cannot
+ * affect the current mode, anchor suppression while recency sorts).
+ */
+test('view options: group/order menu + the two slash toggles (0.13.0)', () => {
+  const text = read('src/client.js')
+  assert.match(text, /groupBy: 'workspace-tree', orderBy: 'manual', sessionTitleSlash: true, workspaceTitleSlash: true/)
+  for (const action of ['setGroupBy', 'setOrderBy', 'setSessionTitleSlash', 'setWorkspaceTitleSlash']) {
+    assert.ok(text.includes(action + ': (d, value)'), 'store action ' + action)
+  }
+  assert.match(text, /useStore\(s => s\.groupBy\) \|\| 'workspace-tree'/)
+  assert.match(text, /useStore\(s => s\.sessionTitleSlash\) !== false/)
+
+  const helpers = new Function(text.slice(
+    text.indexOf('const basename ='),
+    text.indexOf('const splitPlainSegs ='),
+  ) + text.slice(
+    text.indexOf('const splitPlainSegs ='),
+    text.indexOf('const normPath ='),
+  ) + text.slice(
+    text.indexOf('function buildSessionTree'),
+    text.indexOf('function reorderIds'),
+  ) + text.slice(
+    text.indexOf('const DISK_SEP ='),
+    text.indexOf('const countWorkspaces ='),
+  ) + '\nreturn { buildTree, buildSessionTree }')()
+  const { buildTree, buildSessionTree } = helpers
+
+  const items = [
+    { workspaceId: 'a', title: 'web/前端', path: '/home/u/web' },
+    { workspaceId: 'b', title: 'api', path: '/home/u/web/api' },
+  ]
+  // Workspace slash toggle OFF: no name layer — workspaces mount straight
+  // at their disk level; the DISK layer is a filesystem fact and survives.
+  const flat = buildTree(items, false)
+  assert.deepEqual(flat.folders, [], 'no name groups')
+  assert.deepEqual(flat.workspaces.map((w) => w.workspaceId), ['a'])
+  assert.equal(flat.workspaces[0].leaf, 'web/前端', 'leaf keeps the full title')
+  assert.equal(flat.workspaces[0].folderPath, '')
+  assert.ok(flat.workspaces[0].sub, 'disk nesting survives')
+  assert.equal(flat.workspaces[0].sub.workspaces[0].leaf, 'api')
+
+  const rows = [
+    { id: '1', title: 'proj/设计' },
+    { id: '2', title: 'plain' },
+  ]
+  // Session slash toggle OFF: every row at the root, full title as leaf.
+  const sess = buildSessionTree(rows, false)
+  assert.deepEqual(sess.groups, [])
+  assert.deepEqual(sess.sessions.map((s) => s.leaf), ['proj/设计', 'plain'])
+  // Default (toggle on) keeps the founding grouping behavior.
+  const grouped = buildSessionTree(rows, true)
+  assert.equal(grouped.groups.length, 1)
+  assert.equal(grouped.groups[0].name, 'proj')
+
+  // The menu mirrors the official ViewOptionsMenu and feature-probes Menu;
+  // options that cannot affect the current mode render disabled.
+  assert.match(text, /function ViewOptionsMenu/)
+  assert.match(text, /typeof ui\.Menu !== 'function'\) return null/)
+  assert.match(text, /disabled: groupBy === 'flat'/)
+  assert.match(text, /disabled: groupBy !== 'workspace-tree'/)
+  // Recency ordering is presentational: reorder anchors suppressed.
+  assert.match(text, /if \(orderBy === 'updated'\) return null/)
+  // alpha.2 retention contract: open goes through the navigation service.
+  assert.match(text, /open: \(sessionId\) => \{ uiWorkspace\.openSession\(sessionId\) \}/)
+  assert.match(text, /mainSessionIdOf/)
+})
+
+/**
  * The add-workspace flow runs the OFFICIAL interaction (v0.12.0): the
  * browser is the owner (open/busy/onPicked/onCancel/onError), the composed
  * picker serves the declared child hole, and a picked directory is adopted

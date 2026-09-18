@@ -40,6 +40,16 @@ window.__ModuleLoader__.load({
       'empty': '暂无工作区',
       'empty.search': '没有匹配的结果',
       'session.new': '新会话',
+        'viewOptions.label': '视图选项',
+        'viewOptions.groupBy': '分组方式',
+        'viewOptions.byWorkspace': '按工作区',
+        'viewOptions.byWorkspaceTree': '按工作区树',
+        'viewOptions.flat': '单列表',
+        'viewOptions.orderBy': '排序方式',
+        'viewOptions.manualOrder': '手动排序',
+        'viewOptions.updatedOrder': '最近更新',
+        'viewOptions.sessionSlash': '会话按"/"分组',
+        'viewOptions.workspaceSlash': '工作区按"/"分组',
       'group.ungrouped': '未分组',
       'sessions.expand': '展开 {n} 个会话',
       'sessions.collapse': '收起',
@@ -150,6 +160,16 @@ window.__ModuleLoader__.load({
       'empty': 'No workspaces yet',
       'empty.search': 'No matches',
       'session.new': 'New session',
+        'viewOptions.label': 'View options',
+        'viewOptions.groupBy': 'Group by',
+        'viewOptions.byWorkspace': 'Workspaces',
+        'viewOptions.byWorkspaceTree': 'Workspace tree',
+        'viewOptions.flat': 'In one list',
+        'viewOptions.orderBy': 'Order by',
+        'viewOptions.manualOrder': 'Manual',
+        'viewOptions.updatedOrder': 'Last updated',
+        'viewOptions.sessionSlash': 'Group sessions by "/"',
+        'viewOptions.workspaceSlash': 'Group workspaces by "/"',
       'group.ungrouped': 'Ungrouped',
       'sessions.expand': 'Show {n} more sessions',
       'sessions.collapse': 'Collapse',
@@ -268,6 +288,16 @@ window.__ModuleLoader__.load({
         'empty': 'لا توجد مساحات عمل بعد',
         'empty.search': 'لا توجد نتائج مطابقة',
         'session.new': 'جلسة جديدة',
+        'viewOptions.label': 'خيارات العرض',
+        'viewOptions.groupBy': 'التجميع حسب',
+        'viewOptions.byWorkspace': 'مساحات العمل',
+        'viewOptions.byWorkspaceTree': 'شجرة مساحات العمل',
+        'viewOptions.flat': 'قائمة واحدة',
+        'viewOptions.orderBy': 'الترتيب حسب',
+        'viewOptions.manualOrder': 'يدوي',
+        'viewOptions.updatedOrder': 'آخر تحديث',
+        'viewOptions.sessionSlash': 'تجميع الجلسات حسب "/"',
+        'viewOptions.workspaceSlash': 'تجميع مساحات العمل حسب "/"',
         'group.ungrouped': 'بلا مجموعة',
         'sessions.expand': 'عرض {n} جلسات إضافية',
         'sessions.collapse': 'طيّ',
@@ -378,6 +408,16 @@ window.__ModuleLoader__.load({
         'empty': 'Noch keine Arbeitsbereiche',
         'empty.search': 'Keine Treffer',
         'session.new': 'Neue Sitzung',
+        'viewOptions.label': 'Ansichtsoptionen',
+        'viewOptions.groupBy': 'Gruppieren',
+        'viewOptions.byWorkspace': 'Arbeitsbereiche',
+        'viewOptions.byWorkspaceTree': 'Arbeitsbereichsbaum',
+        'viewOptions.flat': 'In einer Liste',
+        'viewOptions.orderBy': 'Sortieren',
+        'viewOptions.manualOrder': 'Manuell',
+        'viewOptions.updatedOrder': 'Zuletzt aktualisiert',
+        'viewOptions.sessionSlash': 'Sitzungen nach "/" gruppieren',
+        'viewOptions.workspaceSlash': 'Arbeitsbereiche nach "/" gruppieren',
         'group.ungrouped': 'Ohne Gruppe',
         'sessions.expand': '{n} Sitzungen einblenden',
         'sessions.collapse': 'Einklappen',
@@ -488,6 +528,16 @@ window.__ModuleLoader__.load({
         'empty': 'Aucun espace de travail',
         'empty.search': 'Aucun résultat',
         'session.new': 'Nouvelle session',
+        'viewOptions.label': 'Options d’affichage',
+        'viewOptions.groupBy': 'Regrouper par',
+        'viewOptions.byWorkspace': 'Espaces de travail',
+        'viewOptions.byWorkspaceTree': 'Arborescence des espaces',
+        'viewOptions.flat': 'En une liste',
+        'viewOptions.orderBy': 'Trier par',
+        'viewOptions.manualOrder': 'Manuel',
+        'viewOptions.updatedOrder': 'Dernière mise à jour',
+        'viewOptions.sessionSlash': 'Grouper les sessions par « / »',
+        'viewOptions.workspaceSlash': 'Grouper les espaces par « / »',
         'group.ungrouped': 'Sans groupe',
         'sessions.expand': 'Afficher {n} sessions',
         'sessions.collapse': 'Réduire',
@@ -598,6 +648,16 @@ window.__ModuleLoader__.load({
         'empty': 'अभी कोई कार्यस्थान नहीं',
         'empty.search': 'कोई मेल खाता परिणाम नहीं',
         'session.new': 'नया सत्र',
+        'viewOptions.label': 'दृश्य विकल्प',
+        'viewOptions.groupBy': 'समूहीकरण',
+        'viewOptions.byWorkspace': 'कार्यक्षेत्र अनुसार',
+        'viewOptions.byWorkspaceTree': 'कार्यक्षेत्र ट्री अनुसार',
+        'viewOptions.flat': 'एक सूची में',
+        'viewOptions.orderBy': 'क्रम',
+        'viewOptions.manualOrder': 'मैन्युअल',
+        'viewOptions.updatedOrder': 'हाल का अपडेट',
+        'viewOptions.sessionSlash': 'सत्रों को "/" से समूहित करें',
+        'viewOptions.workspaceSlash': 'कार्यक्षेत्रों को "/" से समूहित करें',
         'group.ungrouped': 'बिना समूह',
         'sessions.expand': '{n} सत्र दिखाएँ',
         'sessions.collapse': 'समेटें',
@@ -708,6 +768,16 @@ window.__ModuleLoader__.load({
         'empty': 'Belum ada ruang kerja',
         'empty.search': 'Tidak ada hasil yang cocok',
         'session.new': 'Sesi baru',
+        'viewOptions.label': 'Opsi tampilan',
+        'viewOptions.groupBy': 'Kelompokkan berdasarkan',
+        'viewOptions.byWorkspace': 'Ruang kerja',
+        'viewOptions.byWorkspaceTree': 'Pohon ruang kerja',
+        'viewOptions.flat': 'Satu daftar',
+        'viewOptions.orderBy': 'Urutkan',
+        'viewOptions.manualOrder': 'Manual',
+        'viewOptions.updatedOrder': 'Terakhir diperbarui',
+        'viewOptions.sessionSlash': 'Kelompokkan sesi per "/"',
+        'viewOptions.workspaceSlash': 'Kelompokkan ruang kerja per "/"',
         'group.ungrouped': 'Tanpa grup',
         'sessions.expand': 'Tampilkan {n} sesi',
         'sessions.collapse': 'Ciutkan',
@@ -818,6 +888,16 @@ window.__ModuleLoader__.load({
         'empty': 'Nessuna area di lavoro',
         'empty.search': 'Nessun risultato',
         'session.new': 'Nuova sessione',
+        'viewOptions.label': 'Opzioni vista',
+        'viewOptions.groupBy': 'Raggruppa per',
+        'viewOptions.byWorkspace': 'Aree di lavoro',
+        'viewOptions.byWorkspaceTree': 'Albero aree di lavoro',
+        'viewOptions.flat': 'In un elenco',
+        'viewOptions.orderBy': 'Ordina per',
+        'viewOptions.manualOrder': 'Manuale',
+        'viewOptions.updatedOrder': 'Ultimo aggiornamento',
+        'viewOptions.sessionSlash': 'Raggruppa sessioni per "/"',
+        'viewOptions.workspaceSlash': 'Raggruppa aree per "/"',
         'group.ungrouped': 'Senza gruppo',
         'sessions.expand': 'Mostra {n} sessioni',
         'sessions.collapse': 'Comprimi',
@@ -928,6 +1008,16 @@ window.__ModuleLoader__.load({
         'empty': 'ワークスペースがありません',
         'empty.search': '一致する結果がありません',
         'session.new': '新しいセッション',
+        'viewOptions.label': '表示オプション',
+        'viewOptions.groupBy': 'グループ化',
+        'viewOptions.byWorkspace': 'ワークスペースごと',
+        'viewOptions.byWorkspaceTree': 'ワークスペースツリーごと',
+        'viewOptions.flat': '1 つのリスト',
+        'viewOptions.orderBy': '並べ替え',
+        'viewOptions.manualOrder': '手動',
+        'viewOptions.updatedOrder': '最近の更新',
+        'viewOptions.sessionSlash': 'セッションを「/」でグループ化',
+        'viewOptions.workspaceSlash': 'ワークスペースを「/」でグループ化',
         'group.ungrouped': '未分類',
         'sessions.expand': '{n} 件のセッションを展開',
         'sessions.collapse': '折りたたむ',
@@ -1038,6 +1128,16 @@ window.__ModuleLoader__.load({
         'empty': '워크스페이스가 없습니다',
         'empty.search': '일치하는 결과가 없습니다',
         'session.new': '새 세션',
+        'viewOptions.label': '보기 옵션',
+        'viewOptions.groupBy': '그룹화',
+        'viewOptions.byWorkspace': '작업 공간별',
+        'viewOptions.byWorkspaceTree': '작업 공간 트리별',
+        'viewOptions.flat': '하나의 목록',
+        'viewOptions.orderBy': '정렬',
+        'viewOptions.manualOrder': '수동',
+        'viewOptions.updatedOrder': '최근 업데이트',
+        'viewOptions.sessionSlash': '세션을 "/"로 그룹화',
+        'viewOptions.workspaceSlash': '작업 공간을 "/"로 그룹화',
         'group.ungrouped': '미분류',
         'sessions.expand': '세션 {n}개 펼치기',
         'sessions.collapse': '접기',
@@ -1148,6 +1248,16 @@ window.__ModuleLoader__.load({
         'empty': 'Nog geen werkruimten',
         'empty.search': 'Geen resultaten',
         'session.new': 'Nieuwe sessie',
+        'viewOptions.label': 'Weergaveopties',
+        'viewOptions.groupBy': 'Groeperen op',
+        'viewOptions.byWorkspace': 'Werkruimtes',
+        'viewOptions.byWorkspaceTree': 'Werkruimteboom',
+        'viewOptions.flat': 'In één lijst',
+        'viewOptions.orderBy': 'Sorteren op',
+        'viewOptions.manualOrder': 'Handmatig',
+        'viewOptions.updatedOrder': 'Laatst bijgewerkt',
+        'viewOptions.sessionSlash': 'Sessies groeperen op "/"',
+        'viewOptions.workspaceSlash': 'Werkruimtes groeperen op "/"',
         'group.ungrouped': 'Zonder groep',
         'sessions.expand': '{n} sessies uitklappen',
         'sessions.collapse': 'Inklappen',
@@ -1258,6 +1368,16 @@ window.__ModuleLoader__.load({
         'empty': 'Brak obszarów roboczych',
         'empty.search': 'Brak wyników',
         'session.new': 'Nowa sesja',
+        'viewOptions.label': 'Opcje widoku',
+        'viewOptions.groupBy': 'Grupuj według',
+        'viewOptions.byWorkspace': 'Obszary robocze',
+        'viewOptions.byWorkspaceTree': 'Drzewo obszarów',
+        'viewOptions.flat': 'Jedna lista',
+        'viewOptions.orderBy': 'Sortuj według',
+        'viewOptions.manualOrder': 'Ręcznie',
+        'viewOptions.updatedOrder': 'Ostatnia aktualizacja',
+        'viewOptions.sessionSlash': 'Grupuj sesje po "/"',
+        'viewOptions.workspaceSlash': 'Grupuj obszary po "/"',
         'group.ungrouped': 'Bez grupy',
         'sessions.expand': 'Pokaż {n} sesji',
         'sessions.collapse': 'Zwiń',
@@ -1368,6 +1488,16 @@ window.__ModuleLoader__.load({
         'empty': 'Nenhum espaço de trabalho',
         'empty.search': 'Nenhum resultado',
         'session.new': 'Nova sessão',
+        'viewOptions.label': 'Opções de vista',
+        'viewOptions.groupBy': 'Agrupar por',
+        'viewOptions.byWorkspace': 'Áreas de trabalho',
+        'viewOptions.byWorkspaceTree': 'Árvore de áreas',
+        'viewOptions.flat': 'Numa lista',
+        'viewOptions.orderBy': 'Ordenar por',
+        'viewOptions.manualOrder': 'Manual',
+        'viewOptions.updatedOrder': 'Atualização recente',
+        'viewOptions.sessionSlash': 'Agrupar sessões por "/"',
+        'viewOptions.workspaceSlash': 'Agrupar áreas por "/"',
         'group.ungrouped': 'Sem grupo',
         'sessions.expand': 'Mostrar {n} sessões',
         'sessions.collapse': 'Recolher',
@@ -1478,6 +1608,16 @@ window.__ModuleLoader__.load({
         'empty': 'Рабочих областей пока нет',
         'empty.search': 'Ничего не найдено',
         'session.new': 'Новая сессия',
+        'viewOptions.label': 'Параметры вида',
+        'viewOptions.groupBy': 'Группировка',
+        'viewOptions.byWorkspace': 'По рабочим областям',
+        'viewOptions.byWorkspaceTree': 'По дереву областей',
+        'viewOptions.flat': 'Одним списком',
+        'viewOptions.orderBy': 'Сортировка',
+        'viewOptions.manualOrder': 'Вручную',
+        'viewOptions.updatedOrder': 'По обновлению',
+        'viewOptions.sessionSlash': 'Группировать сессии по «/»',
+        'viewOptions.workspaceSlash': 'Группировать области по «/»',
         'group.ungrouped': 'Без группы',
         'sessions.expand': 'Показать ещё {n} сессий',
         'sessions.collapse': 'Свернуть',
@@ -1588,6 +1728,16 @@ window.__ModuleLoader__.load({
         'empty': 'Inga arbetsytor ännu',
         'empty.search': 'Inga träffar',
         'session.new': 'Ny session',
+        'viewOptions.label': 'Visningsalternativ',
+        'viewOptions.groupBy': 'Gruppera efter',
+        'viewOptions.byWorkspace': 'Arbetsytor',
+        'viewOptions.byWorkspaceTree': 'Arbetsyta-träd',
+        'viewOptions.flat': 'I en lista',
+        'viewOptions.orderBy': 'Sortera efter',
+        'viewOptions.manualOrder': 'Manuellt',
+        'viewOptions.updatedOrder': 'Senast uppdaterad',
+        'viewOptions.sessionSlash': 'Gruppera sessioner efter "/"',
+        'viewOptions.workspaceSlash': 'Gruppera arbetsytor efter "/"',
         'group.ungrouped': 'Utan grupp',
         'sessions.expand': 'Visa {n} sessioner',
         'sessions.collapse': 'Fäll ihop',
@@ -1698,6 +1848,16 @@ window.__ModuleLoader__.load({
         'empty': 'ยังไม่มีพื้นที่ทำงาน',
         'empty.search': 'ไม่พบผลลัพธ์ที่ตรงกัน',
         'session.new': 'เซสชันใหม่',
+        'viewOptions.label': 'ตัวเลือกมุมมอง',
+        'viewOptions.groupBy': 'จัดกลุ่มตาม',
+        'viewOptions.byWorkspace': 'ตามพื้นที่ทำงาน',
+        'viewOptions.byWorkspaceTree': 'ตามแผนผังพื้นที่ทำงาน',
+        'viewOptions.flat': 'รายการเดียว',
+        'viewOptions.orderBy': 'เรียงตาม',
+        'viewOptions.manualOrder': 'ด้วยตนเอง',
+        'viewOptions.updatedOrder': 'อัปเดตล่าสุด',
+        'viewOptions.sessionSlash': 'จัดกลุ่มเซสชันตาม "/"',
+        'viewOptions.workspaceSlash': 'จัดกลุ่มพื้นที่ทำงานตาม "/"',
         'group.ungrouped': 'ไม่มีกลุ่ม',
         'sessions.expand': 'แสดงอีก {n} เซสชัน',
         'sessions.collapse': 'ย่อ',
@@ -1808,6 +1968,16 @@ window.__ModuleLoader__.load({
         'empty': 'Henüz çalışma alanı yok',
         'empty.search': 'Eşleşen sonuç yok',
         'session.new': 'Yeni oturum',
+        'viewOptions.label': 'Görünüm seçenekleri',
+        'viewOptions.groupBy': 'Gruplandır',
+        'viewOptions.byWorkspace': 'Çalışma alanları',
+        'viewOptions.byWorkspaceTree': 'Çalışma alanı ağacı',
+        'viewOptions.flat': 'Tek liste',
+        'viewOptions.orderBy': 'Sırala',
+        'viewOptions.manualOrder': 'El ile',
+        'viewOptions.updatedOrder': 'Son güncelleme',
+        'viewOptions.sessionSlash': 'Oturumları "/" ile gruplandır',
+        'viewOptions.workspaceSlash': 'Çalışma alanlarını "/" ile gruplandır',
         'group.ungrouped': 'Grubusuz',
         'sessions.expand': '{n} oturumu göster',
         'sessions.collapse': 'Daralt',
@@ -1918,6 +2088,16 @@ window.__ModuleLoader__.load({
         'empty': 'Chưa có không gian làm việc',
         'empty.search': 'Không có kết quả phù hợp',
         'session.new': 'Phiên mới',
+        'viewOptions.label': 'Tùy chọn hiển thị',
+        'viewOptions.groupBy': 'Nhóm theo',
+        'viewOptions.byWorkspace': 'Theo khu vực làm việc',
+        'viewOptions.byWorkspaceTree': 'Theo cây khu vực',
+        'viewOptions.flat': 'Một danh sách',
+        'viewOptions.orderBy': 'Sắp xếp theo',
+        'viewOptions.manualOrder': 'Thủ công',
+        'viewOptions.updatedOrder': 'Cập nhật gần đây',
+        'viewOptions.sessionSlash': 'Nhóm phiên theo "/"',
+        'viewOptions.workspaceSlash': 'Nhóm khu vực theo "/"',
         'group.ungrouped': 'Chưa phân nhóm',
         'sessions.expand': 'Hiện thêm {n} phiên',
         'sessions.collapse': 'Thu gọn',
@@ -2028,6 +2208,16 @@ window.__ModuleLoader__.load({
         'empty': '未有工作區',
         'empty.search': '搵唔到符合嘅結果',
         'session.new': '新對話',
+        'viewOptions.label': '檢視選項',
+        'viewOptions.groupBy': '分組方式',
+        'viewOptions.byWorkspace': '按工作區',
+        'viewOptions.byWorkspaceTree': '按工作區樹',
+        'viewOptions.flat': '單一列表',
+        'viewOptions.orderBy': '排序方式',
+        'viewOptions.manualOrder': '手動排序',
+        'viewOptions.updatedOrder': '最近更新',
+        'viewOptions.sessionSlash': '對話按「/」分組',
+        'viewOptions.workspaceSlash': '工作區按「/」分組',
         'group.ungrouped': '未分組',
         'sessions.expand': '展開 {n} 個對話',
         'sessions.collapse': '收起',
@@ -2138,6 +2328,16 @@ window.__ModuleLoader__.load({
         'empty': '未有工作區',
         'empty.search': '搵唔到符合嘅結果',
         'session.new': '新對話',
+        'viewOptions.label': '檢視選項',
+        'viewOptions.groupBy': '分組方式',
+        'viewOptions.byWorkspace': '按工作區',
+        'viewOptions.byWorkspaceTree': '按工作區樹',
+        'viewOptions.flat': '單一列表',
+        'viewOptions.orderBy': '排序方式',
+        'viewOptions.manualOrder': '手動排序',
+        'viewOptions.updatedOrder': '最近更新',
+        'viewOptions.sessionSlash': '對話按「/」分組',
+        'viewOptions.workspaceSlash': '工作區按「/」分組',
         'group.ungrouped': '未分組',
         'sessions.expand': '展開 {n} 個對話',
         'sessions.collapse': '收起',
@@ -2248,6 +2448,16 @@ window.__ModuleLoader__.load({
         'empty': '尚無工作區',
         'empty.search': '沒有相符的結果',
         'session.new': '新工作階段',
+        'viewOptions.label': '檢視選項',
+        'viewOptions.groupBy': '分組方式',
+        'viewOptions.byWorkspace': '按工作區',
+        'viewOptions.byWorkspaceTree': '按工作區樹',
+        'viewOptions.flat': '單一列表',
+        'viewOptions.orderBy': '排序方式',
+        'viewOptions.manualOrder': '手動排序',
+        'viewOptions.updatedOrder': '最近更新',
+        'viewOptions.sessionSlash': '工作階段按「/」分組',
+        'viewOptions.workspaceSlash': '工作區按「/」分組',
         'group.ungrouped': '未分組',
         'sessions.expand': '展開 {n} 個工作階段',
         'sessions.collapse': '收合',
@@ -2496,6 +2706,21 @@ window.__ModuleLoader__.load({
       && (!summary.blank || summary.id === current)
 
     /**
+     * dsh 0.1.6-alpha.2 dropped SessionListState.current: the "open" session
+     * is now the one retained under the mainView source — navigation belongs
+     * to the view owner (official ui-workspace tree.ts mainSessionId). The
+     * old wire field is gone, so reading it yields a permanent undefined
+     * (no current highlight, and blank rows would filter out everywhere).
+     */
+    const mainSessionIdOf = (list) => {
+      if (!list || !list.byId) return undefined
+      for (const session of Object.values(list.byId)) {
+        if (session && session.retainedBy && (session.retainedBy.mainView || 0) > 0) return session.id
+      }
+      return undefined
+    }
+
+    /**
      * Active-schedule marker, mirroring the official tree's
      * hasActiveSchedule(): the list projection carries one entry per active
      * Schedule record, and a non-empty projection is the badge's only gate.
@@ -2548,9 +2773,15 @@ window.__ModuleLoader__.load({
      * titles. Groups are virtual (projection of names). Rows keep the Host
      * workspace.sessionIds (manual) order — drag-to-reorder must be visible.
      */
-    function buildSessionTree(rows) {
+    function buildSessionTree(rows, groupBySlash) {
       const root = { path: '', name: '', groups: [], sessions: [] }
       const byPath = new Map([['', root]])
+      // Slash grouping OFF (v0.13 view option): every row lands at the
+      // root level and keeps its FULL title as the leaf — no levels.
+      if (groupBySlash === false) {
+        for (const row of rows || []) root.sessions.push({ ...row, leaf: row.title })
+        return root
+      }
       // SEGMENT-driven: paths arrive as already-split segment arrays (URL-aware
       // splitTitleSegs can yield segments containing "//", e.g. the
       // "scheme://host" authority segment) and are joined into the path KEY
@@ -2664,7 +2895,7 @@ window.__ModuleLoader__.load({
       }
       return map
     }
-    function buildTree(items) {
+    function buildTree(items, groupBySlash) {
       const list = items || []
       const diskParentOf = diskParentMapOf(list)
       const childrenOf = new Map()
@@ -2705,7 +2936,7 @@ window.__ModuleLoader__.load({
           const folderPath = segs.slice(0, -1).join('/')
           const leaf = segs.length > 0 ? segs[segs.length - 1] : (basename(workspace.path) || String(workspace.title || '') || String(workspace.workspaceId || ''))
           const subList = childrenOf.get(workspace.workspaceId)
-          ensure(segs.slice(0, -1)).workspaces.push({
+          const entry = {
             workspaceId: workspace.workspaceId,
             title: String(workspace.title || ''),
             path: String(workspace.path || ''),
@@ -2713,7 +2944,17 @@ window.__ModuleLoader__.load({
             leaf,
             folderPath,
             sub: subList ? buildLevel(subList, (idPrefix !== '' ? idPrefix + '//' : '') + workspace.workspaceId) : null,
-          })
+          }
+          // Slash grouping OFF (v0.13 view option): skip the name layer —
+          // workspaces mount straight at their disk level; the DISK layer
+          // is a filesystem fact and stays.
+          if (groupBySlash === false) {
+            entry.leaf = String(workspace.title || '') || leaf
+            entry.folderPath = ''
+            root.workspaces.push(entry)
+            continue
+          }
+          ensure(segs.slice(0, -1)).workspaces.push(entry)
         }
         const sortRec = (node) => {
           node.folders.sort((a, b) => a.name.localeCompare(b.name, 'zh'))
@@ -2951,7 +3192,7 @@ window.__ModuleLoader__.load({
     /* ========================== view store =========================== */
 
     const createViewStore = () => storeKit.defineStore({
-      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true }, styling: {} }),
+      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true }, styling: {}, groupBy: 'workspace-tree', orderBy: 'manual', sessionTitleSlash: true, workspaceTitleSlash: true }),
       // NOTE: hydration REPLACES the state with the persisted whole value —
       // init defaults never merge. Every action must tolerate a missing key
       // (states persisted by older plugin versions lack sessionGroups), and
@@ -2994,6 +3235,14 @@ window.__ModuleLoader__.load({
           if (!Array.isArray(order) || order.length === 0) delete d.sessionOrder[workspaceId]
           else d.sessionOrder[workspaceId] = order.slice()
         },
+        // View options (v0.13): mirror the official browser's group/order
+        // menu plus the two slash-grouping toggles. groupBy mirrors the
+        // official literal set; the bw defaults keep the founding behaviour
+        // (tree + both slash layers on + manual host order).
+        setGroupBy: (d, value) => { d.groupBy = value },
+        setOrderBy: (d, value) => { d.orderBy = value },
+        setSessionTitleSlash: (d, value) => { d.sessionTitleSlash = value !== false },
+        setWorkspaceTitleSlash: (d, value) => { d.workspaceTitleSlash = value !== false },
       },
     })
 
@@ -3951,6 +4200,60 @@ window.__ModuleLoader__.load({
       )
     }
 
+    /* ------------------------- view options menu ---------------------- */
+
+    /**
+     * View options (v0.13): mirrors the official browser's ViewOptionsMenu —
+     * primitives Menu, label/separator/selectedIds structure, portal + dense
+     * + end alignment. Group/order picks close the menu; the two slash
+     * toggles flip in place (they ride selectedIds: present = on) and stay
+     * open. Options that cannot affect the current mode render disabled:
+     * slash toggles mean nothing in the flat list, and the WORKSPACE-name
+     * toggle only shapes the tree mode (the flat workspace level has no
+     * name layer). The primitives Menu is feature-probed like every
+     * component — without it the button simply never renders.
+     */
+    function ViewOptionsMenu({ groupBy, orderBy, sessionSlash, workspaceSlash, onPick, onToggle, t }) {
+      const [open, setOpen] = React.useState(false)
+      if (typeof ui.Menu !== 'function') return null
+      return E(ui.Menu, {
+        open,
+        onClose: () => { setOpen(false) },
+        items: [
+          { type: 'label', id: 'bw-group-by', text: t('viewOptions.groupBy') },
+          { id: 'workspace', label: t('viewOptions.byWorkspace') },
+          { id: 'workspace-tree', label: t('viewOptions.byWorkspaceTree') },
+          { id: 'flat', label: t('viewOptions.flat') },
+          { type: 'separator', id: 'bw-order-sep' },
+          { type: 'label', id: 'bw-order-by', text: t('viewOptions.orderBy') },
+          { id: 'manual', label: t('viewOptions.manualOrder') },
+          { id: 'updated', label: t('viewOptions.updatedOrder') },
+          { type: 'separator', id: 'bw-slash-sep' },
+          { id: 'session-slash', label: t('viewOptions.sessionSlash'), disabled: groupBy === 'flat' },
+          { id: 'workspace-slash', label: t('viewOptions.workspaceSlash'), disabled: groupBy !== 'workspace-tree' },
+        ],
+        selectedIds: [groupBy, orderBy]
+          .concat(sessionSlash ? ['session-slash'] : [])
+          .concat(workspaceSlash ? ['workspace-slash'] : []),
+        onSelect: (id) => {
+          if (id === 'workspace' || id === 'workspace-tree' || id === 'flat') { onPick('groupBy', id); setOpen(false); return }
+          if (id === 'manual' || id === 'updated') { onPick('orderBy', id); setOpen(false); return }
+          if (id === 'session-slash') { onToggle('sessionTitleSlash', !sessionSlash); return }
+          if (id === 'workspace-slash') { onToggle('workspaceTitleSlash', !workspaceSlash); return }
+        },
+        align: 'end',
+        dense: true,
+        portal: true,
+        anchor: E('button', {
+          type: 'button',
+          className: 'bw-icon-btn',
+          'aria-label': t('viewOptions.label'),
+          title: t('viewOptions.label'),
+          onClick: () => { setOpen(v => !v) },
+        }, icon('IconPersonalizationOutline16')),
+      })
+    }
+
     /* --------------------- customization dialog ----------------------- */
 
     const SWATCHES = ['', '#5b8def', '#3fb950', '#d29922', '#f85149', '#a371f7', '#39c5cf', '#ec6cb9', '#ff9f45', '#6e7681']
@@ -4442,6 +4745,13 @@ window.__ModuleLoader__.load({
       const prefsMap = useStore ? (useStore(s => s.prefs) || {}) : {}
       const stylingMap = useStore ? (useStore(s => s.styling) || {}) : {}
       const sessionOrderMap = useStore ? (useStore(s => s.sessionOrder) || {}) : {}
+      // View options (v0.13). Selector reads take fallbacks: hydration
+      // replaces the whole persisted value, so states written by older
+      // plugin versions lack these keys (hard store discipline).
+      const groupBy = useStore ? (useStore(s => s.groupBy) || 'workspace-tree') : 'workspace-tree'
+      const orderBy = useStore ? (useStore(s => s.orderBy) || 'manual') : 'manual'
+      const sessionSlash = useStore ? (useStore(s => s.sessionTitleSlash) !== false) : true
+      const workspaceSlash = useStore ? (useStore(s => s.workspaceTitleSlash) !== false) : true
       // Dual-write wrappers: every preference mutation lands in the local
       // store (immediate echo + scope-less fallback) AND the host settings
       // store (durable cross-device copy for the manual pull on the other
@@ -4451,6 +4761,8 @@ window.__ModuleLoader__.load({
       const statusPulse = prefsMap.statusPulse !== false
       const archivedSet = React.useMemo(() => new Set(archivedSessionIds), [archivedSessionIds])
       const subCounts = React.useMemo(() => subagentRunningCounts(list ? list.byId : {}), [list ? list.byId : null])
+      // Current session per the alpha.2 retention contract (see mainSessionIdOf).
+      const currentId = React.useMemo(() => mainSessionIdOf(list), [list ? list.byId : null])
       // Last-known real titles for the cold-restart fallback window (see
       // the title-cache block). Read per render via getSnapshot: no
       // subscription, because a cache write only happens when summary.title
@@ -4670,7 +4982,7 @@ window.__ModuleLoader__.load({
       if (list && Array.isArray(list.ids)) {
         for (const id of list.ids) {
           const summary = list.byId[id]
-          if (accounted.has(id) || !sessionVisible(summary, list.current, archivedSet)) continue
+          if (accounted.has(id) || !sessionVisible(summary, currentId, archivedSet)) continue
           ungrouped.push({
             id,
             title: sessionTitleOf(summary, t, rememberedTitleOf(id)),
@@ -4696,10 +5008,10 @@ window.__ModuleLoader__.load({
       // their drop targets live inside workspace rows, which compression merges.
       const draggingWorkspace = drag !== null && drag.kind === 'workspace'
       const tree = React.useMemo(() => {
-        const built = buildTree(items)
+        const built = buildTree(items, workspaceSlash)
         if (!compactChains || draggingWorkspace) return built
         return { ...built, folders: built.folders.map((f) => materializeChain(compressTree(f))), workspaces: built.workspaces }
-      }, [items, compactChains, draggingWorkspace])
+      }, [items, compactChains, draggingWorkspace, workspaceSlash])
       // Disk-layer ancestry for drag semantics (same derivation as buildTree).
       const diskParentMap = React.useMemo(() => diskParentMapOf(items), [items])
 
@@ -4714,7 +5026,7 @@ window.__ModuleLoader__.load({
         const rows = []
         for (const id of workspace.sessionIds || []) {
           const summary = list && list.byId ? list.byId[id] : undefined
-          if (!sessionVisible(summary, list ? list.current : undefined, archivedSet)) continue
+          if (!sessionVisible(summary, currentId, archivedSet)) continue
           rows.push({
             id,
             title: sessionTitleOf(summary, t, rememberedTitleOf(id)),
@@ -4733,6 +5045,21 @@ window.__ModuleLoader__.load({
         // user dragged in, and is empty everywhere else — so a host that still
         // exposes the action keeps its authoritative order untouched.
         // Host order stays authoritative wherever the action exists.
+        // Recency ordering (v0.13 view option, official orderBy semantics):
+        // updatedAt descending with an id tie-break, and the CURRENT blank
+        // session — the provisional New Session row — pinned on top. Purely
+        // presentational: nothing is persisted, the host order is untouched,
+        // and drag-to-reorder anchors are suppressed while active (an order
+        // the very next render would re-sort is a lie).
+        if (orderBy === 'updated') {
+          const sorted = rows.slice().sort((a, b) => (b.updatedAt - a.updatedAt) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+          const pin = currentId !== undefined && sorted.find((row) => row.id === currentId && row.blank)
+          if (pin) {
+            const at = sorted.indexOf(pin)
+            if (at > 0) { sorted.splice(at, 1); sorted.unshift(pin) }
+          }
+          return sorted
+        }
         const local = typeof insertSessionBefore === 'function' ? [] : sessionOrderOf(workspace.workspaceId)
         if (local.length === 0) return rows
         const remaining = new Map(rows.map((row) => [row.id, row]))
@@ -4791,7 +5118,7 @@ window.__ModuleLoader__.load({
       // tree AND its disk-nested child levels.
       const wsAllPulseOf = (workspace) => {
         if (!statusPulse || searching) return null
-        let best = nodePulseOf(buildSessionTree(sessionsOf(workspace)))
+        let best = nodePulseOf(buildSessionTree(sessionsOf(workspace), sessionSlash))
         if (workspace.sub) {
           for (const folder of workspace.sub.folders) {
             const s = folderPulseOf(folder)
@@ -4985,6 +5312,9 @@ window.__ModuleLoader__.load({
       /* ---------------------- session drag & drop --------------------- */
 
       const sessDropHalf = (sessionId) => {
+        // Recency ordering is purely presentational: an anchor for a move
+        // the very next render would re-sort is a lie — suppress it.
+        if (orderBy === 'updated') return null
         if (!dragMatches('session')) return null
         const over = drag.over
         return over && over.kind === 'session' && over.target === sessionId ? over.half : null
@@ -5104,7 +5434,7 @@ window.__ModuleLoader__.load({
         if (name === target.name) { setDialog(null); return }
         const workspace = (items || []).find(w => w.workspaceId === target.workspaceId)
         if (!workspace) { setDialog(null); return }
-        const node = findSessionGroup(buildSessionTree(sessionsOf(workspace)), target.path)
+        const node = findSessionGroup(buildSessionTree(sessionsOf(workspace), sessionSlash), target.path)
         if (!node) { setDialog(null); return }
         const parentPath = target.path.includes('/') ? target.path.slice(0, target.path.lastIndexOf('/')) : ''
         const nextPath = parentPath !== '' ? parentPath + '/' + name : name
@@ -5165,7 +5495,7 @@ window.__ModuleLoader__.load({
         if (!searching && !sessionsOpenOf(workspace.workspaceId)) return []
         const rows = sessionsOf(workspace)
         if (rows.length === 0) return []
-        return renderSessionNode(buildSessionTree(rows), workspace.workspaceId, depth)
+        return renderSessionNode(buildSessionTree(rows, sessionSlash), workspace.workspaceId, depth)
       }
       const searchSessionNode = (node) => {
         const groups = []
@@ -5208,7 +5538,7 @@ window.__ModuleLoader__.load({
         key: session.id,
         node: session,
         depth,
-        current: list && list.current === session.id,
+        current: currentId === session.id,
         now,
         onOpen: (id) => open(id),
         onContextMenu: (e) => openCtx('session', session, e),
@@ -5221,14 +5551,14 @@ window.__ModuleLoader__.load({
 
       const renderWorkspaceEntry = (entry, depth, pulse) => {
         const { workspace } = entry
-        const count = countSessionTree(buildSessionTree(sessionsOf(workspace)))
+        const count = countSessionTree(buildSessionTree(sessionsOf(workspace), sessionSlash))
         const rows = [E(WorkspaceRow, {
           key: 'ws-' + workspace.workspaceId,
           workspace,
           depth,
           count,
           sessionsOpen: searching ? true : sessionsOpenOf(workspace.workspaceId),
-          currentInside: !!(list && list.current && (workspace.sessionIds || []).includes(list.current)),
+          currentInside: !!(currentId && (workspace.sessionIds || []).includes(currentId)),
           onToggle: () => { if (!searching) actions.setSessionsExpanded(workspace.workspaceId, !sessionsOpenOf(workspace.workspaceId)) },
           // Starting a session force-expands the workspace row: the user must
           // SEE the new session appear, even if the row was collapsed.
@@ -5286,16 +5616,41 @@ window.__ModuleLoader__.load({
         return rows
       }
 
+      // Single flat list (v0.13 groupBy:'flat', official FlatList semantics):
+      // every visible session — each workspace's rows plus the ungrouped
+      // account — as one depth-0 list. Rows keep their FULL title (no leaf
+      // split, no levels), and render through the workspaceId-less path,
+      // which carries no drag anchors by construction.
+      const renderFlatRows = () => {
+        const rows = []
+        for (const workspace of items || []) rows.push(...sessionsOf(workspace))
+        rows.push(...ungrouped)
+        return rows.map((s) => renderSessionRow({ ...s, leaf: s.title }, 0, undefined))
+      }
+      const renderUngroupedBlock = () => {
+        const rows = []
+        if (ungrouped.length > 0) {
+          rows.push(E('div', { key: 'ungrouped-label', className: 'bw-header-title', style: { padding: '10px 6px 2px' } }, t('group.ungrouped')))
+          for (const s of ungrouped) rows.push(renderSessionRow(s, 0))
+        }
+        return rows
+      }
       let bodyRows = []
       if (searching) {
         for (const entry of searched) bodyRows.push(...renderWorkspaceEntry(entry, 0))
+      } else if (groupBy === 'flat') {
+        bodyRows.push(...renderFlatRows())
+      } else if (groupBy === 'workspace') {
+        // Official 'workspace' mode (v0.13): one level — every workspace at
+        // the root, no name groups, no disk nesting, no chain compression.
+        // Session rows keep the slash toggle; disk-nested children do not
+        // recurse here because raw items carry no .sub level.
+        for (const workspace of items || []) bodyRows.push(...renderWorkspaceEntry({ workspace }, 0, wsPulseOf(workspace)))
+        bodyRows.push(...renderUngroupedBlock())
       } else {
         for (const folder of tree.folders) bodyRows.push(...renderPlainFolder(folder, 0))
         for (const workspace of tree.workspaces) bodyRows.push(...renderWorkspaceEntry({ workspace }, 0, wsPulseOf(workspace)))
-        if (ungrouped.length > 0) {
-          bodyRows.push(E('div', { key: 'ungrouped-label', className: 'bw-header-title', style: { padding: '10px 6px 2px' } }, t('group.ungrouped')))
-          for (const s of ungrouped) bodyRows.push(renderSessionRow(s, 0))
-        }
+        bodyRows.push(...renderUngroupedBlock())
       }
       const isEmpty = bodyRows.length === 0
       if (isEmpty) {
@@ -5453,6 +5808,15 @@ window.__ModuleLoader__.load({
             onKeyDown: (e) => { if (e.key === 'Escape') { setQuery(''); setSearchOpen(false) } },
             onBlur: () => { if (query === '') setSearchOpen(false) },
           }) : null,
+          E(ViewOptionsMenu, {
+            groupBy,
+            orderBy,
+            sessionSlash,
+            workspaceSlash,
+            onPick: (kind, value) => { if (kind === 'groupBy') actions.setGroupBy(value); else actions.setOrderBy(value) },
+            onToggle: (key, value) => { if (key === 'sessionTitleSlash') actions.setSessionTitleSlash(value); else actions.setWorkspaceTitleSlash(value) },
+            t,
+          }),
           E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('search.placeholder'), onClick: () => setSearchOpen(v => !v) }, icon('IconSearchOutline16')),
           flowAvailable ? E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('add'), onClick: () => setFlowOpen(true) }, icon('IconProjectAddOutline16')) : null,
         ),
@@ -5571,22 +5935,28 @@ window.__ModuleLoader__.load({
         if (!result || !result.ok) throw new Error(result && result.error ? result.error.message : 'session search failed')
         return result.value
       }
+      // dsh 0.1.6-alpha.2 retention contract: rename borrows through
+      // sessions.using with an explicit source — the old plain binding(id)
+      // only ever saw already-retained sessions, so renaming a closed row
+      // reported "unknown session". Fork and open go through the uiWorkspace
+      // navigation service: ISessions no longer carries open() at all
+      // (navigation belongs to the view owner, replaceMain).
       const renameSession = async (sessionId, title) => {
-        const binding = sessions.binding(sessionId)
-        const session = binding && binding.session
-        if (!session) throw new Error('unknown session "' + sessionId + '"')
-        const result = await session.rename(title)
+        const result = await sessions.using(
+          sessionId,
+          { source: 'workspaceOperation' },
+          (reference) => reference.binding.session.rename(title),
+        )
         if (!result || !result.ok) throw new Error(result && result.error ? result.error.message : 'session rename failed')
       }
       const forkSession = (sessionId) => {
-        sessions.fork({ sessionId, increaseTitle: true })
-          .then((childId) => sessions.open(childId))
+        uiWorkspace.forkSession(sessionId)
           .catch(() => { /* keep current selection */ })
       }
 
       const browserInjected = () => ({
         startSession: (workspaceId) => { uiWorkspace.startSession(workspaceId) },
-        open: (sessionId) => { sessions.open(sessionId) },
+        open: (sessionId) => { uiWorkspace.openSession(sessionId) },
         searchSessions,
         searchResultLimit: sessions.searchResultLimit !== undefined ? sessions.searchResultLimit : 20,
         renameSession,

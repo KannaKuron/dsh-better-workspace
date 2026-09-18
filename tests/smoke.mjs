@@ -715,3 +715,32 @@ test('in-app browser: the create action really calls the wire verb (0.11.5)', as
   assert.doesNotMatch(submit, /Promise\.resolve\(\)\s*\n\s*\.then\(\(created\)/, 'the dangling chain must not return')
 })
 
+
+/**
+ * Context menu (v0.14.0): mirrors the OFFICIAL row menus item-for-item —
+ * same ids, icons, danger semantics, and the official 'workspace'
+ * dictionary COPY bound at apply time so upstream rewording follows
+ * without a release. Customize appearance appends after a separator; the
+ * session archive entry is deliberately NOT destructive (official
+ * semantics), and the menu renders through the official primitives Menu.
+ */
+test('context menu: official alignment via the workspace dictionary (0.14.0)', () => {
+  const text = read('src/client.js')
+  assert.match(text, /ctx\.locale\.bind\('workspace'\)/, 'binds the official dictionary')
+  assert.match(text, /let officialT = null/)
+  assert.match(text, /officialT,/)
+  // Menu entries follow official ids, icons, and danger semantics.
+  assert.match(text, /ot\('delete\.workspace'\)/)
+  assert.match(text, /ot\('menu\.fork'\)/)
+  assert.match(text, /ot\('menu\.archiveSession'\)/)
+  assert.match(text, /ot\('rename'\)/)
+  assert.match(text, /icon\('IconArchiveOutline20', 16\)/)
+  assert.match(text, /icon\('IconTrashOutline16', 16\), danger: true/)
+  // The archive entry must NOT be destructive (official Rows.tsx comment).
+  assert.match(text, /deliberately NOT styled destructive/)
+  // Rendered through the official primitives Menu, positioned by the event.
+  assert.match(text, /typeof ui\.Menu === 'function'\) \? E\(ui\.Menu/)
+  assert.match(text, /getAnchorRect: \(\) => new DOMRect\(ctx\.x, ctx\.y, 0, 0\)/)
+  // The bw-only entries ride after a separator.
+  assert.match(text, /id: 'customize', label: t\('custom\.title'\), icon: icon\('IconPersonalizationOutline16', 16\)/)
+})

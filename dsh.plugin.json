@@ -1,6 +1,6 @@
 {
   "id": "dsh-external/dsh-better-workspace",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "main": "./src/index.js",
   "description": "侧边栏工作区两层层级树:工作区按磁盘目录嵌套(官方 workspace-tree 语义),名称中的 / 即虚拟分组(web/前端 · web/后端);添加工作区由官方目录流承载。Two-layer hierarchy tree for the DSH sidebar workspace list.",
   "engines": {

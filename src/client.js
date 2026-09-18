@@ -4726,6 +4726,7 @@ window.__ModuleLoader__.load({
         insertWorkspaceBefore, insertSessionBefore,
         useDirectoryFlow,
         pickDirectory, listDirectory, createDirectory,
+        officialT,
         t,
       } = props
 
@@ -5659,30 +5660,42 @@ window.__ModuleLoader__.load({
 
       /* ------------------------- context menu ------------------------ */
 
-      const ctxItems = () => {
+      // Context-menu entries mirror the OFFICIAL row menus item-for-item
+      // (ui-workspace Rows.tsx workspaceMenuItems / sessionMenuItems): same
+      // ids, same icons, same danger semantics, and — through the official
+      // 'workspace' dictionary — the same copy, so upstream rewording lands
+      // here without a plugin release. What the official menus cannot
+      // provide is the bw-only surface: name-group / session-group rename
+      // and Customize appearance, appended after a separator.
+      const ot = typeof officialT === 'function' ? officialT : null
+      const menuEntries = () => {
         if (ctx === null) return []
+        const customizeEntry = { id: 'customize', label: t('custom.title'), icon: icon('IconPersonalizationOutline16', 16) }
         if (ctx.kind === 'folder') return [
-          { id: 'rename-folder', label: t('menu.renameFolder') },
-          { sep: true },
-          { id: 'customize', label: t('custom.title') },
+          { id: 'rename-folder', label: t('menu.renameFolder'), icon: icon('IconEditOutline16', 16) },
+          { type: 'separator', id: 'bw-sep' },
+          customizeEntry,
         ]
         if (ctx.kind === 'workspace') return [
-          { id: 'rename', label: t('menu.rename') },
-          { id: 'delete', label: t('menu.delete'), danger: true },
-          { sep: true },
-          { id: 'customize', label: t('custom.title') },
+          { id: 'rename', label: ot ? ot('rename') : t('menu.rename'), icon: icon('IconEditOutline16', 16) },
+          { id: 'delete', label: ot ? ot('delete.workspace') : t('menu.delete'), icon: icon('IconTrashOutline16', 16), danger: true },
+          { type: 'separator', id: 'bw-sep' },
+          customizeEntry,
         ]
         if (ctx.kind === 'session') return [
-          { id: 'rename', label: t('menu.rename') },
-          { id: 'fork', label: t('menu.fork') },
-          { id: 'archive', label: t('menu.archive'), danger: true },
-          { sep: true },
-          { id: 'customize', label: t('custom.title') },
+          { id: 'rename', label: ot ? ot('rename') : t('menu.rename'), icon: icon('IconEditOutline16', 16) },
+          { id: 'fork', label: ot ? ot('menu.fork') : t('menu.fork'), icon: icon('IconBranchOutline16', 16) },
+          // Official semantics (Rows.tsx): archive hides the row through the
+          // registry-global archive set and never touches the session log —
+          // deliberately NOT styled destructive.
+          { id: 'archive', label: ot ? ot('menu.archiveSession') : t('menu.archive'), icon: icon('IconArchiveOutline20', 16) },
+          { type: 'separator', id: 'bw-sep' },
+          customizeEntry,
         ]
         return [
-          { id: 'rename-sgroup', label: t('menu.renameSgroup') },
-          { sep: true },
-          { id: 'customize', label: t('custom.title') },
+          { id: 'rename-sgroup', label: t('menu.renameSgroup'), icon: icon('IconEditOutline16', 16) },
+          { type: 'separator', id: 'bw-sep' },
+          customizeEntry,
         ]
       }
       const handleCtxPick = (id) => {
@@ -5835,7 +5848,20 @@ window.__ModuleLoader__.load({
           t,
         }),
         dialogElement,
-        ctx !== null ? E('div', {
+        (ctx !== null && typeof ui.Menu === 'function') ? E(ui.Menu, {
+          // Right-click opens the SAME menu surface the official ⋯ button
+          // renders (primitives Menu, portal, dense): getAnchorRect feeds
+          // the event coordinates as the anchor rect — portal mode positions
+          // from it directly, no in-place wrapper needed.
+          open: true,
+          onClose: () => setCtx(null),
+          items: menuEntries(),
+          onSelect: handleCtxPick,
+          align: 'start',
+          dense: true,
+          portal: true,
+          getAnchorRect: () => new DOMRect(ctx.x, ctx.y, 0, 0),
+        }) : (ctx !== null ? E('div', {
           className: 'bw-ctx-overlay',
           onMouseDown: () => setCtx(null),
           onContextMenu: (e) => e.preventDefault(),
@@ -5846,7 +5872,7 @@ window.__ModuleLoader__.load({
             onMouseDown: (e) => e.stopPropagation(),
             onContextMenu: (e) => e.preventDefault(),
           },
-            ctxItems().map((item, index) => item.sep
+            menuEntries().map((item, index) => item.type === 'separator'
               ? E('div', { key: 'sep-' + index, className: 'bw-ctx-sep' })
               : E('button', {
                 key: item.id,
@@ -5856,7 +5882,7 @@ window.__ModuleLoader__.load({
               }, item.label),
             ),
           ),
-        ) : null,
+        ) : null),
         E(CustomizeDialog, {
           open: customize !== null,
           kind: customize ? customize.kind : undefined,
@@ -5919,6 +5945,14 @@ window.__ModuleLoader__.load({
       // the handle before any flow can open.
       pickerState.api = uiWorkspace
 
+      // The OFFICIAL browser's own dictionary (NS 'workspace'), bound so the
+      // context menu COPY follows upstream wording automatically — the menu
+      // mirrors the official row menus item-for-item (Rows.tsx), and this
+      // way upstream rewording lands here without a plugin release. Falls
+      // back to this plugin's aligned dictionary when bind fails.
+      let officialT = null
+      try { officialT = ctx.locale.bind('workspace') } catch { officialT = null }
+
       if (ctx.locale && typeof ctx.locale.register === 'function') {
         ctx.effect(() => {
           try {
@@ -5955,6 +5989,9 @@ window.__ModuleLoader__.load({
       }
 
       const browserInjected = () => ({
+        // Official 'workspace' dictionary translate (menu copy follows upstream);
+        // null when the bind failed — the menu then uses the aligned bw copy.
+        officialT,
         startSession: (workspaceId) => { uiWorkspace.startSession(workspaceId) },
         open: (sessionId) => { uiWorkspace.openSession(sessionId) },
         searchSessions,

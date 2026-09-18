@@ -13,6 +13,17 @@
 - **词典**:21 门 × 10 键(viewOptions.*)。
 - **测试 23 → 24 项**:新增视图选项守卫(store 契约与回退读取、开关感知的 buildTree / buildSessionTree、菜单装配与置灰、recency 锚点抑制、alpha.2 保留契约 open/mainSessionIdOf)。
 - 相关:[Release v0.13.0](https://github.com/KannaKuron/dsh-better-workspace/releases/tag/v0.13.0)
+## v0.14.0 — 2026-09-18
+
+**类型**:feat + fix(右键菜单官方对齐:primitives Menu + 官方 workspace 词典跟随;归档语义修正)
+
+- **fix(菜单文案与官方差太多,用户实测)**:bw 会话行菜单显示「分叉 / 删除(红)」,官方是「分叉会话 / 归档会话」——bw 把归档动作标成 danger 红色,视觉上像删除,实际却是归档,语义双重误导。对齐官方 Rows.tsx 语义:**会话行 = 重命名 / 分叉会话 / 归档会话,归档刻意非破坏性(不再红色)**——官方注释:归档经注册表全局归档集隐藏行、不碰会话日志;**工作区行 = 重命名 / 删除工作区(红色 danger)**,与官方逐项一致。
+- **feat(官方词典跟随)**:菜单文案经 `ctx.locale.bind('workspace')` 直接读**官方 workspace 词典**——官方改词自动跟随,不再需要插件发版;官方词典仅 zh/en,其余语言跟随官方同为英文回退(与官方浏览器表现一致)。bind 失败降级 bw 自己的对齐词典。
+- **feat(官方 Menu 渲染)**:右键菜单从自绘 fixed overlay 迁移到官方 **primitives Menu**(portal + dense,图标 / danger / 分隔线全官方样式),右键坐标经 `getAnchorRect` 直接作为锚矩形;Escape / 点击外部关闭与官方一致。`ui.Menu` 缺失的宿主降级回旧自绘 overlay(保留兜底)。
+- **feat(自定义外观入菜单)**:每类菜单底部以分隔线追加「自定义外观」(IconPersonalizationOutline16)——bw 特有项统一放官方项之后;分组 / 会话子分组(bw 特有概念)保留重命名入口。
+- **升级对照纪律**:官方未来给行菜单加新项时,bw 需在 `menuEntries()` 同步(已在 AGENTS.md 验证清单记录);文案与样式层已自动跟随。
+- **测试 24 → 25 项**:新增官方对齐守卫(词典绑定、逐项 id / 图标 / danger、归档非破坏、primitives Menu 渲染、坐标锚定)。
+- 相关:[Release v0.14.0](https://github.com/KannaKuron/dsh-better-workspace/releases/tag/v0.14.0)
 ## v0.12.1 — 2026-09-18
 
 **类型**:fix(0.12.0 回归事故:bw 浏览器整个没注册,官方浏览器接管——右键菜单消失、名称 / 不解析)

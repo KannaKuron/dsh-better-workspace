@@ -141,9 +141,11 @@ test('quote-on-land effect: blank-born only, user renames pinned, stability wind
   assert.match(text, /!blankSeen\.has\(id\) \|\| touched\.has\(id\)/, 'untouched blankSeen/human guard')
   assert.doesNotMatch(text, /titledSeenRef/, '0.9.1 first-snapshot heuristic must be gone')
   // User renames route through the pinning wrapper; the automatic path alone
-  // keeps the raw injected renameSession.
+  // keeps the raw injected renameSession. 5 call sites: drag-into-session-group,
+  // session rename dialog, session-group rename, plus the two group-move
+  // entry points (single session / session-group batch).
   assert.match(text, /const renameByUser = \(sessionId, title\) => \{/)
-  assert.equal((text.match(/renameByUser\(/g) || []).length, 3, 'exactly 3 user call sites')
+  assert.equal((text.match(/renameByUser\(/g) || []).length, 5, 'exactly 5 user call sites')
   // The automatic quote waits out a stabilization window instead of racing
   // the async LLM name.
   assert.match(text, /TITLE_STABLE_MS = 20000/)
@@ -743,4 +745,66 @@ test('context menu: official alignment via the workspace dictionary (0.14.0)', (
   assert.match(text, /getAnchorRect: \(\) => new DOMRect\(ctx\.x, ctx\.y, 0, 0\)/)
   // The bw-only entries ride after a separator.
   assert.match(text, /id: 'customize', label: t\('custom\.title'\), icon: icon\('IconPersonalizationOutline16', 16\)/)
+})
+
+/**
+ * Group discoverability (v0.15.0): a row could always be grouped by retyping
+ * its title, but nothing in the UI said so — no "new group" affordance, and
+ * drag-into-group only worked once a group already existed. The header button
+ * + drop slot and the menu entry funnel into one dialog, and grouping stays a
+ * name projection: no empty group container, no new store key.
+ */
+test('group move: one shared menu entry on every row kind, one dialog for both entry paths', () => {
+  const text = read('src/client.js')
+  // One shared item object, inserted into all four row-kind branches.
+  assert.match(text, /const groupItem = \{ id: 'move-group', label: t\('menu\.moveToGroup'\)/, 'shared group item')
+  assert.equal((text.match(/groupItem,/g) || []).length, 4, 'every row kind offers the entry')
+  // One dialog serves the row menu (target locked) and the header picker.
+  assert.match(text, /if \(dialog\.kind === 'group-move'\) return E\(GroupDialog/, 'dialog wiring')
+  assert.match(text, /targets: dialog\.targets \|\| null/)
+  assert.match(text, /onConfirm: \(tv, gv\) => submitGroupMove\(dialog\.targets \? targetOfValue\(tv\) : dialog\.target, gv\)/)
+  // Module-level component: an inline definition would remount and drop input.
+  assert.match(text, /function GroupDialog\(\{ title, hint, initial, targets, groupPaths, onConfirm, onClose, t \}\)/)
+})
+
+test('group move: the header "New group" button doubles as the drop slot', () => {
+  const text = read('src/client.js')
+  assert.match(text, /'aria-label': t\('group\.new'\)/, 'header button is labelled')
+  assert.match(text, /const groupDropTarget = \(\) => drag !== null && drag\.over && drag\.over\.kind === 'newgroup'/)
+  assert.match(text, /over: \{ kind: 'newgroup' \}/, 'drag over the button marks the new-group target')
+  assert.match(text, /collectGroupPaths\(dialog\.target \? dialog\.target\.kind : undefined\)/, 'suggestions follow the locked kind')
+  assert.match(text, /\.bw-drop-into-strong\{outline:2px solid var\(--dsw-alias-brand-primary/, 'drop highlight')
+})
+
+test('group move: user renames ride renameByUser, host reorder stays optional', () => {
+  const text = read('src/client.js')
+  const start = text.indexOf('const submitGroupMove = (target, rawGroup) =>')
+  const end = text.indexOf('/* ------------------------- drag & drop --------------------------')
+  assert.ok(start !== -1 && end > start, 'submitGroupMove sits before the drag section')
+  const body = text.slice(start, end)
+  assert.match(body, /renameWorkspace\(target\.id, next\)/, 'workspace move is a plain rename')
+  assert.match(body, /typeof insertWorkspaceBefore === 'function'/, 'host reorder action stays optional (0.1.6-alpha.1 contract)')
+  assert.match(body, /renameByUser\(target\.id, next\)/, 'single session move is pinned against the auto-quote effect')
+  assert.match(body, /await renameByUser\(row\.id, next \+ row\.title\.slice\(target\.path\.length\)\)/, 'session-group batch move is pinned too')
+  assert.match(body, /for \(const w of affected\)[\s\S]*renameWorkspace\(w\.workspaceId, next \+ String\(w\.title\)\.slice\(target\.path\.length\)\)/, 'workspace-group batch move rewrites every member')
+})
+
+/**
+ * Host-era compat: 0.1.6-alpha.2 replaced ISessions.binding with the
+ * retention-contract using(); 0.1.5-rc.x hosts still ship binding only, where
+ * the unconditional using() call threw "sessions.using is not a function" and
+ * took every rename path down with it (row dialog, session-group batch, move
+ * to group). Both contracts must stay wired.
+ */
+test('session rename: using() preferred, binding() fallback for 0.1.5-rc.x hosts', () => {
+  const text = read('src/client.js')
+  const start = text.indexOf('const renameSession = async (sessionId, title) =>')
+  const end = text.indexOf('const forkSession = (sessionId)')
+  assert.ok(start !== -1 && end > start, 'renameSession sits before forkSession')
+  const body = text.slice(start, end)
+  assert.match(body, /if \(typeof sessions\.using === 'function'\)/, 'the new contract is probed, never assumed')
+  assert.match(body, /source: 'workspaceOperation'/, 'new contract keeps the explicit retention source')
+  assert.match(body, /typeof sessions\.binding === 'function' \? sessions\.binding\(sessionId\) : undefined/, 'old binding fallback is probed too')
+  assert.match(body, /face\.rename\(title\)/, 'old contract renames through the session face')
+  assert.match(body, /throw new Error\('session rename is unavailable on this host'\)/, 'fails loud when neither contract exists')
 })

@@ -72,6 +72,7 @@ window.__ModuleLoader__.load({
       'menu.archive': '归档',
       'menu.renameFolder': '重命名分组',
       'menu.renameSgroup': '重命名会话分组',
+      'menu.moveToGroup': '移动到分组…',
       'settings.title': '更好的工作区',
       'settings.desc': '工作区树的外观与折叠偏好',
       'settings.expand': '展开',
@@ -149,6 +150,8 @@ window.__ModuleLoader__.load({
       'folder.rename.title': '重命名分组',
       'folder.rename.hint': '重命名会同步更新组内所有工作区名称',
       'folder.error.empty': '分组路径不能为空',
+      'group.move.title': '移动到分组',
+      'group.new': '新建分组',
     }
 
     const en = {
@@ -192,6 +195,7 @@ window.__ModuleLoader__.load({
       'menu.archive': 'Archive',
       'menu.renameFolder': 'Rename folder',
       'menu.renameSgroup': 'Rename session group',
+      'menu.moveToGroup': 'Move to group…',
       'settings.title': 'Better Workspaces',
       'settings.desc': 'Workspace tree appearance and folding preferences',
       'settings.expand': 'Expand',
@@ -269,6 +273,8 @@ window.__ModuleLoader__.load({
       'folder.rename.title': 'Rename folder',
       'folder.rename.hint': 'Renaming updates every workspace title inside the folder',
       'folder.error.empty': 'Folder path must not be empty',
+      'group.move.title': 'Move to group',
+      'group.new': 'New group',
     }
 
     /* Third-language dictionaries, keyed by BCP 47 tag. Every entry must carry
@@ -320,6 +326,7 @@ window.__ModuleLoader__.load({
         'menu.archive': 'أرشفة',
         'menu.renameFolder': 'إعادة تسمية المجلد',
         'menu.renameSgroup': 'إعادة تسمية مجموعة الجلسات',
+        'menu.moveToGroup': 'نقل إلى مجموعة…',
         'settings.title': 'مساحات عمل أفضل',
         'settings.desc': 'مظهر شجرة مساحات العمل وتفضيلات الطيّ',
         'settings.expand': 'توسيع',
@@ -397,6 +404,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': 'إعادة تسمية المجموعة',
         'folder.rename.hint': 'تحديث الاسم يعيد تسمية كل مساحات العمل داخل المجموعة',
         'folder.error.empty': 'لا يمكن أن يكون مسار المجموعة فارغاً',
+        'group.move.title': 'نقل إلى مجموعة',
+        'group.new': 'مجموعة جديدة',
       },
       /* locale: de */
       'de': {
@@ -440,6 +449,7 @@ window.__ModuleLoader__.load({
         'menu.archive': 'Archivieren',
         'menu.renameFolder': 'Ordner umbenennen',
         'menu.renameSgroup': 'Sitzungsgruppe umbenennen',
+        'menu.moveToGroup': 'In Gruppe verschieben…',
         'settings.title': 'Bessere Arbeitsbereiche',
         'settings.desc': 'Aussehen und Einklappverhalten des Arbeitsbereich-Baums',
         'settings.expand': 'Ausklappen',
@@ -517,6 +527,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': 'Ordner umbenennen',
         'folder.rename.hint': 'Umbenennen aktualisiert alle Arbeitsbereichsnamen im Ordner',
         'folder.error.empty': 'Der Ordnerpfad darf nicht leer sein',
+        'group.move.title': 'In Gruppe verschieben',
+        'group.new': 'Neue Gruppe',
       },
       /* locale: fr */
       'fr': {
@@ -560,6 +572,7 @@ window.__ModuleLoader__.load({
         'menu.archive': 'Archiver',
         'menu.renameFolder': 'Renommer le dossier',
         'menu.renameSgroup': 'Renommer le groupe de sessions',
+        'menu.moveToGroup': 'Déplacer vers le groupe…',
         'settings.title': 'Espaces de travail améliorés',
         'settings.desc': 'Apparence et repli de l\'arborescence des espaces de travail',
         'settings.expand': 'Développer',
@@ -637,6 +650,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': 'Renommer le dossier',
         'folder.rename.hint': 'Le renommage met à jour tous les espaces de travail du dossier',
         'folder.error.empty': 'Le chemin du dossier ne doit pas être vide',
+        'group.move.title': 'Déplacer vers le groupe',
+        'group.new': 'Nouveau groupe',
       },
       /* locale: hi */
       'hi': {
@@ -680,6 +695,7 @@ window.__ModuleLoader__.load({
         'menu.archive': 'संग्रह करें',
         'menu.renameFolder': 'फ़ोल्डर का नाम बदलें',
         'menu.renameSgroup': 'सत्र समूह का नाम बदलें',
+        'menu.moveToGroup': 'समूह में ले जाएँ…',
         'settings.title': 'बेहतर कार्यस्थान',
         'settings.desc': 'कार्यस्थान वृक्ष का रूप और समेटने की प्राथमिकताएँ',
         'settings.expand': 'फैलाएँ',
@@ -757,6 +773,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': 'समूह का नाम बदलें',
         'folder.rename.hint': 'नाम बदलने पर समूह के सभी कार्यस्थानों के नाम भी बदल जाते हैं',
         'folder.error.empty': 'समूह पथ खाली नहीं हो सकता',
+        'group.move.title': 'समूह में ले जाएँ',
+        'group.new': 'नया समूह',
       },
       /* locale: id */
       'id': {
@@ -800,6 +818,7 @@ window.__ModuleLoader__.load({
         'menu.archive': 'Arsipkan',
         'menu.renameFolder': 'Ganti nama folder',
         'menu.renameSgroup': 'Ganti nama grup sesi',
+        'menu.moveToGroup': 'Pindahkan ke grup…',
         'settings.title': 'Ruang kerja yang lebih baik',
         'settings.desc': 'Tampilan dan pelipatan pohon ruang kerja',
         'settings.expand': 'Bentangkan',
@@ -877,6 +896,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': 'Ganti nama folder',
         'folder.rename.hint': 'Mengganti nama akan memperbarui semua ruang kerja di folder',
         'folder.error.empty': 'Jalur folder tidak boleh kosong',
+        'group.move.title': 'Pindahkan ke grup',
+        'group.new': 'Grup baru',
       },
       /* locale: it */
       'it': {
@@ -920,6 +941,7 @@ window.__ModuleLoader__.load({
         'menu.archive': 'Archivia',
         'menu.renameFolder': 'Rinomina cartella',
         'menu.renameSgroup': 'Rinomina gruppo di sessioni',
+        'menu.moveToGroup': 'Sposta nel gruppo…',
         'settings.title': 'Aree di lavoro migliori',
         'settings.desc': 'Aspetto e compressione dell\'albero delle aree di lavoro',
         'settings.expand': 'Espandi',
@@ -997,6 +1019,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': 'Rinomina cartella',
         'folder.rename.hint': 'La rinomina aggiorna tutte le aree di lavoro nella cartella',
         'folder.error.empty': 'Il percorso della cartella non può essere vuoto',
+        'group.move.title': 'Sposta nel gruppo',
+        'group.new': 'Nuovo gruppo',
       },
       /* locale: ja */
       'ja': {
@@ -1040,6 +1064,7 @@ window.__ModuleLoader__.load({
         'menu.archive': 'アーカイブ',
         'menu.renameFolder': 'フォルダー名を変更',
         'menu.renameSgroup': 'セッショングループ名を変更',
+        'menu.moveToGroup': 'グループに移動…',
         'settings.title': 'より良いワークスペース',
         'settings.desc': 'ワークスペースツリーの外観と折りたたみ設定',
         'settings.expand': '展開',
@@ -1117,6 +1142,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': 'フォルダー名を変更',
         'folder.rename.hint': '名前を変更すると,フォルダー内のすべてのワークスペース名も更新されます',
         'folder.error.empty': 'フォルダーのパスを入力してください',
+        'group.move.title': 'グループに移動',
+        'group.new': '新しいグループ',
       },
       /* locale: ko */
       'ko': {
@@ -1160,6 +1187,7 @@ window.__ModuleLoader__.load({
         'menu.archive': '보관',
         'menu.renameFolder': '폴더 이름 바꾸기',
         'menu.renameSgroup': '세션 그룹 이름 바꾸기',
+        'menu.moveToGroup': '그룹으로 이동…',
         'settings.title': '더 나은 워크스페이스',
         'settings.desc': '워크스페이스 트리의 모양과 접기 설정',
         'settings.expand': '펼치기',
@@ -1237,6 +1265,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': '폴더 이름 바꾸기',
         'folder.rename.hint': '이름을 바꾸면 폴더 안 모든 워크스페이스 이름도 함께 바뀝니다',
         'folder.error.empty': '폴더 경로를 입력해야 합니다',
+        'group.move.title': '그룹으로 이동',
+        'group.new': '새 그룹',
       },
       /* locale: nl */
       'nl': {
@@ -1280,6 +1310,7 @@ window.__ModuleLoader__.load({
         'menu.archive': 'Archiveren',
         'menu.renameFolder': 'Mapnaam wijzigen',
         'menu.renameSgroup': 'Sessiegroep naam wijzigen',
+        'menu.moveToGroup': 'Naar groep verplaatsen…',
         'settings.title': 'Betere werkruimten',
         'settings.desc': 'Uiterlijk en inklapgedrag van de werkruimteboom',
         'settings.expand': 'Uitklappen',
@@ -1357,6 +1388,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': 'Mapnaam wijzigen',
         'folder.rename.hint': 'Naam wijzigen werkt alle werkruimtenamen in de map bij',
         'folder.error.empty': 'Het mappad mag niet leeg zijn',
+        'group.move.title': 'Naar groep verplaatsen',
+        'group.new': 'Nieuwe groep',
       },
       /* locale: pl */
       'pl': {
@@ -1400,6 +1433,7 @@ window.__ModuleLoader__.load({
         'menu.archive': 'Zarchiwizuj',
         'menu.renameFolder': 'Zmień nazwę folderu',
         'menu.renameSgroup': 'Zmień nazwę grupy sesji',
+        'menu.moveToGroup': 'Przenieś do grupy…',
         'settings.title': 'Lepsze obszary robocze',
         'settings.desc': 'Wygląd i zwijanie drzewa obszarów roboczych',
         'settings.expand': 'Rozwiń',
@@ -1477,6 +1511,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': 'Zmień nazwę folderu',
         'folder.rename.hint': 'Zmiana nazwy zaktualizuje wszystkie obszary robocze w folderze',
         'folder.error.empty': 'Ścieżka folderu nie może być pusta',
+        'group.move.title': 'Przenieś do grupy',
+        'group.new': 'Nowa grupa',
       },
       /* locale: pt */
       'pt': {
@@ -1520,6 +1556,7 @@ window.__ModuleLoader__.load({
         'menu.archive': 'Arquivar',
         'menu.renameFolder': 'Renomear pasta',
         'menu.renameSgroup': 'Renomear grupo de sessões',
+        'menu.moveToGroup': 'Mover para o grupo…',
         'settings.title': 'Espaços de trabalho melhores',
         'settings.desc': 'Aparência e recolhimento da árvore de espaços de trabalho',
         'settings.expand': 'Expandir',
@@ -1597,6 +1634,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': 'Renomear pasta',
         'folder.rename.hint': 'Renomear atualiza todos os espaços de trabalho da pasta',
         'folder.error.empty': 'O caminho da pasta não pode ficar vazio',
+        'group.move.title': 'Mover para o grupo',
+        'group.new': 'Novo grupo',
       },
       /* locale: ru */
       'ru': {
@@ -1640,6 +1679,7 @@ window.__ModuleLoader__.load({
         'menu.archive': 'В архив',
         'menu.renameFolder': 'Переименовать папку',
         'menu.renameSgroup': 'Переименовать группу сессий',
+        'menu.moveToGroup': 'Переместить в группу…',
         'settings.title': 'Улучшенные рабочие области',
         'settings.desc': 'Внешний вид и сворачивание дерева рабочих областей',
         'settings.expand': 'Развернуть',
@@ -1717,6 +1757,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': 'Переименовать папку',
         'folder.rename.hint': 'Переименование обновит все рабочие области в папке',
         'folder.error.empty': 'Путь папки не может быть пустым',
+        'group.move.title': 'Переместить в группу',
+        'group.new': 'Новая группа',
       },
       /* locale: sv */
       'sv': {
@@ -1760,6 +1802,7 @@ window.__ModuleLoader__.load({
         'menu.archive': 'Arkivera',
         'menu.renameFolder': 'Byt namn på mapp',
         'menu.renameSgroup': 'Byt namn på sessionsgrupp',
+        'menu.moveToGroup': 'Flytta till grupp…',
         'settings.title': 'Bättre arbetsytor',
         'settings.desc': 'Utseende och ihopfällning för arbetsyteträdet',
         'settings.expand': 'Fäll ut',
@@ -1837,6 +1880,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': 'Byt namn på mapp',
         'folder.rename.hint': 'Namnbytet uppdaterar alla arbetsytor i mappen',
         'folder.error.empty': 'Mappsökvägen får inte vara tom',
+        'group.move.title': 'Flytta till grupp',
+        'group.new': 'Ny grupp',
       },
       /* locale: th */
       'th': {
@@ -1880,6 +1925,7 @@ window.__ModuleLoader__.load({
         'menu.archive': 'เก็บถาวร',
         'menu.renameFolder': 'เปลี่ยนชื่อโฟลเดอร์',
         'menu.renameSgroup': 'เปลี่ยนชื่อกลุ่มเซสชัน',
+        'menu.moveToGroup': 'ย้ายไปยังกลุ่ม…',
         'settings.title': 'พื้นที่ทำงานที่ดีขึ้น',
         'settings.desc': 'รูปลักษณ์และการย่อของต้นไม้พื้นที่ทำงาน',
         'settings.expand': 'ขยาย',
@@ -1957,6 +2003,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': 'เปลี่ยนชื่อกลุ่ม',
         'folder.rename.hint': 'การเปลี่ยนชื่อจะอัปเดตพื้นที่ทำงานทั้งหมดในกลุ่ม',
         'folder.error.empty': 'เส้นทางกลุ่มต้องไม่ว่าง',
+        'group.move.title': 'ย้ายไปยังกลุ่ม',
+        'group.new': 'กลุ่มใหม่',
       },
       /* locale: tr */
       'tr': {
@@ -2000,6 +2048,7 @@ window.__ModuleLoader__.load({
         'menu.archive': 'Arşivle',
         'menu.renameFolder': 'Klasörü yeniden adlandır',
         'menu.renameSgroup': 'Oturum grubunu yeniden adlandır',
+        'menu.moveToGroup': 'Gruba taşı…',
         'settings.title': 'Daha iyi çalışma alanları',
         'settings.desc': 'Çalışma alanı ağacının görünümü ve daraltma tercihleri',
         'settings.expand': 'Genişlet',
@@ -2077,6 +2126,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': 'Klasörü yeniden adlandır',
         'folder.rename.hint': 'Yeniden adlandırma klasördeki tüm çalışma alanlarını günceller',
         'folder.error.empty': 'Klasör yolu boş olamaz',
+        'group.move.title': 'Gruba taşı',
+        'group.new': 'Yeni grup',
       },
       /* locale: vi */
       'vi': {
@@ -2120,6 +2171,7 @@ window.__ModuleLoader__.load({
         'menu.archive': 'Lưu trữ',
         'menu.renameFolder': 'Đổi tên thư mục',
         'menu.renameSgroup': 'Đổi tên nhóm phiên',
+        'menu.moveToGroup': 'Chuyển vào nhóm…',
         'settings.title': 'Không gian làm việc tốt hơn',
         'settings.desc': 'Giao diện và cách thu gọn của cây không gian làm việc',
         'settings.expand': 'Mở rộng',
@@ -2197,6 +2249,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': 'Đổi tên nhóm',
         'folder.rename.hint': 'Đổi tên sẽ cập nhật mọi không gian làm việc trong nhóm',
         'folder.error.empty': 'Đường dẫn nhóm không được để trống',
+        'group.move.title': 'Chuyển vào nhóm',
+        'group.new': 'Nhóm mới',
       },
       /* locale: zh-HK */
       'zh-HK': {
@@ -2240,6 +2294,7 @@ window.__ModuleLoader__.load({
         'menu.archive': '封存',
         'menu.renameFolder': '重新命名分組',
         'menu.renameSgroup': '重新命名對話分組',
+        'menu.moveToGroup': '移動到分組…',
         'settings.title': '更好嘅工作區',
         'settings.desc': '工作區樹嘅外觀同收起偏好',
         'settings.expand': '展開',
@@ -2317,6 +2372,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': '重新命名分組',
         'folder.rename.hint': '重新命名會同步更新組內所有工作區名稱',
         'folder.error.empty': '分組路徑唔可以係空',
+        'group.move.title': '移動到分組',
+        'group.new': '新增分組',
       },
       /* locale: zh-MO */
       'zh-MO': {
@@ -2360,6 +2417,7 @@ window.__ModuleLoader__.load({
         'menu.archive': '封存',
         'menu.renameFolder': '重新命名分組',
         'menu.renameSgroup': '重新命名對話分組',
+        'menu.moveToGroup': '移動到分組…',
         'settings.title': '更好嘅工作區',
         'settings.desc': '工作區樹嘅外觀同收起偏好',
         'settings.expand': '展開',
@@ -2437,6 +2495,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': '重新命名分組',
         'folder.rename.hint': '重新命名會同步更新組內所有工作區名稱',
         'folder.error.empty': '分組路徑唔可以係空',
+        'group.move.title': '移動到分組',
+        'group.new': '新增分組',
       },
       /* locale: zh-TW */
       'zh-TW': {
@@ -2480,6 +2540,7 @@ window.__ModuleLoader__.load({
         'menu.archive': '封存',
         'menu.renameFolder': '重新命名群組',
         'menu.renameSgroup': '重新命名工作階段群組',
+        'menu.moveToGroup': '移動到分組…',
         'settings.title': '更好的工作區',
         'settings.desc': '工作區樹的外觀與收合偏好',
         'settings.expand': '展開',
@@ -2557,6 +2618,8 @@ window.__ModuleLoader__.load({
         'folder.rename.title': '重新命名群組',
         'folder.rename.hint': '重新命名會同步更新群組內所有工作區名稱',
         'folder.error.empty': '群組路徑不能為空',
+        'group.move.title': '移動到分組',
+        'group.new': '新增分組',
       },
     }
 
@@ -3041,6 +3104,11 @@ window.__ModuleLoader__.load({
       '.bw-drop-before::after{content:"";position:absolute;left:8px;right:8px;top:-1px;height:2px;border-radius:1px;background:var(--dsw-alias-brand-primary,#5b8def);pointer-events:none}',
       '.bw-drop-after::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;border-radius:1px;background:var(--dsw-alias-brand-primary,#5b8def);pointer-events:none}',
       '.bw-drop-into{outline:1.5px dashed var(--dsw-alias-brand-primary,#5b8def);outline-offset:-1.5px}',
+      // Grouping drop lands on the header button / a group row: solid brand
+      // rim + a tinted wash so "this drop joins a group" reads stronger than
+      // the reorder dashes above.
+      '.bw-drop-into-strong{outline:2px solid var(--dsw-alias-brand-primary,#5b8def);outline-offset:-2px;background:color-mix(in srgb, var(--dsw-alias-brand-primary,#5b8def) 16%, transparent)}',
+      '.bw-newgroup-btn{flex:none;width:auto;padding:0 6px;font-size:12px;height:20px;border-radius:6px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.1));color:inherit;cursor:pointer}',
       '.bw-row:hover{background:var(--dsw-specific-sidebar-nav-item-hover,var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12)))}',
       '.bw-row:hover{background:color-mix(in srgb,var(--dsw-specific-sidebar-nav-item-hover,rgba(127,127,127,.14)) 50%,transparent)}',
       '.bw-row-current{background:var(--dsw-specific-sidebar-nav-item-active,rgba(91,141,239,.15))}',
@@ -3496,6 +3564,63 @@ window.__ModuleLoader__.load({
           E(BTN, { variant: 'primary', onClick: onConfirm }, t('confirm')),
         ),
       }, E('div', { className: 'bw-modal-body' }, E('div', { className: 'bw-hint' }, body)), StyleNode())
+    }
+
+    /**
+     * "Move to group…": the discoverable front door for the name-projection
+     * grouping this plugin has always had (no empty groups — moving an entry
+     * just rewrites its title prefix). Two shapes share one dialog:
+     * - a free target (the header "New group" button, or a row drop on it)
+     *   locks the entry and only asks for the group name;
+     * - the picker shape (header button click) asks which entry first.
+     * The group name input is backed by a datalist of every existing group
+     * path, so the dropdown doubles as the discovery surface.
+     */
+    function GroupDialog({ title, hint, initial, targets, groupPaths, onConfirm, onClose, t }) {
+      const hasTargets = Array.isArray(targets) && targets.length > 0
+      const [value, setValue] = React.useState(initial || '')
+      const [targetValue, setTargetValue] = React.useState(hasTargets ? targets[0].value : '')
+      const inputRef = React.useRef(null)
+      React.useEffect(() => { if (inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [])
+      const commit = () => onConfirm(hasTargets ? targetValue : undefined, value)
+      const hintList = Array.isArray(groupPaths) ? groupPaths.filter((p) => p !== '') : []
+      return E(ui.Modal, {
+        open: true,
+        onClose,
+        closeLabel: t('close'),
+        title,
+        footer: E('div', { className: 'bw-modal-actions' },
+          E(BTN, { variant: 'outline', onClick: onClose }, t('cancel')),
+          E(BTN, { variant: 'primary', onClick: commit }, t('confirm')),
+        ),
+      },
+        E('div', { className: 'bw-modal-body' },
+          hasTargets
+            ? E('div', { className: 'bw-field' },
+              E('select', {
+                className: 'bw-input',
+                defaultValue: targets[0].value,
+                onChange: (e) => setTargetValue(e.target.value),
+              }, targets.map((item) => E('option', { key: String(item.value), value: String(item.value) }, item.label))),
+            )
+            : null,
+          E('div', { className: 'bw-field' },
+            E('input', {
+              ref: inputRef,
+              className: 'bw-input',
+              list: 'bw-group-paths',
+              value,
+              onChange: (e) => setValue(e.target.value),
+              onKeyDown: (e) => { if (e.key === 'Enter') commit() },
+            }),
+            E('datalist', { id: 'bw-group-paths' },
+              hintList.map((path) => E('option', { key: String(path), value: String(path) })),
+            ),
+            hint ? E('div', { className: 'bw-hint' }, hint) : null,
+          ),
+        ),
+        StyleNode(),
+      )
     }
 
     /**
@@ -4063,7 +4188,7 @@ window.__ModuleLoader__.load({
         ? E(PulseGlow, { state: pulse }, iconEl || (typeof ui.StateDot === 'function' ? E(ui.StateDot, { state: pulse, size: 10 }) : null))
         : iconEl
       return E('div', {
-        className: cls('bw-row', dropInto && 'bw-drop-into'),
+        className: cls('bw-row', dropInto && 'bw-drop-into', dropInto && 'bw-drop-into-strong'),
         style: { paddingLeft: 4 + depth * 12, ...(custStyle || {}), ...(pulse ? { '--bw-pulse-color': PULSE_COLORS[pulse] || PULSE_COLORS.ongoing } : null) },
         onClick: onToggle,
         onContextMenu: onContextMenu,
@@ -4183,7 +4308,7 @@ window.__ModuleLoader__.load({
      */
     function SessionGroupRow({ name, depth, expanded, count, onToggle, onContextMenu, dropInto, dragEvents, custStyle, pulse, t }) {
       return E('div', {
-        className: cls('bw-row', 'bw-sgroup-row', dropInto && 'bw-drop-into'),
+        className: cls('bw-row', 'bw-sgroup-row', dropInto && 'bw-drop-into', dropInto && 'bw-drop-into-strong'),
         style: { paddingLeft: 10 + depth * 12, ...(custStyle || {}) },
         onClick: onToggle,
         onContextMenu: onContextMenu,
@@ -5158,6 +5283,130 @@ window.__ModuleLoader__.load({
         setCtx({ kind, payload, x: e.clientX, y: e.clientY })
       }
 
+      /* ----------------------- group move helpers --------------------- */
+      // Grouping is a NAME PROJECTION (v0.12.0 retired explicit empty
+      // groups): a "group" is nothing but the slash-prefix of a title, so
+      // moving an entry means rewriting that prefix — no store key, no
+      // persistence, no schema. Everything below is derived from titles.
+
+      const groupPrefixOf = (title) => {
+        const s = splitTitleSegs(String(title || ''))
+        return s.length > 1 ? s.slice(0, -1).join('/') : ''
+      }
+      const leafOf = (title, fallback) => {
+        const s = splitTitleSegs(String(title || ''))
+        return s.length > 0 ? s[s.length - 1] : (fallback || String(title || ''))
+      }
+      /**
+       * Every existing group path, deduplicated (datalist source). `kind`
+       * narrows it to the name layer the dialog is about: workspace rows
+       * suggest workspace prefixes, session rows session prefixes; the
+       * header picker takes both because it may target either kind.
+       */
+      const collectGroupPaths = (kind) => {
+        const paths = new Set()
+        const addPrefixes = (title) => {
+          const segs = splitTitleSegs(String(title || ''))
+          for (let i = 1; i < segs.length; i += 1) paths.add(segs.slice(0, i).join('/'))
+        }
+        for (const workspace of items || []) {
+          if (kind !== 'session') addPrefixes(workspace.title)
+          if (kind !== 'workspace') for (const session of sessionsOf(workspace)) addPrefixes(session.title)
+        }
+        return [...paths].sort()
+      }
+      /** Picker entries for the header button: every workspace, then its sessions. */
+      const targetListOf = () => {
+        const out = []
+        for (const workspace of items || []) {
+          const name = String(workspace.title || workspace.leaf || workspace.workspaceId || '')
+          out.push({ value: 'ws:' + workspace.workspaceId, label: name })
+          for (const session of sessionsOf(workspace)) {
+            out.push({ value: 'sess:' + session.id, label: name + ' › ' + String(session.title || session.leaf || '') })
+          }
+        }
+        return out
+      }
+      /** Rehydrate one 'ws:<id>' / 'sess:<id>' picker value (null when the row vanished). */
+      const targetOfValue = (value) => {
+        const text = String(value || '')
+        if (text.startsWith('sess:')) {
+          const id = text.slice(5)
+          for (const workspace of items || []) {
+            const row = sessionsOf(workspace).find((s) => s.id === id)
+            if (row) return { kind: 'session', id: row.id, title: row.title, workspaceId: workspace.workspaceId }
+          }
+          return null
+        }
+        if (text.startsWith('ws:')) {
+          const id = text.slice(3)
+          const workspace = (items || []).find((w) => w.workspaceId === id)
+          if (workspace) return { kind: 'workspace', id: workspace.workspaceId, title: workspace.title || workspace.leaf }
+        }
+        return null
+      }
+      /**
+       * Commit one "move to group" for all four row kinds. Batch kinds
+       * (folder / sgroup) rewrite the prefix of every member, exactly like
+       * the existing rename-group dialogs; single kinds just retitle the
+       * entry. All paths are user-driven renames, so sessions go through
+       * renameByUser (humanTouched: never auto-quoted afterwards).
+       */
+      const submitGroupMove = (target, rawGroup) => {
+        if (!target) { setDialog(null); return }
+        const group = normPath(String(rawGroup || ''))
+        const leaf = leafOf(target.title)
+        const next = group ? group + '/' + leaf : leaf
+        if (next === '' || next === target.title) { setDialog(null); return }
+        if (target.kind === 'workspace') {
+          Promise.resolve()
+            .then(() => renameWorkspace(target.id, next))
+            // The host action is optional (dsh 0.1.6-alpha.1 dropped it from
+            // the browser contract); the rename above is the move either way.
+            .then(() => { if (typeof insertWorkspaceBefore === 'function') insertWorkspaceBefore(target.id) })
+            .then(() => setDialog(null))
+            .catch(fail)
+          return
+        }
+        if (target.kind === 'session') {
+          Promise.resolve()
+            .then(() => renameByUser(target.id, next))
+            .then(() => setDialog(null))
+            .catch(fail)
+          return
+        }
+        if (target.kind === 'folder') {
+          const affected = (items || []).filter((w) => String(w.title || '').startsWith(target.path + '/'))
+          Promise.resolve()
+            .then(async () => {
+              for (const w of affected) {
+                await renameWorkspace(w.workspaceId, next + String(w.title).slice(target.path.length))
+              }
+            })
+            .then(() => setDialog(null))
+            .catch(fail)
+          return
+        }
+        if (target.kind === 'sgroup') {
+          const workspace = (items || []).find((w) => w.workspaceId === target.workspaceId)
+          if (!workspace) { setDialog(null); return }
+          const node = findSessionGroup(buildSessionTree(sessionsOf(workspace), sessionSlash), target.path)
+          if (!node) { setDialog(null); return }
+          const affected = collectSessionRows(node)
+          Promise.resolve()
+            .then(async () => {
+              for (const row of affected) {
+                if (row.blank) continue
+                await renameByUser(row.id, next + row.title.slice(target.path.length))
+              }
+            })
+            .then(() => setDialog(null))
+            .catch(fail)
+          return
+        }
+        setDialog(null)
+      }
+
       /* ------------------------- drag & drop -------------------------- */
 
       React.useEffect(() => {
@@ -5399,6 +5648,37 @@ window.__ModuleLoader__.load({
         Promise.resolve()
           .then(() => renameByUser(source.sessionId, newTitle))
           .catch(fail)
+      }
+
+      /* ---------------------- group drop target ----------------------- */
+      // The header's "New group" button doubles as a drop zone: dropping a
+      // workspace/session row on it opens the move dialog with that row
+      // locked and the group name empty. The drag state machine is reused —
+      // `over.kind === 'newgroup'` is the one non-row drop target.
+
+      const groupDropTarget = () => drag !== null && drag.over && drag.over.kind === 'newgroup'
+      const groupDropEvents = {
+        onDragOver: (event) => {
+          if (drag === null) return
+          event.preventDefault()
+          event.stopPropagation()
+          try { event.dataTransfer.dropEffect = 'move' } catch { }
+          setDrag(current => (current && current.over && current.over.kind === 'newgroup')
+            ? current
+            : (current ? { ...current, over: { kind: 'newgroup' } } : current))
+        },
+        onDrop: (event) => {
+          if (drag === null) return
+          event.preventDefault()
+          event.stopPropagation()
+          const source = drag.source
+          if (!source) { setDrag(null); return }
+          const target = drag.kind === 'session'
+            ? { kind: 'session', id: source.sessionId, title: source.title || source.leaf, workspaceId: source.workspaceId }
+            : { kind: 'workspace', id: source.workspaceId, title: source.folderPath ? source.folderPath + '/' + source.leaf : source.leaf }
+          setDialog({ kind: 'group-move', target, initial: '' })
+          setDrag(null)
+        },
       }
 
       /* --------------------------- actions --------------------------- */
@@ -5671,14 +5951,20 @@ window.__ModuleLoader__.load({
       const menuEntries = () => {
         if (ctx === null) return []
         const customizeEntry = { id: 'customize', label: t('custom.title'), icon: icon('IconPersonalizationOutline16', 16) }
+        // The discoverability entry (v0.15): every row kind can be moved into
+        // a name group. One shared item object, inserted after each branch's
+        // official items and before the bw-only separator.
+        const groupItem = { id: 'move-group', label: t('menu.moveToGroup'), icon: icon('IconFolderOutline16', 16) }
         if (ctx.kind === 'folder') return [
           { id: 'rename-folder', label: t('menu.renameFolder'), icon: icon('IconEditOutline16', 16) },
+          groupItem,
           { type: 'separator', id: 'bw-sep' },
           customizeEntry,
         ]
         if (ctx.kind === 'workspace') return [
           { id: 'rename', label: ot ? ot('rename') : t('menu.rename'), icon: icon('IconEditOutline16', 16) },
           { id: 'delete', label: ot ? ot('delete.workspace') : t('menu.delete'), icon: icon('IconTrashOutline16', 16), danger: true },
+          groupItem,
           { type: 'separator', id: 'bw-sep' },
           customizeEntry,
         ]
@@ -5689,11 +5975,13 @@ window.__ModuleLoader__.load({
           // registry-global archive set and never touches the session log —
           // deliberately NOT styled destructive.
           { id: 'archive', label: ot ? ot('menu.archiveSession') : t('menu.archive'), icon: icon('IconArchiveOutline20', 16) },
+          groupItem,
           { type: 'separator', id: 'bw-sep' },
           customizeEntry,
         ]
         return [
           { id: 'rename-sgroup', label: t('menu.renameSgroup'), icon: icon('IconEditOutline16', 16) },
+          groupItem,
           { type: 'separator', id: 'bw-sep' },
           customizeEntry,
         ]
@@ -5711,7 +5999,16 @@ window.__ModuleLoader__.load({
         }
         const { kind, payload } = current
         setCtx(null)
-        if (kind === 'folder' && id === 'rename-folder') setDialog({ kind: 'folder-rename', path: payload.path })
+        if (id === 'move-group') {
+          // Lock the clicked row as the dialog target; the group name starts
+          // at its CURRENT prefix so "retype to move elsewhere" is one edit.
+          const target = kind === 'folder' ? { kind: 'folder', path: payload.path, title: payload.path }
+            : kind === 'workspace' ? { kind: 'workspace', id: payload.workspaceId, title: payload.title || payload.leaf }
+              : kind === 'session' ? { kind: 'session', id: payload.id, title: payload.title }
+                : { kind: 'sgroup', path: payload.path, title: payload.path, workspaceId: payload.workspaceId }
+          setDialog({ kind: 'group-move', target, initial: groupPrefixOf(target.title) })
+        }
+        else if (kind === 'folder' && id === 'rename-folder') setDialog({ kind: 'folder-rename', path: payload.path })
         else if (kind === 'workspace' && id === 'rename') setDialog({ kind: 'ws-rename', workspace: payload })
         else if (kind === 'workspace' && id === 'delete') setDialog({ kind: 'ws-delete', workspace: payload })
         else if (kind === 'sgroup' && id === 'rename-sgroup') setDialog({ kind: 'sgroup-rename', target: payload })
@@ -5779,6 +6076,19 @@ window.__ModuleLoader__.load({
           onClose: () => setDialog(null),
           t,
         })
+        if (dialog.kind === 'group-move') return E(GroupDialog, {
+          key: 'group-move',
+          title: t('group.move.title'),
+          hint: t('ws.rename.hint'),
+          initial: dialog.initial || '',
+          // targets present = the picker shape (header button / drop slot);
+          // absent = the row was locked by the context menu or a drop.
+          targets: dialog.targets || null,
+          groupPaths: collectGroupPaths(dialog.target ? dialog.target.kind : undefined),
+          onConfirm: (tv, gv) => submitGroupMove(dialog.targets ? targetOfValue(tv) : dialog.target, gv),
+          onClose: () => setDialog(null),
+          t,
+        })
         return null
       })()
 
@@ -5811,6 +6121,17 @@ window.__ModuleLoader__.load({
         StyleNode(),
         E('div', { className: 'bw-header' },
           E('div', { className: 'bw-header-title' }, t('title')),
+          // Group discoverability (v0.15): a visible "New group" entry point
+          // that doubles as the row-drop zone. Clicking opens the picker
+          // shape; dropping a row onto it locks that row in the same dialog.
+          E('button', {
+            type: 'button',
+            className: cls('bw-newgroup-btn', groupDropTarget() && 'bw-drop-into-strong'),
+            'aria-label': t('group.new'),
+            title: t('group.new'),
+            onClick: () => setDialog({ kind: 'group-move', target: null, targets: targetListOf(), initial: '' }),
+            ...groupDropEvents,
+          }, t('group.new')),
           (searchOpen || query !== '') ? E('input', {
             className: 'bw-input',
             style: { width: 130, flex: 'none' },
@@ -5975,12 +6296,26 @@ window.__ModuleLoader__.load({
       // reported "unknown session". Fork and open go through the uiWorkspace
       // navigation service: ISessions no longer carries open() at all
       // (navigation belongs to the view owner, replaceMain).
+      //
+      // Host-era compat (0.1.5-rc.x hosts ship ISessions.binding only — the
+      // 0.1.6-alpha.2 contract replaced it with using): calling sessions.using
+      // there died with "sessions.using is not a function", which took down
+      // every rename path (row dialog, session-group batch, group move). Prefer
+      // the new contract, fall back to the old one, and only then fail loud.
       const renameSession = async (sessionId, title) => {
-        const result = await sessions.using(
-          sessionId,
-          { source: 'workspaceOperation' },
-          (reference) => reference.binding.session.rename(title),
-        )
+        if (typeof sessions.using === 'function') {
+          const result = await sessions.using(
+            sessionId,
+            { source: 'workspaceOperation' },
+            (reference) => reference.binding.session.rename(title),
+          )
+          if (!result || !result.ok) throw new Error(result && result.error ? result.error.message : 'session rename failed')
+          return
+        }
+        const binding = typeof sessions.binding === 'function' ? sessions.binding(sessionId) : undefined
+        const face = binding ? binding.session : undefined
+        if (!face || typeof face.rename !== 'function') throw new Error('session rename is unavailable on this host')
+        const result = await face.rename(title)
         if (!result || !result.ok) throw new Error(result && result.error ? result.error.message : 'session rename failed')
       }
       const forkSession = (sessionId) => {

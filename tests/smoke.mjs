@@ -603,7 +603,9 @@ test('buildTree: disk nesting + name groups inside each level (0.12.0)', () => {
  */
 test('view options: group/order menu + the two slash toggles (0.13.0)', () => {
   const text = read('src/client.js')
-  assert.match(text, /groupBy: 'workspace-tree', orderBy: 'manual', sessionTitleSlash: true, workspaceTitleSlash: true/)
+  // v0.15: the workspace name layer ships OFF (see the opt-in test below);
+  // session grouping keeps its 0.13 default.
+  assert.match(text, /groupBy: 'workspace-tree', orderBy: 'manual', sessionTitleSlash: true, workspaceTitleSlash: false/)
   for (const action of ['setGroupBy', 'setOrderBy', 'setSessionTitleSlash', 'setWorkspaceTitleSlash']) {
     assert.ok(text.includes(action + ': (d, value)'), 'store action ' + action)
   }
@@ -657,7 +659,9 @@ test('view options: group/order menu + the two slash toggles (0.13.0)', () => {
   assert.match(text, /function ViewOptionsMenu/)
   assert.match(text, /typeof ui\.Menu !== 'function'\) return null/)
   assert.match(text, /disabled: groupBy === 'flat'/)
-  assert.match(text, /disabled: groupBy !== 'workspace-tree'/)
+  // v0.15: the workspace slash toggle LEFT this menu (it lives in the settings
+  // card now), so the workspace-tree-only disable rule is gone with it.
+  assert.doesNotMatch(text, /id: 'workspace-slash'/, 'workspace toggle no longer rides the view menu')
   // Recency ordering is presentational: reorder anchors suppressed.
   assert.match(text, /if \(orderBy === 'updated'\) return null/)
   // alpha.2 retention contract: open goes through the navigation service.
@@ -756,9 +760,15 @@ test('context menu: official alignment via the workspace dictionary (0.14.0)', (
  */
 test('group move: one shared menu entry on every row kind, one dialog for both entry paths', () => {
   const text = read('src/client.js')
-  // One shared item object, inserted into all four row-kind branches.
+  // One shared item object, gated PER NAME LAYER (v0.15): a workspace row
+  // offers "move to group" only while "/" grouping is on for workspaces, a
+  // session row while its own layer is on. The two switches are independent —
+  // a disk-only workspace tree must not promise a container it cannot render.
   assert.match(text, /const groupItem = \{ id: 'move-group', label: t\('menu\.moveToGroup'\)/, 'shared group item')
-  assert.equal((text.match(/groupItem,/g) || []).length, 4, 'every row kind offers the entry')
+  assert.match(text, /const wsGroupItems = workspaceSlash \? \[groupItem\] : \[\]/, 'workspace rows gate on the workspace layer')
+  assert.match(text, /const sgroupItems = sessionSlash \? \[groupItem\] : \[\]/, 'session rows gate on the session layer')
+  assert.equal((text.match(/\.\.\.wsGroupItems,/g) || []).length, 2, 'workspace + folder branches')
+  assert.equal((text.match(/\.\.\.sgroupItems,/g) || []).length, 2, 'session + session-group branches')
   // One dialog serves the row menu (target locked) and the header picker.
   assert.match(text, /if \(dialog\.kind === 'group-move'\) return E\(GroupDialog/, 'dialog wiring')
   assert.match(text, /targets: dialog\.targets \|\| null/)
@@ -770,9 +780,20 @@ test('group move: one shared menu entry on every row kind, one dialog for both e
 test('group move: the header "New group" button doubles as the drop slot', () => {
   const text = read('src/client.js')
   assert.match(text, /'aria-label': t\('group\.new'\)/, 'header button is labelled')
+  // The button exists only while at least one name layer is ON.
+  assert.match(text, /\(workspaceSlash \|\| sessionSlash\) \? E\('button', \{/, 'header button follows the switches')
   assert.match(text, /const groupDropTarget = \(\) => drag !== null && drag\.over && drag\.over\.kind === 'newgroup'/)
+  // The slot refuses rows whose layer is off — while hovering AND on drop.
+  assert.match(text, /if \(drag\.kind === 'workspace' && !workspaceSlash\) return/, 'hover refused on a disk-only workspace layer')
+  assert.match(text, /if \(\(drag\.kind === 'workspace' && !workspaceSlash\) \|\| \(drag\.kind === 'session' && !sessionSlash\)\) \{/, 'drop refused on a disabled layer')
   assert.match(text, /over: \{ kind: 'newgroup' \}/, 'drag over the button marks the new-group target')
-  assert.match(text, /collectGroupPaths\(dialog\.target \? dialog\.target\.kind : undefined\)/, 'suggestions follow the locked kind')
+  // The datalist source is snapshotted when the dialog opens, never walked
+  // during render: collectGroupPaths covers every workspace + session title,
+  // so a render-time call would redo that walk on every store tick.
+  assert.match(text, /groupPaths: collectGroupPaths\(target\.kind\)/, 'menu / drop snapshot the datalist source')
+  assert.match(text, /groupPaths: collectGroupPaths\(pickerKindOf\(\)\)/, 'header picker snapshots the live layers')
+  assert.match(text, /const pickerKindOf = \(\) => workspaceSlash && sessionSlash \? undefined : \(workspaceSlash \? 'workspace' : 'session'\)/, 'picker narrows to the enabled layers')
+  assert.match(text, /groupPaths: dialog\.groupPaths \|\| \[\]/, 'render reads the snapshot instead of re-walking')
   assert.match(text, /\.bw-drop-into-strong\{outline:2px solid var\(--dsw-alias-brand-primary/, 'drop highlight')
 })
 
@@ -808,3 +829,82 @@ test('session rename: using() preferred, binding() fallback for 0.1.5-rc.x hosts
   assert.match(body, /face\.rename\(title\)/, 'old contract renames through the session face')
   assert.match(body, /throw new Error\('session rename is unavailable on this host'\)/, 'fails loud when neither contract exists')
 })
+
+/**
+ * Host-era compat, second contract: the "open" session. 0.1.6-alpha.2 replaced
+ * the SessionListState.current wire field with the mainView retention source,
+ * and 0.1.5-rc.x never carried retainedBy at all — so reading either one alone
+ * breaks on the other generation: no current highlight, and every blank row
+ * (a brand-new session before its first message) filtered out by
+ * sessionVisible. Retention wins, the wire field backs it up.
+ */
+test('current session: mainView retention preferred, wire current as the 0.1.5-rc.x fallback', () => {
+  const text = read('src/client.js')
+  const start = text.indexOf('const mainSessionIdOf = (list) => {')
+  const end = text.indexOf('const hasActiveScheduleOf')
+  assert.ok(start !== -1 && end > start, 'mainSessionIdOf sits before hasActiveScheduleOf')
+  const { mainSessionIdOf } = new Function(text.slice(start, end) + '\nreturn { mainSessionIdOf }')()
+
+  // 0.1.6-alpha.2 shape: no \`current\` field, retention decides.
+  assert.equal(mainSessionIdOf({ byId: { a: { id: 'a' }, b: { id: 'b', retainedBy: { mainView: 1 } } } }), 'b')
+  // 0.1.5-rc.x shape: no retainedBy anywhere, the wire field decides.
+  assert.equal(mainSessionIdOf({ byId: { a: { id: 'a' }, b: { id: 'b' } }, current: 'a' }), 'a')
+  // Retention wins when both are present, so an alpha.2 host is never second-guessed.
+  assert.equal(mainSessionIdOf({ byId: { a: { id: 'a', retainedBy: { mainView: 1 } } }, current: 'z' }), 'a')
+  // Nothing open (or no list at all): undefined, never a throw.
+  assert.equal(mainSessionIdOf({ byId: { a: { id: 'a' } } }), undefined)
+  assert.equal(mainSessionIdOf({ byId: {} }), undefined)
+  assert.equal(mainSessionIdOf(null), undefined)
+
+  // The consumer memo must also watch \`current\`: 0.1.5-rc.x switches it without
+  // necessarily handing back a new byId.
+  assert.match(text, /\[list \? list\.byId : null, list \? list\.current : null\]/, 'currentId memo depends on current')
+})
+
+/**
+ * v0.15: the workspace NAME layer became opt-in. Fresh installs render the
+ * official disk folders only; a browser that already ran the 0.13 view options
+ * keeps whichever value it stored; a pre-0.13 snapshot — which grouped by "/"
+ * by default with no switch to turn it off — stays ON, so upgrading never
+ * silently reorganizes a tree someone already lives in. Hydration replaces the
+ * whole state and only runs when a snapshot exists, which is exactly what
+ * makes those three cases separable from one read (no migration pass).
+ */
+test('workspace "/" grouping: opt-in default, pre-0.13 snapshots stay on', () => {
+  const text = read('src/client.js')
+  assert.match(text, /sessionTitleSlash: true, workspaceTitleSlash: false \}\)/, 'init ships the new default OFF')
+  assert.match(text, /const workspaceSlashOf = \(value\) => value === undefined \? true : value === true/, 'tri-state read')
+  const start = text.indexOf('const workspaceSlashOf = (value) =>')
+  const end = text.indexOf('\n', start)
+  const { workspaceSlashOf } = new Function(text.slice(start, end) + '\nreturn { workspaceSlashOf }')()
+  assert.equal(workspaceSlashOf(undefined), true, 'a pre-0.13 snapshot keeps grouping (upgrade must not reorganize)')
+  assert.equal(workspaceSlashOf(true), true, 'explicit on')
+  assert.equal(workspaceSlashOf(false), false, 'explicit off')
+
+  // The switch moved out of the sidebar view menu and into the settings card,
+  // where a flat tree has a findable explanation.
+  assert.doesNotMatch(text, /id: 'workspace-slash'/, 'gone from the view menu')
+  assert.match(text, /t\('settings\.workspaceSlash'\)/, 'carried by the settings card')
+  assert.match(text, /t\('settings\.workspaceSlash\.hint'\)/, 'with its explanation')
+  assert.match(text, /actions\.setWorkspaceTitleSlash\(!workspaceSlash\)/, 'the card writes the view store')
+  // Same tri-state read on both surfaces: a mismatch would show the switch in
+  // one state and render the tree in the other.
+  assert.equal((text.match(/workspaceSlashOf\(useStore\(s => s\.workspaceTitleSlash\)\)/g) || []).length, 2, 'tree + card agree')
+})
+
+/**
+ * Disk-only safety: with the workspace name layer OFF the tree renders no name
+ * groups, so a workspace drop must be PURE REORDERING. The drag source still
+ * derives its leaf from the raw title (it must — a compressed row lies about
+ * it), which means a stale folderPath would make every drop read as a
+ * cross-group move and silently rewrite the title ("web/前端" -> "前端") with
+ * no group visible to explain it. The arming site and the commit site must
+ * agree that there is no folder to cross.
+ */
+test('workspace drag: disk-only mode reorders, never rewrites titles', () => {
+  const text = read('src/client.js')
+  assert.match(text, /const sourceFolder = workspaceSlash && segs\.length > 1 \? segs\.slice\(0, -1\)\.join\('\/'\) : ''/, 'drag source drops the folder while the layer is off')
+  assert.match(text, /const sameFolder = !workspaceSlash \|\| targetFolder === source\.folderPath/, 'commit forces the reorder path')
+  assert.match(text, /hint: workspaceSlash \? t\('ws\.rename\.hint'\) : null/, 'the rename dialog stops advertising "/"')
+})
+

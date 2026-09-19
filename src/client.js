@@ -49,7 +49,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': '手动排序',
         'viewOptions.updatedOrder': '最近更新',
         'viewOptions.sessionSlash': '会话按"/"分组',
-        'viewOptions.workspaceSlash': '工作区按"/"分组',
       'group.ungrouped': '未分组',
       'sessions.expand': '展开 {n} 个会话',
       'sessions.collapse': '收起',
@@ -79,6 +78,8 @@ window.__ModuleLoader__.load({
       'settings.collapse': '收起',
       'settings.compactChains': '单链分组折叠显示',
       'settings.compactChains.hint': '单层链合并为一行,出现多个子级时自动展开为树状;拖拽工作区期间单链临时展开回文件夹树,可放入任意一级;展开状态与自定义外观保存在当前浏览器。',
+      'settings.workspaceSlash': '工作区按"/"分组',
+      'settings.workspaceSlash.hint': '关闭时工作区只按官方文件夹(磁盘目录)嵌套,标题原样显示;开启后标题里的 / 重新成为分组层级(组名/名字)。默认关闭,只影响工作区;会话分组另有独立开关。',
       'settings.statusPulse': '状态呼吸灯',
       'settings.statusPulse.hint': '被折叠藏起的状态灯(完成绿 / 运行蓝 / 待交互琥珀)沿层级向外冒泡:工作区与分组行以图标呼吸发光(颜色随状态,自定义过发光的标题一起呼吸),会话分组行显示呼吸状态灯;默认开启,可在此关闭。',
       'settings.appearance': '默认外观',
@@ -172,7 +173,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': 'Manual',
         'viewOptions.updatedOrder': 'Last updated',
         'viewOptions.sessionSlash': 'Group sessions by "/"',
-        'viewOptions.workspaceSlash': 'Group workspaces by "/"',
       'group.ungrouped': 'Ungrouped',
       'sessions.expand': 'Show {n} more sessions',
       'sessions.collapse': 'Collapse',
@@ -202,6 +202,8 @@ window.__ModuleLoader__.load({
       'settings.collapse': 'Collapse',
       'settings.compactChains': 'Merge single-child chains',
       'settings.compactChains.hint': 'Single-child chains merge into one row; levels with multiple children expand as a tree. Chains re-expand into folder rows while you drag a workspace, so it can drop into any level. State and custom styling persist in this browser.',
+      'settings.workspaceSlash': 'Group workspaces by "/"',
+      'settings.workspaceSlash.hint': 'Off: workspaces nest purely by the official folders (disk directories) and titles render whole. On: "/" in a title becomes a group level again ("group/name"). Off by default, workspaces only — session grouping has its own switch.',
       'settings.statusPulse': 'Status breathing light',
       'settings.statusPulse.hint': 'Status dots hidden by collapse (done green / running blue / pending amber) bubble outward: workspace and folder rows breathe on their icon in the status color (custom-glow labels breathe along), session-group rows show a breathing dot; on by default, turn it off here.',
       'settings.appearance': 'Default appearance',
@@ -303,7 +305,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': 'يدوي',
         'viewOptions.updatedOrder': 'آخر تحديث',
         'viewOptions.sessionSlash': 'تجميع الجلسات حسب "/"',
-        'viewOptions.workspaceSlash': 'تجميع مساحات العمل حسب "/"',
         'group.ungrouped': 'بلا مجموعة',
         'sessions.expand': 'عرض {n} جلسات إضافية',
         'sessions.collapse': 'طيّ',
@@ -333,6 +334,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': 'طيّ',
         'settings.compactChains': 'دمج السلاسل ذات الفرع الواحد',
         'settings.compactChains.hint': 'تُدمج المستويات ذات الفرع الواحد في سطر واحد، وتتوسع الشجرة تلقائياً عند وجود أكثر من فرع؛ أثناء سحب مساحة عمل تُفكّ السلاسل مؤقتاً إلى مجلدات ليصبح الإفلات ممكناً في أي مستوى؛ تُحفظ حالة التوسيع والمظهر المخصص في هذا المتصفح.',
+        'settings.workspaceSlash': 'تجميع مساحات العمل حسب "/"',
+        'settings.workspaceSlash.hint': 'عند الإيقاف تتداخل مساحات العمل حسب المجلدات الرسمية (مجلدات القرص) فقط وتظهر العناوين كاملة؛ وعند التشغيل تعود "/" في العنوان مستوى تجميع («المجموعة/الاسم»). معطّل افتراضياً، ويخص مساحات العمل وحدها — لتجميع الجلسات مفتاحه المستقل.',
         'settings.statusPulse': 'مؤشر حالة نابض',
         'settings.statusPulse.hint': 'مؤشرات الحالة التي يخفيها الطيّ (مكتمل أخضر / قيد التشغيل أزرق / بانتظار تفاعل كهرماني) تتصاعد عبر المستويات: تصدر أسطر مساحات العمل والمجلدات وميضاً نابضاً للأيقونة بلون الحالة (وتنبض معها العناوين ذات التوهج المخصص)، وتعرض أسطر مجموعات الجلسات نقطة حالة نابضة؛ مفعّل افتراضياً ويمكن إيقافه هنا.',
         'settings.appearance': 'المظهر الافتراضي',
@@ -426,7 +429,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': 'Manuell',
         'viewOptions.updatedOrder': 'Zuletzt aktualisiert',
         'viewOptions.sessionSlash': 'Sitzungen nach "/" gruppieren',
-        'viewOptions.workspaceSlash': 'Arbeitsbereiche nach "/" gruppieren',
         'group.ungrouped': 'Ohne Gruppe',
         'sessions.expand': '{n} Sitzungen einblenden',
         'sessions.collapse': 'Einklappen',
@@ -456,6 +458,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': 'Einklappen',
         'settings.compactChains': 'Einzelketten zusammenfassen',
         'settings.compactChains.hint': 'Ebenen mit genau einem Kind werden zu einer Zeile zusammengefasst; bei mehreren Kindern klappt der Baum auf; beim Ziehen eines Arbeitsbereichs klappen die Ketten vorübergehend zum Ordnerbaum auf, sodass jede Ebene als Ziel dient; Klappzustand und eigenes Aussehen bleiben in diesem Browser gespeichert.',
+        'settings.workspaceSlash': 'Arbeitsbereiche nach "/" gruppieren',
+        'settings.workspaceSlash.hint': 'Aus: Arbeitsbereiche verschachteln nur nach den offiziellen Ordnern (Verzeichnisse auf der Platte), Titel bleiben vollständig. An: "/" im Titel wird wieder eine Gruppenebene ("Gruppe/Name"). Standardmäßig aus, gilt nur für Arbeitsbereiche — Sitzungsgruppen haben einen eigenen Schalter.',
         'settings.statusPulse': 'Status-Pulslicht',
         'settings.statusPulse.hint': 'Vom Einklappen verdeckte Statuspunkte (fertig grün / läuft blau / wartet amber) steigen die Hierarchie hinauf: Arbeitsbereich- und Ordnerzeilen lassen ihr Symbol in der Statusfarbe pulsieren (eigens gefärbte Titel pulsieren mit), Sitzungsgruppen zeigen einen pulsierenden Statuspunkt; standardmäßig an, hier abschaltbar.',
         'settings.appearance': 'Standardaussehen',
@@ -549,7 +553,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': 'Manuel',
         'viewOptions.updatedOrder': 'Dernière mise à jour',
         'viewOptions.sessionSlash': 'Grouper les sessions par « / »',
-        'viewOptions.workspaceSlash': 'Grouper les espaces par « / »',
         'group.ungrouped': 'Sans groupe',
         'sessions.expand': 'Afficher {n} sessions',
         'sessions.collapse': 'Réduire',
@@ -579,6 +582,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': 'Réduire',
         'settings.compactChains': 'Fusionner les chaînes à un seul enfant',
         'settings.compactChains.hint': 'Les niveaux à un seul enfant se fusionnent en une ligne; dès qu\'il y a plusieurs enfants, l\'arborescence se déploie; pendant le glisser-déposer d\'un espace de travail, les chaînes se déploient temporairement en dossiers pour permettre le dépôt à n\'importe quel niveau; l\'état déplié et l\'apparence personnalisée sont conservés dans ce navigateur.',
+        'settings.workspaceSlash': 'Grouper les espaces par « / »',
+        'settings.workspaceSlash.hint': 'Désactivé : les espaces s\'imbriquent uniquement selon les dossiers officiels (répertoires du disque) et les titres restent entiers. Activé : le « / » d\'un titre redevient un niveau de groupe (« groupe/nom »). Désactivé par défaut, espaces uniquement — les groupes de sessions ont leur propre interrupteur.',
         'settings.statusPulse': 'Voyant d\'état pulsant',
         'settings.statusPulse.hint': 'Les voyants masqués par le repli (terminé vert / en cours bleu / en attente ambre) remontent la hiérarchie: les lignes d\'espace de travail et de dossier font pulser leur icône dans la couleur d\'état (les titres à lueur personnalisée pulsent aussi), les lignes de groupe de sessions affichent un voyant pulsant; activé par défaut, désactivable ici.',
         'settings.appearance': 'Apparence par défaut',
@@ -672,7 +677,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': 'मैन्युअल',
         'viewOptions.updatedOrder': 'हाल का अपडेट',
         'viewOptions.sessionSlash': 'सत्रों को "/" से समूहित करें',
-        'viewOptions.workspaceSlash': 'कार्यक्षेत्रों को "/" से समूहित करें',
         'group.ungrouped': 'बिना समूह',
         'sessions.expand': '{n} सत्र दिखाएँ',
         'sessions.collapse': 'समेटें',
@@ -702,6 +706,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': 'समेटें',
         'settings.compactChains': 'एकल-संतान श्रृंखलाएँ मिलाएँ',
         'settings.compactChains.hint': 'जिन स्तरों पर केवल एक संतान होती है वे एक पंक्ति में मिल जाते हैं; कई संतानें होने पर वृक्ष खुल जाता है; कार्यस्थान खींचते समय श्रृंखलाएँ अस्थायी रूप से फ़ोल्डरों में खुल जाती हैं ताकि किसी भी स्तर पर छोड़ा जा सके; खुलने की स्थिति और अनुकूलित रूप इसी ब्राउज़र में सहेजे जाते हैं।',
+        'settings.workspaceSlash': 'कार्यक्षेत्रों को "/" से समूहित करें',
+        'settings.workspaceSlash.hint': 'बंद: कार्यस्थान केवल आधिकारिक फ़ोल्डरों (डिस्क निर्देशिकाओं) के अनुसार नेस्ट होते हैं और शीर्षक पूरे दिखते हैं। चालू: शीर्षक में "/" फिर से समूह स्तर बन जाता है ("समूह/नाम")। डिफ़ॉल्ट रूप से बंद, केवल कार्यस्थानों पर लागू — सत्र समूह का अपना स्विच है।',
         'settings.statusPulse': 'स्थिति की साँस लेती बत्ती',
         'settings.statusPulse.hint': 'समेटने से छिपी स्थिति बत्तियाँ (पूर्ण हरी / चल रहा नीली / प्रतीक्षारत अंबर) पदानुक्रम में ऊपर उठती हैं: कार्यस्थान और फ़ोल्डर पंक्तियों का चिह्न स्थिति के रंग में साँस लेता है (अनुकूलित चमक वाले शीर्षक भी साथ साँस लेते हैं), सत्र समूह पंक्तियों पर साँस लेता स्थिति बिंदु दिखता है; डिफ़ॉल्ट रूप से चालू, यहाँ बंद किया जा सकता है।',
         'settings.appearance': 'डिफ़ॉल्ट रूप',
@@ -795,7 +801,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': 'Manual',
         'viewOptions.updatedOrder': 'Terakhir diperbarui',
         'viewOptions.sessionSlash': 'Kelompokkan sesi per "/"',
-        'viewOptions.workspaceSlash': 'Kelompokkan ruang kerja per "/"',
         'group.ungrouped': 'Tanpa grup',
         'sessions.expand': 'Tampilkan {n} sesi',
         'sessions.collapse': 'Ciutkan',
@@ -825,6 +830,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': 'Ciutkan',
         'settings.compactChains': 'Gabungkan rantai beranak tunggal',
         'settings.compactChains.hint': 'Tingkat yang hanya punya satu anak digabung jadi satu baris; bila anaknya banyak, pohon terbentang; saat menyeret ruang kerja, rantai sementara terbentang kembali jadi folder sehingga bisa dijatuhkan di tingkat mana pun; status terbentang dan tampilan khusus disimpan di browser ini.',
+        'settings.workspaceSlash': 'Kelompokkan ruang kerja per "/"',
+        'settings.workspaceSlash.hint': 'Mati: ruang kerja bersarang hanya menurut folder resmi (direktori disk) dan judul tampil utuh. Nyala: "/" pada judul kembali menjadi tingkat grup ("grup/nama"). Default mati, hanya ruang kerja — pengelompokan sesi punya sakelarnya sendiri.',
         'settings.statusPulse': 'Lampu status bernapas',
         'settings.statusPulse.hint': 'Lampu status yang tersembunyi karena pelipatan (selesai hijau / berjalan biru / menunggu kuning) menggelembung ke tingkat atas: baris ruang kerja dan folder membuat ikonnya bernapas dalam warna status (judul dengan pendar khusus ikut bernapas), baris grup sesi menampilkan titik status yang bernapas; aktif secara bawaan, bisa dimatikan di sini.',
         'settings.appearance': 'Tampilan bawaan',
@@ -918,7 +925,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': 'Manuale',
         'viewOptions.updatedOrder': 'Ultimo aggiornamento',
         'viewOptions.sessionSlash': 'Raggruppa sessioni per "/"',
-        'viewOptions.workspaceSlash': 'Raggruppa aree per "/"',
         'group.ungrouped': 'Senza gruppo',
         'sessions.expand': 'Mostra {n} sessioni',
         'sessions.collapse': 'Comprimi',
@@ -948,6 +954,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': 'Comprimi',
         'settings.compactChains': 'Unisci le catene a figlio unico',
         'settings.compactChains.hint': 'I livelli con un solo figlio si fondono in una riga; con più figli l\'albero si espande; durante il trascinamento di un\'area di lavoro le catene si riespandono temporaneamente in cartelle, così puoi rilasciare su qualsiasi livello; stato di espansione e aspetto personalizzato restano in questo browser.',
+        'settings.workspaceSlash': 'Raggruppa aree per "/"',
+        'settings.workspaceSlash.hint': 'Off: le aree di lavoro si annidano solo secondo le cartelle ufficiali (directory del disco) e i titoli restano interi. On: la "/" nel titolo torna a essere un livello di gruppo ("gruppo/nome"). Disattivato per impostazione predefinita, solo aree di lavoro — le sessioni hanno il proprio interruttore.',
         'settings.statusPulse': 'Spia di stato pulsante',
         'settings.statusPulse.hint': 'Le spie nascoste dalla compressione (completato verde / in esecuzione blu / in attesa ambra) risalgono la gerarchia: le righe di aree di lavoro e cartelle fanno pulsare l\'icona nel colore di stato (anche i titoli con bagliore personalizzato pulsano), le righe dei gruppi di sessioni mostrano una spia pulsante; attiva per impostazione predefinita, disattivabile qui.',
         'settings.appearance': 'Aspetto predefinito',
@@ -1041,7 +1049,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': '手動',
         'viewOptions.updatedOrder': '最近の更新',
         'viewOptions.sessionSlash': 'セッションを「/」でグループ化',
-        'viewOptions.workspaceSlash': 'ワークスペースを「/」でグループ化',
         'group.ungrouped': '未分類',
         'sessions.expand': '{n} 件のセッションを展開',
         'sessions.collapse': '折りたたむ',
@@ -1071,6 +1078,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': '折りたたむ',
         'settings.compactChains': '一本鎖の階層を 1 行にまとめる',
         'settings.compactChains.hint': '子が 1 つだけの階層は 1 行にまとまり,複数の子がある階層はツリーとして展開されます;ワークスペースのドラッグ中は一時的にフォルダーツリーへ戻り,どの階層にもドロップできます;展開状態とカスタム外観はこのブラウザーに保存されます。',
+        'settings.workspaceSlash': 'ワークスペースを「/」でグループ化',
+        'settings.workspaceSlash.hint': 'オフ:ワークスペースは公式フォルダー(ディスクのディレクトリ)だけで入れ子になり、タイトルはそのまま表示されます。オン:タイトル内の「/」が再びグループ階層になります(「グループ/名前」)。既定はオフ、対象はワークスペースのみ — セッションのグループ化には専用のスイッチがあります。',
         'settings.statusPulse': 'ステータス表示灯',
         'settings.statusPulse.hint': '折りたたみで隠れたステータス表示(完了は緑 / 実行中は青 / 操作待ちは琥珀)が上位の階層へ伝わります:ワークスペースとフォルダーの行はアイコンがステータス色で明滅し(グローを設定したタイトルも連動),セッショングループの行には明滅するステータスドットが出ます;既定はオンで,ここでオフにできます。',
         'settings.appearance': '既定の外観',
@@ -1164,7 +1173,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': '수동',
         'viewOptions.updatedOrder': '최근 업데이트',
         'viewOptions.sessionSlash': '세션을 "/"로 그룹화',
-        'viewOptions.workspaceSlash': '작업 공간을 "/"로 그룹화',
         'group.ungrouped': '미분류',
         'sessions.expand': '세션 {n}개 펼치기',
         'sessions.collapse': '접기',
@@ -1194,6 +1202,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': '접기',
         'settings.compactChains': '단일 체인을 한 줄로 접기',
         'settings.compactChains.hint': '자식이 하나뿐인 단계는 한 줄로 합쳐지고, 자식이 여러 개면 트리로 펼쳐집니다; 워크스페이스를 끌어 놓는 동안에는 체인이 잠시 폴더 트리로 펼쳐져 어느 단계에나 놓을 수 있습니다; 펼침 상태와 사용자 지정 모양은 이 브라우저에 저장됩니다.',
+        'settings.workspaceSlash': '작업 공간을 "/"로 그룹화',
+        'settings.workspaceSlash.hint': '끄면: 작업 공간은 공식 폴더(디스크 디렉터리)로만 중첩되고 제목은 그대로 표시됩니다. 켜면: 제목의 "/"가 다시 그룹 단계가 됩니다("그룹/이름"). 기본값은 끔이며 작업 공간에만 적용됩니다 — 세션 그룹화에는 별도 스위치가 있습니다.',
         'settings.statusPulse': '상태 표시등',
         'settings.statusPulse.hint': '접혀서 가려진 상태 표시(완료는 초록 / 실행은 파랑 / 대기는 호박색)가 상위 단계로 번집니다: 워크스페이스와 폴더 행은 아이콘이 상태 색으로 깜빡이고(글로우를 지정한 제목도 함께 깜빡임), 세션 그룹 행에는 깜빡이는 상태 점이 표시됩니다; 기본값은 켜짐이며 여기서 끌 수 있습니다.',
         'settings.appearance': '기본 모양',
@@ -1287,7 +1297,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': 'Handmatig',
         'viewOptions.updatedOrder': 'Laatst bijgewerkt',
         'viewOptions.sessionSlash': 'Sessies groeperen op "/"',
-        'viewOptions.workspaceSlash': 'Werkruimtes groeperen op "/"',
         'group.ungrouped': 'Zonder groep',
         'sessions.expand': '{n} sessies uitklappen',
         'sessions.collapse': 'Inklappen',
@@ -1317,6 +1326,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': 'Inklappen',
         'settings.compactChains': 'Enkelvoudige ketens samenvoegen',
         'settings.compactChains.hint': 'Niveaus met één kind worden tot één regel samengevoegd; bij meerdere kinderen klapt de boom open; tijdens het slepen van een werkruimte klappen de ketens tijdelijk terug naar mappen, zodat je op elk niveau kunt neerzetten; de uitgeklapte staat en het eigen uiterlijk blijven in deze browser bewaard.',
+        'settings.workspaceSlash': 'Werkruimtes groeperen op "/"',
+        'settings.workspaceSlash.hint': 'Uit: werkruimten nesten alleen volgens de officiële mappen (schijfmappen) en titels blijven volledig. Aan: "/" in een titel wordt weer een groepsniveau ("groep/naam"). Standaard uit, alleen werkruimten — sessiegroepen hebben hun eigen schakelaar.',
         'settings.statusPulse': 'Pulserend statuslampje',
         'settings.statusPulse.hint': 'Statuslampjes die door het inklappen verborgen zijn (voltooid groen / actief blauw / wachtend amber) borrelen door de hiërarchie omhoog: werkruimte- en mapregels laten hun pictogram in de statuskleur pulseren (titels met eigen gloed pulseren mee), sessiegroepregels tonen een pulserend statusstipje; standaard aan, hier uit te zetten.',
         'settings.appearance': 'Standaarduiterlijk',
@@ -1410,7 +1421,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': 'Ręcznie',
         'viewOptions.updatedOrder': 'Ostatnia aktualizacja',
         'viewOptions.sessionSlash': 'Grupuj sesje po "/"',
-        'viewOptions.workspaceSlash': 'Grupuj obszary po "/"',
         'group.ungrouped': 'Bez grupy',
         'sessions.expand': 'Pokaż {n} sesji',
         'sessions.collapse': 'Zwiń',
@@ -1440,6 +1450,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': 'Zwiń',
         'settings.compactChains': 'Scal łańcuchy z jednym dzieckiem',
         'settings.compactChains.hint': 'Poziomy z jednym dzieckiem scalają się w jeden wiersz; przy większej liczbie dzieci drzewo się rozwija; podczas przeciągania obszaru roboczego łańcuchy tymczasowo rozwijają się do folderów, więc upuszczenie działa na każdym poziomie; stan rozwinięcia i własny wygląd są zapisywane w tej przeglądarce.',
+        'settings.workspaceSlash': 'Grupuj obszary po "/"',
+        'settings.workspaceSlash.hint': 'Wył.: obszary robocze zagnieżdżają się wyłącznie według oficjalnych folderów (katalogów dysku), a tytuły są pełne. Wł.: "/" w tytule znów staje się poziomem grupy ("grupa/nazwa"). Domyślnie wył., dotyczy tylko obszarów roboczych — grupy sesji mają własny przełącznik.',
         'settings.statusPulse': 'Pulsująca lampka stanu',
         'settings.statusPulse.hint': 'Lampki ukryte przez zwinięcie (ukończono zielona / trwa niebieska / czeka bursztynowa) bąbelkują w górę hierarchii: wiersze obszarów roboczych i folderów pulsują ikoną w kolorze stanu (tytuły z własną poświatą pulsują razem), wiersze grup sesji pokazują pulsującą kropkę stanu; domyślnie włączone, tutaj można wyłączyć.',
         'settings.appearance': 'Domyślny wygląd',
@@ -1533,7 +1545,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': 'Manual',
         'viewOptions.updatedOrder': 'Atualização recente',
         'viewOptions.sessionSlash': 'Agrupar sessões por "/"',
-        'viewOptions.workspaceSlash': 'Agrupar áreas por "/"',
         'group.ungrouped': 'Sem grupo',
         'sessions.expand': 'Mostrar {n} sessões',
         'sessions.collapse': 'Recolher',
@@ -1563,6 +1574,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': 'Recolher',
         'settings.compactChains': 'Mesclar cadeias de filho único',
         'settings.compactChains.hint': 'Níveis com um único filho viram uma linha; com vários filhos a árvore se expande; ao arrastar um espaço de trabalho, as cadeias voltam temporariamente a pastas, permitindo soltar em qualquer nível; o estado de expansão e o estilo personalizado ficam neste navegador.',
+        'settings.workspaceSlash': 'Agrupar áreas por "/"',
+        'settings.workspaceSlash.hint': 'Desligado: as áreas de trabalho aninham-se apenas pelas pastas oficiais (diretórios do disco) e os títulos ficam inteiros. Ligado: a "/" no título volta a ser um nível de grupo ("grupo/nome"). Desligado por padrão, só áreas de trabalho — os grupos de sessões têm o próprio interruptor.',
         'settings.statusPulse': 'Luz de status pulsante',
         'settings.statusPulse.hint': 'As luzes escondidas pelo recolhimento (concluído verde / em execução azul / aguardando âmbar) sobem pela hierarquia: linhas de espaço de trabalho e pasta pulsam o ícone na cor do status (títulos com brilho personalizado pulsam junto), linhas de grupo de sessões mostram um ponto pulsante; ativado por padrão, pode ser desligado aqui.',
         'settings.appearance': 'Aparência padrão',
@@ -1656,7 +1669,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': 'Вручную',
         'viewOptions.updatedOrder': 'По обновлению',
         'viewOptions.sessionSlash': 'Группировать сессии по «/»',
-        'viewOptions.workspaceSlash': 'Группировать области по «/»',
         'group.ungrouped': 'Без группы',
         'sessions.expand': 'Показать ещё {n} сессий',
         'sessions.collapse': 'Свернуть',
@@ -1686,6 +1698,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': 'Свернуть',
         'settings.compactChains': 'Объединять цепочки с одним потомком',
         'settings.compactChains.hint': 'Уровни с единственным потомком сливаются в одну строку; при нескольких потомках дерево разворачивается; во время перетаскивания рабочей области цепочки временно разворачиваются в папки, чтобы можно было положить элемент на любой уровень; состояние сворачивания и оформление хранятся в этом браузере.',
+        'settings.workspaceSlash': 'Группировать области по «/»',
+        'settings.workspaceSlash.hint': 'Выкл.: рабочие области вкладываются только по официальным папкам (каталогам диска), заголовки показываются целиком. Вкл.: «/» в заголовке снова становится уровнем группы («группа/имя»). По умолчанию выкл., только рабочие области — у групп сессий свой переключатель.',
         'settings.statusPulse': 'Пульсирующий индикатор состояния',
         'settings.statusPulse.hint': 'Индикаторы, скрытые сворачиванием (завершено — зелёный / выполняется — синий / ожидает — янтарный), всплывают вверх по иерархии: строки рабочих областей и папок пульсируют значком в цвете состояния (заголовки со своим свечением пульсируют вместе с ними), строки групп сессий показывают пульсирующую точку; включено по умолчанию, здесь можно отключить.',
         'settings.appearance': 'Оформление по умолчанию',
@@ -1779,7 +1793,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': 'Manuellt',
         'viewOptions.updatedOrder': 'Senast uppdaterad',
         'viewOptions.sessionSlash': 'Gruppera sessioner efter "/"',
-        'viewOptions.workspaceSlash': 'Gruppera arbetsytor efter "/"',
         'group.ungrouped': 'Utan grupp',
         'sessions.expand': 'Visa {n} sessioner',
         'sessions.collapse': 'Fäll ihop',
@@ -1809,6 +1822,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': 'Fäll ihop',
         'settings.compactChains': 'Slå ihop enkelkedjor',
         'settings.compactChains.hint': 'Nivåer med ett enda barn slås ihop till en rad; med flera barn fälls trädet ut; medan du drar en arbetsyta fälls kedjorna tillfälligt ut till mappar så att du kan släppa på vilken nivå som helst; utfällt läge och eget utseende sparas i den här webbläsaren.',
+        'settings.workspaceSlash': 'Gruppera arbetsytor efter "/"',
+        'settings.workspaceSlash.hint': 'Av: arbetsytor kapslas in enbart efter de officiella mapparna (diskmappar) och titlar visas hela. På: "/" i en titel blir åter en gruppnivå ("grupp/namn"). Av som standard, endast arbetsytor — sessionsgrupper har sin egen växlare.',
         'settings.statusPulse': 'Pulserande statuslampa',
         'settings.statusPulse.hint': 'Statuslampor som döljs av ihopfällningen (klart grön / körs blå / väntar bärnsten) bubblar uppåt i hierarkin: rader för arbetsytor och mappar pulserar ikonen i statusfärgen (titlar med egen glöd pulserar med), sessionsgrupper visar en pulserande prick; på som standard, stängs av här.',
         'settings.appearance': 'Standardutseende',
@@ -1902,7 +1917,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': 'ด้วยตนเอง',
         'viewOptions.updatedOrder': 'อัปเดตล่าสุด',
         'viewOptions.sessionSlash': 'จัดกลุ่มเซสชันตาม "/"',
-        'viewOptions.workspaceSlash': 'จัดกลุ่มพื้นที่ทำงานตาม "/"',
         'group.ungrouped': 'ไม่มีกลุ่ม',
         'sessions.expand': 'แสดงอีก {n} เซสชัน',
         'sessions.collapse': 'ย่อ',
@@ -1932,6 +1946,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': 'ย่อ',
         'settings.compactChains': 'รวมสายที่มีลูกเดียว',
         'settings.compactChains.hint': 'ระดับที่มีลูกเพียงหนึ่งจะถูกรวมเป็นบรรทัดเดียว เมื่อมีลูกหลายตัวต้นไม้จะขยายออก ขณะลากพื้นที่ทำงาน สายจะขยายกลับเป็นโฟลเดอร์ชั่วคราวเพื่อให้วางได้ทุกระดับ สถานะการขยายและรูปลักษณ์ที่กำหนดเองจะถูกเก็บไว้ในเบราว์เซอร์นี้',
+        'settings.workspaceSlash': 'จัดกลุ่มพื้นที่ทำงานตาม "/"',
+        'settings.workspaceSlash.hint': 'ปิด: พื้นที่ทำงานซ้อนกันตามโฟลเดอร์ทางการ (ไดเรกทอรีบนดิสก์) เท่านั้น และชื่อเรื่องแสดงเต็ม ปิดเป็นค่าเริ่มต้น ใช้กับพื้นที่ทำงานเท่านั้น — การจัดกลุ่มเซสชันมีสวิตช์แยก',
         'settings.statusPulse': 'ไฟสถานะหายใจ',
         'settings.statusPulse.hint': 'ไฟสถานะที่ถูกย่อซ่อนไว้ (เสร็จแล้วสีเขียว / กำลังทำงานสีน้ำเงิน / รอตอบสนองสีเหลืองอำพัน) จะลอยขึ้นตามลำดับชั้น: แถวพื้นที่ทำงานและโฟลเดอร์จะให้ไอคอนหายใจเป็นสีตามสถานะ (ชื่อที่มีการเรืองแสงกำหนดเองก็หายใจตาม) แถวกลุ่มเซสชันจะแสดงจุดสถานะที่หายใจ เปิดไว้เป็นค่าเริ่มต้น ปิดได้ที่นี่',
         'settings.appearance': 'รูปลักษณ์เริ่มต้น',
@@ -2025,7 +2041,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': 'El ile',
         'viewOptions.updatedOrder': 'Son güncelleme',
         'viewOptions.sessionSlash': 'Oturumları "/" ile gruplandır',
-        'viewOptions.workspaceSlash': 'Çalışma alanlarını "/" ile gruplandır',
         'group.ungrouped': 'Grubusuz',
         'sessions.expand': '{n} oturumu göster',
         'sessions.collapse': 'Daralt',
@@ -2055,6 +2070,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': 'Daralt',
         'settings.compactChains': 'Tek çocuklu zincirleri birleştir',
         'settings.compactChains.hint': 'Tek çocuklu düzeyler tek satırda birleşir; birden çok çocuk olduğunda ağaç açılır; bir çalışma alanını sürüklerken zincirler geçici olarak klasörlere açılır, böylece her düzeye bırakabilirsiniz; açılma durumu ve özel görünüm bu tarayıcıda saklanır.',
+        'settings.workspaceSlash': 'Çalışma alanlarını "/" ile gruplandır',
+        'settings.workspaceSlash.hint': 'Kapalı: çalışma alanları yalnızca resmî klasörlere (disk dizinleri) göre iç içe geçer ve başlıklar tam görünür. Açık: başlıktaki "/" yeniden bir grup düzeyi olur ("grup/ad"). Varsayılan kapalı, yalnızca çalışma alanları — oturum gruplamasının kendi anahtarı var.',
         'settings.statusPulse': 'Nefes alan durum ışığı',
         'settings.statusPulse.hint': 'Daraltmayla gizlenen durum ışıkları (tamamlandı yeşil / çalışıyor mavi / bekliyor amber) hiyerarşide yukarı taşar: çalışma alanı ve klasör satırlarının simgesi durum renginde nefes alır (özel ışıması olan başlıklar da birlikte nefes alır), oturum grubu satırları nefes alan bir durum noktası gösterir; varsayılan olarak açık, buradan kapatılabilir.',
         'settings.appearance': 'Varsayılan görünüm',
@@ -2148,7 +2165,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': 'Thủ công',
         'viewOptions.updatedOrder': 'Cập nhật gần đây',
         'viewOptions.sessionSlash': 'Nhóm phiên theo "/"',
-        'viewOptions.workspaceSlash': 'Nhóm khu vực theo "/"',
         'group.ungrouped': 'Chưa phân nhóm',
         'sessions.expand': 'Hiện thêm {n} phiên',
         'sessions.collapse': 'Thu gọn',
@@ -2178,6 +2194,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': 'Thu gọn',
         'settings.compactChains': 'Gộp chuỗi một nhánh',
         'settings.compactChains.hint': 'Các tầng chỉ có một nhánh con được gộp thành một dòng; khi có nhiều nhánh con, cây tự mở ra; khi kéo không gian làm việc, chuỗi tạm mở lại thành thư mục để có thể thả vào bất kỳ tầng nào; trạng thái mở và giao diện tùy chỉnh được lưu trong trình duyệt này.',
+        'settings.workspaceSlash': 'Nhóm khu vực theo "/"',
+        'settings.workspaceSlash.hint': 'Tắt: không gian làm việc lồng nhau chỉ theo thư mục chính thức (thư mục trên đĩa) và tiêu đề hiển thị nguyên vẹn. Bật: "/" trong tiêu đề lại trở thành một cấp nhóm ("nhóm/tên"). Mặc định tắt, chỉ áp dụng cho không gian làm việc — nhóm phiên có công tắc riêng.',
         'settings.statusPulse': 'Đèn trạng thái nhấp nháy',
         'settings.statusPulse.hint': 'Những đèn trạng thái bị thu gọn che đi (xong màu xanh lá / đang chạy màu xanh dương / đang chờ màu hổ phách) sẽ nổi dần lên các tầng trên: hàng không gian làm việc và thư mục cho biểu tượng nhấp nháy theo màu trạng thái (tiêu đề có đặt phát sáng cũng nhấp nháy theo), hàng nhóm phiên hiện một chấm trạng thái nhấp nháy; mặc định bật, có thể tắt tại đây.',
         'settings.appearance': 'Giao diện mặc định',
@@ -2271,7 +2289,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': '手動排序',
         'viewOptions.updatedOrder': '最近更新',
         'viewOptions.sessionSlash': '對話按「/」分組',
-        'viewOptions.workspaceSlash': '工作區按「/」分組',
         'group.ungrouped': '未分組',
         'sessions.expand': '展開 {n} 個對話',
         'sessions.collapse': '收起',
@@ -2301,6 +2318,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': '收起',
         'settings.compactChains': '單鏈分組摺疊顯示',
         'settings.compactChains.hint': '單層鏈會合併成一行,出現多個子級就會自動展開成樹狀;拖拽工作區期間單鏈會臨時展開返做文件夾樹,可以放入任何一級;展開狀態同自訂外觀會喺呢個瀏覽器保存。',
+        'settings.workspaceSlash': '工作區按「/」分組',
+        'settings.workspaceSlash.hint': '關閉時工作區只按官方資料夾(磁碟目錄)嵌套,標題原樣顯示;開啟後標題裡的 / 重新成為分組層級(組名/名字)。預設關閉;只影響工作區,對話分組另有獨立開關。',
         'settings.statusPulse': '狀態呼吸燈',
         'settings.statusPulse.hint': '被摺疊遮住嘅狀態燈(完成綠 / 運行藍 / 待互動琥珀)會沿住層級向外冒泡:工作區同分組行會以圖示呼吸發光(顏色跟狀態,自訂過發光嘅標題一齊呼吸),對話分組行就會顯示呼吸狀態燈;預設開啟,可以喺度閂咗佢。',
         'settings.appearance': '預設外觀',
@@ -2394,7 +2413,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': '手動排序',
         'viewOptions.updatedOrder': '最近更新',
         'viewOptions.sessionSlash': '對話按「/」分組',
-        'viewOptions.workspaceSlash': '工作區按「/」分組',
         'group.ungrouped': '未分組',
         'sessions.expand': '展開 {n} 個對話',
         'sessions.collapse': '收起',
@@ -2424,6 +2442,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': '收起',
         'settings.compactChains': '單鏈分組摺疊顯示',
         'settings.compactChains.hint': '單層鏈會合併成一行,出現多個子級就會自動展開成樹狀;拖拽工作區期間單鏈會臨時展開返做文件夾樹,可以放入任何一級;展開狀態同自訂外觀會喺呢個瀏覽器保存。',
+        'settings.workspaceSlash': '工作區按「/」分組',
+        'settings.workspaceSlash.hint': '關閉時工作區只按官方資料夾(磁碟目錄)嵌套,標題原樣顯示;開啟後標題裡的 / 重新成為分組層級(組名/名字)。預設關閉;只影響工作區,對話分組另有獨立開關。',
         'settings.statusPulse': '狀態呼吸燈',
         'settings.statusPulse.hint': '被摺疊遮住嘅狀態燈(完成綠 / 運行藍 / 待互動琥珀)會沿住層級向外冒泡:工作區同分組行會以圖示呼吸發光(顏色跟狀態,自訂過發光嘅標題一齊呼吸),對話分組行就會顯示呼吸狀態燈;預設開啟,可以喺度閂咗佢。',
         'settings.appearance': '預設外觀',
@@ -2517,7 +2537,6 @@ window.__ModuleLoader__.load({
         'viewOptions.manualOrder': '手動排序',
         'viewOptions.updatedOrder': '最近更新',
         'viewOptions.sessionSlash': '工作階段按「/」分組',
-        'viewOptions.workspaceSlash': '工作區按「/」分組',
         'group.ungrouped': '未分組',
         'sessions.expand': '展開 {n} 個工作階段',
         'sessions.collapse': '收合',
@@ -2547,6 +2566,8 @@ window.__ModuleLoader__.load({
         'settings.collapse': '收合',
         'settings.compactChains': '單鏈群組合併顯示',
         'settings.compactChains.hint': '單層鏈會合併成一行,出現多個子層級時自動展開為樹狀;拖曳工作區期間單鏈會暫時展開回資料夾樹,可放入任一層級;展開狀態與自訂外觀會保存在本瀏覽器。',
+        'settings.workspaceSlash': '工作區按「/」分組',
+        'settings.workspaceSlash.hint': '關閉時工作區只按官方資料夾(磁碟目錄)巢狀,標題原樣顯示;開啟後標題裡的 / 重新成為群組層級(群組名/名字)。預設關閉;只影響工作區,工作階段分組另有獨立開關。',
         'settings.statusPulse': '狀態呼吸燈',
         'settings.statusPulse.hint': '被收合藏起的狀態燈(完成綠 / 執行藍 / 待互動琥珀)會沿著層級向外冒出:工作區與群組列以圖示呼吸發光(顏色隨狀態,自訂過發光的標題一起呼吸),工作階段群組列則顯示呼吸狀態燈;預設開啟,可在此關閉。',
         'settings.appearance': '預設外觀',
@@ -2769,18 +2790,25 @@ window.__ModuleLoader__.load({
       && (!summary.blank || summary.id === current)
 
     /**
-     * dsh 0.1.6-alpha.2 dropped SessionListState.current: the "open" session
-     * is now the one retained under the mainView source — navigation belongs
-     * to the view owner (official ui-workspace tree.ts mainSessionId). The
-     * old wire field is gone, so reading it yields a permanent undefined
-     * (no current highlight, and blank rows would filter out everywhere).
+     * The "open" session, across BOTH host generations.
+     *
+     * dsh 0.1.6-alpha.2 dropped SessionListState.current: the open session is
+     * now the one retained under the mainView source — navigation belongs to
+     * the view owner (official ui-workspace tree.ts mainSessionId).
+     *
+     * dsh 0.1.5-rc.x never carried `retainedBy` at all (it was introduced by
+     * the same 2026-09-17 generation refactor that added it), so the retention
+     * loop matches nothing there and reading retention alone yields a permanent
+     * undefined: no current highlight, and every blank row (a brand-new session
+     * before its first message) filtered out by sessionVisible. Both contracts
+     * must stay wired — same shape as the renameSession probe below.
      */
     const mainSessionIdOf = (list) => {
       if (!list || !list.byId) return undefined
       for (const session of Object.values(list.byId)) {
         if (session && session.retainedBy && (session.retainedBy.mainView || 0) > 0) return session.id
       }
-      return undefined
+      return typeof list.current === 'string' && list.current !== '' ? list.current : undefined
     }
 
     /**
@@ -3259,8 +3287,24 @@ window.__ModuleLoader__.load({
 
     /* ========================== view store =========================== */
 
+    /**
+     * The workspace NAME layer ("/" grouping) is OPT-IN as of v0.15: a fresh
+     * install shows the official disk folders only, and titles render whole.
+     * Hydration REPLACES the whole state and only runs when a snapshot exists,
+     * so this one read separates three populations with no migration pass:
+     *   true / false -> this browser already ran the 0.13 view options; honour
+     *                   the user's own choice.
+     *   undefined    -> a pre-0.13 snapshot. Those versions grouped by "/" by
+     *                   default and had no switch to turn it off, so undefined
+     *                   means "an existing tree that was built with grouping
+     *                   ON". Upgrading must not silently reorganize a tree
+     *                   someone already lives in: they stay ON.
+     *   (a fresh install never hydrates, so init's `false` stands as-is.)
+     */
+    const workspaceSlashOf = (value) => value === undefined ? true : value === true
+
     const createViewStore = () => storeKit.defineStore({
-      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true }, styling: {}, groupBy: 'workspace-tree', orderBy: 'manual', sessionTitleSlash: true, workspaceTitleSlash: true }),
+      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true }, styling: {}, groupBy: 'workspace-tree', orderBy: 'manual', sessionTitleSlash: true, workspaceTitleSlash: false }),
       // NOTE: hydration REPLACES the state with the persisted whole value —
       // init defaults never merge. Every action must tolerate a missing key
       // (states persisted by older plugin versions lack sessionGroups), and
@@ -4338,7 +4382,7 @@ window.__ModuleLoader__.load({
      * name layer). The primitives Menu is feature-probed like every
      * component — without it the button simply never renders.
      */
-    function ViewOptionsMenu({ groupBy, orderBy, sessionSlash, workspaceSlash, onPick, onToggle, t }) {
+    function ViewOptionsMenu({ groupBy, orderBy, sessionSlash, onPick, onToggle, t }) {
       const [open, setOpen] = React.useState(false)
       if (typeof ui.Menu !== 'function') return null
       return E(ui.Menu, {
@@ -4354,17 +4398,17 @@ window.__ModuleLoader__.load({
           { id: 'manual', label: t('viewOptions.manualOrder') },
           { id: 'updated', label: t('viewOptions.updatedOrder') },
           { type: 'separator', id: 'bw-slash-sep' },
+          // The workspace name layer moved OUT of this menu in v0.15: it is
+          // opt-in now and lives in the settings card, where "why is my tree
+          // flat?" has a findable answer. Session grouping stays here.
           { id: 'session-slash', label: t('viewOptions.sessionSlash'), disabled: groupBy === 'flat' },
-          { id: 'workspace-slash', label: t('viewOptions.workspaceSlash'), disabled: groupBy !== 'workspace-tree' },
         ],
         selectedIds: [groupBy, orderBy]
-          .concat(sessionSlash ? ['session-slash'] : [])
-          .concat(workspaceSlash ? ['workspace-slash'] : []),
+          .concat(sessionSlash ? ['session-slash'] : []),
         onSelect: (id) => {
           if (id === 'workspace' || id === 'workspace-tree' || id === 'flat') { onPick('groupBy', id); setOpen(false); return }
           if (id === 'manual' || id === 'updated') { onPick('orderBy', id); setOpen(false); return }
           if (id === 'session-slash') { onToggle('sessionTitleSlash', !sessionSlash); return }
-          if (id === 'workspace-slash') { onToggle('workspaceTitleSlash', !workspaceSlash); return }
         },
         align: 'end',
         dense: true,
@@ -4700,6 +4744,11 @@ window.__ModuleLoader__.load({
       const localStyling = useStore ? (useStore(s => s.styling) || {}) : {}
       const compactChains = prefs.compactChains !== false
       const statusPulse = prefs.statusPulse !== false
+      // Opt-in workspace name layer (v0.15): the same tri-state read the tree
+      // uses — see workspaceSlashOf. Deliberately NOT a `prefs` entry: it rides
+      // the view store's top-level key next to groupBy/orderBy and stays
+      // browser-local, like every other view option.
+      const workspaceSlash = useStore ? workspaceSlashOf(useStore(s => s.workspaceTitleSlash)) : false
       // Default appearance: the base every row inherits unless it carries its
       // own per-row entry. The outline ships ON — text over a background image
       // is often unreadable without it.
@@ -4755,6 +4804,18 @@ window.__ModuleLoader__.load({
           }, E('span', { className: 'bw-switch-thumb' })),
         ),
         E('div', { className: 'bw-hint' }, t('settings.compactChains.hint')),
+        E('div', { className: 'bw-setting-row', style: { marginTop: 10 } },
+          E('div', { className: 'bw-setting-label' }, t('settings.workspaceSlash')),
+          E('button', {
+            type: 'button',
+            role: 'switch',
+            'aria-checked': workspaceSlash,
+            'aria-label': t('settings.workspaceSlash'),
+            className: cls('bw-switch', workspaceSlash && 'bw-switch-on'),
+            onClick: () => { if (actions && typeof actions.setWorkspaceTitleSlash === 'function') actions.setWorkspaceTitleSlash(!workspaceSlash) },
+          }, E('span', { className: 'bw-switch-thumb' })),
+        ),
+        E('div', { className: 'bw-hint' }, t('settings.workspaceSlash.hint')),
         E('div', { className: 'bw-setting-row', style: { marginTop: 10 } },
           E('div', { className: 'bw-setting-label' }, t('settings.statusPulse')),
           E('button', {
@@ -4877,7 +4938,7 @@ window.__ModuleLoader__.load({
       const groupBy = useStore ? (useStore(s => s.groupBy) || 'workspace-tree') : 'workspace-tree'
       const orderBy = useStore ? (useStore(s => s.orderBy) || 'manual') : 'manual'
       const sessionSlash = useStore ? (useStore(s => s.sessionTitleSlash) !== false) : true
-      const workspaceSlash = useStore ? (useStore(s => s.workspaceTitleSlash) !== false) : true
+      const workspaceSlash = useStore ? workspaceSlashOf(useStore(s => s.workspaceTitleSlash)) : false
       // Dual-write wrappers: every preference mutation lands in the local
       // store (immediate echo + scope-less fallback) AND the host settings
       // store (durable cross-device copy for the manual pull on the other
@@ -4887,8 +4948,14 @@ window.__ModuleLoader__.load({
       const statusPulse = prefsMap.statusPulse !== false
       const archivedSet = React.useMemo(() => new Set(archivedSessionIds), [archivedSessionIds])
       const subCounts = React.useMemo(() => subagentRunningCounts(list ? list.byId : {}), [list ? list.byId : null])
-      // Current session per the alpha.2 retention contract (see mainSessionIdOf).
-      const currentId = React.useMemo(() => mainSessionIdOf(list), [list ? list.byId : null])
+      // Current session across both host generations (see mainSessionIdOf).
+      // `current` belongs in the deps: 0.1.5-rc.x switches it without
+      // necessarily handing back a new byId, so keying on byId alone would
+      // freeze the highlight (and keep filtering blank rows) on those hosts.
+      const currentId = React.useMemo(
+        () => mainSessionIdOf(list),
+        [list ? list.byId : null, list ? list.current : null],
+      )
       // Last-known real titles for the cold-restart fallback window (see
       // the title-cache block). Read per render via getSnapshot: no
       // subscription, because a cache write only happens when summary.title
@@ -5302,6 +5369,12 @@ window.__ModuleLoader__.load({
        * narrows it to the name layer the dialog is about: workspace rows
        * suggest workspace prefixes, session rows session prefixes; the
        * header picker takes both because it may target either kind.
+       *
+       * Called ONCE when a dialog opens and snapshotted onto the dialog state,
+       * never during render: this walks every workspace and session title, so a
+       * render-time call would redo that walk on every store tick (~44/s while
+       * an agent runs). Same reason `targets` is snapshotted -- see the 0.9.6
+       * lesson in AGENTS.md invariant 6.
        */
       const collectGroupPaths = (kind) => {
         const paths = new Set()
@@ -5315,13 +5388,23 @@ window.__ModuleLoader__.load({
         }
         return [...paths].sort()
       }
-      /** Picker entries for the header button: every workspace, then its sessions. */
+      /**
+       * Which name layer the header picker may target. The two switches gate
+       * independently, so the picker narrows to whichever layer is ON; the
+       * button itself disappears entirely when neither is (see the header).
+       */
+      const pickerKindOf = () => workspaceSlash && sessionSlash ? undefined : (workspaceSlash ? 'workspace' : 'session')
+      /**
+       * Picker entries for the header button: every workspace, then its
+       * sessions — each list present only while its OWN name layer is on, so
+       * the dropdown never offers a container the tree cannot render.
+       */
       const targetListOf = () => {
         const out = []
         for (const workspace of items || []) {
           const name = String(workspace.title || workspace.leaf || workspace.workspaceId || '')
-          out.push({ value: 'ws:' + workspace.workspaceId, label: name })
-          for (const session of sessionsOf(workspace)) {
+          if (workspaceSlash) out.push({ value: 'ws:' + workspace.workspaceId, label: name })
+          if (sessionSlash) for (const session of sessionsOf(workspace)) {
             out.push({ value: 'sess:' + session.id, label: name + ' › ' + String(session.title || session.leaf || '') })
           }
         }
@@ -5462,7 +5545,11 @@ window.__ModuleLoader__.load({
           // folder keep every drop target's rename correct.
           const segs = splitTitleSegs(workspace.title)
           const sourceLeaf = segs.length > 0 ? segs[segs.length - 1] : (workspace.leaf || String(workspace.workspaceId))
-          const sourceFolder = segs.length > 1 ? segs.slice(0, -1).join('/') : ''
+          // ...unless the name layer is OFF: the tree then renders no groups at
+          // all, so reporting a folder here would make every drop look like a
+          // cross-group move and rewrite the title behind the user's back.
+          // With '' on both sides the drop stays pure reordering.
+          const sourceFolder = workspaceSlash && segs.length > 1 ? segs.slice(0, -1).join('/') : ''
           // Deferred by one frame on purpose (Chromium cancels a just-started
           // drag whose source element is moved out from under the cursor; see
           // wsDragArmTimer above). By the next frame the gesture has settled
@@ -5523,7 +5610,9 @@ window.__ModuleLoader__.load({
         setDrag(null)
         if (source.workspaceId === targetWorkspace.workspaceId) return
         const targetFolder = targetWorkspace.folderPath || ''
-        const sameFolder = targetFolder === source.folderPath
+        // A disk-only tree has no name groups to move between: force the reorder
+        // path even if the source was armed before the switch flipped.
+        const sameFolder = !workspaceSlash || targetFolder === source.folderPath
         // The disk layer is a filesystem fact and never changes here: an
         // in-level drop keeps the manual order next to the anchor, a
         // cross-level drop only re-groups the title (the registry append
@@ -5660,6 +5749,10 @@ window.__ModuleLoader__.load({
       const groupDropEvents = {
         onDragOver: (event) => {
           if (drag === null) return
+          // Only a layer that is ON accepts a drop; the slot never lights up
+          // for a row whose name layer is off (see the header render guard).
+          if (drag.kind === 'workspace' && !workspaceSlash) return
+          if (drag.kind === 'session' && !sessionSlash) return
           event.preventDefault()
           event.stopPropagation()
           try { event.dataTransfer.dropEffect = 'move' } catch { }
@@ -5669,6 +5762,10 @@ window.__ModuleLoader__.load({
         },
         onDrop: (event) => {
           if (drag === null) return
+          if ((drag.kind === 'workspace' && !workspaceSlash) || (drag.kind === 'session' && !sessionSlash)) {
+            setDrag(null)
+            return
+          }
           event.preventDefault()
           event.stopPropagation()
           const source = drag.source
@@ -5676,7 +5773,7 @@ window.__ModuleLoader__.load({
           const target = drag.kind === 'session'
             ? { kind: 'session', id: source.sessionId, title: source.title || source.leaf, workspaceId: source.workspaceId }
             : { kind: 'workspace', id: source.workspaceId, title: source.folderPath ? source.folderPath + '/' + source.leaf : source.leaf }
-          setDialog({ kind: 'group-move', target, initial: '' })
+          setDialog({ kind: 'group-move', target, initial: '', groupPaths: collectGroupPaths(target.kind) })
           setDrag(null)
         },
       }
@@ -5951,20 +6048,25 @@ window.__ModuleLoader__.load({
       const menuEntries = () => {
         if (ctx === null) return []
         const customizeEntry = { id: 'customize', label: t('custom.title'), icon: icon('IconPersonalizationOutline16', 16) }
-        // The discoverability entry (v0.15): every row kind can be moved into
-        // a name group. One shared item object, inserted after each branch's
-        // official items and before the bw-only separator.
+        // The discoverability entry (v0.15): a row can be moved into a name
+        // group — but ONLY while the matching name layer is ON. With "/"
+        // grouping off for workspaces there is no workspace group to move into,
+        // and offering the item would promise a container the tree no longer
+        // renders. The two layers gate independently, so a session row keeps
+        // the entry even when workspaces have gone disk-only.
         const groupItem = { id: 'move-group', label: t('menu.moveToGroup'), icon: icon('IconFolderOutline16', 16) }
+        const wsGroupItems = workspaceSlash ? [groupItem] : []
+        const sgroupItems = sessionSlash ? [groupItem] : []
         if (ctx.kind === 'folder') return [
           { id: 'rename-folder', label: t('menu.renameFolder'), icon: icon('IconEditOutline16', 16) },
-          groupItem,
+          ...wsGroupItems,
           { type: 'separator', id: 'bw-sep' },
           customizeEntry,
         ]
         if (ctx.kind === 'workspace') return [
           { id: 'rename', label: ot ? ot('rename') : t('menu.rename'), icon: icon('IconEditOutline16', 16) },
           { id: 'delete', label: ot ? ot('delete.workspace') : t('menu.delete'), icon: icon('IconTrashOutline16', 16), danger: true },
-          groupItem,
+          ...wsGroupItems,
           { type: 'separator', id: 'bw-sep' },
           customizeEntry,
         ]
@@ -5975,13 +6077,13 @@ window.__ModuleLoader__.load({
           // registry-global archive set and never touches the session log —
           // deliberately NOT styled destructive.
           { id: 'archive', label: ot ? ot('menu.archiveSession') : t('menu.archive'), icon: icon('IconArchiveOutline20', 16) },
-          groupItem,
+          ...sgroupItems,
           { type: 'separator', id: 'bw-sep' },
           customizeEntry,
         ]
         return [
           { id: 'rename-sgroup', label: t('menu.renameSgroup'), icon: icon('IconEditOutline16', 16) },
-          groupItem,
+          ...sgroupItems,
           { type: 'separator', id: 'bw-sep' },
           customizeEntry,
         ]
@@ -6006,7 +6108,7 @@ window.__ModuleLoader__.load({
             : kind === 'workspace' ? { kind: 'workspace', id: payload.workspaceId, title: payload.title || payload.leaf }
               : kind === 'session' ? { kind: 'session', id: payload.id, title: payload.title }
                 : { kind: 'sgroup', path: payload.path, title: payload.path, workspaceId: payload.workspaceId }
-          setDialog({ kind: 'group-move', target, initial: groupPrefixOf(target.title) })
+          setDialog({ kind: 'group-move', target, initial: groupPrefixOf(target.title), groupPaths: collectGroupPaths(target.kind) })
         }
         else if (kind === 'folder' && id === 'rename-folder') setDialog({ kind: 'folder-rename', path: payload.path })
         else if (kind === 'workspace' && id === 'rename') setDialog({ kind: 'ws-rename', workspace: payload })
@@ -6036,7 +6138,10 @@ window.__ModuleLoader__.load({
         if (dialog.kind === 'ws-rename') return E(TextDialog, {
           key: 'ws-rename',
           title: t('ws.rename.title'),
-          hint: t('ws.rename.hint'),
+          // The "/" hint only tells the truth while the name layer is ON; with
+          // workspaces rendering disk-only it would advertise grouping that is
+          // switched off.
+          hint: workspaceSlash ? t('ws.rename.hint') : null,
           initial: dialog.workspace.title || dialog.workspace.leaf,
           onConfirm: (v) => submitWorkspaceRename(dialog.workspace, v),
           onClose: () => setDialog(null),
@@ -6084,7 +6189,7 @@ window.__ModuleLoader__.load({
           // targets present = the picker shape (header button / drop slot);
           // absent = the row was locked by the context menu or a drop.
           targets: dialog.targets || null,
-          groupPaths: collectGroupPaths(dialog.target ? dialog.target.kind : undefined),
+          groupPaths: dialog.groupPaths || [],
           onConfirm: (tv, gv) => submitGroupMove(dialog.targets ? targetOfValue(tv) : dialog.target, gv),
           onClose: () => setDialog(null),
           t,
@@ -6124,14 +6229,14 @@ window.__ModuleLoader__.load({
           // Group discoverability (v0.15): a visible "New group" entry point
           // that doubles as the row-drop zone. Clicking opens the picker
           // shape; dropping a row onto it locks that row in the same dialog.
-          E('button', {
+          (workspaceSlash || sessionSlash) ? E('button', {
             type: 'button',
             className: cls('bw-newgroup-btn', groupDropTarget() && 'bw-drop-into-strong'),
             'aria-label': t('group.new'),
             title: t('group.new'),
-            onClick: () => setDialog({ kind: 'group-move', target: null, targets: targetListOf(), initial: '' }),
+            onClick: () => setDialog({ kind: 'group-move', target: null, targets: targetListOf(), initial: '', groupPaths: collectGroupPaths(pickerKindOf()) }),
             ...groupDropEvents,
-          }, t('group.new')),
+          }, t('group.new')) : null,
           (searchOpen || query !== '') ? E('input', {
             className: 'bw-input',
             style: { width: 130, flex: 'none' },
@@ -6146,9 +6251,8 @@ window.__ModuleLoader__.load({
             groupBy,
             orderBy,
             sessionSlash,
-            workspaceSlash,
             onPick: (kind, value) => { if (kind === 'groupBy') actions.setGroupBy(value); else actions.setOrderBy(value) },
-            onToggle: (key, value) => { if (key === 'sessionTitleSlash') actions.setSessionTitleSlash(value); else actions.setWorkspaceTitleSlash(value) },
+            onToggle: (key, value) => { if (key === 'sessionTitleSlash') actions.setSessionTitleSlash(value) },
             t,
           }),
           E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('search.placeholder'), onClick: () => setSearchOpen(v => !v) }, icon('IconSearchOutline16')),

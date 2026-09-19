@@ -3294,6 +3294,11 @@ window.__ModuleLoader__.load({
       '.bw-seg-btn-on{background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.16));color:var(--dsw-alias-label-primary,#e6e6e6);font-weight:500}',
       '.bw-seg-btn+.bw-seg-btn{border-left:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25))}',
       '.bw-gn-hint{font-size:12px;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
+      // A container-only node (a workspace name-group in the session layer):
+      // still expandable, but it carries no workspaceId to file against.
+      '.bw-gn-row-hold{cursor:default}',
+      '.bw-gn-row-hold:hover{background:transparent}',
+      '.bw-gn-row-hold .bw-gn-label{color:var(--dsw-alias-label-secondary,#b8b8b8)}',
       '.bw-gn-empty{font-size:12px;color:var(--dsw-alias-label-tertiary,#9a9a9a);padding:10px 8px;text-align:center}',
       '.bw-gn-tree{max-height:250px;overflow:auto;padding:4px;box-sizing:border-box;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.22));border-radius:8px;background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.06))}',
       '.bw-gn-row{display:flex;align-items:center;gap:6px;min-height:26px;padding-right:8px;border-radius:6px;cursor:pointer;user-select:none}',
@@ -3837,7 +3842,7 @@ window.__ModuleLoader__.load({
       const [error, setError] = React.useState('')
       const plan = treeOf(kind)
       const toggle = (id) => setOpenKeys((prev) => ({ ...prev, [id]: !prev[id] }))
-      const pick = (node) => { setPicked(node); setError('') }
+      const pick = (node) => { if (node.pickable === false) return; setPicked(node); setError('') }
       const submit = () => {
         const clean = String(name).split('/').filter((s) => s !== '').join('/')
         if (clean === '') { setError(t('group.new.empty')); return }
@@ -3854,7 +3859,7 @@ window.__ModuleLoader__.load({
           const expanded = openKeys[node.id] === true || (depth === 0 && openKeys[node.id] !== false)
           out.push(E('div', {
             key: 'n-' + node.id,
-            className: cls('bw-gn-row', picked && picked.id === node.id && 'bw-gn-row-on'),
+            className: cls('bw-gn-row', node.pickable === false && 'bw-gn-row-hold', picked && picked.id === node.id && 'bw-gn-row-on'),
             style: { paddingLeft: 6 + depth * 14 },
             role: 'treeitem',
             'aria-selected': picked && picked.id === node.id ? 'true' : 'false',
@@ -5384,22 +5389,60 @@ window.__ModuleLoader__.load({
         children: sessGroupNodesOf(g, workspaceId),
       }))
       const newGroupTreeOf = (kind) => {
+        // The container tree MIRRORS the sidebar's current view mode (v0.17.1):
+        // "workspace tree" offers the real hierarchy (disk nesting + name
+        // groups); the one-level modes ("workspaces" / "flat") render no
+        // hierarchy to mirror, so they fall back to a flat workspace list.
+        // Offering a nesting the sidebar is not showing would be a lie about
+        // where the new group lands.
+        const treeView = groupBy === 'workspace-tree'
         if (kind === 'workspace') {
           // "Top level" IS a real target here (a group at the root of the
           // workspace tree), so it is a node like any other.
-          return { hint: null, nodes: [{ id: '|', scope: '', path: '', label: t('group.new.root'), kind: 'folder', children: wsGroupNodesOf(tree) }] }
+          return {
+            hint: null,
+            nodes: [{
+              id: '|', scope: '', path: '', label: t('group.new.root'), kind: 'folder',
+              children: treeView ? wsGroupNodesOf(tree) : [],
+            }],
+          }
         }
         // A session group lives INSIDE one workspace (folders.sess is keyed by
-        // workspaceId), so there is no "top level" to declare into: the
-        // workspace list is the top level itself, introduced by a plain HINT
-        // rather than wrapped in a fake root node (v0.17.1 — a header row that
-        // looked like a tree node read as a container you could pick).
-        const nodes = []
+        // workspaceId), so there is no "top level" to declare into — the
+        // workspace tree IS the top level, introduced by a plain hint rather
+        // than wrapped in a fake root node (a header row that looked like a
+        // tree node read as a container you could pick).
+        //
+        // The walk follows the SAME tree the sidebar renders (disk nesting
+        // included), not the flat registry list: a child workspace must appear
+        // nested under its parent exactly as it does in "workspace tree" view.
+        // Name-group folders are containers here — a session group cannot be
+        // filed against one (they carry no workspaceId) — so they expand but
+        // refuse selection.
+        const sessNodesOf = (node) => {
+          const out = []
+          for (const f of node.folders || []) {
+            out.push({ id: f.scope + '|' + f.path, scope: '', path: '', label: f.name, kind: 'folder', pickable: false, children: sessNodesOf(f) })
+          }
+          for (const w of node.workspaces || []) {
+            const inner = sessGroupNodesOf(buildSessionTree(sessionsOf(w), sessionSlash, sessFolders, w.workspaceId), w.workspaceId)
+            const subNodes = w.sub ? sessNodesOf(w.sub) : []
+            out.push({
+              id: w.workspaceId + '|', scope: w.workspaceId, path: '', label: w.leaf || w.title, kind: 'ws',
+              children: [...inner, ...subNodes],
+            })
+          }
+          return out
+        }
+        if (treeView) return { hint: t('group.new.pickWorkspace'), nodes: sessNodesOf(tree) }
+        // One-level modes: every workspace sits at the root, exactly as the
+        // sidebar draws it (raw items — there is no .sub level to nest here).
+        const flat = []
         for (const w of items) {
           const inner = sessGroupNodesOf(buildSessionTree(sessionsOf(w), sessionSlash, sessFolders, w.workspaceId), w.workspaceId)
-          nodes.push({ id: w.workspaceId + '|', scope: w.workspaceId, path: '', label: w.leaf || w.title, kind: 'ws', children: inner })
+          flat.push({ id: w.workspaceId + '|', scope: w.workspaceId, path: '', label: w.leaf || w.title, kind: 'ws', children: inner })
         }
-        return { hint: t('group.new.pickWorkspace'), nodes }
+        return { hint: t('group.new.pickWorkspace'), nodes: flat }
       }
       /**
        * Picker entries for the header button: every workspace, then its

@@ -1030,12 +1030,19 @@ test('new group: icon button, live tooltip, layer switch and a tree picker (v0.1
   // option is noise, and the tooltip already names the single layer.
   assert.match(text, /kinds\.length > 1 \? E\('div', \{ className: 'bw-seg'/, 'the switch renders only with two layers')
   assert.match(text, /function GroupNewDialog[\s\S]*?treeOf\(kind\)/, 'the container tree follows the selected layer')
-  assert.match(text, /const pick = \(node\) => \{ setPicked\(node\); setError\(''\) \}/, 'clicking a node picks the container')
+  assert.match(text, /const pick = \(node\) => \{ if \(node\.pickable === false\) return; setPicked\(node\); setError\(''\) \}/, 'clicking a node picks the container (containers refuse)')
   // The session layer has no "top level": folders.sess is keyed by workspaceId,
   // so a declaration filed under '' would never be read by any render path. Its
   // introduction is a plain HINT, not a header row that reads as a node.
-  assert.match(text, /return \{ hint: t\('group\.new\.pickWorkspace'\), nodes \}/,
-    'session layer lists workspaces under a hint, with no fake root node')
+  // The container tree mirrors the sidebar's view mode, and the session layer
+  // walks the SAME tree the sidebar renders (disk nesting included) instead of
+  // the flat registry list — a child workspace must nest under its parent.
+  assert.match(text, /const treeView = groupBy === 'workspace-tree'/, 'the dialog follows the live view mode')
+  assert.match(text, /if \(treeView\) return \{ hint: t\('group\.new\.pickWorkspace'\), nodes: sessNodesOf\(tree\) \}/,
+    'tree view: session layer walks the rendered tree')
+  assert.match(text, /const sessNodesOf = \(node\) => \{/, 'the recursive walk exists')
+  assert.match(text, /children: \[\.\.\.inner, \.\.\.subNodes\]/, 'a workspace node carries its session groups AND its disk-nested children')
+  assert.match(text, /const flat = \[\]/, 'one-level modes fall back to a flat list')
   assert.match(text, /if \(!picked\) \{ setError\(t\('group\.new\.pickFirst'\)\); return \}/,
     'commit refuses an unpicked container')
   assert.match(text, /plan\.nodes\.length > 0 \? renderNodes\(plan\.nodes, 0\) : E\('div', \{ className: 'bw-gn-empty' \}/,

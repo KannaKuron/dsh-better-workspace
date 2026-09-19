@@ -28,6 +28,7 @@
 - 用标题记忆把非 blank 会话渲染成 `测试1/组内会话` → 树里出现会话分组行(深度 3)。
 - 菜单:该行右键出现「移出分组」;根层行不出现(菜单仍只有「移动到分组…」)。
 - 手势:`dragstart` → `dragover` 工作区行(class 变 `bw-drop-into bw-drop-into-strong`)→ `drop` → **分组行消失、会话回到根层(padding 44px → 32px)并追加到根层末尾**;根层会话拖到工作区行不接管(工作区行 class 保持 `bw-row`)。
+- 空白落点:同一个会话拖到 `.bw-root`(树的空白处)时容器挂上 `bw-root-drop-out`(底部一条淡虚线),松手后同样**分组行消失、会话回到根层**;根层会话拖到空白处不接管(容器 class 保持 `bw-root`)。
 - 合成拖拽必须**分帧派发**(每次事件之间让出一个 turn):同一 tick 连发 dragstart/dragover/drop 时 React 还没提交 `drag` 状态,onDragOver 读到的仍是 null —— 这是探针的坑,不是实现的坑。
 
 ### 测试

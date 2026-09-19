@@ -1,6 +1,6 @@
 {
   "name": "dsh-better-workspace",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "description": "侧边栏工作区树:按官方磁盘目录嵌套(官方 workspace-tree 语义),可选按名称中的 / 分组(默认关闭,设置里开启);添加工作区走官方目录流。Workspace tree for the DSH sidebar: disk-path nesting (official workspace-tree semantics), with optional \"/\"-name grouping (off by default); add-workspace rides the official directory flow.",
   "type": "module",
   "repository": {

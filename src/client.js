@@ -152,6 +152,7 @@ window.__ModuleLoader__.load({
       'folder.rename.hint': '重命名会同步更新组内所有工作区名称',
       'folder.error.empty': '分组路径不能为空',
       'group.move.title': '移动到分组',
+      'group.pick': '选择已有分组',
       'group.new': '新建分组',
     }
 
@@ -276,6 +277,7 @@ window.__ModuleLoader__.load({
       'folder.rename.hint': 'Renaming updates every workspace title inside the folder',
       'folder.error.empty': 'Folder path must not be empty',
       'group.move.title': 'Move to group',
+      'group.pick': 'Pick an existing group',
       'group.new': 'New group',
     }
 
@@ -408,6 +410,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': 'تحديث الاسم يعيد تسمية كل مساحات العمل داخل المجموعة',
         'folder.error.empty': 'لا يمكن أن يكون مسار المجموعة فارغاً',
         'group.move.title': 'نقل إلى مجموعة',
+        'group.pick': 'اختر مجموعة موجودة',
         'group.new': 'مجموعة جديدة',
       },
       /* locale: de */
@@ -532,6 +535,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': 'Umbenennen aktualisiert alle Arbeitsbereichsnamen im Ordner',
         'folder.error.empty': 'Der Ordnerpfad darf nicht leer sein',
         'group.move.title': 'In Gruppe verschieben',
+        'group.pick': 'Vorhandene Gruppe wählen',
         'group.new': 'Neue Gruppe',
       },
       /* locale: fr */
@@ -656,6 +660,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': 'Le renommage met à jour tous les espaces de travail du dossier',
         'folder.error.empty': 'Le chemin du dossier ne doit pas être vide',
         'group.move.title': 'Déplacer vers le groupe',
+        'group.pick': 'Choisir un groupe existant',
         'group.new': 'Nouveau groupe',
       },
       /* locale: hi */
@@ -780,6 +785,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': 'नाम बदलने पर समूह के सभी कार्यस्थानों के नाम भी बदल जाते हैं',
         'folder.error.empty': 'समूह पथ खाली नहीं हो सकता',
         'group.move.title': 'समूह में ले जाएँ',
+        'group.pick': 'मौजूदा समूह चुनें',
         'group.new': 'नया समूह',
       },
       /* locale: id */
@@ -904,6 +910,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': 'Mengganti nama akan memperbarui semua ruang kerja di folder',
         'folder.error.empty': 'Jalur folder tidak boleh kosong',
         'group.move.title': 'Pindahkan ke grup',
+        'group.pick': 'Pilih grup yang ada',
         'group.new': 'Grup baru',
       },
       /* locale: it */
@@ -1028,6 +1035,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': 'La rinomina aggiorna tutte le aree di lavoro nella cartella',
         'folder.error.empty': 'Il percorso della cartella non può essere vuoto',
         'group.move.title': 'Sposta nel gruppo',
+        'group.pick': 'Scegli un gruppo esistente',
         'group.new': 'Nuovo gruppo',
       },
       /* locale: ja */
@@ -1152,6 +1160,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': '名前を変更すると,フォルダー内のすべてのワークスペース名も更新されます',
         'folder.error.empty': 'フォルダーのパスを入力してください',
         'group.move.title': 'グループに移動',
+        'group.pick': '既存のグループを選択',
         'group.new': '新しいグループ',
       },
       /* locale: ko */
@@ -1276,6 +1285,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': '이름을 바꾸면 폴더 안 모든 워크스페이스 이름도 함께 바뀝니다',
         'folder.error.empty': '폴더 경로를 입력해야 합니다',
         'group.move.title': '그룹으로 이동',
+        'group.pick': '기존 그룹 선택',
         'group.new': '새 그룹',
       },
       /* locale: nl */
@@ -1400,6 +1410,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': 'Naam wijzigen werkt alle werkruimtenamen in de map bij',
         'folder.error.empty': 'Het mappad mag niet leeg zijn',
         'group.move.title': 'Naar groep verplaatsen',
+        'group.pick': 'Bestaande groep kiezen',
         'group.new': 'Nieuwe groep',
       },
       /* locale: pl */
@@ -1524,6 +1535,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': 'Zmiana nazwy zaktualizuje wszystkie obszary robocze w folderze',
         'folder.error.empty': 'Ścieżka folderu nie może być pusta',
         'group.move.title': 'Przenieś do grupy',
+        'group.pick': 'Wybierz istniejącą grupę',
         'group.new': 'Nowa grupa',
       },
       /* locale: pt */
@@ -1648,6 +1660,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': 'Renomear atualiza todos os espaços de trabalho da pasta',
         'folder.error.empty': 'O caminho da pasta não pode ficar vazio',
         'group.move.title': 'Mover para o grupo',
+        'group.pick': 'Escolher um grupo existente',
         'group.new': 'Novo grupo',
       },
       /* locale: ru */
@@ -1772,6 +1785,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': 'Переименование обновит все рабочие области в папке',
         'folder.error.empty': 'Путь папки не может быть пустым',
         'group.move.title': 'Переместить в группу',
+        'group.pick': 'Выбрать существующую группу',
         'group.new': 'Новая группа',
       },
       /* locale: sv */
@@ -1896,6 +1910,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': 'Namnbytet uppdaterar alla arbetsytor i mappen',
         'folder.error.empty': 'Mappsökvägen får inte vara tom',
         'group.move.title': 'Flytta till grupp',
+        'group.pick': 'Välj en befintlig grupp',
         'group.new': 'Ny grupp',
       },
       /* locale: th */
@@ -2020,6 +2035,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': 'การเปลี่ยนชื่อจะอัปเดตพื้นที่ทำงานทั้งหมดในกลุ่ม',
         'folder.error.empty': 'เส้นทางกลุ่มต้องไม่ว่าง',
         'group.move.title': 'ย้ายไปยังกลุ่ม',
+        'group.pick': 'เลือกกลุ่มที่มีอยู่',
         'group.new': 'กลุ่มใหม่',
       },
       /* locale: tr */
@@ -2144,6 +2160,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': 'Yeniden adlandırma klasördeki tüm çalışma alanlarını günceller',
         'folder.error.empty': 'Klasör yolu boş olamaz',
         'group.move.title': 'Gruba taşı',
+        'group.pick': 'Mevcut bir grup seç',
         'group.new': 'Yeni grup',
       },
       /* locale: vi */
@@ -2268,6 +2285,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': 'Đổi tên sẽ cập nhật mọi không gian làm việc trong nhóm',
         'folder.error.empty': 'Đường dẫn nhóm không được để trống',
         'group.move.title': 'Chuyển vào nhóm',
+        'group.pick': 'Chọn một nhóm có sẵn',
         'group.new': 'Nhóm mới',
       },
       /* locale: zh-HK */
@@ -2392,6 +2410,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': '重新命名會同步更新組內所有工作區名稱',
         'folder.error.empty': '分組路徑唔可以係空',
         'group.move.title': '移動到分組',
+        'group.pick': '選擇已有分組',
         'group.new': '新增分組',
       },
       /* locale: zh-MO */
@@ -2516,6 +2535,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': '重新命名會同步更新組內所有工作區名稱',
         'folder.error.empty': '分組路徑唔可以係空',
         'group.move.title': '移動到分組',
+        'group.pick': '選擇已有分組',
         'group.new': '新增分組',
       },
       /* locale: zh-TW */
@@ -2640,6 +2660,7 @@ window.__ModuleLoader__.load({
         'folder.rename.hint': '重新命名會同步更新群組內所有工作區名稱',
         'folder.error.empty': '群組路徑不能為空',
         'group.move.title': '移動到分組',
+        'group.pick': '選擇現有群組',
         'group.new': '新增分組',
       },
     }
@@ -2986,6 +3007,23 @@ window.__ModuleLoader__.load({
       }
       return map
     }
+    /**
+     * The row entry the official 'workspace' grouping mode renders.
+     *
+     * A raw WorkspaceView carries no `leaf`, and WorkspaceRow renders exactly
+     * that field as its label (the tree path fills it while building) — so
+     * handing the raw item to renderWorkspaceEntry, as v0.13 did, drew every
+     * row with its icon and sessions but NO NAME AT ALL. Reported 2026-09-19.
+     *
+     * The label is the FULL title: this mode renders no name groups, so a "/"
+     * has nothing to group into and must stay in the text.
+     */
+    const flatWorkspaceEntry = (workspace) => ({
+      ...workspace,
+      leaf: String(workspace.title || '') || basename(workspace.path) || String(workspace.workspaceId || ''),
+      folderPath: '',
+    })
+
     function buildTree(items, groupBySlash) {
       const list = items || []
       const diskParentOf = diskParentMapOf(list)
@@ -3127,6 +3165,18 @@ window.__ModuleLoader__.load({
       '.bw-input{width:100%;box-sizing:border-box;height:26px;background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.1));border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));border-radius:6px;color:inherit;padding:0 8px;font-size:12px;outline:none;font-family:inherit}',
       '.bw-input:focus{border-color:var(--dsw-alias-brand-primary,#5b8def)}',
       '.bw-input::placeholder{color:var(--dsw-alias-label-quaternary,#8a8a8a)}',
+      // Dropdown triggers (MenuPicker): the same surface as .bw-input so a
+      // picker and a text field read as one family.
+      '.bw-select{display:flex;align-items:center;gap:6px;width:100%;box-sizing:border-box;height:26px;padding:0 8px;background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.1));border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));border-radius:6px;color:inherit;font-size:12px;font-family:inherit;cursor:pointer;text-align:left}',
+      '.bw-select:hover{border-color:var(--dsw-alias-brand-primary,#5b8def)}',
+      '.bw-select-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.bw-select-chevron{flex:none;display:inline-flex;align-items:center;color:var(--dsw-alias-label-quaternary,#8a8a8a);font-size:10px;line-height:1}',
+      '.bw-select-icon{width:26px;flex:none;justify-content:center;padding:0}',
+      '.bw-combo{display:flex;align-items:center;gap:6px}',
+      // The Menu root is a <span>; these make it fill the field, or sit inline
+      // as the chevron-only button beside an input.
+      '.bw-menu-block{display:block;width:100%}',
+      '.bw-menu-inline{display:inline-block;width:auto;flex:none}',
       '.bw-tree{flex:1;overflow-y:auto;overflow-x:hidden;padding:2px 6px 12px;min-height:0}',
       '.bw-row{display:flex;align-items:center;gap:6px;min-height:28px;padding:0 6px;border-radius:6px;cursor:pointer;user-select:none;font-size:13px;color:var(--dsw-alias-label-primary,#e6e6e6);position:relative}',
       '.bw-drop-before::after{content:"";position:absolute;left:8px;right:8px;top:-1px;height:2px;border-radius:1px;background:var(--dsw-alias-brand-primary,#5b8def);pointer-events:none}',
@@ -3611,14 +3661,61 @@ window.__ModuleLoader__.load({
     }
 
     /**
+     * One picker over the official primitives Menu, used wherever this plugin
+     * would otherwise reach for a native <select> / <datalist>.
+     *
+     * WHY NOT NATIVE: the OS draws a native select's popup itself, so over this
+     * plugin's translucent panel it comes back as a light system list that
+     * ignores the theme entirely. dsh-ide-git hit the same defect twice and
+     * replaced its selects with a button-over-menu for exactly that reason (see
+     * the RepoSelect / FilterSelect notes there) — but it had to lay that menu
+     * out INSIDE the panel, because dsh-better-sidebar declares
+     * `contain: layout` and would strand a portal off-screen. This plugin sits
+     * in a native DSH sidebar slot with no such constraint, so it can use the
+     * real primitives Menu: official look and keyboard model, portal above the
+     * modal (z-index 1100 vs 1000), and its own scrolling list — which the
+     * workspace x session target list needs.
+     *
+     * Degradation: callers keep a native control for hosts whose primitives
+     * have no Menu, so picking never becomes impossible.
+     */
+    function MenuPicker({ options, value, onPick, placeholder, chevronOnly, title, t }) {
+      const [open, setOpen] = React.useState(false)
+      const list = Array.isArray(options) ? options : []
+      let current = null
+      for (const option of list) { if (String(option.value) === String(value)) { current = option; break } }
+      const chevron = icon('IconChevronDownOutline14', 14)
+      return E(ui.Menu, {
+        open,
+        onClose: () => { setOpen(false) },
+        items: list.map((option) => ({ id: String(option.value), label: String(option.label) })),
+        selectedId: current === null ? undefined : String(current.value),
+        onSelect: (id) => { setOpen(false); onPick(id) },
+        align: 'start',
+        dense: true,
+        portal: true,
+        className: cls('bw-menu-block', chevronOnly && 'bw-menu-inline'),
+        anchor: E('button', {
+          type: 'button',
+          className: cls('bw-select', chevronOnly && 'bw-select-icon'),
+          title: title === undefined ? undefined : title,
+          onClick: () => setOpen(v => !v),
+        },
+          chevronOnly ? null : E('span', { className: 'bw-select-label' }, current === null ? (placeholder || '') : String(current.label)),
+          E('span', { className: 'bw-select-chevron' }, chevron || '\u25be')),
+      })
+    }
+
+    /**
      * "Move to group…": the discoverable front door for the name-projection
      * grouping this plugin has always had (no empty groups — moving an entry
      * just rewrites its title prefix). Two shapes share one dialog:
      * - a free target (the header "New group" button, or a row drop on it)
      *   locks the entry and only asks for the group name;
      * - the picker shape (header button click) asks which entry first.
-     * The group name input is backed by a datalist of every existing group
-     * path, so the dropdown doubles as the discovery surface.
+     * Both dropdowns are MenuPicker (see its note): a native select's popup and
+     * a native datalist's suggestions are drawn by the OS and ignore the panel
+     * theme, which is exactly what users reported here.
      */
     function GroupDialog({ title, hint, initial, targets, groupPaths, onConfirm, onClose, t }) {
       const hasTargets = Array.isArray(targets) && targets.length > 0
@@ -3628,6 +3725,7 @@ window.__ModuleLoader__.load({
       React.useEffect(() => { if (inputRef.current) { inputRef.current.focus(); inputRef.current.select() } }, [])
       const commit = () => onConfirm(hasTargets ? targetValue : undefined, value)
       const hintList = Array.isArray(groupPaths) ? groupPaths.filter((p) => p !== '') : []
+      const menuReady = typeof ui.Menu === 'function'
       return E(ui.Modal, {
         open: true,
         onClose,
@@ -3641,24 +3739,42 @@ window.__ModuleLoader__.load({
         E('div', { className: 'bw-modal-body' },
           hasTargets
             ? E('div', { className: 'bw-field' },
-              E('select', {
-                className: 'bw-input',
-                defaultValue: targets[0].value,
-                onChange: (e) => setTargetValue(e.target.value),
-              }, targets.map((item) => E('option', { key: String(item.value), value: String(item.value) }, item.label))),
+              menuReady
+                ? E(MenuPicker, {
+                  options: targets.map((item) => ({ value: item.value, label: item.label })),
+                  value: targetValue,
+                  onPick: setTargetValue,
+                  t,
+                })
+                : E('select', {
+                  className: 'bw-input',
+                  defaultValue: targets[0].value,
+                  onChange: (e) => setTargetValue(e.target.value),
+                }, targets.map((item) => E('option', { key: String(item.value), value: String(item.value) }, item.label))),
             )
             : null,
           E('div', { className: 'bw-field' },
-            E('input', {
-              ref: inputRef,
-              className: 'bw-input',
-              list: 'bw-group-paths',
-              value,
-              onChange: (e) => setValue(e.target.value),
-              onKeyDown: (e) => { if (e.key === 'Enter') commit() },
-            }),
-            E('datalist', { id: 'bw-group-paths' },
-              hintList.map((path) => E('option', { key: String(path), value: String(path) })),
+            E('div', { className: 'bw-combo' },
+              E('input', {
+                ref: inputRef,
+                className: 'bw-input',
+                value,
+                onChange: (e) => setValue(e.target.value),
+                onKeyDown: (e) => { if (e.key === 'Enter') commit() },
+              }),
+              // The old datalist's suggestions, as a real menu: one chevron
+              // button beside the field. Typing a brand-new group name still
+              // works exactly as before.
+              (menuReady && hintList.length > 0)
+                ? E(MenuPicker, {
+                  options: hintList.map((path) => ({ value: path, label: path })),
+                  value,
+                  onPick: setValue,
+                  chevronOnly: true,
+                  title: t('group.pick'),
+                  t,
+                })
+                : null,
             ),
             hint ? E('div', { className: 'bw-hint' }, hint) : null,
           ),
@@ -6023,7 +6139,11 @@ window.__ModuleLoader__.load({
         // the root, no name groups, no disk nesting, no chain compression.
         // Session rows keep the slash toggle; disk-nested children do not
         // recurse here because raw items carry no .sub level.
-        for (const workspace of items || []) bodyRows.push(...renderWorkspaceEntry({ workspace }, 0, wsPulseOf(workspace)))
+        // flatWorkspaceEntry, never the raw item: see its note — the raw one
+        // has no `leaf` and the row would render nameless.
+        for (const workspace of items || []) {
+          bodyRows.push(...renderWorkspaceEntry({ workspace: flatWorkspaceEntry(workspace) }, 0, wsPulseOf(workspace)))
+        }
         bodyRows.push(...renderUngroupedBlock())
       } else {
         for (const folder of tree.folders) bodyRows.push(...renderPlainFolder(folder, 0))

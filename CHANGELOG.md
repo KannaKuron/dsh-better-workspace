@@ -3,6 +3,15 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.15.1 — 2026-09-19
+
+**类型**:fix(「按工作区」分组模式下工作区名字不渲染,用户实测 v0.13.0 起既有;对话框下拉改用官方 Menu,替换不适配主题的原生控件)
+
+- **fix(分组方式选「按工作区」后,每个工作区行只剩图标和会话、名字消失;用户实测,v0.13.0 起既有)**:该模式(`groupBy='workspace'`,v0.13.0 随官方视图选项一起引入)把**原始 WorkspaceView** 直接交给 `renderWorkspaceEntry`,而原始 item **没有 `leaf`** 字段——`WorkspaceRow` 渲染的恰恰就是 `workspace.leaf`(同时传的 `title` 只作 tooltip)。树路径在 `buildTree` 里会算好 `leaf`,只有这条平铺路径漏了,于是表现为"图标在、会话在、名字空白"。修法:新增 `flatWorkspaceEntry()` 构造与树路径同形的 entry——标签取**完整标题**(该模式不渲染名称分组,`/` 没有可归的组,必须留在文字里),`title` 为空时按 `basename` 回退(与树路径同一条链)。测试**真驱动**该 helper,并断言 `items` 循环不再交原始对象;反证:退回 v0.13 写法即变红。
+- **fix(「移动到分组」对话框的两个下拉是原生 select / datalist,弹层跟随系统、完全不适配主题;用户实测)**:操作系统自己绘制原生控件的弹层,于是深色半透明面板上弹出来的是**系统浅色列表**。同一个缺陷 dsh-ide-git 踩过两次(见其 RepoSelect / FilterSelect 的注释),它不得不把替代菜单**画在自己面板内**(dsh-better-sidebar 声明 `contain: layout`,portal 浮层会被摆到屏幕外);本插件位于 DSH 原生槽位、没有这个约束,因此直接用**官方 primitives Menu**:官方外观与键盘模型、portal 层级 1100 高于 Modal 的 1000、自带 max-height + 滚动(工作区 × 会话的目标列表需要)。新增 `MenuPicker` 承担两处——**目标选择器**(按钮显示当前项,菜单里勾选当前项)与**分组名候选**(输入框旁的 chevron 按钮;手输新组名完全不受影响,datalist 彻底移除)。**降级**:宿主 primitives 没有 Menu 时目标选择器回退原生 select,绝不出现"选不了"。
+- **测试 32 → 34 项**:新增「按工作区」模式的行标签(真驱动 `flatWorkspaceEntry`)与下拉组件守卫(探测、当前项勾选、两处接线、原生控件只剩一个降级位、datalist 绝迹);两条均**反证过**。
+- 相关:[Release v0.15.1](https://github.com/KannaKuron/dsh-better-workspace/releases/tag/v0.15.1)
+
 ## v0.15.0 — 2026-09-19
 
 **类型**:feat + fix(工作区名称分组改为可选、默认关闭,开关移入设置卡片;分组入口按开关各自显示;两处 0.1.5-rc.x 宿主兼容回归修复 + 一处本次改动自身引出的拖拽语义空洞)

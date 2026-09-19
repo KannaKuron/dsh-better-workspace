@@ -908,3 +908,64 @@ test('workspace drag: disk-only mode reorders, never rewrites titles', () => {
   assert.match(text, /hint: workspaceSlash \? t\('ws\.rename\.hint'\) : null/, 'the rename dialog stops advertising "/"')
 })
 
+/**
+ * Dropdowns are MenuPicker, never native. The OS draws a native select's popup
+ * and a datalist's suggestion list itself, so over this plugin's translucent
+ * panel both came back as light system surfaces that ignore the theme —
+ * reported by the user on the "move to group" dialog. dsh-ide-git carries the
+ * same lesson twice (see its RepoSelect / FilterSelect notes); it had to lay
+ * the replacement menu out inside its own panel, because dsh-better-sidebar
+ * declares contain:layout and strands a portal off-screen. This plugin sits in
+ * a native DSH slot, so it can use the real primitives Menu: official look and
+ * keyboard model, portalled above the modal (z-index 1100 vs 1000), and its
+ * own scrolling list.
+ */
+test('group dialog dropdowns: primitives Menu, native control only as the Menu-less fallback', () => {
+  const text = read('src/client.js')
+  assert.match(text, /function MenuPicker\(\{ options, value, onPick, placeholder, chevronOnly, title, t \}\)/, 'one shared picker')
+  assert.match(text, /const menuReady = typeof ui\.Menu === 'function'/, 'the primitives are probed')
+  assert.match(text, /selectedId: current === null \? undefined : String\(current\.value\)/, 'the current row is checked')
+  assert.match(text, /className: cls\('bw-menu-block', chevronOnly && 'bw-menu-inline'\)/, 'the wrapper width follows the shape')
+  // The group dialog routes BOTH dropdowns through it.
+  assert.match(text, /menuReady\s*\?\s*E\(MenuPicker, \{/, 'the target list uses the picker')
+  assert.match(text, /\(menuReady && hintList\.length > 0\)\s*\?\s*E\(MenuPicker, \{/, 'the group-path suggestions use the picker')
+  // Native controls survive ONLY as the fallback: one select, and the datalist
+  // is gone for good (its popup could not be styled at all).
+  assert.equal((text.match(/E\('select', \{/g) || []).length, 1, 'one native select left, as the fallback')
+  assert.doesNotMatch(text, /E\('datalist'/, 'the datalist is gone')
+  assert.doesNotMatch(text, /list: 'bw-group-paths'/, 'no field is wired to a native suggestion list')
+})
+
+/**
+ * The official "workspace" grouping mode (v0.13) rendered every row WITHOUT A
+ * NAME: it handed the raw WorkspaceView to renderWorkspaceEntry, and a raw item
+ * carries no leaf field — the exact field WorkspaceRow renders as its label
+ * (the title it also passes is only the tooltip). The tree path fills leaf
+ * while building, so only this flat path lost it. Reported 2026-09-19.
+ */
+test('official "workspace" grouping: flat rows carry a label', () => {
+  const text = read('src/client.js')
+  assert.match(text, /renderWorkspaceEntry\(\{ workspace: flatWorkspaceEntry\(workspace\) \}, 0, wsPulseOf\(workspace\)\)/, 'the flat mode builds a labelled entry')
+  // The bare { workspace } form stays CORRECT on the tree path — those entries
+  // carry a leaf by construction. What must never come back is the raw form
+  // over `items`, which has none.
+  assert.doesNotMatch(text, /for \(const workspace of items \|\| \[\]\) bodyRows\.push\(\.\.\.renderWorkspaceEntry\(\{ workspace \}/, 'the flat branch never hands over a raw item again')
+  // Drive the real helper: the two slices supply basename, its one dependency.
+  const baseStart = text.indexOf('const basename = ')
+  const baseEnd = text.indexOf('\n    }\n', baseStart) + 6
+  const flatStart = text.indexOf('const flatWorkspaceEntry = ')
+  const flatEnd = text.indexOf('function buildTree')
+  assert.ok(baseStart !== -1 && baseEnd > baseStart && flatStart !== -1 && flatEnd > flatStart, 'both helpers located')
+  const { flatWorkspaceEntry } = new Function(
+    text.slice(baseStart, baseEnd) + '\n' + text.slice(flatStart, flatEnd) + '\nreturn { flatWorkspaceEntry }')()
+  // The FULL title is the label: this mode renders no name groups, so a slash
+  // has nothing to group into and must stay in the text.
+  assert.equal(flatWorkspaceEntry({ workspaceId: 'w', title: 'web/前端', path: '/a/b' }).leaf, 'web/前端')
+  // Same fallback chain the tree path uses when the title is empty.
+  assert.equal(flatWorkspaceEntry({ workspaceId: 'w', title: '', path: '/a/b' }).leaf, 'b')
+  assert.equal(flatWorkspaceEntry({ workspaceId: 'w', path: '' }).leaf, 'w')
+  assert.equal(flatWorkspaceEntry({ workspaceId: 'w', title: 'x' }).folderPath, '')
+})
+
+
+

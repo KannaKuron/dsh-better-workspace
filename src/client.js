@@ -151,6 +151,7 @@ window.__ModuleLoader__.load({
       'group.new.nameHint': "名称中的 / 即嵌套层级,例如 前端/组件",
       'group.new.empty': "请输入分组名称",
       'group.new.root': "顶层",
+      'group.new.independent': "新建顶层分组",
       'group.new.pickWorkspace': "选择一个工作区",
       'group.new.noWorkspace': "还没有工作区,请先添加一个",
       'group.new.pickFirst': "请先选择一个工作区",
@@ -279,6 +280,7 @@ window.__ModuleLoader__.load({
       'group.new.nameHint': "A \"/\" nests further, e.g. frontend/components",
       'group.new.empty': "Enter a group name",
       'group.new.root': "Top level",
+      'group.new.independent': "New top-level group",
       'group.new.pickWorkspace': "Pick a workspace",
       'group.new.noWorkspace': "No workspaces yet — add one first",
       'group.new.pickFirst': "Pick a workspace first",
@@ -415,6 +417,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "الشرطة المائلة \"/\" تنشئ مستوى أعمق، مثل frontend/components",
         'group.new.empty': "أدخل اسم المجموعة",
         'group.new.root': "المستوى الأعلى",
+        'group.new.independent': "مجموعة جديدة في المستوى الأعلى",
         'group.new.pickWorkspace': "اختر مساحة عمل",
         'group.new.noWorkspace': "لا توجد مساحات عمل بعد — أضف واحدة أولاً",
         'group.new.pickFirst': "اختر مساحة عمل أولاً",
@@ -543,6 +546,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "Ein „/\" verschachtelt weiter, z. B. frontend/components",
         'group.new.empty': "Gruppennamen eingeben",
         'group.new.root': "Oberste Ebene",
+        'group.new.independent': "Neue Gruppe auf oberster Ebene",
         'group.new.pickWorkspace': "Arbeitsbereich wählen",
         'group.new.noWorkspace': "Noch keine Arbeitsbereiche — zuerst einen hinzufügen",
         'group.new.pickFirst': "Zuerst einen Arbeitsbereich wählen",
@@ -671,6 +675,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "Un « / » imbrique davantage, par ex. frontend/components",
         'group.new.empty': "Saisissez un nom de groupe",
         'group.new.root': "Niveau supérieur",
+        'group.new.independent': "Nouveau groupe de premier niveau",
         'group.new.pickWorkspace': "Choisissez un espace de travail",
         'group.new.noWorkspace': "Aucun espace de travail — ajoutez-en un d’abord",
         'group.new.pickFirst': "Choisissez d’abord un espace de travail",
@@ -799,6 +804,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "\"/\" और गहरा स्तर बनाता है, जैसे frontend/components",
         'group.new.empty': "समूह का नाम दर्ज करें",
         'group.new.root': "शीर्ष स्तर",
+        'group.new.independent': "नया शीर्ष-स्तरीय समूह",
         'group.new.pickWorkspace': "एक कार्यस्थान चुनें",
         'group.new.noWorkspace': "अभी कोई कार्यस्थान नहीं — पहले एक जोड़ें",
         'group.new.pickFirst': "पहले एक कार्यस्थान चुनें",
@@ -927,6 +933,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "\"/\" membuat tingkat lebih dalam, mis. frontend/components",
         'group.new.empty': "Masukkan nama grup",
         'group.new.root': "Tingkat teratas",
+        'group.new.independent': "Grup tingkat teratas baru",
         'group.new.pickWorkspace': "Pilih ruang kerja",
         'group.new.noWorkspace': "Belum ada ruang kerja — tambahkan dulu",
         'group.new.pickFirst': "Pilih ruang kerja dulu",
@@ -1055,6 +1062,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "Una «/» annida ulteriormente, es. frontend/components",
         'group.new.empty': "Inserisci un nome di gruppo",
         'group.new.root': "Livello superiore",
+        'group.new.independent': "Nuovo gruppo di primo livello",
         'group.new.pickWorkspace': "Scegli un’area di lavoro",
         'group.new.noWorkspace': "Nessuna area di lavoro — aggiungine una prima",
         'group.new.pickFirst': "Scegli prima un’area di lavoro",
@@ -1183,6 +1191,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "/ でさらに深い階層になります(例: frontend/components)",
         'group.new.empty': "グループ名を入力してください",
         'group.new.root': "最上位",
+        'group.new.independent': "最上位に新しいグループ",
         'group.new.pickWorkspace': "ワークスペースを選択",
         'group.new.noWorkspace': "ワークスペースがありません。先に追加してください",
         'group.new.pickFirst': "先にワークスペースを選択してください",
@@ -1311,6 +1320,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "\"/\"로 더 깊은 단계, 예: frontend/components",
         'group.new.empty': "그룹 이름을 입력하세요",
         'group.new.root': "최상위",
+        'group.new.independent': "최상위 새 그룹",
         'group.new.pickWorkspace': "워크스페이스 선택",
         'group.new.noWorkspace': "워크스페이스가 없습니다. 먼저 추가하세요",
         'group.new.pickFirst': "먼저 워크스페이스를 선택하세요",
@@ -1439,6 +1449,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "Een \"/\" nest dieper, bijv. frontend/components",
         'group.new.empty': "Voer een groepsnaam in",
         'group.new.root': "Bovenste niveau",
+        'group.new.independent': "Nieuwe groep op hoogste niveau",
         'group.new.pickWorkspace': "Kies een werkruimte",
         'group.new.noWorkspace': "Nog geen werkruimten — voeg er eerst een toe",
         'group.new.pickFirst': "Kies eerst een werkruimte",
@@ -1567,6 +1578,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "„/” zagnieżdża głębiej, np. frontend/components",
         'group.new.empty': "Podaj nazwę grupy",
         'group.new.root': "Najwyższy poziom",
+        'group.new.independent': "Nowa grupa najwyższego poziomu",
         'group.new.pickWorkspace': "Wybierz obszar roboczy",
         'group.new.noWorkspace': "Brak obszarów roboczych — najpierw dodaj jeden",
         'group.new.pickFirst': "Najpierw wybierz obszar roboczy",
@@ -1695,6 +1707,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "Uma \"/\" aninha mais, ex. frontend/components",
         'group.new.empty': "Digite um nome de grupo",
         'group.new.root': "Nível superior",
+        'group.new.independent': "Novo grupo de nível superior",
         'group.new.pickWorkspace': "Escolha uma área de trabalho",
         'group.new.noWorkspace': "Ainda não há áreas de trabalho — adicione uma primeiro",
         'group.new.pickFirst': "Escolha uma área de trabalho primeiro",
@@ -1823,6 +1836,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "«/» вкладывает глубже, напр. frontend/components",
         'group.new.empty': "Введите имя группы",
         'group.new.root': "Верхний уровень",
+        'group.new.independent': "Новая группа верхнего уровня",
         'group.new.pickWorkspace': "Выберите рабочую область",
         'group.new.noWorkspace': "Рабочих областей пока нет — сначала добавьте одну",
         'group.new.pickFirst': "Сначала выберите рабочую область",
@@ -1951,6 +1965,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "Ett \"/\" nästlar djupare, t.ex. frontend/components",
         'group.new.empty': "Ange ett gruppnamn",
         'group.new.root': "Översta nivån",
+        'group.new.independent': "Ny grupp på översta nivån",
         'group.new.pickWorkspace': "Välj en arbetsyta",
         'group.new.noWorkspace': "Inga arbetsytor än — lägg till en först",
         'group.new.pickFirst': "Välj en arbetsyta först",
@@ -2079,6 +2094,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "/ ใช้ซ้อนระดับลึกขึ้น เช่น frontend/components",
         'group.new.empty': "กรอกชื่อกลุ่ม",
         'group.new.root': "ระดับบนสุด",
+        'group.new.independent': "กลุ่มระดับบนสุดใหม่",
         'group.new.pickWorkspace': "เลือกเวิร์กสเปซ",
         'group.new.noWorkspace': "ยังไม่มีเวิร์กสเปซ — เพิ่มก่อน",
         'group.new.pickFirst': "เลือกเวิร์กสเปซก่อน",
@@ -2207,6 +2223,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "\"/\" daha derin iç içe koyar, örn. frontend/components",
         'group.new.empty': "Bir grup adı girin",
         'group.new.root': "En üst düzey",
+        'group.new.independent': "Yeni üst düzey grup",
         'group.new.pickWorkspace': "Bir çalışma alanı seçin",
         'group.new.noWorkspace': "Henüz çalışma alanı yok — önce bir tane ekleyin",
         'group.new.pickFirst': "Önce bir çalışma alanı seçin",
@@ -2335,6 +2352,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "\"/\" lồng sâu hơn, ví dụ frontend/components",
         'group.new.empty': "Nhập tên nhóm",
         'group.new.root': "Cấp cao nhất",
+        'group.new.independent': "Nhóm cấp cao nhất mới",
         'group.new.pickWorkspace': "Chọn một không gian làm việc",
         'group.new.noWorkspace': "Chưa có không gian làm việc — hãy thêm trước",
         'group.new.pickFirst': "Chọn không gian làm việc trước",
@@ -2463,6 +2481,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "名入面嘅 / 即嵌套層級,例如 前端/組件",
         'group.new.empty': "請輸入分組名",
         'group.new.root': "最頂層",
+        'group.new.independent': "新增頂層分組",
         'group.new.pickWorkspace': "揀一個工作區",
         'group.new.noWorkspace': "仲未有工作區,請先加一個",
         'group.new.pickFirst': "請先揀一個工作區",
@@ -2591,6 +2610,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "名入面嘅 / 即嵌套層級,例如 前端/組件",
         'group.new.empty': "請輸入分組名",
         'group.new.root': "最頂層",
+        'group.new.independent': "新增頂層分組",
         'group.new.pickWorkspace': "揀一個工作區",
         'group.new.noWorkspace': "仲未有工作區,請先加一個",
         'group.new.pickFirst': "請先揀一個工作區",
@@ -2719,6 +2739,7 @@ window.__ModuleLoader__.load({
         'group.new.nameHint': "名稱中的 / 即巢狀層級,例如 前端/元件",
         'group.new.empty': "請輸入分組名稱",
         'group.new.root': "最頂層",
+        'group.new.independent': "新增頂層分組",
         'group.new.pickWorkspace': "選擇一個工作區",
         'group.new.noWorkspace': "還沒有工作區,請先新增一個",
         'group.new.pickFirst': "請先選擇一個工作區",
@@ -3101,6 +3122,14 @@ window.__ModuleLoader__.load({
       return Array.isArray(raw) && raw.length > 0
     }
 
+    /**
+     * Display name of a tree folder node. compressTree materializes a
+     * single-child chain as a `kind:'ws'` row, and THAT shape carries `segs`
+     * but no `name` — reading .name alone rendered a blank row (a lone
+     * "E" above its only member F came out empty).
+     */
+    const folderLabelOf = (node) => String(node.name || (Array.isArray(node.segs) ? node.segs.join('/') : '') || node.path || '')
+
     const explicitSegsOf = (explicit, scope) => {
       const raw = explicit && typeof explicit === 'object' ? explicit[String(scope)] : undefined
       const out = []
@@ -3296,6 +3325,10 @@ window.__ModuleLoader__.load({
       '.bw-gn-hint{font-size:12px;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
       // A container-only node (a workspace name-group in the session layer):
       // still expandable, but it carries no workspaceId to file against.
+      // The trailing "new top-level group" row: separated from the containers
+      // above it, because it belongs to none of them.
+      '.bw-gn-row-new{margin-top:4px;border-top:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.22));border-radius:0 0 6px 6px;padding-top:4px}',
+      '.bw-gn-row-new .bw-gn-label{color:var(--dsw-alias-label-secondary,#b8b8b8)}',
       '.bw-gn-row-hold{cursor:default}',
       '.bw-gn-row-hold:hover{background:transparent}',
       '.bw-gn-row-hold .bw-gn-label{color:var(--dsw-alias-label-secondary,#b8b8b8)}',
@@ -3834,7 +3867,7 @@ window.__ModuleLoader__.load({
      * writes the declaration itself, which is why it is not the move dialog.
      */
     function GroupNewDialog(props) {
-      const { kinds, initialKind, treeOf, onConfirm, onClose, t } = props
+      const { kinds, initialKind, treeOf, label, onConfirm, onClose, t } = props
       const [kind, setKind] = React.useState(initialKind)
       const [picked, setPicked] = React.useState(null)
       const [openKeys, setOpenKeys] = React.useState({})
@@ -3859,7 +3892,7 @@ window.__ModuleLoader__.load({
           const expanded = openKeys[node.id] === true || (depth === 0 && openKeys[node.id] !== false)
           out.push(E('div', {
             key: 'n-' + node.id,
-            className: cls('bw-gn-row', node.pickable === false && 'bw-gn-row-hold', picked && picked.id === node.id && 'bw-gn-row-on'),
+            className: cls('bw-gn-row', node.pickable === false && 'bw-gn-row-hold', node.kind === 'new' && 'bw-gn-row-new', picked && picked.id === node.id && 'bw-gn-row-on'),
             style: { paddingLeft: 6 + depth * 14 },
             role: 'treeitem',
             'aria-selected': picked && picked.id === node.id ? 'true' : 'false',
@@ -3872,7 +3905,10 @@ window.__ModuleLoader__.load({
               'aria-label': node.label,
               onClick: (e) => { e.stopPropagation(); toggle(node.id) },
             }, E('span', { className: 'bw-chevron' })) : E('span', { className: 'bw-gn-twist' }),
-            E('span', { className: 'bw-gn-icon' }, node.kind === 'ws' ? icon('IconFolderOpen16', 15) : icon('IconFolderClose16', 15)),
+            E('span', { className: 'bw-gn-icon' },
+              node.kind === 'new' ? icon('IconPlusOutline16', 15)
+                : node.kind === 'ws' ? icon('IconFolderOpen16', 15)
+                  : icon('IconFolderClose16', 15)),
             E('span', { className: 'bw-gn-label' }, node.label),
           ))
           if (hasKids && expanded) out.push(...renderNodes(node.children, depth + 1))
@@ -3883,7 +3919,7 @@ window.__ModuleLoader__.load({
         open: true,
         onClose,
         closeLabel: t('close'),
-        title: t('group.new.title'),
+        title: label,
         footer: E('div', { className: 'bw-modal-actions' },
           E(BTN, { variant: 'outline', onClick: onClose }, t('cancel')),
           E(BTN, { variant: 'primary', onClick: submit }, t('confirm')),
@@ -5170,6 +5206,13 @@ window.__ModuleLoader__.load({
         if (!compactChains || draggingWorkspace) return built
         return { ...built, folders: built.folders.map((f) => materializeChain(compressTree(f))), workspaces: built.workspaces }
       }, [items, compactChains, draggingWorkspace, workspaceSlash, wsFolders])
+      // UNCOMPRESSED tree, for the new-group dialog only. compressTree merges a
+      // single-child chain into one row that stands for BOTH a group and the
+      // workspace under it — fine for drawing, useless for choosing a
+      // container: one half must stay unselectable and the other must be
+      // selectable, and a merged row cannot be both. (It also carried no
+      // `name`, which is how a lone "E" rendered blank.)
+      const rawTree = React.useMemo(() => buildTree(items, workspaceSlash, wsFolders), [items, workspaceSlash, wsFolders])
       // Disk-layer ancestry for drag semantics (same derivation as buildTree).
       const diskParentMap = React.useMemo(() => diskParentMapOf(items), [items])
 
@@ -5371,19 +5414,16 @@ window.__ModuleLoader__.load({
       // write target: `scope` is the store's bags key (the disk level's idPrefix
       // for workspaces, the workspaceId for sessions) and `path` is the parent
       // group's name path — the dialog appends the new name to it.
-      const wsGroupNodesOf = (node) => {
-        const out = []
-        for (const f of node.folders || []) {
-          out.push({ id: f.scope + '|' + f.path, scope: f.scope, path: f.path, label: f.name, kind: 'folder', children: wsGroupNodesOf(f) })
-        }
-        for (const w of node.workspaces || []) {
-          out.push({
-            id: w.subPrefix + '|', scope: w.subPrefix, path: '', label: w.leaf || w.title, kind: 'ws',
-            children: w.sub ? wsGroupNodesOf(w.sub) : [],
-          })
-        }
-        return out
-      }
+      // Workspace-GROUP containers: name-group folders only, never the
+      // workspaces themselves. A workspace title is "group/leaf", so with
+      // members A/B, A/C, D and E/F the only groups that exist are A and E —
+      // B, C, D and F are leaves (they are workspaces, not containers), and
+      // offering them would invite a group named after a leaf. Disk nesting is
+      // a workspace fact too, so it is skipped for the same reason.
+      const wsFolderNodesOf = (node) => (node.folders || []).map((f) => ({
+        id: f.scope + '|' + f.path, scope: f.scope, path: f.path, label: folderLabelOf(f), kind: 'folder',
+        children: wsFolderNodesOf(f),
+      }))
       const sessGroupNodesOf = (node, workspaceId) => (node.groups || []).map((g) => ({
         id: workspaceId + '|' + g.path, scope: workspaceId, path: g.path, label: g.name, kind: 'sgroup',
         children: sessGroupNodesOf(g, workspaceId),
@@ -5399,12 +5439,18 @@ window.__ModuleLoader__.load({
         if (kind === 'workspace') {
           // "Top level" IS a real target here (a group at the root of the
           // workspace tree), so it is a node like any other.
+          // A dedicated top-level row, not a root node that both expands AND
+          // accepts the new name: that read as "pick a spot inside the top
+          // level", and it left no way to say "give me a group NEXT TO A and
+          // E". The row below is that way, and A / E sit beside it as the
+          // top-level groups they actually are.
+          const groups = treeView ? wsFolderNodesOf(rawTree) : []
           return {
-            hint: null,
-            nodes: [{
-              id: '|', scope: '', path: '', label: t('group.new.root'), kind: 'folder',
-              children: treeView ? wsGroupNodesOf(tree) : [],
-            }],
+            hint: t('group.new.where'),
+            // The "top level" row sits LAST (user's call): it reads as "and
+            // here is one more, belonging to none of the above" instead of as
+            // a header the others hang under.
+            nodes: [...groups, { id: '@top', scope: '', path: '', label: t('group.new.independent'), kind: 'new', children: [] }],
           }
         }
         // A session group lives INSIDE one workspace (folders.sess is keyed by
@@ -5422,7 +5468,7 @@ window.__ModuleLoader__.load({
         const sessNodesOf = (node) => {
           const out = []
           for (const f of node.folders || []) {
-            out.push({ id: f.scope + '|' + f.path, scope: '', path: '', label: f.name, kind: 'folder', pickable: false, children: sessNodesOf(f) })
+            out.push({ id: f.scope + '|' + f.path, scope: '', path: '', label: folderLabelOf(f), kind: 'folder', pickable: false, children: sessNodesOf(f) })
           }
           for (const w of node.workspaces || []) {
             const inner = sessGroupNodesOf(buildSessionTree(sessionsOf(w), sessionSlash, sessFolders, w.workspaceId), w.workspaceId)
@@ -5434,7 +5480,7 @@ window.__ModuleLoader__.load({
           }
           return out
         }
-        if (treeView) return { hint: t('group.new.pickWorkspace'), nodes: sessNodesOf(tree) }
+        if (treeView) return { hint: t('group.new.pickWorkspace'), nodes: sessNodesOf(rawTree) }
         // One-level modes: every workspace sits at the root, exactly as the
         // sidebar draws it (raw items — there is no .sub level to nest here).
         const flat = []
@@ -6272,6 +6318,10 @@ window.__ModuleLoader__.load({
           kinds: newGroupLayers(),
           initialKind: dialog.layer === 'workspace' ? 'workspace' : 'session',
           treeOf: newGroupTreeOf,
+          // The heading names the layer(s) the button promised: with both
+          // layers live the switch below decides, so the generic wording is
+          // accurate there and only there.
+          label: newGroupLabel(),
           onConfirm: (kind, scope, path) => { actions.addFolder(kind, scope, path); setDialog(null) },
           onClose: () => setDialog(null),
           t,

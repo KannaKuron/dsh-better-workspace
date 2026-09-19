@@ -1038,8 +1038,15 @@ test('new group: icon button, live tooltip, layer switch and a tree picker (v0.1
   // walks the SAME tree the sidebar renders (disk nesting included) instead of
   // the flat registry list — a child workspace must nest under its parent.
   assert.match(text, /const treeView = groupBy === 'workspace-tree'/, 'the dialog follows the live view mode')
-  assert.match(text, /if \(treeView\) return \{ hint: t\('group\.new\.pickWorkspace'\), nodes: sessNodesOf\(tree\) \}/,
-    'tree view: session layer walks the rendered tree')
+  assert.match(text, /if \(treeView\) return \{ hint: t\('group\.new\.pickWorkspace'\), nodes: sessNodesOf\(rawTree\) \}/,
+    'tree view: session layer walks the tree')
+  // The dialog walks the UNCOMPRESSED tree: a merged single-child chain row
+  // stands for a group AND its only workspace at once, which cannot be one
+  // selectable and one unselectable node.
+  assert.match(text, /const rawTree = React\.useMemo\(\(\) => buildTree\(items, workspaceSlash, wsFolders\), \[items, workspaceSlash, wsFolders\]\)/,
+    'an uncompressed tree exists for the dialog')
+  assert.match(text, /const folderLabelOf = \(node\) => String\(node\.name \|\| \(Array\.isArray\(node\.segs\)/,
+    'labels survive a node shape that carries segs but no name')
   assert.match(text, /const sessNodesOf = \(node\) => \{/, 'the recursive walk exists')
   assert.match(text, /children: \[\.\.\.inner, \.\.\.subNodes\]/, 'a workspace node carries its session groups AND its disk-nested children')
   assert.match(text, /const flat = \[\]/, 'one-level modes fall back to a flat list')
@@ -1051,9 +1058,18 @@ test('new group: icon button, live tooltip, layer switch and a tree picker (v0.1
     'the name is appended to the picked container path')
   assert.match(text, /actions\.addFolder\(kind, scope, path\)/, 'confirm writes the declaration')
   // The tree carries the exact write targets.
-  assert.match(text, /const wsGroupNodesOf = \(node\) => \{/, 'workspace container walk')
-  assert.match(text, /scope: f\.scope, path: f\.path/, 'a folder node files into its own level')
-  assert.match(text, /scope: w\.subPrefix, path: '', label: w\.leaf/, 'a workspace node files into the disk level it owns')
+  // Workspace-GROUP containers list name-group folders ONLY: a workspace title
+  // is "group/leaf", so with members A/B, A/C, D and E/F the only groups are A
+  // and E — B/C/D/F are leaves and must not be offered as containers.
+  assert.match(text, /const wsFolderNodesOf = \(node\) => \(node\.folders \|\| \[\]\)\.map/, 'workspace container walk covers groups only')
+  assert.doesNotMatch(text, /wsGroupNodesOf/, 'the walk must not fall back to listing workspaces as containers')
+  // A dedicated top-level row carries "new group NEXT TO A and E"; the walk
+  // supplies the existing top-level groups beside it.
+  // It sits LAST: "one more, belonging to none of the above".
+  assert.match(text, /nodes: \[\.\.\.groups, \{ id: '@top', scope: '', path: '', label: t\('group\.new\.independent'\), kind: 'new', children: \[\] \}\]/,
+    'the dedicated top-level row exists and trails the containers')
+  assert.match(text, /const groups = treeView \? wsFolderNodesOf\(rawTree\) : \[\]/, 'the workspace layer uses the group-only walk')
+  assert.match(text, /node\.kind === 'new' \? icon\('IconPlusOutline16', 15\)/, 'the top-level row reads as an action, not a folder')
   assert.match(text, /const sessGroupNodesOf = \(node, workspaceId\)/, 'session container walk')
   assert.match(text, /scope: workspaceId, path: g\.path/, 'a session group files under its workspace')
   // Menu hygiene (user report): the plugin's own entries sit AFTER the

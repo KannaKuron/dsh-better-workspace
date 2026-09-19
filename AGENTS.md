@@ -4,7 +4,7 @@
 
 ## 项目一句话
 
-「dsh-better-workspace」:DSH 插件,把侧边栏「工作区」列表升级为**层级树**——磁盘层按官方 owningParentFolder 语义嵌套(子目录工作区挂父目录工作区行下),这是主结构;**名称层(工作区名称里的 / 虚拟分组)自 v0.15.0 起可选、默认关闭**(设置 → 插件 → 更好的工作区卡片里开启;存过值的浏览器按用户自己的选择,0.13 以前的快照升上来保持开启——判定收敛在 `workspaceSlashOf`);**会话分组仍按名称里的 / 解析、默认开启,不受工作区开关影响**;添加工作区:侧栏入口由本插件的占用者流承载(原生宿主 = 官方 OS 选择器服务,LAN/无显示宿主 = 自绘应用内浏览器),对话空态入口保持纯官方;重命名即时重排。显式空分组已退役(分组是名称的投影)。
+「dsh-better-workspace」:DSH 插件,把侧边栏「工作区」列表升级为**层级树**——磁盘层按官方 owningParentFolder 语义嵌套(子目录工作区挂父目录工作区行下),这是主结构;**名称层(工作区名称里的 / 虚拟分组)自 v0.15.0 起可选、默认关闭**(设置 → 插件 → 更好的工作区卡片里开启;存过值的浏览器按用户自己的选择,0.13 以前的快照升上来保持开启——判定收敛在 `workspaceSlashOf`);**会话分组仍按名称里的 / 解析、默认开启,不受工作区开关影响**;添加工作区:**两个 directoryFlow 洞都不占用**(v0.16.0)——侧栏入口只走官方交互(原生宿主 = 官方 OS 选择器;LAN/无显示宿主给一句提示,指向对话空态那份官方应用内浏览器),对话空态入口保持纯官方;重命名即时重排。显式空分组已退役(分组是名称的投影)。
 
 ## 环境与工具
 
@@ -26,7 +26,7 @@
 
 | 路径 | 作用 |
 |---|---|
-| src/client.js | **全部功能所在**。window.__ModuleLoader__.load({ id, factory }) 包装的浏览器插件:sidebar.workspaces 座位 + 侧栏 directoryFlow 洞占用者(拾取流)+ 双设置座位 + 两层层级树 UI |
+| src/client.js | **全部功能所在**。window.__ModuleLoader__.load({ id, factory }) 包装的浏览器插件:sidebar.workspaces 座位(priority -1)+ 官方目录流驱动(startAddFlow)→ 双设置座位 + 两层层级树 UI |
 | src/index.js | host 半,纯占位(有效 Node 入口 + 一行日志);未来宿主侧功能(分组宿主登记、设置页后端)的家 |
 | cordis.patch.yml | dsh plugin add 官方安装通道的挂载声明(insert 一行插件 row) |
 | dsh.plugin.json | 插件注册表清单(id dsh-external/dsh-better-workspace) |
@@ -37,9 +37,12 @@
 1. **无构建,单文件客户端**。src/client.js 必须保持 __ModuleLoader__ 包装;每个 npm 包只有一个 client entry(exports["./client"]),**不能 require 任何非基线模块**。基线白名单(dsh-client-web seed.ts):react、react/jsx-runtime、react-dom、react-dom/client、@deepseek-ai/cordis、@deepseek-ai/dsh-client-store、@deepseek-ai/dsh-client-ui-slots、@deepseek-ai/dsh-client-ui-primitives。冒烟测试强制执行。
 2. **slot 契约**(对照 dsh 源码 packages/client/ui-workspace/src/client/):
    - sidebar.workspaces 是 **single** 槽;same-priority 二次注册会抛错,官方占用者优先级 0,本插件用 priority: -1(ascending, lowest renders)压制。
-   - **v0.12.1 起侧栏洞由本插件自己的占用者承载(0.11.x 占用模式回归)**,根因是 v0.12.0 事故:**子洞声明互斥**——官方 WorkspaceBrowser 的 entry 输掉渲染竞争但仍在 ledger 上、仍拥有 'sidebar.workspaces.directoryFlow' 的声明,bw 再声明同洞 → register 抛 `slot ... is already declared` → guarded 吞掉 → **bw 浏览器整个不注册,官方浏览器接管**(用户实测:右键菜单没了、/ 不解析)。renderSlot 授权是运行时强制的(SlotOwnershipError),压制官方浏览器与渲染官方流**不可兼得**,绝不要再尝试 children 声明(冒烟测试有防回归断言)。现行形态:bw 占用侧栏洞(priority -1,占用者 = BetterFlow:探测后端,native 宿主调官方 uiWorkspace.pickDirectory() 弹 OS 选择器,browse 宿主渲染自绘 DirectoryBrowseDialog),选完路径 adoptDirectory = createWorkspace + startSession;**hero 洞(conversation.hero.workspace.directoryFlow)绝不占用**——对话空态添加流保持纯官方。占用率(hooks.directoryFlow → useDirectoryFlow)门控添加按钮。
-   - **目录交互必须先探测宿主组装的后端(v0.11.3 起,红线;v0.12.0 曾误删、v0.12.1 恢复——官方流无法被第三方在侧栏渲染,此探测与自绘对话框是必需品)**:宿主只组装一个后端(`@deepseek-ai/dsh-host-directory-picker-auto`)——`bindHost === '127.0.0.1'` 且非 SSH、有可用显示会话才是 `native`,**其余一切绑定(含 `0.0.0.0`/局域网)都是 `browse`**,后者的 wire 动词只有 `list` / `createDirectory`,`pick` 会被拒为 `directory-picker/unavailable`。流程一律先 `pickerCapabilityNow()`:`list` 成功即 browse、以能力码被拒即 native、无法归类则**不缓存**并照旧试 `pick`(`pickerRefusal` 命中就 `markPickerBrowse()` 切浏览器)。**绝不再假定 native**——≤0.11.2 正是这一假定让 LAN 绑定下「添加工作区」必然失败。browse 侧由 `DirectoryBrowseDialog` 承载,**v0.11.4 起的交互契约**(用户实测反馈后定型):面包屑从**文件系统根**开始(绝不以 Home 为根——那会看不到自己在哪)且深路径自动贴右端、**单击选中 / 双击或行尾 › 进入**(触摸没有双击)、底部按钮采用选中项(文案 `browse.selectNamed`)/无选中时用当前层、Windows 盘符在首次打开时探测 C:–H: 一次并按页缓存(模块级 `browseDrives`,漏掉的盘靠路径编辑手输兜底);浏览失败留在对话框内,不占用 owner 的 `onError`;两处入口(两个洞 + 侧栏内联流)必须注入同一组 `pickDirectory`/`listDirectory`/`createDirectory`。
-   - BetterBrowser 的 flowAvailable(hooks.directoryFlow → useDirectoryFlow)是添加按钮的门控(占用者 = 本插件自己,注册成功即真);占用者中途卸载时 effect 自动 setFlowOpen(false)。flow hooks 必须在 `if (!wide) return` early return 之前(React hook 纪律)。BetterBrowser 与 BetterFlow 是直接组合(不经子 slot),props 会话 = owner share(open/busy/onPicked/onCancel/onError)。
+   - **两个 directoryFlow 洞都不占用(v0.16.0 定型;v0.12.1 的自占模式已废弃)**。v0.12.0 事故的根因是**子洞声明互斥**:官方 WorkspaceBrowser 的 entry 输掉渲染竞争但仍在 ledger 上、仍拥有 'sidebar.workspaces.directoryFlow' 的声明,bw 再声明同洞 → register 抛 `slot ... is already declared` → guarded 吞掉 → **bw 浏览器整个不注册,官方浏览器接管**(用户实测:右键菜单没了、/ 不解析)。
+     **为什么"改用官方对话框"只能靠不占用**:`renderSlot` 授权绑定在**声明该子洞的 entry** 上(`ui-slots` 的 `children` 表 = 声明 + 授权 + 运行时规格三合一),而子洞声明独占;官方 entry 持有声明却不渲染(座位被 shadow),于是**接管座位的第三方永远拿不到渲染授权**(ui-renderer 硬检查 `not declared by this entry's children` → SlotOwnershipError)。**"自己的侧栏"与"官方对话框"在 dsh 当前版本下互斥**,而官方本就有一套更好的:宿主 `directory-picker-auto` 把 host 半与 client 半**成对挂载**,browse 后端下 `dsh-client-ui-directory-picker-browse`(`DirectoryBrowser.tsx` 1052 行,分栏式)照样加载并注册进两个洞。**绝不要再尝试 children 声明,也绝不要恢复自绘浏览器**(冒烟测试两条防回归断言)。
+     现行形态:侧栏添加按钮由 `flowAvailable`(hooks.directoryFlow → useDirectoryFlow,占用者是官方 occupant)门控 → `startAddFlow()` 先 `pickerCapabilityNow()`:`native` 直接调官方 `uiWorkspace.pickDirectory()` 弹 OS 选择器,`browse` 弹 `add-guide` 极简提示指向对话空态;采纳语义不变 = `adoptDirectory`(`createWorkspace` + `startSession`)。
+   - **目录后端探测仍是红线,但只用于"决定按钮行为"**:宿主只组装一个后端(`@deepseek-ai/dsh-host-directory-picker-auto`)——`bindHost === '127.0.0.1'` 且非 SSH、有可用显示会话才是 `native`,**其余一切绑定(含 `0.0.0.0`/局域网)都是 `browse`**;browse 的 wire 动词只有 `list` / `createDirectory`,`pick` 会被拒为 `directory-picker/unavailable`。`startAddFlow()` 先问 `pickerCapabilityNow()`(`list` 成功即 browse、以能力码被拒即 native、无法归类则**不缓存**并照旧试 `pick`):native → 官方 OS 选择器;browse → `add-guide` 提示。**绝不再假定 native**——≤0.11.2 正是这一假定让 LAN 绑定下「添加工作区」必然失败。
+     **v0.16.0 删掉的东西不要恢复**(冒烟测试有断言):`DirectoryBrowseDialog` 与它的面包屑/盘符探测(模块级 `browseDrives`)/`createFolderIn` seam、`.bw-browse-*` 33 条样式、21 门语言的 13 个 `browse.*` 键、`BetterFlow` 占用者、`markPickerBrowse()`。用户实测结论是"官方的更好用",而官方那套确实更好(Finder 式分栏);仿制没有意义。
+   - BetterBrowser 的 flowAvailable(hooks.directoryFlow → useDirectoryFlow)是添加按钮的门控:`true` 表示宿主组装了某个后端包(官方 occupant 在洞里),这才是"能添加"的诚实信号;没组装就藏按钮。flow hooks 必须在 `if (!wide) return` early return 之前(React hook 纪律)。本插件不再有 occupant 组件,添加动作由 `startAddFlow()` 直接驱动(见上一条),采纳语义收敛在 `adoptDirectory`(createWorkspace + startSession)。
 3. **数据事实**(dsh 0.1.2-alpha.1 实测):
    - 分组来源是 WorkspaceView.title(**引号感知 + URL 兜底切分** splitTitleSegs:① “…”/"…" 成对引号段**原样**,段内 / 绝不切(孤立引号——无匹配闭端的开引号或无开端的闭引号——只是普通字符,照常参与切分;0.9.1 曾让未闭合开引号吞到串尾,用户明确不要);② 引号外文字走 splitPlainSegs——从第一个 :// 起尾部整体单 leaf(0.8 曾按 URL 语义聚树,用户实测后明确不要任何 URL 层级,0.9.1 回退),:// 前照常按 / 切)。**会话标题的 quote-on-land effect**(见不变量 4)是主机制,无引号兜底是显示层保险。title 为空回退 basename(path)。**buildTree(v0.12.0 重写)是两层正交**:磁盘层用 diskParentMapOf(normDiskPath:Windows 分隔符归一 + 去尾分隔符,最长真前缀胜出)求「最近已注册祖先工作区」,子工作区构成父 wsEntry 的 .sub 层;名称层 ensure 在每层内做(段数组驱动,join 后的 path 只作 Map 键,绝不再 split 回拆);sub 层的 folder 带 idPath(拥有链前缀 + '//' + 名称路径)作折叠/样式身份键,path 保持语义键(rename 批量改写用)。countWorkspaces/pulse/findTreeNode/renderLevelRows 都递归 sub。**buildSessionTree 的 ensure 同样段数组驱动**。
    - 会话标题是 SessionSummary.displayTitle(blank 会话显示本地化「新会话」);SessionListState = { ids, byId, current, phase, ... };WorkspaceSnapshot.archivedSessionIds 是注册表级归档集。**冷列表 title 缺失事实(0.1.2-alpha.4..0.1.5-alpha.1 溯源,projection-cache/title 包两版本 0 diff)**:列表行的 title 只在命中持久投影缓存时携带;fork(seeded)会话在 dsh list.ts 里被整体跳过必缺,从未写过检查点的低活动会话同样缺;缺失时 displayTitle 已是宿主 basename 回退(displayTitleOf:title → cwd basename → id),真实标题仍在会话日志的 session/title 事件里、只是没有便宜的列表读取路径。0.9.4 的 remembered 兜底只补显示层,不改这个事实。
@@ -90,14 +93,14 @@
 1. npm test 全绿。
 2. 真机(web profile 重启 DSH):
    - 两层树渲染:造 web/前端、web/后端(名称分组)、再把某工作区目录嵌到另一工作区目录下(磁盘层),两层正确且正交;
-   - 添加工作区:侧栏 = 本插件占用者流(loopback = 官方 OS 选择器;0.0.0.0 = 自绘应用内浏览器)→ 选完目录创建工作区并自动开新会话;对话空态 = 纯官方流;
+   - 添加工作区(v0.16.0):侧栏按钮在**有后端**时出现 —— loopback = 官方 OS 选择器,选完自动创建工作区并开新会话;0.0.0.0/LAN = 弹出「应用内添加工作区」提示(不再自绘浏览器),添加请在对话空态用官方入口;对话空态全程纯官方;
    - 重命名工作区:跨分组改名(如 web/前端 → design/前端)后树即时重排;磁盘层不变;
    - **工作区分组开关(v0.15.0,默认关闭)**:清掉本页 localStorage 的 dsh.betterWorkspace.view.v1 后刷新 → 树**只按磁盘目录**、工作区标题整条原样(如 `web/前端` 不再拆成组)、区头**无**「新建分组」按钮、工作区行右键**无**「移动到分组…」、设置卡片里该开关为**关**;会话分组照旧(会话行右键仍有「移动到分组…」,会话仍按 / 分组)。设置里打开 → 工作区立刻按 / 分回组、区头按钮与工作区菜单项同时出现。**关掉时拖拽工作区只换顺序,标题绝不被改写**(这是本次改动自身引出、已修的语义空洞)。
    - **开关的升级语义**:老用户模拟——把 localStorage 里 view 快照的 `workspaceTitleSlash` 键**删掉**(其余保留)刷新 → 应**仍按 / 分组**(0.13 以前的快照保持开启);把整个 key 删掉刷新 → 回落到新默认**关闭**;显式存过 false 的仍为关。
    - 会话:打开/重命名/分叉/归档、新会话按钮、当前高亮、运行圆点;
    - **重启标题不回退(0.9.4,0.9.6 重写后行为不变)**:让若干会话带 / 标题(含一个 fork 出来的),重启 DSH 后不打开它们,树里应显示 remembered 标题且分组正确(而非工作区名);打开任一会话后标题与官方一致;清掉 localStorage 的 dsh.betterWorkspace.titles.v1 后重启,行为退回官方 basename 回退(兜底不劣化);agent 运行中侧栏应无卡顿(0.9.6 修复 issue #1 的回归点);
    - 对话空态页「添加工作区」走纯官方目录流(官方原生选择器 / 官方应用内浏览器);
-   - **browse 后端(LAN 绑定)**:把 cordis.patch.yml 的 webserver `host` 改成 `0.0.0.0` 重启 → 侧栏「添加工作区」出现**本插件的应用内目录浏览器**,对话空态出现**官方**应用内浏览器;改回 `127.0.0.1` 重启侧栏回到宿主桌面上的原生选择器。**侧栏添加按钮点击后必须确认 .bw-root 仍在**(bw 浏览器没被官方顶掉)且 console 无 "register skipped for sidebar.workspaces"。隔离验证做法:独立 DSH_HOME + 独立端口(别动用户实例),headless Chrome over CDP;收尾要按端口 kill 掉残留 node 进程——后台 job 被杀不会带走 dsh 子进程。
+   - **browse 后端(LAN 绑定,v0.16.0)**:把 cordis.patch.yml 的 webserver `host` 改成 `0.0.0.0` 重启 → 侧栏「添加工作区」点击后弹**提示**(不是自绘浏览器),**对话空态**出现**官方**的分栏式应用内浏览器(那是唯一入口);改回 `127.0.0.1` 重启侧栏回到宿主桌面上的原生选择器。**侧栏树必须照常渲染**(.bw-root 在)且 console 无 "register skipped for sidebar.workspaces"。隔离验证做法:独立 DSH_HOME + 独立端口(别动用户实例),headless Chrome over CDP;收尾要按端口 kill 掉残留 node 进程——后台 job 被杀不会带走 dsh 子进程。
    - **跨端手动同步(0.9.5)**:web 端自定义若干外观 → 设置卡片点「发送本设备数据」→ 桌面端(装同版本插件)设置卡片点「从 Web 获取」(覆盖模式)→ 外观/分组/开关一致;合并模式下两端独有条目并集保留;宿主 ~/.dsh/settings.yaml 的 better-workspace 段可查;宿主 settings 不可用时卡片提示不支持、行为回纯本地;
    - 卸载/禁用本插件 → 回到官方浏览器,hero 流回退官方默认。
 3. 升级 dsh 后:对照 packages/client/ui-workspace/src/client/contract/slots.ts 复核 slot 契约与注入面是否漂移(重点:GlobalStandardProps、directoryFlow owner props、single 槽 priority 语义)。

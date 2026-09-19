@@ -73,10 +73,13 @@ test('client half registers the expected seats (v0.12.1)', () => {
   // re-declaring throws and silently unregisters this whole seat.
   assert.doesNotMatch(text, /children:\s*\{[^}]*directoryFlow/,
     'a children declaration for the directory-flow hole must never return')
-  // The sidebar hole is occupied by our own picking flow at priority -1;
-  // the hero hole stays untouched so the conversation flow is purely official.
-  assert.match(text, /slots\.inject\('sidebar\.workspaces\.directoryFlow', guarded\([\s\S]*?priority: -1/,
-    'the sidebar hole needs our own occupant')
+  // v0.16.0: NEITHER directory-flow hole is occupied. Shadowing the sidebar
+  // seat forfeits the child-hole render authorization for good (ui-renderer:
+  // "not declared by this entry's children"), so the shipped occupant — the OS
+  // chooser driver on native, the 1052-line in-app browser on browse — stays
+  // with the official owners instead of a second-hand copy.
+  assert.doesNotMatch(text, /slots\.inject\('sidebar\.workspaces\.directoryFlow'/,
+    'the sidebar hole must stay official (v0.16.0)')
   assert.doesNotMatch(text, /slots\.inject\('conversation\.hero\.workspace\.directoryFlow'/,
     'the hero hole must stay official')
   // Settings ride BOTH host eras.
@@ -675,13 +678,18 @@ test('view options: group/order menu + the two slash toggles (0.13.0)', () => {
  * picker serves the declared child hole, and a picked directory is adopted
  * with createWorkspace + startSession — the shipped browser's behavior.
  */
-test('add-workspace flow: own occupant, official host services (0.12.1)', () => {
+test('add-workspace flow: official chooser, browse Host pointed at the official flow (v0.16.0)', () => {
   const text = read('src/client.js')
-  // The occupant flow probes the composed backend and keeps BOTH interactions.
+  // The affordance probes the composed backend and rides the OFFICIAL chooser;
+  // a browse Host is pointed at the official in-app flow instead of opening a
+  // plugin-built browser (which the seat shadowing made unrenderable for good).
   assert.match(text, /pickerCapabilityNow\(\)/)
-  assert.match(text, /if \(kind === 'browse'\) \{ setPhase\('browsing'\); return undefined \}/)
-  assert.match(text, /if \(pickerRefusal\(reason\)\) \{ markPickerBrowse\(\); setPhase\('browsing'\); return \}/)
-  assert.match(text, /function DirectoryBrowseDialog\(/, 'the in-app dialog must stay available')
+  assert.match(text, /const startAddFlow = \(\) => \{/)
+  assert.match(text, /if \(kind === 'browse'\) \{ setDialog\(\{ kind: 'add-guide' \}\); return undefined \}/)
+  assert.match(text, /if \(pickerRefusal\(reason\)\) \{ setDialog\(\{ kind: 'add-guide' \}\); return \}/)
+  assert.match(text, /if \(dialog\.kind === 'add-guide'\)/)
+  assert.doesNotMatch(text, /DirectoryBrowseDialog|BetterFlow|markPickerBrowse/,
+    'the hand-made directory browser must never return')
   // Native Hosts ride the SAME official host service (no custom chooser).
   assert.match(text, /pickDirectory: \(\) => uiWorkspace\.pickDirectory\(\)/)
   // The owner adopts with create + startSession; no parent-group popup.
@@ -689,36 +697,6 @@ test('add-workspace flow: own occupant, official host services (0.12.1)', () => 
   assert.match(text, /startSession\(workspace\.workspaceId\)/)
   assert.doesNotMatch(text, /'flow\.parent'|'flow\.picked'|initialParent/,
     'the parent-group popup must not return')
-})
-/**
- * Create-folder regression (0.11.5, restored in 0.12.1): v0.11.4 folded
- * createDirectory into the success handler until only the handler was left
- * — the form closed on a resolved undefined while nothing landed on disk.
- * The seam below is driven for real; a dropped or renamed call fails here.
- */
-test('in-app browser: the create action really calls the wire verb (0.11.5)', async () => {
-  const text = read('src/client.js')
-  const start = text.indexOf('const createFolderIn =')
-  const end = text.indexOf('function DirectoryBrowseDialog(')
-  assert.ok(start !== -1 && end !== -1 && start < end, 'the create seam is missing')
-  const { createFolderIn } = new Function(text.slice(start, end) + '\nreturn { createFolderIn }')()
-
-  const calls = []
-  const created = await createFolderIn((path, name) => {
-    calls.push([path, name])
-    return Promise.resolve(path + '/' + name)
-  }, '/tmp/x', 'demo')
-  assert.equal(created, '/tmp/x/demo')
-  assert.deepEqual(calls, [['/tmp/x', 'demo']])
-  await assert.rejects(createFolderIn(() => Promise.reject(new Error('nope')), '/a', 'b'), /nope/)
-  await assert.rejects(createFolderIn(() => { throw new Error('sync') }, '/a', 'b'), /sync/)
-
-  // Wiring: the dialog's action runs through the seam exactly once.
-  const submit = text.slice(text.indexOf('const submitCreate = () => {'), text.indexOf('const head = editing'))
-  assert.ok(submit.length > 0, 'submitCreate not found')
-  assert.equal((submit.match(/createFolderIn\(createDirectory, currentPath, name\)/g) || []).length, 1,
-    'submitCreate must run the create through the seam')
-  assert.doesNotMatch(submit, /Promise\.resolve\(\)\s*\n\s*\.then\(\(created\)/, 'the dangling chain must not return')
 })
 
 

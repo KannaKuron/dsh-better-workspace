@@ -3,6 +3,31 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.16.0 — 2026-09-19
+
+**类型**:feat / fix(侧栏不再自绘目录浏览器,添加工作区改走官方交互;净减约 470 行)
+
+### 为什么
+
+官方本来就有一套应用内目录浏览器 —— `@deepseek-ai/dsh-client-ui-directory-picker-browse`(`DirectoryBrowser.tsx` 1052 行,分栏式,含「主目录 / 新建文件夹 / 编辑路径 / 显示隐藏文件」)。宿主 `@deepseek-ai/dsh-host-directory-picker-auto` 在启动时把 host 半与 client 半**成对挂载**:即便 `pick` 在 browse 后端被拒,那份浏览器照样加载并注册进两个 directoryFlow 洞。v0.11.3 只看到「browse 后端没有 pick」,误判为「官方没有界面」而自绘了一份,并以 `priority: -1` 把官方 occupant **静默遮蔽**(slot 规则:不同优先级是 shadow,不报错)。
+
+### 为什么不能简单「换回官方的」
+
+子洞渲染授权(`renderSlot`)绑定在**声明该子洞的 entry** 上 —— `ui-slots` 契约里 `children` 表是「声明 + 授权 + 运行时规格」三合一,而子洞声明**独占**(再声明直接抛 `already declared`,即 v0.12.0 事故)。官方 `WorkspaceBrowser` entry 输掉渲染竞争后仍在 ledger 上、仍持有 `sidebar.workspaces.directoryFlow` 的声明,于是接管该座位的第三方**永远**拿不到渲染它的授权(`ui-renderer` 硬检查:`not declared by this entry's children`)。**「插件自己的侧栏」与「官方对话框」在 dsh 当前版本下互斥。**
+
+### 改了什么
+
+- **删除**自绘的 `DirectoryBrowseDialog`(约 330 行)、`BetterFlow` 占用者、Windows 盘符探测、`createFolderIn` seam,以及 `.bw-browse-*` 全部样式(33 条规则)。
+- **不再占用** `sidebar.workspaces.directoryFlow`:该洞现由官方 occupant 填充,与对话空态一致。
+- 侧栏添加按钮改走 `startAddFlow()`:`native` 宿主直接用官方 OS 选择器(`uiWorkspace.pickDirectory`);`browse` 宿主弹一个极简提示,指向「新会话」页那份**纯官方**的应用内浏览器。采纳语义不变(仍由本插件 `createWorkspace` + `startSession`)。
+- 词典:21 门语言各删 13 个 `browse.*` 键,新增 `add.guide` / `add.guide.title`。
+- 冒烟测试:座位断言改为「两个 directoryFlow 洞都不占用」,并加防回归(自绘浏览器、占用者、`markPickerBrowse` 不得回归)。
+
+### 影响
+
+- **LAN / `0.0.0.0` 绑定下,侧栏不再提供应用内目录选择** —— 添加工作区请在**对话空态**(「新会话」页)使用官方入口。loopback 宿主的侧栏行为不变(仍是官方 OS 选择器)。
+- 洞交给官方后,官方 occupant 的渲染由其 owner(官方 entry)负责,本插件只读占用率门控按钮。
+
 ## v0.15.1 — 2026-09-19
 
 **类型**:fix(「按工作区」分组模式下工作区名字不渲染,用户实测 v0.13.0 起既有;对话框下拉改用官方 Menu,替换不适配主题的原生控件)

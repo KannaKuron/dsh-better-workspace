@@ -125,20 +125,8 @@ window.__ModuleLoader__.load({
       'sync.off': '当前环境不支持同步(需要宿主设置服务)',
       'sync.loading': '正在连接宿主设置…',
       'flow.creating': '正在创建…',
-      'browse.title': '选择工作区目录',
-      'browse.home': '主目录',
-      'browse.up': '上一层',
-      'browse.newFolder': '新建文件夹',
-      'browse.folderName': '文件夹名称',
-      'browse.empty': '此文件夹没有子文件夹',
-      'browse.loading': '加载中…',
-      'browse.truncated': '文件夹过多,仅显示开头部分。',
-      'browse.showHidden': '显示隐藏文件',
-      'browse.editPath': '编辑路径',
-      'browse.select': '选择此文件夹',
-      'browse.enter': '进入',
-      'browse.drives': '盘符',
-      'browse.selectNamed': '选择「{name}」',
+      'add.guide.title': "应用内添加工作区",
+      'add.guide': "此主机不提供桌面目录选择器。请到「新会话」页,用官方的「添加工作区」打开应用内浏览器。",
       'error.title': '出错了',
       'cancel': '取消',
       'create': '创建',
@@ -250,20 +238,8 @@ window.__ModuleLoader__.load({
       'sync.off': 'Sync unavailable here (requires the host settings service)',
       'sync.loading': 'Connecting to host settings…',
       'flow.creating': 'Creating…',
-      'browse.title': 'Select Workspace Directory',
-      'browse.home': 'Home',
-      'browse.up': 'Up',
-      'browse.newFolder': 'New folder',
-      'browse.folderName': 'Folder name',
-      'browse.empty': 'No subfolders here',
-      'browse.loading': 'Loading…',
-      'browse.truncated': 'Too many folders to list; only the beginning is shown.',
-      'browse.showHidden': 'Show hidden files',
-      'browse.editPath': 'Edit path',
-      'browse.select': 'Use this folder',
-      'browse.enter': 'Open',
-      'browse.drives': 'Drives',
-      'browse.selectNamed': 'Use "{name}"',
+      'add.guide.title': "Add workspace in-app",
+      'add.guide': "This host has no desktop directory chooser. Use the official \"Add workspace\" entry on the New Session page.",
       'error.title': 'Something went wrong',
       'cancel': 'Cancel',
       'create': 'Create',
@@ -383,20 +359,8 @@ window.__ModuleLoader__.load({
         'sync.off': 'المزامنة غير متاحة هنا (تحتاج خدمة إعدادات المضيف)',
         'sync.loading': 'الاتصال بإعدادات المضيف…',
         'flow.creating': 'جارٍ الإنشاء…',
-        'browse.title': 'اختيار مجلد مساحة العمل',
-        'browse.home': 'المجلد الرئيسي',
-        'browse.up': 'المستوى الأعلى',
-        'browse.newFolder': 'مجلد جديد',
-        'browse.folderName': 'اسم المجلد',
-        'browse.empty': 'لا توجد مجلدات فرعية هنا',
-        'browse.loading': 'جارٍ التحميل…',
-        'browse.truncated': 'المجلدات كثيرة جدًا؛ يُعرض الجزء الأول فقط.',
-        'browse.showHidden': 'إظهار الملفات المخفية',
-        'browse.editPath': 'تعديل المسار',
-        'browse.select': 'استخدام هذا المجلد',
-        'browse.enter': 'فتح',
-        'browse.drives': 'الأقراص',
-        'browse.selectNamed': 'استخدام "{name}"',
+        'add.guide.title': "إضافة مساحة عمل داخل التطبيق",
+        'add.guide': "لا يوفر هذا المضيف منتقي مجلدات سطح المكتب. استخدم إدخال \"إضافة مساحة عمل\" الرسمي في صفحة الجلسة الجديدة.",
         'error.title': 'حدث خطأ ما',
         'cancel': 'إلغاء',
         'create': 'إنشاء',
@@ -508,20 +472,8 @@ window.__ModuleLoader__.load({
         'sync.off': 'Hier nicht verfügbar (erfordert den Host-Einstellungsdienst)',
         'sync.loading': 'Verbindung zum Host-Einstellungsspeicher…',
         'flow.creating': 'Wird erstellt…',
-        'browse.title': 'Arbeitsbereichsordner wählen',
-        'browse.home': 'Home',
-        'browse.up': 'Übergeordnet',
-        'browse.newFolder': 'Neuer Ordner',
-        'browse.folderName': 'Ordnername',
-        'browse.empty': 'Keine Unterordner vorhanden',
-        'browse.loading': 'Wird geladen…',
-        'browse.truncated': 'Zu viele Ordner; nur der Anfang wird angezeigt.',
-        'browse.showHidden': 'Versteckte Dateien anzeigen',
-        'browse.editPath': 'Pfad bearbeiten',
-        'browse.select': 'Diesen Ordner verwenden',
-        'browse.enter': 'Öffnen',
-        'browse.drives': 'Laufwerke',
-        'browse.selectNamed': '"{name}" verwenden',
+        'add.guide.title': "Arbeitsbereich in der App hinzufügen",
+        'add.guide': "Dieser Host bietet keinen Desktop-Ordnerdialog. Nutze den offiziellen Eintrag „Arbeitsbereich hinzufügen“ auf der Seite „Neue Sitzung“.",
         'error.title': 'Etwas ist schiefgelaufen',
         'cancel': 'Abbrechen',
         'create': 'Erstellen',
@@ -633,20 +585,8 @@ window.__ModuleLoader__.load({
         'sync.off': 'Synchronisation indisponible ici (service de réglages de l\'hôte requis)',
         'sync.loading': 'Connexion aux réglages de l\'hôte…',
         'flow.creating': 'Création…',
-        'browse.title': 'Choisir le dossier de l’espace de travail',
-        'browse.home': 'Dossier personnel',
-        'browse.up': 'Niveau supérieur',
-        'browse.newFolder': 'Nouveau dossier',
-        'browse.folderName': 'Nom du dossier',
-        'browse.empty': 'Aucun sous-dossier ici',
-        'browse.loading': 'Chargement…',
-        'browse.truncated': 'Trop de dossiers ; seul le début est affiché.',
-        'browse.showHidden': 'Afficher les fichiers cachés',
-        'browse.editPath': 'Modifier le chemin',
-        'browse.select': 'Utiliser ce dossier',
-        'browse.enter': 'Ouvrir',
-        'browse.drives': 'Lecteurs',
-        'browse.selectNamed': 'Utiliser « {name} »',
+        'add.guide.title': "Ajouter un espace de travail dans l’application",
+        'add.guide': "Cet hôte n’a pas de sélecteur de dossier natif. Utilisez l’entrée officielle « Ajouter un espace de travail » sur la page Nouvelle session.",
         'error.title': 'Une erreur est survenue',
         'cancel': 'Annuler',
         'create': 'Créer',
@@ -758,20 +698,8 @@ window.__ModuleLoader__.load({
         'sync.off': 'यहाँ समन्वयन उपलब्ध नहीं (होस्ट सेटिंग सेवा चाहिए)',
         'sync.loading': 'होस्ट सेटिंग से जुड़ रहे हैं…',
         'flow.creating': 'बनाया जा रहा है…',
-        'browse.title': 'कार्यस्थान फ़ोल्डर चुनें',
-        'browse.home': 'होम',
-        'browse.up': 'ऊपर',
-        'browse.newFolder': 'नया फ़ोल्डर',
-        'browse.folderName': 'फ़ोल्डर का नाम',
-        'browse.empty': 'यहाँ कोई उप-फ़ोल्डर नहीं',
-        'browse.loading': 'लोड हो रहा है…',
-        'browse.truncated': 'बहुत अधिक फ़ोल्डर; केवल शुरुआत दिखाई गई है।',
-        'browse.showHidden': 'छिपी फ़ाइलें दिखाएँ',
-        'browse.editPath': 'पथ संपादित करें',
-        'browse.select': 'यह फ़ोल्डर चुनें',
-        'browse.enter': 'खोलें',
-        'browse.drives': 'ड्राइव',
-        'browse.selectNamed': '"{name}" चुनें',
+        'add.guide.title': "ऐप में कार्यस्थान जोड़ें",
+        'add.guide': "इस होस्ट में डेस्कटॉप फ़ोल्डर चयनकर्ता नहीं है। नए सत्र पृष्ठ पर आधिकारिक \"कार्यस्थान जोड़ें\" प्रविष्टि का उपयोग करें।",
         'error.title': 'कुछ गड़बड़ हो गई',
         'cancel': 'रद्द करें',
         'create': 'बनाएँ',
@@ -883,20 +811,8 @@ window.__ModuleLoader__.load({
         'sync.off': 'Sinkronisasi tidak tersedia di sini (perlu layanan pengaturan host)',
         'sync.loading': 'Menyambung ke pengaturan host…',
         'flow.creating': 'Membuat…',
-        'browse.title': 'Pilih folder ruang kerja',
-        'browse.home': 'Beranda',
-        'browse.up': 'Naik',
-        'browse.newFolder': 'Folder baru',
-        'browse.folderName': 'Nama folder',
-        'browse.empty': 'Tidak ada subfolder di sini',
-        'browse.loading': 'Memuat…',
-        'browse.truncated': 'Terlalu banyak folder; hanya bagian awal yang ditampilkan.',
-        'browse.showHidden': 'Tampilkan file tersembunyi',
-        'browse.editPath': 'Edit jalur',
-        'browse.select': 'Gunakan folder ini',
-        'browse.enter': 'Buka',
-        'browse.drives': 'Drive',
-        'browse.selectNamed': 'Gunakan "{name}"',
+        'add.guide.title': "Tambah ruang kerja di aplikasi",
+        'add.guide': "Host ini tidak punya pemilih folder desktop. Gunakan entri resmi \"Tambah ruang kerja\" di halaman Sesi Baru.",
         'error.title': 'Terjadi kesalahan',
         'cancel': 'Batal',
         'create': 'Buat',
@@ -1008,20 +924,8 @@ window.__ModuleLoader__.load({
         'sync.off': 'Sincronizzazione non disponibile qui (serve il servizio impostazioni dell\'host)',
         'sync.loading': 'Connessione alle impostazioni dell\'host…',
         'flow.creating': 'Creazione…',
-        'browse.title': 'Scegli cartella dell’area di lavoro',
-        'browse.home': 'Home',
-        'browse.up': 'Livello superiore',
-        'browse.newFolder': 'Nuova cartella',
-        'browse.folderName': 'Nome cartella',
-        'browse.empty': 'Nessuna sottocartella qui',
-        'browse.loading': 'Caricamento…',
-        'browse.truncated': 'Troppe cartelle; è mostrato solo l’inizio.',
-        'browse.showHidden': 'Mostra file nascosti',
-        'browse.editPath': 'Modifica percorso',
-        'browse.select': 'Usa questa cartella',
-        'browse.enter': 'Apri',
-        'browse.drives': 'Unità',
-        'browse.selectNamed': 'Usa "{name}"',
+        'add.guide.title': "Aggiungi area di lavoro nell’app",
+        'add.guide': "Questo host non ha un selettore di cartelle desktop. Usa la voce ufficiale «Aggiungi area di lavoro» nella pagina Nuova sessione.",
         'error.title': 'Si è verificato un errore',
         'cancel': 'Annulla',
         'create': 'Crea',
@@ -1133,20 +1037,8 @@ window.__ModuleLoader__.load({
         'sync.off': 'この環境では同期できません(ホスト設定サービスが必要)',
         'sync.loading': 'ホスト設定に接続中…',
         'flow.creating': '作成中…',
-        'browse.title': 'ワークスペースのフォルダーを選択',
-        'browse.home': 'ホーム',
-        'browse.up': '上の階層',
-        'browse.newFolder': '新しいフォルダー',
-        'browse.folderName': 'フォルダー名',
-        'browse.empty': 'ここにサブフォルダーはありません',
-        'browse.loading': '読み込み中…',
-        'browse.truncated': 'フォルダーが多すぎます。先頭のみ表示しています。',
-        'browse.showHidden': '隠しファイルを表示',
-        'browse.editPath': 'パスを編集',
-        'browse.select': 'このフォルダーを選択',
-        'browse.enter': '開く',
-        'browse.drives': 'ドライブ',
-        'browse.selectNamed': '「{name}」を選択',
+        'add.guide.title': "アプリ内でワークスペースを追加",
+        'add.guide': "このホストにはデスクトップのフォルダー選択画面がありません。「新規セッション」ページの公式の「ワークスペースを追加」から開いてください。",
         'error.title': 'エラーが発生しました',
         'cancel': 'キャンセル',
         'create': '作成',
@@ -1258,20 +1150,8 @@ window.__ModuleLoader__.load({
         'sync.off': '이 환경에서는 동기화할 수 없습니다(호스트 설정 서비스 필요)',
         'sync.loading': '호스트 설정에 연결하는 중…',
         'flow.creating': '만드는 중…',
-        'browse.title': '워크스페이스 폴더 선택',
-        'browse.home': '홈',
-        'browse.up': '상위',
-        'browse.newFolder': '새 폴더',
-        'browse.folderName': '폴더 이름',
-        'browse.empty': '여기에 하위 폴더가 없습니다',
-        'browse.loading': '불러오는 중…',
-        'browse.truncated': '폴더가 너무 많습니다. 앞부분만 표시합니다.',
-        'browse.showHidden': '숨김 파일 표시',
-        'browse.editPath': '경로 편집',
-        'browse.select': '이 폴더 선택',
-        'browse.enter': '열기',
-        'browse.drives': '드라이브',
-        'browse.selectNamed': '"{name}" 선택',
+        'add.guide.title': "앱에서 워크스페이스 추가",
+        'add.guide': "이 호스트에는 데스크톱 폴더 선택기가 없습니다. 새 세션 페이지의 공식 \"워크스페이스 추가\" 항목을 사용하세요.",
         'error.title': '문제가 발생했습니다',
         'cancel': '취소',
         'create': '만들기',
@@ -1383,20 +1263,8 @@ window.__ModuleLoader__.load({
         'sync.off': 'Synchronisatie is hier niet beschikbaar (hostinstellingenservice nodig)',
         'sync.loading': 'Verbinden met hostinstellingen…',
         'flow.creating': 'Bezig met aanmaken…',
-        'browse.title': 'Werkruimtemap kiezen',
-        'browse.home': 'Home',
-        'browse.up': 'Omhoog',
-        'browse.newFolder': 'Nieuwe map',
-        'browse.folderName': 'Mapnaam',
-        'browse.empty': 'Geen submappen hier',
-        'browse.loading': 'Laden…',
-        'browse.truncated': 'Te veel mappen; alleen het begin wordt getoond.',
-        'browse.showHidden': 'Verborgen bestanden tonen',
-        'browse.editPath': 'Pad bewerken',
-        'browse.select': 'Deze map gebruiken',
-        'browse.enter': 'Openen',
-        'browse.drives': 'Stations',
-        'browse.selectNamed': '"{name}" gebruiken',
+        'add.guide.title': "Werkruimte in de app toevoegen",
+        'add.guide': "Deze host heeft geen systeemmapkiezer. Gebruik de officiële optie \"Werkruimte toevoegen\" op de pagina Nieuwe sessie.",
         'error.title': 'Er is iets misgegaan',
         'cancel': 'Annuleren',
         'create': 'Aanmaken',
@@ -1508,20 +1376,8 @@ window.__ModuleLoader__.load({
         'sync.off': 'Synchronizacja niedostępna (wymaga usługi ustawień hosta)',
         'sync.loading': 'Łączenie z ustawieniami hosta…',
         'flow.creating': 'Tworzenie…',
-        'browse.title': 'Wybierz folder obszaru roboczego',
-        'browse.home': 'Katalog domowy',
-        'browse.up': 'W górę',
-        'browse.newFolder': 'Nowy folder',
-        'browse.folderName': 'Nazwa folderu',
-        'browse.empty': 'Brak podfolderów',
-        'browse.loading': 'Wczytywanie…',
-        'browse.truncated': 'Zbyt wiele folderów; pokazano tylko początek.',
-        'browse.showHidden': 'Pokaż ukryte pliki',
-        'browse.editPath': 'Edytuj ścieżkę',
-        'browse.select': 'Użyj tego folderu',
-        'browse.enter': 'Otwórz',
-        'browse.drives': 'Dyski',
-        'browse.selectNamed': 'Użyj "{name}"',
+        'add.guide.title': "Dodaj obszar roboczy w aplikacji",
+        'add.guide': "Ten host nie ma systemowego wyboru folderów. Użyj oficjalnej pozycji „Dodaj obszar roboczy” na stronie Nowa sesja.",
         'error.title': 'Coś poszło nie tak',
         'cancel': 'Anuluj',
         'create': 'Utwórz',
@@ -1633,20 +1489,8 @@ window.__ModuleLoader__.load({
         'sync.off': 'Sincronização indisponível aqui (requer o serviço de configurações do host)',
         'sync.loading': 'Conectando às configurações do host…',
         'flow.creating': 'Criando…',
-        'browse.title': 'Escolher pasta da área de trabalho',
-        'browse.home': 'Início',
-        'browse.up': 'Acima',
-        'browse.newFolder': 'Nova pasta',
-        'browse.folderName': 'Nome da pasta',
-        'browse.empty': 'Nenhuma subpasta aqui',
-        'browse.loading': 'Carregando…',
-        'browse.truncated': 'Pastas demais; apenas o início é exibido.',
-        'browse.showHidden': 'Mostrar arquivos ocultos',
-        'browse.editPath': 'Editar caminho',
-        'browse.select': 'Usar esta pasta',
-        'browse.enter': 'Abrir',
-        'browse.drives': 'Unidades',
-        'browse.selectNamed': 'Usar "{name}"',
+        'add.guide.title': "Adicionar área de trabalho no app",
+        'add.guide': "Este host não tem seletor de pastas do sistema. Use a entrada oficial \"Adicionar área de trabalho\" na página Nova sessão.",
         'error.title': 'Algo deu errado',
         'cancel': 'Cancelar',
         'create': 'Criar',
@@ -1758,20 +1602,8 @@ window.__ModuleLoader__.load({
         'sync.off': 'Синхронизация недоступна (нужна служба настроек хоста)',
         'sync.loading': 'Подключение к настройкам хоста…',
         'flow.creating': 'Создание…',
-        'browse.title': 'Выбор папки рабочей области',
-        'browse.home': 'Домашняя папка',
-        'browse.up': 'На уровень выше',
-        'browse.newFolder': 'Новая папка',
-        'browse.folderName': 'Имя папки',
-        'browse.empty': 'Здесь нет вложенных папок',
-        'browse.loading': 'Загрузка…',
-        'browse.truncated': 'Слишком много папок; показано только начало.',
-        'browse.showHidden': 'Показывать скрытые файлы',
-        'browse.editPath': 'Изменить путь',
-        'browse.select': 'Выбрать эту папку',
-        'browse.enter': 'Открыть',
-        'browse.drives': 'Диски',
-        'browse.selectNamed': 'Выбрать «{name}»',
+        'add.guide.title': "Добавить рабочую область в приложении",
+        'add.guide': "На этом хосте нет системного выбора папок. Используйте официальный пункт «Добавить рабочую область» на странице «Новый сеанс».",
         'error.title': 'Что-то пошло не так',
         'cancel': 'Отмена',
         'create': 'Создать',
@@ -1883,20 +1715,8 @@ window.__ModuleLoader__.load({
         'sync.off': 'Synk är inte tillgänglig här (kräver värduppläggets inställningstjänst)',
         'sync.loading': 'Ansluter till värduppläggets inställningar…',
         'flow.creating': 'Skapar…',
-        'browse.title': 'Välj arbetsyte-mapp',
-        'browse.home': 'Hem',
-        'browse.up': 'Upp',
-        'browse.newFolder': 'Ny mapp',
-        'browse.folderName': 'Mappnamn',
-        'browse.empty': 'Inga undermappar här',
-        'browse.loading': 'Laddar…',
-        'browse.truncated': 'För många mappar; endast början visas.',
-        'browse.showHidden': 'Visa dolda filer',
-        'browse.editPath': 'Redigera sökväg',
-        'browse.select': 'Använd den här mappen',
-        'browse.enter': 'Öppna',
-        'browse.drives': 'Enheter',
-        'browse.selectNamed': 'Använd "{name}"',
+        'add.guide.title': "Lägg till arbetsyta i appen",
+        'add.guide': "Den här värden har ingen systemmappväljare. Använd den officiella posten \"Lägg till arbetsyta\" på sidan Ny session.",
         'error.title': 'Något gick fel',
         'cancel': 'Avbryt',
         'create': 'Skapa',
@@ -2008,20 +1828,8 @@ window.__ModuleLoader__.load({
         'sync.off': 'สภาพแวดล้อมนี้ไม่รองรับการซิงก์ (ต้องมีบริการการตั้งค่าของโฮสต์)',
         'sync.loading': 'กำลังเชื่อมต่อการตั้งค่าโฮสต์…',
         'flow.creating': 'กำลังสร้าง…',
-        'browse.title': 'เลือกโฟลเดอร์เวิร์กสเปซ',
-        'browse.home': 'โฮม',
-        'browse.up': 'ขึ้นหนึ่งระดับ',
-        'browse.newFolder': 'โฟลเดอร์ใหม่',
-        'browse.folderName': 'ชื่อโฟลเดอร์',
-        'browse.empty': 'ไม่มีโฟลเดอร์ย่อยที่นี่',
-        'browse.loading': 'กำลังโหลด…',
-        'browse.truncated': 'มีโฟลเดอร์มากเกินไป แสดงเฉพาะส่วนต้น',
-        'browse.showHidden': 'แสดงไฟล์ที่ซ่อนอยู่',
-        'browse.editPath': 'แก้ไขเส้นทาง',
-        'browse.select': 'ใช้โฟลเดอร์นี้',
-        'browse.enter': 'เปิด',
-        'browse.drives': 'ไดรฟ์',
-        'browse.selectNamed': 'ใช้ "{name}"',
+        'add.guide.title': "เพิ่มเวิร์กสเปซในแอป",
+        'add.guide': "โฮสต์นี้ไม่มีตัวเลือกโฟลเดอร์ของระบบ ใช้รายการ \"เพิ่มเวิร์กสเปซ\" อย่างเป็นทางการในหน้าเซสชันใหม่",
         'error.title': 'เกิดข้อผิดพลาด',
         'cancel': 'ยกเลิก',
         'create': 'สร้าง',
@@ -2133,20 +1941,8 @@ window.__ModuleLoader__.load({
         'sync.off': 'Bu ortamda eşitleme yok (ana makine ayar servisi gerekir)',
         'sync.loading': 'Ana makine ayarlarına bağlanılıyor…',
         'flow.creating': 'Oluşturuluyor…',
-        'browse.title': 'Çalışma alanı klasörünü seç',
-        'browse.home': 'Ana dizin',
-        'browse.up': 'Üst düzey',
-        'browse.newFolder': 'Yeni klasör',
-        'browse.folderName': 'Klasör adı',
-        'browse.empty': 'Burada alt klasör yok',
-        'browse.loading': 'Yükleniyor…',
-        'browse.truncated': 'Çok fazla klasör var; yalnızca başlangıç gösteriliyor.',
-        'browse.showHidden': 'Gizli dosyaları göster',
-        'browse.editPath': 'Yolu düzenle',
-        'browse.select': 'Bu klasörü kullan',
-        'browse.enter': 'Aç',
-        'browse.drives': 'Sürücüler',
-        'browse.selectNamed': '"{name}" kullan',
+        'add.guide.title': "Uygulama içinde çalışma alanı ekle",
+        'add.guide': "Bu ana makinede masaüstü klasör seçici yok. Yeni Oturum sayfasındaki resmî \"Çalışma alanı ekle\" girişini kullanın.",
         'error.title': 'Bir şeyler ters gitti',
         'cancel': 'İptal',
         'create': 'Oluştur',
@@ -2258,20 +2054,8 @@ window.__ModuleLoader__.load({
         'sync.off': 'Môi trường này không hỗ trợ đồng bộ (cần dịch vụ cài đặt của máy chủ)',
         'sync.loading': 'Đang kết nối cài đặt máy chủ…',
         'flow.creating': 'Đang tạo…',
-        'browse.title': 'Chọn thư mục không gian làm việc',
-        'browse.home': 'Thư mục chính',
-        'browse.up': 'Lên một cấp',
-        'browse.newFolder': 'Thư mục mới',
-        'browse.folderName': 'Tên thư mục',
-        'browse.empty': 'Không có thư mục con ở đây',
-        'browse.loading': 'Đang tải…',
-        'browse.truncated': 'Quá nhiều thư mục; chỉ hiển thị phần đầu.',
-        'browse.showHidden': 'Hiện tệp ẩn',
-        'browse.editPath': 'Sửa đường dẫn',
-        'browse.select': 'Dùng thư mục này',
-        'browse.enter': 'Mở',
-        'browse.drives': 'Ổ đĩa',
-        'browse.selectNamed': 'Dùng "{name}"',
+        'add.guide.title': "Thêm không gian làm việc trong ứng dụng",
+        'add.guide': "Máy chủ này không có trình chọn thư mục trên màn hình. Dùng mục chính thức \"Thêm không gian làm việc\" ở trang Phiên mới.",
         'error.title': 'Đã xảy ra lỗi',
         'cancel': 'Hủy',
         'create': 'Tạo',
@@ -2383,20 +2167,8 @@ window.__ModuleLoader__.load({
         'sync.off': '呢個環境唔支援同步(需要宿主設定服務)',
         'sync.loading': '連接緊宿主設定…',
         'flow.creating': '建立緊…',
-        'browse.title': '揀工作區資料夾',
-        'browse.home': '主目錄',
-        'browse.up': '上一層',
-        'browse.newFolder': '新增資料夾',
-        'browse.folderName': '資料夾名稱',
-        'browse.empty': '呢個資料夾冇子資料夾',
-        'browse.loading': '載入緊…',
-        'browse.truncated': '資料夾太多,只顯示開頭部分。',
-        'browse.showHidden': '顯示隱藏檔案',
-        'browse.editPath': '編輯路徑',
-        'browse.select': '揀呢個資料夾',
-        'browse.enter': '入去',
-        'browse.drives': '磁碟',
-        'browse.selectNamed': '揀「{name}」',
+        'add.guide.title': "應用程式內新增工作區",
+        'add.guide': "呢部主機冇桌面資料夾選擇器。請去「新工作階段」頁,用官方嘅「新增工作區」開應用程式內瀏覽器。",
         'error.title': '出咗錯',
         'cancel': '取消',
         'create': '建立',
@@ -2508,20 +2280,8 @@ window.__ModuleLoader__.load({
         'sync.off': '呢個環境唔支援同步(需要宿主設定服務)',
         'sync.loading': '連接緊宿主設定…',
         'flow.creating': '建立緊…',
-        'browse.title': '揀工作區資料夾',
-        'browse.home': '主目錄',
-        'browse.up': '上一層',
-        'browse.newFolder': '新增資料夾',
-        'browse.folderName': '資料夾名稱',
-        'browse.empty': '呢個資料夾冇子資料夾',
-        'browse.loading': '載入緊…',
-        'browse.truncated': '資料夾太多,只顯示開頭部分。',
-        'browse.showHidden': '顯示隱藏檔案',
-        'browse.editPath': '編輯路徑',
-        'browse.select': '揀呢個資料夾',
-        'browse.enter': '入去',
-        'browse.drives': '磁碟',
-        'browse.selectNamed': '揀「{name}」',
+        'add.guide.title': "應用程式內新增工作區",
+        'add.guide': "呢部主機冇桌面資料夾選擇器。請去「新工作階段」頁,用官方嘅「新增工作區」開應用程式內瀏覽器。",
         'error.title': '出咗錯',
         'cancel': '取消',
         'create': '建立',
@@ -2633,20 +2393,8 @@ window.__ModuleLoader__.load({
         'sync.off': '目前環境不支援同步(需要宿主設定服務)',
         'sync.loading': '正在連線宿主設定…',
         'flow.creating': '正在建立…',
-        'browse.title': '選擇工作區資料夾',
-        'browse.home': '主目錄',
-        'browse.up': '上一層',
-        'browse.newFolder': '新增資料夾',
-        'browse.folderName': '資料夾名稱',
-        'browse.empty': '此資料夾沒有子資料夾',
-        'browse.loading': '載入中…',
-        'browse.truncated': '資料夾過多,僅顯示開頭部分。',
-        'browse.showHidden': '顯示隱藏檔案',
-        'browse.editPath': '編輯路徑',
-        'browse.select': '選擇此資料夾',
-        'browse.enter': '進入',
-        'browse.drives': '磁碟',
-        'browse.selectNamed': '選擇「{name}」',
+        'add.guide.title': "應用程式內新增工作區",
+        'add.guide': "此主機沒有桌面資料夾選擇器。請至「新工作階段」頁,用官方的「新增工作區」開啟應用程式內瀏覽器。",
         'error.title': '發生錯誤',
         'cancel': '取消',
         'create': '建立',
@@ -3272,39 +3020,6 @@ window.__ModuleLoader__.load({
       '.bw-btn-primary{background:var(--dsw-alias-brand-primary,#5b8def);border-color:transparent;color:var(--dsw-alias-brand-text,#fff)}',
       '.bw-btn-primary:hover{background:var(--dsw-alias-button-primary-hover,var(--dsw-alias-brand-primary,#5b8def))}',
       '.bw-btn:disabled{opacity:.5;cursor:default}',
-            '.bw-browse-body{min-width:360px;max-width:460px}',
-      '.bw-browse-bar{display:flex;align-items:center;gap:4px}',
-      '.bw-browse-crumbs{display:flex;align-items:center;gap:2px;flex:1;min-width:0;overflow-x:auto}',
-      '.bw-browse-crumb{border:none;background:transparent;color:var(--dsw-alias-label-secondary,#b8b8b8);font:inherit;font-size:12px;padding:2px 5px;border-radius:4px;cursor:pointer;white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis;flex:none}',
-      '.bw-browse-crumb:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12));color:var(--dsw-alias-label-primary,#e6e6e6)}',
-      '.bw-browse-crumb:disabled{opacity:.4;cursor:default}',
-      '.bw-browse-current{color:var(--dsw-alias-label-primary,#e6e6e6);font-size:12px;padding:2px 5px;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '.bw-browse-nav{font-size:13px;line-height:1}',
-      '.bw-browse-edit{flex:none;display:grid;place-items:center;width:24px;height:24px;padding:0;border:none;border-radius:5px;background:transparent;color:var(--dsw-alias-label-tertiary,#9a9a9a);cursor:pointer}',
-      '.bw-browse-edit:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12));color:var(--dsw-alias-label-primary,#e6e6e6)}',
-      '.bw-browse-edit svg{width:14px;height:14px}',
-      '.bw-browse-edit-row{display:flex;gap:6px;align-items:center}',
-      '.bw-browse-list{display:flex;flex-direction:column;gap:1px;height:240px;overflow:auto;padding:4px;box-sizing:border-box;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.22));border-radius:8px;background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.06))}',
-      '.bw-browse-row{display:flex;align-items:center;gap:8px;width:100%;flex:none;text-align:left;border:none;background:transparent;color:var(--dsw-alias-label-primary,#e6e6e6);font:inherit;font-size:12.5px;padding:5px 8px;border-radius:6px;cursor:pointer;user-select:none}',
-      '.bw-browse-row:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12))}',
-      '.bw-browse-row:focus-visible{outline:2px solid var(--dsw-alias-brand-primary,#5b8def);outline-offset:-2px}',
-      '.bw-browse-row svg{width:15px;height:15px;flex:none;color:var(--dsw-alias-label-secondary,#b8b8b8)}',
-      '.bw-browse-row-on{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12));box-shadow:inset 0 0 0 1px var(--dsw-alias-brand-primary,#5b8def)}',
-      '.bw-browse-open{flex:none;width:22px;height:22px;padding:0;border:none;border-radius:5px;background:transparent;color:var(--dsw-alias-label-tertiary,#9a9a9a);font:inherit;font-size:15px;line-height:1;cursor:pointer}',
-      '.bw-browse-open:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.16));color:var(--dsw-alias-label-primary,#e6e6e6)}',
-      '.bw-browse-drives{display:flex;align-items:center;gap:4px;margin-left:auto}',
-      '.bw-browse-drive{min-width:30px;padding:3px 6px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));border-radius:5px;background:transparent;color:var(--dsw-alias-label-secondary,#b8b8b8);font:inherit;font-size:11.5px;cursor:pointer}',
-      '.bw-browse-drive:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12));color:var(--dsw-alias-label-primary,#e6e6e6)}',
-      '.bw-browse-drive-on{border-color:var(--dsw-alias-brand-primary,#5b8def);color:var(--dsw-alias-label-primary,#e6e6e6)}',
-      '.bw-browse-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '.bw-browse-note{font-size:12px;color:var(--dsw-alias-label-tertiary,#9a9a9a);padding:10px 8px;text-align:center}',
-      '.bw-browse-new-row{display:flex;gap:6px;align-items:center}',
-      '.bw-browse-tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap}',
-      '.bw-browse-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px}',
-      '.bw-browse-tool{border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));background:transparent;color:var(--dsw-alias-label-secondary,#b8b8b8);font:inherit;font-size:12px;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap}',
-      '.bw-browse-tool:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12));color:var(--dsw-alias-label-primary,#e6e6e6)}',
-      '.bw-browse-tool:disabled{opacity:.45;cursor:default}',
-      '.bw-browse-tool-on{border-color:var(--dsw-alias-brand-primary,#5b8def);color:var(--dsw-alias-label-primary,#e6e6e6)}',
 '.bw-error-text{font-size:12.5px;color:var(--dsw-alias-state-error-primary,#f85149);word-break:break-all;max-width:380px}',
       '.bw-dialog-input-row{display:flex;gap:6px;align-items:center}',
       '.bw-glow-row{display:flex;align-items:center;gap:10px}',
@@ -3558,10 +3273,17 @@ window.__ModuleLoader__.load({
     // headless) gets `browse`, whose wire verbs are list/createDirectory ONLY
     // and whose `pick` is refused BY DESIGN with `directory-picker/unavailable`
     // ("... needs the native capability; the composed picker serves browse").
-    // A flow that hard-assumed the OS chooser therefore dies on every LAN bind
-    // and no workspace can be added at all. Probe the composed backend once per
-    // page and keep BOTH interactions: the OS chooser, and an in-app browser
-    // driven by the browse primitives (see DirectoryBrowseDialog).
+    // v0.16.0: the sidebar no longer draws its own in-app browser. The browse
+    // backend SHIPS one (dsh-client-ui-directory-picker-browse, mounted as a
+    // host+surface pair, its client half registering into both directory-flow
+    // holes) — but it can only be rendered by the entry that DECLARED the
+    // child hole (the shipped WorkspaceBrowser), and a child declaration is
+    // exclusive, so shadowing that seat forfeits the authorization for good
+    // (ui-renderer: "not declared by this entry's children"). A native Host
+    // still gets the official OS chooser; a browse Host is pointed at the
+    // official in-app flow in the conversation empty state instead of a
+    // second-hand imitation. The probe stays: it decides which of the two
+    // this page gets, and a refused pick still classifies the backend.
     const pickerState = { kind: 'unknown', probe: null, api: null }
     /**
      * True for the refusal a Host serving the OTHER capability throws: the wire
@@ -3601,11 +3323,6 @@ window.__ModuleLoader__.load({
         return kind
       })
       return pickerState.probe
-    }
-    /** Commit a browse verdict the flow discovered the hard way (a refused pick). */
-    const markPickerBrowse = () => {
-      pickerState.kind = 'browse'
-      pickerState.probe = Promise.resolve('browse')
     }
 
     /* ============================ flow dialog ========================= */
@@ -3805,404 +3522,7 @@ window.__ModuleLoader__.load({
       }
     }
 
-    /**
-     * The in-app directory browser: the interaction a `browse`-composed Host can
-     * actually serve. It appears when the probe (or a refused pick) proves the
-     * OS chooser is not this Host's backend — a LAN/all-interfaces bind, an SSH
-     * launch, a headless host — where `pick` is refused by design and
-     * list/createDirectory are the only wire verbs. One level at a time: a
-     * clickable Home-rooted breadcrumb chain, an editable path, an inline
-     * new-folder row and the hidden-entry toggle; the listed level (or any
-     * ancestor crumb) is the pick. Browse failures stay inside the dialog — the
-     * owner's error surface belongs to the pick/create conversation, and a
-     * denied listing must never close the flow.
-     */
-    /**
-     * Page-lifetime cache of the Windows drive letters this Host actually
-     * serves. The browse API can only list a path, so the first open probes the
-     * usual letters once (six cheap listings, a missing drive fails silently)
-     * and every later open renders the chips straight from here.
-     */
-    const browseDrives = { probed: false, probing: false, list: [] }
 
-    /**
-     * Run the one wire verb that actually puts a folder on disk and hand back
-     * the created path. This is deliberately a module-level seam the smoke suite
-     * drives for real: v0.11.4 folded the call into the success handler and
-     * dropped it, so the form closed on a resolved `undefined` — no request, no
-     * error, no folder. A string-level assertion cannot see that; calling it can.
-     */
-    const createFolderIn = (createDirectory, path, name) => Promise.resolve()
-      .then(() => createDirectory(path, name))
-
-    function DirectoryBrowseDialog(props) {
-      const { open, busy, listDirectory, createDirectory, onPick, onClose, t } = props
-      const [listing, setListing] = React.useState(null)
-      const [loading, setLoading] = React.useState(false)
-      const [error, setError] = React.useState('')
-      const [showHidden, setShowHidden] = React.useState(false)
-      const [editing, setEditing] = React.useState(false)
-      const [draft, setDraft] = React.useState('')
-      const [creating, setCreating] = React.useState(false)
-      const [createName, setCreateName] = React.useState('')
-      const [createBusy, setCreateBusy] = React.useState(false)
-      const [createError, setCreateError] = React.useState('')
-      const [selected, setSelected] = React.useState('')
-      const [drives, setDrives] = React.useState(browseDrives.list)
-      // Guards a superseded scan: a slow level must not overwrite a newer one.
-      const seqRef = React.useRef(0)
-      const crumbsRef = React.useRef(null)
-
-      const go = (path, keepSelected) => {
-        const seq = seqRef.current + 1
-        seqRef.current = seq
-        setLoading(true)
-        setError('')
-        if (keepSelected !== true) setSelected('')
-        Promise.resolve()
-          .then(() => listDirectory(path, undefined))
-          .then((next) => {
-            if (seqRef.current !== seq) return
-            setListing(next || null)
-            setLoading(false)
-          })
-          .catch((reason) => {
-            if (seqRef.current !== seq) return
-            setLoading(false)
-            setError(messageOf(reason))
-          })
-      }
-
-      React.useEffect(() => {
-        if (!open) return undefined
-        seqRef.current += 1
-        setListing(null)
-        setError('')
-        setEditing(false)
-        setCreating(false)
-        setCreateName('')
-        setCreateBusy(false)
-        setCreateError('')
-        setShowHidden(false)
-        setSelected('')
-        go(undefined)
-        return () => { seqRef.current += 1 }
-      }, [open])
-
-      const currentPath = listing && typeof listing.path === 'string' ? listing.path : ''
-      const homePath = listing && typeof listing.home === 'string' ? listing.home : ''
-      const windowsHost = homePath.indexOf('\\') !== -1
-      const hasListing = listing !== null
-
-      // Windows drives are separate filesystem roots and the browse API can only
-      // list a path, so probe the usual letters once per page (cached above) and
-      // offer the ones that answered. A drive nobody probed is still reachable
-      // through the path editor, which is the only general answer anyway.
-      React.useEffect(() => {
-        if (!open || !hasListing || !windowsHost) return undefined
-        if (browseDrives.probed || browseDrives.probing) {
-          if (browseDrives.list.length > 0) setDrives(browseDrives.list)
-          return undefined
-        }
-        browseDrives.probing = true
-        let alive = true
-        const letters = ['C:', 'D:', 'E:', 'F:', 'G:', 'H:']
-        Promise.all(letters.map((letter) => Promise.resolve()
-          .then(() => listDirectory(letter + '\\', undefined))
-          .then(() => letter, () => null)))
-          .then((found) => {
-            browseDrives.list = found.filter(Boolean)
-            browseDrives.probed = true
-            browseDrives.probing = false
-            if (alive) setDrives(browseDrives.list)
-          }, () => { browseDrives.probing = false })
-        return () => { alive = false }
-      }, [open, hasListing, windowsHost])
-
-      // A deep path must show its TAIL — that is where you are — so the chain
-      // keeps its right edge in view instead of cutting the last crumb off.
-      React.useEffect(() => {
-        const node = crumbsRef.current
-        if (node) node.scrollLeft = node.scrollWidth
-      }, [listing])
-
-      if (!open) return null
-
-      // The whole ancestry from the filesystem ROOT: rooting the chain at Home
-      // (the official dialog's choice) hides where the listed level actually is,
-      // and the drive crumb answers "which disk am I on" at a glance.
-      const crumbs = listing && Array.isArray(listing.crumbs) ? listing.crumbs : []
-      const parentPath = crumbs.length > 1 ? crumbs[crumbs.length - 2].path : ''
-      const entries = (listing && Array.isArray(listing.entries) ? listing.entries : [])
-        .filter((entry) => showHidden || !entry.hidden)
-      const selectedEntry = entries.find((entry) => entry.path === selected) || null
-      const targetPath = selectedEntry ? selectedEntry.path : currentPath
-
-      const submitDraft = () => {
-        const path = draft.trim()
-        setEditing(false)
-        if (path === '') { go(undefined); return }
-        go(path)
-      }
-      const submitCreate = () => {
-        const name = createName.trim()
-        if (name === '' || createBusy || currentPath === '') return
-        setCreateBusy(true)
-        setCreateError('')
-        createFolderIn(createDirectory, currentPath, name)
-          .then((created) => {
-            setCreateBusy(false)
-            setCreating(false)
-            setCreateName('')
-            // Land on the folder just made: it is almost always the one the
-            // operator wants to adopt next.
-            if (typeof created === 'string' && created !== '') setSelected(created)
-            go(currentPath, true)
-          })
-          .catch((reason) => {
-            setCreateBusy(false)
-            setCreateError(messageOf(reason))
-          })
-      }
-
-      const head = editing
-        ? E('div', { className: 'bw-browse-edit-row' },
-          E('input', {
-            className: 'bw-input',
-            value: draft,
-            autoFocus: true,
-            spellCheck: false,
-            placeholder: currentPath,
-            onChange: (e) => setDraft(e.target.value),
-            onKeyDown: (e) => {
-              if (e.key === 'Enter') submitDraft()
-              else if (e.key === 'Escape') setEditing(false)
-            },
-          }),
-          E(BTN, { variant: 'outline', onClick: () => setEditing(false) }, t('cancel')),
-        )
-        : E('div', { className: 'bw-browse-bar' },
-          E('button', {
-            type: 'button',
-            className: 'bw-browse-crumb bw-browse-nav',
-            title: t('browse.up'),
-            'aria-label': t('browse.up'),
-            disabled: parentPath === '',
-            onClick: () => { if (parentPath !== '') go(parentPath) },
-          }, '↑'),
-          E('div', { className: 'bw-browse-crumbs', ref: crumbsRef },
-            crumbs.map((crumb, index) => (index === crumbs.length - 1
-              ? E('span', { key: crumb.path, className: 'bw-browse-crumb bw-browse-current', title: crumb.path }, crumb.name)
-              : E('button', {
-                key: crumb.path,
-                type: 'button',
-                className: 'bw-browse-crumb',
-                title: crumb.path,
-                onClick: () => go(crumb.path),
-              }, crumb.name))),
-          ),
-          E('button', {
-            type: 'button',
-            className: 'bw-browse-edit',
-            title: t('browse.editPath'),
-            'aria-label': t('browse.editPath'),
-            onClick: () => { setDraft(currentPath); setEditing(true) },
-          }, icon('IconEditOutline16')),
-        )
-
-      // One click SELECTS a row (the footer button then adopts it — no need to
-      // step inside just to pick a folder), a double click or the row's chevron
-      // enters it. Touch needs the chevron: a double tap is not a gesture.
-      const rows = entries.map((entry) => E('div', {
-        key: entry.path,
-        className: cls('bw-browse-row', selected === entry.path && 'bw-browse-row-on'),
-        title: entry.path,
-        role: 'button',
-        tabIndex: 0,
-        onClick: () => setSelected((current) => (current === entry.path ? '' : entry.path)),
-        onDoubleClick: () => go(entry.path),
-        onKeyDown: (event) => {
-          if (event.key === 'Enter') go(entry.path)
-          else if (event.key === ' ') { event.preventDefault(); setSelected((current) => (current === entry.path ? '' : entry.path)) }
-        },
-      },
-        icon('IconFolderClose16'),
-        E('span', { className: 'bw-browse-name' }, entry.name),
-        E('button', {
-          type: 'button',
-          className: 'bw-browse-open',
-          title: t('browse.enter'),
-          'aria-label': t('browse.enter'),
-          onClick: (event) => { event.stopPropagation(); go(entry.path) },
-        }, '›'),
-      ))
-
-      const body = loading
-        ? E('div', { className: 'bw-browse-note' }, t('browse.loading'))
-        : rows.length > 0
-          ? rows
-          : E('div', { className: 'bw-browse-note' }, t('browse.empty'))
-
-      const newRow = creating
-        ? E('div', { className: 'bw-browse-new-row' },
-          E('input', {
-            className: 'bw-input',
-            value: createName,
-            autoFocus: true,
-            spellCheck: false,
-            placeholder: t('browse.folderName'),
-            disabled: createBusy,
-            onChange: (e) => setCreateName(e.target.value),
-            onKeyDown: (e) => {
-              if (e.key === 'Enter') submitCreate()
-              else if (e.key === 'Escape') { setCreating(false); setCreateError('') }
-            },
-          }),
-          E(BTN, {
-            variant: 'outline',
-            disabled: createBusy,
-            onClick: () => { setCreating(false); setCreateError('') },
-          }, t('cancel')),
-          E(BTN, { variant: 'primary', onClick: submitCreate, disabled: createBusy },
-            createBusy ? t('flow.creating') : t('create')),
-        )
-        : null
-
-      // The dialog is deliberately narrower than the official browser, so the
-      // two browsing tools sit on their own row above the list instead of
-      // sharing the footer with the commit pair (they used to wrap there).
-      const tools = E('div', { className: 'bw-browse-tools' },
-        E('button', {
-          type: 'button',
-          className: cls('bw-browse-tool', currentPath !== '' && currentPath === homePath && 'bw-browse-tool-on'),
-          disabled: homePath === '' || currentPath === homePath,
-          onClick: () => { if (homePath !== '') go(homePath) },
-        }, t('browse.home')),
-        E('button', {
-          type: 'button',
-          className: cls('bw-browse-tool', showHidden && 'bw-browse-tool-on'),
-          'aria-pressed': showHidden ? 'true' : 'false',
-          onClick: () => setShowHidden((value) => !value),
-        }, t('browse.showHidden')),
-        E('button', {
-          type: 'button',
-          className: 'bw-browse-tool',
-          disabled: creating || currentPath === '',
-          onClick: () => { setCreating(true); setCreateName(''); setCreateError('') },
-        }, t('browse.newFolder')),
-        drives.length > 1
-          ? E('div', {
-            className: 'bw-browse-drives',
-            title: t('browse.drives'),
-            role: 'group',
-            'aria-label': t('browse.drives'),
-          }, drives.map((drive) => E('button', {
-            key: drive,
-            type: 'button',
-            className: cls('bw-browse-drive', currentPath.slice(0, 2).toUpperCase() === drive && 'bw-browse-drive-on'),
-            title: drive + '\\',
-            onClick: () => go(drive + '\\'),
-          }, drive)))
-          : null,
-      )
-
-      const footer = E('div', { className: 'bw-browse-actions' },
-        E(BTN, { variant: 'outline', onClick: onClose, disabled: busy === true }, t('cancel')),
-        E(BTN, {
-          variant: 'primary',
-          disabled: busy === true || targetPath === '',
-          onClick: () => { if (targetPath !== '') onPick(targetPath) },
-        }, selectedEntry !== null ? t('browse.selectNamed', { name: selectedEntry.name }) : t('browse.select')),
-      )
-
-      return E(ui.Modal, {
-        open: true,
-        onClose: () => { if (busy !== true) onClose() },
-        closeLabel: t('close'),
-        title: t('browse.title'),
-        footer,
-      },
-        E('div', { className: 'bw-modal-body bw-browse-body' },
-          head,
-          createError !== '' ? E('div', { className: 'bw-error-text', role: 'alert' }, createError) : null,
-          tools,
-          newRow,
-          E('div', { className: 'bw-browse-list', role: 'list' }, body),
-          listing && listing.truncated === true ? E('div', { className: 'bw-hint' }, t('browse.truncated')) : null,
-          error !== '' ? E('div', { className: 'bw-error-text', role: 'alert' }, error) : null,
-        ),
-        StyleNode())
-    }
-
-    /**
-     * The add-workspace picking interaction as the sidebar hole's OCCUPANT
-     * (v0.12.1): the official flow cannot be rendered here — a child-hole
-     * declaration is exclusive and the shipped browser entry, though it
-     * loses the render race, still owns 'sidebar.workspaces.directoryFlow's
-     * declaration, so re-declaring it throws and renderSlot authorization
-     * is runtime-enforced. This flow therefore probes the composed backend
-     * (v0.11.3 discipline): a native Host gets its OS chooser through the
-     * SAME official host service (uiWorkspace.pickDirectory), a browse Host
-     * gets the in-app DirectoryBrowseDialog (the v0.11.4/0.11.5 interaction
-     * this plugin polished). A picked path is adopted by the owner with
-     * createWorkspace + startSession — no parent-group popup (groups derive
-     * from names; rename or drag to group). The conversation hero flow stays
-     * purely official: this plugin does NOT occupy that hole.
-     */
-    function BetterFlow(props) {
-      const { open, busy, onPicked, onCancel, onError, pickDirectory, listDirectory, createDirectory, t } = props
-      const [phase, setPhase] = React.useState('idle') // idle | picking | browsing
-      // All hooks run before any early return: the flow unmounts while
-      // closed, but its hook sequence must stay stable.
-      React.useEffect(() => {
-        if (!open) {
-          setPhase('idle')
-          return
-        }
-        let alive = true
-        setPhase('picking')
-        // Which backend this Host composes decides the interaction: browse
-        // renders the in-app browser directly (its pick is refused by
-        // design, so trying the chooser first would only surface an error);
-        // native opens the OS chooser; an unresolved verdict still tries the
-        // chooser so a silent probe never changes the fallback.
-        pickerCapabilityNow()
-          .then((kind) => {
-            if (!alive) return undefined
-            if (kind === 'browse') { setPhase('browsing'); return undefined }
-            return Promise.resolve()
-              .then(() => pickDirectory())
-              .then((path) => {
-                if (!alive) return
-                if (!path) { onCancel(); return }
-                onPicked(String(path))
-              })
-          })
-          .catch((reason) => {
-            if (!alive) return
-            // A refusal is a backend fact, not a failure: this Host serves
-            // the browse verbs, so switch interactions instead of erroring.
-            if (pickerRefusal(reason)) { markPickerBrowse(); setPhase('browsing'); return }
-            setPhase('idle')
-            onError(messageOf(reason))
-          })
-        return () => { alive = false }
-      }, [open])
-
-      if (!open) return null
-      if (phase === 'browsing') {
-        return E(DirectoryBrowseDialog, {
-          open: true,
-          busy: busy === true,
-          listDirectory,
-          createDirectory,
-          onPick: (path) => onPicked(String(path)),
-          onClose: onCancel,
-          t,
-        })
-      }
-      return null
-    }
 
 
     /* ============================== rows ============================== */
@@ -5139,15 +4459,12 @@ window.__ModuleLoader__.load({
 
       const [query, setQuery] = React.useState('')
       const [searchOpen, setSearchOpen] = React.useState(false)
-      const [flowOpen, setFlowOpen] = React.useState(false)
       const [flowBusy, setFlowBusy] = React.useState(false) // createWorkspace in flight after a pick
-      // Occupancy of this surface's directory-flow hole (our own picking
-      // flow fills it): gates the add affordance, and an occupant that
-      // unloads mid-interaction withdraws an open flow.
+      // Occupancy of this surface's directory-flow hole. Since v0.16.0 the
+      // occupant is the official backend's client half (native: a renderless
+      // OS-chooser driver; browse: the shipped in-app browser), so this only
+      // gates the add affordance: an uncomposed host has no way to pick at all.
       const flowAvailable = typeof useDirectoryFlow === 'function' ? useDirectoryFlow(occupied => occupied) : false
-      React.useEffect(() => {
-        if (flowOpen && !flowAvailable) setFlowOpen(false)
-      }, [flowOpen, flowAvailable])
       const [dialog, setDialog] = React.useState(null) // { kind, ... }
       const [ctx, setCtx] = React.useState(null) // context menu { kind, payload, x, y }
       const [customize, setCustomize] = React.useState(null) // { kind, entryKey, name }
@@ -6249,7 +5566,7 @@ window.__ModuleLoader__.load({
         return E('div', { className: 'bw-rail' },
           StyleNode(),
           E('button', { type: 'button', className: 'bw-rail-btn', 'aria-label': t('rail.search'), onClick: () => { expandSidebar(); setSearchOpen(true) } }, icon('IconSearchOutline16', 18)),
-          flowAvailable ? E('button', { type: 'button', className: 'bw-rail-btn', 'aria-label': t('rail.add'), onClick: () => { expandSidebar(); setFlowOpen(true) } }, icon('IconProjectAddOutline16', 18)) : null,
+          flowAvailable ? E('button', { type: 'button', className: 'bw-rail-btn', 'aria-label': t('rail.add'), onClick: () => { expandSidebar(); startAddFlow() }, disabled: flowBusy }, icon('IconProjectAddOutline16', 18)) : null,
         )
       }
 
@@ -6314,6 +5631,20 @@ window.__ModuleLoader__.load({
           onClose: () => setDialog(null),
           t,
         })
+        if (dialog.kind === 'add-guide') return E(ui.Modal, {
+          key: 'add-guide',
+          open: true,
+          onClose: () => setDialog(null),
+          closeLabel: t('close'),
+          title: t('add.guide.title'),
+          footer: E('div', { className: 'bw-modal-actions' },
+            E(BTN, { variant: 'primary', onClick: () => setDialog(null) }, t('confirm')),
+          ),
+        },
+          E('div', { className: 'bw-modal-body' },
+            E('div', { className: 'bw-hint' }, t('add.guide')),
+          ),
+        )
         return null
       })()
 
@@ -6321,25 +5652,37 @@ window.__ModuleLoader__.load({
       // (busy) until the Host answers, then startSession — exactly what the
       // shipped browser does after the same pick. Groups never ride this
       // flow (v0.12.0+): rename or drag to group instead.
-      const adoptDirectory = (path) => Promise.resolve()
-        .then(() => createWorkspace({ path: String(path) }))
-        .then((workspace) => {
-          setFlowOpen(false)
-          if (workspace && workspace.workspaceId && typeof startSession === 'function') startSession(workspace.workspaceId)
-        })
-        .catch((reason) => {
-          fail(messageOf(reason))
-          setFlowOpen(false)
-        })
-      const flowOwner = {
-        open: flowOpen,
-        busy: flowBusy,
-        onPicked: (path) => {
-          setFlowBusy(true)
-          Promise.resolve(adoptDirectory(path)).then(() => setFlowBusy(false))
-        },
-        onCancel: () => setFlowOpen(false),
-        onError: fail,
+      // Adopt keeps the busy flag up until the Host answers, then startSession —
+      // exactly what the shipped browser does after the same pick. Groups never
+      // ride this flow (v0.12.0+): rename or drag to group instead.
+      const adoptDirectory = (path) => {
+        setFlowBusy(true)
+        return Promise.resolve()
+          .then(() => createWorkspace({ path: String(path) }))
+          .then((workspace) => {
+            if (workspace && workspace.workspaceId && typeof startSession === 'function') startSession(workspace.workspaceId)
+          })
+          .catch((reason) => { fail(messageOf(reason)) })
+          .then(() => setFlowBusy(false))
+      }
+
+      // v0.16.0: the sidebar add affordance rides the OFFICIAL chooser only.
+      // A `browse` host refuses that pick by design, so the click explains where
+      // the official in-app flow lives instead of opening a plugin-built copy —
+      // the shipped dialog cannot be rendered from here (see the capability block).
+      const startAddFlow = () => {
+        Promise.resolve(pickerCapabilityNow())
+          .then((kind) => {
+            if (kind === 'browse') { setDialog({ kind: 'add-guide' }); return undefined }
+            return Promise.resolve()
+              .then(() => pickDirectory())
+              .then((path) => (path ? adoptDirectory(String(path)) : undefined))
+              .catch((reason) => {
+                if (pickerRefusal(reason)) { setDialog({ kind: 'add-guide' }); return }
+                fail(messageOf(reason))
+              })
+          })
+          .catch((reason) => { fail(messageOf(reason)) })
       }
 
       return E('div', { className: 'bw-root' },
@@ -6376,22 +5719,9 @@ window.__ModuleLoader__.load({
             t,
           }),
           E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('search.placeholder'), onClick: () => setSearchOpen(v => !v) }, icon('IconSearchOutline16')),
-          flowAvailable ? E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('add'), onClick: () => setFlowOpen(true) }, icon('IconProjectAddOutline16')) : null,
+          flowAvailable ? E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('add'), onClick: startAddFlow, disabled: flowBusy }, icon('IconProjectAddOutline16')) : null,
         ),
         E('div', { ref: treeRef, className: 'bw-tree', role: 'tree', 'aria-label': t('title') }, bodyRows),
-        // Our own occupant serves the sidebar hole (direct composition, the
-        // same props conversation the official owner share defines).
-        E(BetterFlow, {
-          open: flowOpen,
-          busy: flowBusy,
-          onPicked: flowOwner.onPicked,
-          onCancel: flowOwner.onCancel,
-          onError: flowOwner.onError,
-          pickDirectory,
-          listDirectory,
-          createDirectory,
-          t,
-        }),
         dialogElement,
         (ctx !== null && typeof ui.Menu === 'function') ? E(ui.Menu, {
           // Right-click opens the SAME menu surface the official ⋯ button
@@ -6580,15 +5910,6 @@ window.__ModuleLoader__.load({
         },
       })
 
-      // Occupant inject face for the sidebar hole (v0.12.1): the picking
-      // primitives BetterFlow needs. The conversation hero hole is
-      // deliberately NOT occupied — that flow stays purely official.
-      const flowInjected = () => ({
-        pickDirectory: () => uiWorkspace.pickDirectory(),
-        listDirectory: (path, signal) => uiWorkspace.listDirectory(path, signal),
-        createDirectory: (path, name) => uiWorkspace.createDirectory(path, name),
-        hooks: { directoryFlow: flowSource(slots, 'sidebar.workspaces.directoryFlow') },
-      })
 
       // Registration helper: a thrown register (semantics drift, vanishing
       // hole declaration mid-transition) degrades this one seat, never the
@@ -6633,15 +5954,6 @@ window.__ModuleLoader__.load({
         console.warn('[dsh-better-workspace] settings scope bind failed; sync stays local', error)
         prefsScopeRef = null
       }
-
-      // The sidebar hole occupation itself (v0.12.1): priority -1 shadows
-      // the official composed picker inside the hole — the hero hole keeps
-      // the official occupant, so the conversation flow stays stock.
-      slots.inject('sidebar.workspaces.directoryFlow', guarded(
-        'sidebar.workspaces.directoryFlow',
-        { name: 'sidebar.workspaces.directoryFlow', inject: flowInjected, locale: NS, priority: -1 },
-        BetterFlow,
-      ))
 
       // Settings → Plugins card only (the tab dispatches the intersection of
       // served namespaces — registered host-side — and settings.plugin.item

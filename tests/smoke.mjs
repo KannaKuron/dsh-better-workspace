@@ -757,7 +757,10 @@ test('group move: one shared menu entry on every row kind, one dialog for both e
 
 test('group move: the header "New group" button doubles as the drop slot', () => {
   const text = read('src/client.js')
-  assert.match(text, /'aria-label': t\('group\.new'\)/, 'header button is labelled')
+  // v0.17.0: the button is an ICON now and its label tracks the live layers.
+  assert.match(text, /'aria-label': newGroupLabel\(\)/, 'header button is labelled by the live layers')
+  assert.match(text, /const newGroupLabel = \(\) => \(workspaceSlash && sessionSlash \? t\('group\.new\.both'\)/, 'both layers live -> "session or workspace"')
+  assert.match(text, /\}, icon\('IconFolderOpen16', 16\)\) : null,/, 'rendered as an icon button')
   // The button exists only while at least one name layer is ON.
   assert.match(text, /\(workspaceSlash \|\| sessionSlash\) \? E\('button', \{/, 'header button follows the switches')
   assert.match(text, /const groupDropTarget = \(\) => drag !== null && drag\.over && drag\.over\.kind === 'newgroup'/)
@@ -769,7 +772,10 @@ test('group move: the header "New group" button doubles as the drop slot', () =>
   // during render: collectGroupPaths covers every workspace + session title,
   // so a render-time call would redo that walk on every store tick.
   assert.match(text, /groupPaths: collectGroupPaths\(target\.kind\)/, 'menu / drop snapshot the datalist source')
-  assert.match(text, /groupPaths: collectGroupPaths\(pickerKindOf\(\)\)/, 'header picker snapshots the live layers')
+  assert.match(text, /const pickerKindOf = \(\) => workspaceSlash && sessionSlash \? undefined/, 'picker kind still narrows to the enabled layers (drag path)')
+  // v0.17.0: the header click opens the NEW-group dialog, not the move picker.
+  assert.match(text, /setDialog\(\{ kind: 'group-new', layer: defaultNewGroupLayer\(\) \}\)/, 'header opens the new-group dialog')
+  assert.match(text, /const defaultNewGroupLayer = \(\) => \(workspaceSlash && !sessionSlash \? 'workspace' : 'session'\)/, 'a disk-only host defaults to the session layer')
   assert.match(text, /const pickerKindOf = \(\) => workspaceSlash && sessionSlash \? undefined : \(workspaceSlash \? 'workspace' : 'session'\)/, 'picker narrows to the enabled layers')
   assert.match(text, /groupPaths: dialog\.groupPaths \|\| \[\]/, 'render reads the snapshot instead of re-walking')
   assert.match(text, /\.bw-drop-into-strong\{outline:2px solid var\(--dsw-alias-brand-primary/, 'drop highlight')
@@ -850,7 +856,7 @@ test('current session: mainView retention preferred, wire current as the 0.1.5-r
  */
 test('workspace "/" grouping: opt-in default, pre-0.13 snapshots stay on', () => {
   const text = read('src/client.js')
-  assert.match(text, /sessionTitleSlash: true, workspaceTitleSlash: false \}\)/, 'init ships the new default OFF')
+  assert.match(text, /workspaceTitleSlash: false, folders: \{ ws: \{\}, sess: \{\} \} \}\)/, 'init ships the new default OFF plus the declared-group bags')
   assert.match(text, /const workspaceSlashOf = \(value\) => value === undefined \? true : value === true/, 'tri-state read')
   const start = text.indexOf('const workspaceSlashOf = (value) =>')
   const end = text.indexOf('\n', start)
@@ -947,3 +953,117 @@ test('official "workspace" grouping: flat rows carry a label', () => {
 
 
 
+
+/**
+ * Declared-empty groups (v0.17.0). A group used to be a pure projection of "/"
+ * in member titles, so a member-less one could not be represented at all and
+ * "create a group" had nothing to write. The store gained a `folders` bag for
+ * the declaration; these tests drive the real reducer and the real tree walk.
+ */
+test('declared groups: the store writes and prunes them, descendants included (v0.17.0)', () => {
+  const text = read('src/client.js')
+  const start = text.indexOf('        addFolder: (d, kind, scope, path) => {')
+  const end = text.indexOf('\n      },', start)
+  assert.ok(start !== -1 && end > start, 'the two folder actions sit in the store')
+  // The path helper is a module-scope sibling of the store, so inject it
+  // separately: the slice between it and the actions crosses the store's head.
+  const helperFrom = text.indexOf('    const declaredPathOf = (raw) =>')
+  const helperTo = text.indexOf('\n\n', helperFrom)
+  const helper = text.slice(helperFrom, helperTo)
+  const { addFolder, removeFolder } = new Function(helper + '\nreturn {' + text.slice(start, end).replace(/,\s*$/, '') + '}')()
+  const d = {}
+  addFolder(d, 'workspace', '', 'design')
+  addFolder(d, 'workspace', '', 'design/sub')
+  addFolder(d, 'workspace', 'ws-1', 'inner')
+  addFolder(d, 'session', 'ws-9', '前端')
+  assert.deepEqual(d.folders.ws[''], ['design', 'design/sub'], 'workspace declarations accumulate per scope')
+  assert.deepEqual(d.folders.ws['ws-1'], ['inner'], 'a disk level has its own bag')
+  assert.deepEqual(d.folders.sess['ws-9'], ['前端'], 'session declarations key on the workspace')
+  addFolder(d, 'workspace', '', 'design')
+  assert.deepEqual(d.folders.ws[''], ['design', 'design/sub'], 're-declaring is a no-op')
+  addFolder(d, 'workspace', '', '  ')
+  assert.deepEqual(d.folders.ws[''], ['design', 'design/sub'], 'a blank name never lands')
+  removeFolder(d, 'workspace', '', 'design')
+  assert.equal(d.folders.ws[''], undefined, 'deleting a branch takes its descendants and drops the empty bag')
+  assert.deepEqual(d.folders.ws['ws-1'], ['inner'], 'other scopes are untouched')
+})
+
+test('declared groups: they render even with no members to project from (v0.17.0)', () => {
+  const text = read('src/client.js')
+  const start = text.indexOf('    const EMPTY_FOLDERS = Object.freeze({})')
+  const end = text.indexOf('    function buildTree(')
+  assert.ok(start !== -1 && end > start, 'the resolvers sit above buildTree')
+  const { hasDeclared, explicitSegsOf, EMPTY_FOLDERS } =
+    new Function(text.slice(start, end) + '\nreturn { hasDeclared, explicitSegsOf, EMPTY_FOLDERS }')()
+  assert.equal(hasDeclared(EMPTY_FOLDERS, ''), false, 'a pre-0.17 snapshot declares nothing')
+  assert.equal(hasDeclared({ '': [] }, ''), false, 'an empty list is not a declaration')
+  assert.equal(hasDeclared({ '': ['a'] }, ''), true)
+  assert.deepEqual(explicitSegsOf({ '': ['a/b'] }, ''), [['a', 'b']], 'a declared path splits into levels')
+  assert.deepEqual(explicitSegsOf(EMPTY_FOLDERS, ''), [], 'missing keys resolve to nothing')
+
+  // The tree walk must ingest them, or an empty group is invisible.
+  assert.match(text, /for \(const segs of explicitSegsOf\(explicitWs, idPrefix\)\) ensure\(segs\)/,
+    'workspace levels declare their empty groups before the members')
+  assert.match(text, /for \(const segs of explicitSegsOf\(explicitSess, groupScope\)\) ensure\(segs\)/,
+    'session trees do the same')
+  // A workspace whose sessions are all gone still shows its declared groups.
+  assert.match(text, /if \(rows\.length === 0 && !hasDeclared\(sessFolders, workspace\.workspaceId\)\) return \[\]/,
+    'empty session rows no longer short-circuit a declared group away')
+  // Every caller threads the bag through.
+  assert.match(text, /buildTree\(items, workspaceSlash, wsFolders\)/, 'the main tree passes the workspace bag')
+  assert.equal((text.match(/buildSessionTree\(sessionsOf\(workspace\), sessionSlash, sessFolders, workspace\.workspaceId\)/g) || []).length, 4,
+    'every session-tree caller passes the session bag and its workspace scope')
+})
+
+/**
+ * The new-group dialog (v0.17.0): a two-way layer switch plus an expandable
+ * container TREE, because the parent is a place in the hierarchy — picking it
+ * from a flat dropdown lost the "under which workspace / which group" reading.
+ * The move dialog keeps its own shape; the two are separate entry points now.
+ */
+test('new group: icon button, live tooltip, layer switch and a tree picker (v0.17.0)', () => {
+  const text = read('src/client.js')
+  assert.match(text, /function GroupNewDialog\(props\)/, 'the dialog exists')
+  assert.match(text, /const newGroupLayers = \(\) => \(workspaceSlash && sessionSlash \? \['session', 'workspace'\]/, 'both layers are offered when both are live')
+  assert.match(text, /layer: defaultNewGroupLayer\(\)/, 'the header hands the dialog its default layer')
+  // One live layer means no switch at all — a two-option control with one
+  // option is noise, and the tooltip already names the single layer.
+  assert.match(text, /kinds\.length > 1 \? E\('div', \{ className: 'bw-seg'/, 'the switch renders only with two layers')
+  assert.match(text, /function GroupNewDialog[\s\S]*?treeOf\(kind\)/, 'the container tree follows the selected layer')
+  assert.match(text, /const pick = \(node\) => \{ setPicked\(node\); setError\(''\) \}/, 'clicking a node picks the container')
+  // The session layer has no "top level": folders.sess is keyed by workspaceId,
+  // so a declaration filed under '' would never be read by any render path. Its
+  // introduction is a plain HINT, not a header row that reads as a node.
+  assert.match(text, /return \{ hint: t\('group\.new\.pickWorkspace'\), nodes \}/,
+    'session layer lists workspaces under a hint, with no fake root node')
+  assert.match(text, /if \(!picked\) \{ setError\(t\('group\.new\.pickFirst'\)\); return \}/,
+    'commit refuses an unpicked container')
+  assert.match(text, /plan\.nodes\.length > 0 \? renderNodes\(plan\.nodes, 0\) : E\('div', \{ className: 'bw-gn-empty' \}/,
+    'an empty workspace list explains itself instead of rendering nothing')
+  assert.match(text, /onConfirm\(kind, picked\.scope, picked\.path === '' \? clean : picked\.path \+ '\/' \+ clean\)/,
+    'the name is appended to the picked container path')
+  assert.match(text, /actions\.addFolder\(kind, scope, path\)/, 'confirm writes the declaration')
+  // The tree carries the exact write targets.
+  assert.match(text, /const wsGroupNodesOf = \(node\) => \{/, 'workspace container walk')
+  assert.match(text, /scope: f\.scope, path: f\.path/, 'a folder node files into its own level')
+  assert.match(text, /scope: w\.subPrefix, path: '', label: w\.leaf/, 'a workspace node files into the disk level it owns')
+  assert.match(text, /const sessGroupNodesOf = \(node, workspaceId\)/, 'session container walk')
+  assert.match(text, /scope: workspaceId, path: g\.path/, 'a session group files under its workspace')
+  // Menu hygiene (user report): the plugin's own entries sit AFTER the
+  // separator, and the move entry must carry a glyph the host actually has.
+  assert.match(text, /icon\('IconFolderOpenOutline16', 16\) \}/, 'move-to-group uses a glyph this host ships')
+  assert.doesNotMatch(text, /icon\('IconFolderOutline16'/, 'the retired glyph must not come back')
+  assert.match(text, /id: 'delete-folder', label: t\('menu\.deleteGroup'\)/, 'an empty group can be deleted')
+  assert.match(text, /ctx\.payload\.empty \? \[deleteFolderEntry\] : \[\]/, 'delete is offered for empty groups only')
+})
+
+test('new-group dialog components stay at module scope (React discipline)', () => {
+  const text = read('src/client.js')
+  const head = text.indexOf('function GroupNewDialog(props) {')
+  const start = text.indexOf('\n', head) + 1
+  const end = text.indexOf('\n    function ', start)
+  const body = text.slice(start, end)
+  assert.ok(body.length > 0, 'component body found')
+  // Hooks before any early return; no nested component definitions.
+  assert.doesNotMatch(body, /function [A-Z]\w*\(/, 'no component defined inside the component')
+})

@@ -142,6 +142,21 @@ window.__ModuleLoader__.load({
       'group.move.title': '移动到分组',
       'group.pick': '选择已有分组',
       'group.new': '新建分组',
+      'group.new.title': "新建分组",
+      'group.new.sess': "会话分组",
+      'group.new.ws': "工作区分组",
+      'group.new.both': "新建会话或工作区分组",
+      'group.new.where': "选择创建位置",
+      'group.new.placeholder': "分组名称,可用 / 嵌套",
+      'group.new.nameHint': "名称中的 / 即嵌套层级,例如 前端/组件",
+      'group.new.empty': "请输入分组名称",
+      'group.new.root': "顶层",
+      'group.new.pickWorkspace': "选择一个工作区",
+      'group.new.noWorkspace': "还没有工作区,请先添加一个",
+      'group.new.pickFirst': "请先选择一个工作区",
+      'group.delete.title': "删除分组",
+      'group.delete.body': "「{name}」是空分组,删除后不可恢复。",
+      'menu.deleteGroup': "删除分组",
     }
 
     const en = {
@@ -255,6 +270,21 @@ window.__ModuleLoader__.load({
       'group.move.title': 'Move to group',
       'group.pick': 'Pick an existing group',
       'group.new': 'New group',
+      'group.new.title': "New group",
+      'group.new.sess': "Session group",
+      'group.new.ws': "Workspace group",
+      'group.new.both': "New session or workspace group",
+      'group.new.where': "Choose where to create it",
+      'group.new.placeholder': "Group name, \"/\" nests",
+      'group.new.nameHint': "A \"/\" nests further, e.g. frontend/components",
+      'group.new.empty': "Enter a group name",
+      'group.new.root': "Top level",
+      'group.new.pickWorkspace': "Pick a workspace",
+      'group.new.noWorkspace': "No workspaces yet — add one first",
+      'group.new.pickFirst': "Pick a workspace first",
+      'group.delete.title': "Delete group",
+      'group.delete.body': "\"{name}\" is an empty group; deleting it cannot be undone.",
+      'menu.deleteGroup': "Delete group",
     }
 
     /* Third-language dictionaries, keyed by BCP 47 tag. Every entry must carry
@@ -376,6 +406,21 @@ window.__ModuleLoader__.load({
         'group.move.title': 'نقل إلى مجموعة',
         'group.pick': 'اختر مجموعة موجودة',
         'group.new': 'مجموعة جديدة',
+        'group.new.title': "مجموعة جديدة",
+        'group.new.sess': "مجموعة جلسات",
+        'group.new.ws': "مجموعة مساحات عمل",
+        'group.new.both': "مجموعة جلسات أو مساحات عمل جديدة",
+        'group.new.where': "اختر مكان الإنشاء",
+        'group.new.placeholder': "اسم المجموعة، \"/\" للتداخل",
+        'group.new.nameHint': "الشرطة المائلة \"/\" تنشئ مستوى أعمق، مثل frontend/components",
+        'group.new.empty': "أدخل اسم المجموعة",
+        'group.new.root': "المستوى الأعلى",
+        'group.new.pickWorkspace': "اختر مساحة عمل",
+        'group.new.noWorkspace': "لا توجد مساحات عمل بعد — أضف واحدة أولاً",
+        'group.new.pickFirst': "اختر مساحة عمل أولاً",
+        'group.delete.title': "حذف المجموعة",
+        'group.delete.body': "\"{name}\" مجموعة فارغة؛ لا يمكن التراجع عن الحذف.",
+        'menu.deleteGroup': "حذف المجموعة",
       },
       /* locale: de */
       'de': {
@@ -489,6 +534,21 @@ window.__ModuleLoader__.load({
         'group.move.title': 'In Gruppe verschieben',
         'group.pick': 'Vorhandene Gruppe wählen',
         'group.new': 'Neue Gruppe',
+        'group.new.title': "Neue Gruppe",
+        'group.new.sess': "Sitzungsgruppe",
+        'group.new.ws': "Arbeitsbereichsgruppe",
+        'group.new.both': "Neue Sitzungs- oder Arbeitsbereichsgruppe",
+        'group.new.where': "Speicherort wählen",
+        'group.new.placeholder': "Gruppenname, „/\" verschachtelt",
+        'group.new.nameHint': "Ein „/\" verschachtelt weiter, z. B. frontend/components",
+        'group.new.empty': "Gruppennamen eingeben",
+        'group.new.root': "Oberste Ebene",
+        'group.new.pickWorkspace': "Arbeitsbereich wählen",
+        'group.new.noWorkspace': "Noch keine Arbeitsbereiche — zuerst einen hinzufügen",
+        'group.new.pickFirst': "Zuerst einen Arbeitsbereich wählen",
+        'group.delete.title': "Gruppe löschen",
+        'group.delete.body': "„{name}\" ist eine leere Gruppe; das Löschen kann nicht rückgängig gemacht werden.",
+        'menu.deleteGroup': "Gruppe löschen",
       },
       /* locale: fr */
       'fr': {
@@ -602,6 +662,21 @@ window.__ModuleLoader__.load({
         'group.move.title': 'Déplacer vers le groupe',
         'group.pick': 'Choisir un groupe existant',
         'group.new': 'Nouveau groupe',
+        'group.new.title': "Nouveau groupe",
+        'group.new.sess': "Groupe de sessions",
+        'group.new.ws': "Groupe d’espaces de travail",
+        'group.new.both': "Nouveau groupe de sessions ou d’espaces de travail",
+        'group.new.where': "Choisir l’emplacement",
+        'group.new.placeholder': "Nom du groupe, « / » imbrique",
+        'group.new.nameHint': "Un « / » imbrique davantage, par ex. frontend/components",
+        'group.new.empty': "Saisissez un nom de groupe",
+        'group.new.root': "Niveau supérieur",
+        'group.new.pickWorkspace': "Choisissez un espace de travail",
+        'group.new.noWorkspace': "Aucun espace de travail — ajoutez-en un d’abord",
+        'group.new.pickFirst': "Choisissez d’abord un espace de travail",
+        'group.delete.title': "Supprimer le groupe",
+        'group.delete.body': "« {name} » est un groupe vide ; la suppression est irréversible.",
+        'menu.deleteGroup': "Supprimer le groupe",
       },
       /* locale: hi */
       'hi': {
@@ -715,6 +790,21 @@ window.__ModuleLoader__.load({
         'group.move.title': 'समूह में ले जाएँ',
         'group.pick': 'मौजूदा समूह चुनें',
         'group.new': 'नया समूह',
+        'group.new.title': "नया समूह",
+        'group.new.sess': "सत्र समूह",
+        'group.new.ws': "कार्यस्थान समूह",
+        'group.new.both': "नया सत्र या कार्यस्थान समूह",
+        'group.new.where': "बनाने का स्थान चुनें",
+        'group.new.placeholder': "समूह का नाम, \"/\" से नेस्टिंग",
+        'group.new.nameHint': "\"/\" और गहरा स्तर बनाता है, जैसे frontend/components",
+        'group.new.empty': "समूह का नाम दर्ज करें",
+        'group.new.root': "शीर्ष स्तर",
+        'group.new.pickWorkspace': "एक कार्यस्थान चुनें",
+        'group.new.noWorkspace': "अभी कोई कार्यस्थान नहीं — पहले एक जोड़ें",
+        'group.new.pickFirst': "पहले एक कार्यस्थान चुनें",
+        'group.delete.title': "समूह हटाएँ",
+        'group.delete.body': "\"{name}\" एक खाली समूह है; हटाने पर इसे वापस नहीं लाया जा सकता।",
+        'menu.deleteGroup': "समूह हटाएँ",
       },
       /* locale: id */
       'id': {
@@ -828,6 +918,21 @@ window.__ModuleLoader__.load({
         'group.move.title': 'Pindahkan ke grup',
         'group.pick': 'Pilih grup yang ada',
         'group.new': 'Grup baru',
+        'group.new.title': "Grup baru",
+        'group.new.sess': "Grup sesi",
+        'group.new.ws': "Grup ruang kerja",
+        'group.new.both': "Grup sesi atau ruang kerja baru",
+        'group.new.where': "Pilih lokasi pembuatan",
+        'group.new.placeholder': "Nama grup, \"/\" untuk bersarang",
+        'group.new.nameHint': "\"/\" membuat tingkat lebih dalam, mis. frontend/components",
+        'group.new.empty': "Masukkan nama grup",
+        'group.new.root': "Tingkat teratas",
+        'group.new.pickWorkspace': "Pilih ruang kerja",
+        'group.new.noWorkspace': "Belum ada ruang kerja — tambahkan dulu",
+        'group.new.pickFirst': "Pilih ruang kerja dulu",
+        'group.delete.title': "Hapus grup",
+        'group.delete.body': "\"{name}\" adalah grup kosong; penghapusan tidak bisa dibatalkan.",
+        'menu.deleteGroup': "Hapus grup",
       },
       /* locale: it */
       'it': {
@@ -941,6 +1046,21 @@ window.__ModuleLoader__.load({
         'group.move.title': 'Sposta nel gruppo',
         'group.pick': 'Scegli un gruppo esistente',
         'group.new': 'Nuovo gruppo',
+        'group.new.title': "Nuovo gruppo",
+        'group.new.sess': "Gruppo di sessioni",
+        'group.new.ws': "Gruppo di aree di lavoro",
+        'group.new.both': "Nuovo gruppo di sessioni o aree di lavoro",
+        'group.new.where': "Scegli dove crearlo",
+        'group.new.placeholder': "Nome del gruppo, «/» annida",
+        'group.new.nameHint': "Una «/» annida ulteriormente, es. frontend/components",
+        'group.new.empty': "Inserisci un nome di gruppo",
+        'group.new.root': "Livello superiore",
+        'group.new.pickWorkspace': "Scegli un’area di lavoro",
+        'group.new.noWorkspace': "Nessuna area di lavoro — aggiungine una prima",
+        'group.new.pickFirst': "Scegli prima un’area di lavoro",
+        'group.delete.title': "Elimina gruppo",
+        'group.delete.body': "«{name}» è un gruppo vuoto; l’eliminazione non è reversibile.",
+        'menu.deleteGroup': "Elimina gruppo",
       },
       /* locale: ja */
       'ja': {
@@ -1054,6 +1174,21 @@ window.__ModuleLoader__.load({
         'group.move.title': 'グループに移動',
         'group.pick': '既存のグループを選択',
         'group.new': '新しいグループ',
+        'group.new.title': "新しいグループ",
+        'group.new.sess': "セッショングループ",
+        'group.new.ws': "ワークスペースグループ",
+        'group.new.both': "新しいセッション／ワークスペースグループ",
+        'group.new.where': "作成先を選択",
+        'group.new.placeholder': "グループ名、/ で入れ子",
+        'group.new.nameHint': "/ でさらに深い階層になります(例: frontend/components)",
+        'group.new.empty': "グループ名を入力してください",
+        'group.new.root': "最上位",
+        'group.new.pickWorkspace': "ワークスペースを選択",
+        'group.new.noWorkspace': "ワークスペースがありません。先に追加してください",
+        'group.new.pickFirst': "先にワークスペースを選択してください",
+        'group.delete.title': "グループを削除",
+        'group.delete.body': "「{name}」は空のグループです。削除すると元に戻せません。",
+        'menu.deleteGroup': "グループを削除",
       },
       /* locale: ko */
       'ko': {
@@ -1167,6 +1302,21 @@ window.__ModuleLoader__.load({
         'group.move.title': '그룹으로 이동',
         'group.pick': '기존 그룹 선택',
         'group.new': '새 그룹',
+        'group.new.title': "새 그룹",
+        'group.new.sess': "세션 그룹",
+        'group.new.ws': "워크스페이스 그룹",
+        'group.new.both': "새 세션 또는 워크스페이스 그룹",
+        'group.new.where': "만들 위치 선택",
+        'group.new.placeholder': "그룹 이름, \"/\"로 중첩",
+        'group.new.nameHint': "\"/\"로 더 깊은 단계, 예: frontend/components",
+        'group.new.empty': "그룹 이름을 입력하세요",
+        'group.new.root': "최상위",
+        'group.new.pickWorkspace': "워크스페이스 선택",
+        'group.new.noWorkspace': "워크스페이스가 없습니다. 먼저 추가하세요",
+        'group.new.pickFirst': "먼저 워크스페이스를 선택하세요",
+        'group.delete.title': "그룹 삭제",
+        'group.delete.body': "\"{name}\"은(는) 빈 그룹입니다. 삭제하면 되돌릴 수 없습니다.",
+        'menu.deleteGroup': "그룹 삭제",
       },
       /* locale: nl */
       'nl': {
@@ -1280,6 +1430,21 @@ window.__ModuleLoader__.load({
         'group.move.title': 'Naar groep verplaatsen',
         'group.pick': 'Bestaande groep kiezen',
         'group.new': 'Nieuwe groep',
+        'group.new.title': "Nieuwe groep",
+        'group.new.sess': "Sessiegroep",
+        'group.new.ws': "Werkruimtegroep",
+        'group.new.both': "Nieuwe sessie- of werkruimtegroep",
+        'group.new.where': "Kies waar je maakt",
+        'group.new.placeholder': "Groepsnaam, \"/\" nest",
+        'group.new.nameHint': "Een \"/\" nest dieper, bijv. frontend/components",
+        'group.new.empty': "Voer een groepsnaam in",
+        'group.new.root': "Bovenste niveau",
+        'group.new.pickWorkspace': "Kies een werkruimte",
+        'group.new.noWorkspace': "Nog geen werkruimten — voeg er eerst een toe",
+        'group.new.pickFirst': "Kies eerst een werkruimte",
+        'group.delete.title': "Groep verwijderen",
+        'group.delete.body': "\"{name}\" is een lege groep; verwijderen kan niet ongedaan worden gemaakt.",
+        'menu.deleteGroup': "Groep verwijderen",
       },
       /* locale: pl */
       'pl': {
@@ -1393,6 +1558,21 @@ window.__ModuleLoader__.load({
         'group.move.title': 'Przenieś do grupy',
         'group.pick': 'Wybierz istniejącą grupę',
         'group.new': 'Nowa grupa',
+        'group.new.title': "Nowa grupa",
+        'group.new.sess': "Grupa sesji",
+        'group.new.ws': "Grupa obszarów roboczych",
+        'group.new.both': "Nowa grupa sesji lub obszarów roboczych",
+        'group.new.where': "Wybierz miejsce utworzenia",
+        'group.new.placeholder': "Nazwa grupy, „/” zagnieżdża",
+        'group.new.nameHint': "„/” zagnieżdża głębiej, np. frontend/components",
+        'group.new.empty': "Podaj nazwę grupy",
+        'group.new.root': "Najwyższy poziom",
+        'group.new.pickWorkspace': "Wybierz obszar roboczy",
+        'group.new.noWorkspace': "Brak obszarów roboczych — najpierw dodaj jeden",
+        'group.new.pickFirst': "Najpierw wybierz obszar roboczy",
+        'group.delete.title': "Usuń grupę",
+        'group.delete.body': "„{name}” to pusta grupa; usunięcia nie można cofnąć.",
+        'menu.deleteGroup': "Usuń grupę",
       },
       /* locale: pt */
       'pt': {
@@ -1506,6 +1686,21 @@ window.__ModuleLoader__.load({
         'group.move.title': 'Mover para o grupo',
         'group.pick': 'Escolher um grupo existente',
         'group.new': 'Novo grupo',
+        'group.new.title': "Novo grupo",
+        'group.new.sess': "Grupo de sessões",
+        'group.new.ws': "Grupo de áreas de trabalho",
+        'group.new.both': "Novo grupo de sessões ou áreas de trabalho",
+        'group.new.where': "Escolha onde criar",
+        'group.new.placeholder': "Nome do grupo, \"/\" aninha",
+        'group.new.nameHint': "Uma \"/\" aninha mais, ex. frontend/components",
+        'group.new.empty': "Digite um nome de grupo",
+        'group.new.root': "Nível superior",
+        'group.new.pickWorkspace': "Escolha uma área de trabalho",
+        'group.new.noWorkspace': "Ainda não há áreas de trabalho — adicione uma primeiro",
+        'group.new.pickFirst': "Escolha uma área de trabalho primeiro",
+        'group.delete.title': "Excluir grupo",
+        'group.delete.body': "\"{name}\" é um grupo vazio; a exclusão não pode ser desfeita.",
+        'menu.deleteGroup': "Excluir grupo",
       },
       /* locale: ru */
       'ru': {
@@ -1619,6 +1814,21 @@ window.__ModuleLoader__.load({
         'group.move.title': 'Переместить в группу',
         'group.pick': 'Выбрать существующую группу',
         'group.new': 'Новая группа',
+        'group.new.title': "Новая группа",
+        'group.new.sess': "Группа сеансов",
+        'group.new.ws': "Группа рабочих областей",
+        'group.new.both': "Новая группа сеансов или рабочих областей",
+        'group.new.where': "Выберите место создания",
+        'group.new.placeholder': "Имя группы, «/» вкладывает",
+        'group.new.nameHint': "«/» вкладывает глубже, напр. frontend/components",
+        'group.new.empty': "Введите имя группы",
+        'group.new.root': "Верхний уровень",
+        'group.new.pickWorkspace': "Выберите рабочую область",
+        'group.new.noWorkspace': "Рабочих областей пока нет — сначала добавьте одну",
+        'group.new.pickFirst': "Сначала выберите рабочую область",
+        'group.delete.title': "Удалить группу",
+        'group.delete.body': "«{name}» — пустая группа; удаление необратимо.",
+        'menu.deleteGroup': "Удалить группу",
       },
       /* locale: sv */
       'sv': {
@@ -1732,6 +1942,21 @@ window.__ModuleLoader__.load({
         'group.move.title': 'Flytta till grupp',
         'group.pick': 'Välj en befintlig grupp',
         'group.new': 'Ny grupp',
+        'group.new.title': "Ny grupp",
+        'group.new.sess': "Sessionsgrupp",
+        'group.new.ws': "Arbetsytegrupp",
+        'group.new.both': "Ny sessions- eller arbetsytegrupp",
+        'group.new.where': "Välj var den skapas",
+        'group.new.placeholder': "Gruppnamn, \"/\" nästlar",
+        'group.new.nameHint': "Ett \"/\" nästlar djupare, t.ex. frontend/components",
+        'group.new.empty': "Ange ett gruppnamn",
+        'group.new.root': "Översta nivån",
+        'group.new.pickWorkspace': "Välj en arbetsyta",
+        'group.new.noWorkspace': "Inga arbetsytor än — lägg till en först",
+        'group.new.pickFirst': "Välj en arbetsyta först",
+        'group.delete.title': "Ta bort grupp",
+        'group.delete.body': "\"{name}\" är en tom grupp; borttagningen kan inte ångras.",
+        'menu.deleteGroup': "Ta bort grupp",
       },
       /* locale: th */
       'th': {
@@ -1845,6 +2070,21 @@ window.__ModuleLoader__.load({
         'group.move.title': 'ย้ายไปยังกลุ่ม',
         'group.pick': 'เลือกกลุ่มที่มีอยู่',
         'group.new': 'กลุ่มใหม่',
+        'group.new.title': "กลุ่มใหม่",
+        'group.new.sess': "กลุ่มเซสชัน",
+        'group.new.ws': "กลุ่มเวิร์กสเปซ",
+        'group.new.both': "กลุ่มเซสชันหรือเวิร์กสเปซใหม่",
+        'group.new.where': "เลือกตำแหน่งที่สร้าง",
+        'group.new.placeholder': "ชื่อกลุ่ม ใช้ / ซ้อนระดับ",
+        'group.new.nameHint': "/ ใช้ซ้อนระดับลึกขึ้น เช่น frontend/components",
+        'group.new.empty': "กรอกชื่อกลุ่ม",
+        'group.new.root': "ระดับบนสุด",
+        'group.new.pickWorkspace': "เลือกเวิร์กสเปซ",
+        'group.new.noWorkspace': "ยังไม่มีเวิร์กสเปซ — เพิ่มก่อน",
+        'group.new.pickFirst': "เลือกเวิร์กสเปซก่อน",
+        'group.delete.title': "ลบกลุ่ม",
+        'group.delete.body': "\"{name}\" เป็นกลุ่มว่าง ลบแล้วกู้คืนไม่ได้",
+        'menu.deleteGroup': "ลบกลุ่ม",
       },
       /* locale: tr */
       'tr': {
@@ -1958,6 +2198,21 @@ window.__ModuleLoader__.load({
         'group.move.title': 'Gruba taşı',
         'group.pick': 'Mevcut bir grup seç',
         'group.new': 'Yeni grup',
+        'group.new.title': "Yeni grup",
+        'group.new.sess': "Oturum grubu",
+        'group.new.ws': "Çalışma alanı grubu",
+        'group.new.both': "Yeni oturum veya çalışma alanı grubu",
+        'group.new.where': "Oluşturulacak yeri seçin",
+        'group.new.placeholder': "Grup adı, \"/\" iç içe koyar",
+        'group.new.nameHint': "\"/\" daha derin iç içe koyar, örn. frontend/components",
+        'group.new.empty': "Bir grup adı girin",
+        'group.new.root': "En üst düzey",
+        'group.new.pickWorkspace': "Bir çalışma alanı seçin",
+        'group.new.noWorkspace': "Henüz çalışma alanı yok — önce bir tane ekleyin",
+        'group.new.pickFirst': "Önce bir çalışma alanı seçin",
+        'group.delete.title': "Grubu sil",
+        'group.delete.body': "\"{name}\" boş bir grup; silme geri alınamaz.",
+        'menu.deleteGroup': "Grubu sil",
       },
       /* locale: vi */
       'vi': {
@@ -2071,6 +2326,21 @@ window.__ModuleLoader__.load({
         'group.move.title': 'Chuyển vào nhóm',
         'group.pick': 'Chọn một nhóm có sẵn',
         'group.new': 'Nhóm mới',
+        'group.new.title': "Nhóm mới",
+        'group.new.sess': "Nhóm phiên",
+        'group.new.ws': "Nhóm không gian làm việc",
+        'group.new.both': "Nhóm phiên hoặc không gian làm việc mới",
+        'group.new.where': "Chọn nơi tạo",
+        'group.new.placeholder': "Tên nhóm, \"/\" để lồng nhau",
+        'group.new.nameHint': "\"/\" lồng sâu hơn, ví dụ frontend/components",
+        'group.new.empty': "Nhập tên nhóm",
+        'group.new.root': "Cấp cao nhất",
+        'group.new.pickWorkspace': "Chọn một không gian làm việc",
+        'group.new.noWorkspace': "Chưa có không gian làm việc — hãy thêm trước",
+        'group.new.pickFirst': "Chọn không gian làm việc trước",
+        'group.delete.title': "Xóa nhóm",
+        'group.delete.body': "\"{name}\" là nhóm trống; không thể hoàn tác sau khi xóa.",
+        'menu.deleteGroup': "Xóa nhóm",
       },
       /* locale: zh-HK */
       'zh-HK': {
@@ -2184,6 +2454,21 @@ window.__ModuleLoader__.load({
         'group.move.title': '移動到分組',
         'group.pick': '選擇已有分組',
         'group.new': '新增分組',
+        'group.new.title': "新增分組",
+        'group.new.sess': "工作階段分組",
+        'group.new.ws': "工作區分組",
+        'group.new.both': "新增工作階段或工作區分組",
+        'group.new.where': "揀建立位置",
+        'group.new.placeholder': "分組名,可用 / 嵌套",
+        'group.new.nameHint': "名入面嘅 / 即嵌套層級,例如 前端/組件",
+        'group.new.empty': "請輸入分組名",
+        'group.new.root': "最頂層",
+        'group.new.pickWorkspace': "揀一個工作區",
+        'group.new.noWorkspace': "仲未有工作區,請先加一個",
+        'group.new.pickFirst': "請先揀一個工作區",
+        'group.delete.title': "刪除分組",
+        'group.delete.body': "「{name}」係空分組,刪咗冇得返轉頭。",
+        'menu.deleteGroup': "刪除分組",
       },
       /* locale: zh-MO */
       'zh-MO': {
@@ -2297,6 +2582,21 @@ window.__ModuleLoader__.load({
         'group.move.title': '移動到分組',
         'group.pick': '選擇已有分組',
         'group.new': '新增分組',
+        'group.new.title': "新增分組",
+        'group.new.sess': "工作階段分組",
+        'group.new.ws': "工作區分組",
+        'group.new.both': "新增工作階段或工作區分組",
+        'group.new.where': "揀建立位置",
+        'group.new.placeholder': "分組名,可用 / 嵌套",
+        'group.new.nameHint': "名入面嘅 / 即嵌套層級,例如 前端/組件",
+        'group.new.empty': "請輸入分組名",
+        'group.new.root': "最頂層",
+        'group.new.pickWorkspace': "揀一個工作區",
+        'group.new.noWorkspace': "仲未有工作區,請先加一個",
+        'group.new.pickFirst': "請先揀一個工作區",
+        'group.delete.title': "刪除分組",
+        'group.delete.body': "「{name}」係空分組,刪咗冇得返轉頭。",
+        'menu.deleteGroup': "刪除分組",
       },
       /* locale: zh-TW */
       'zh-TW': {
@@ -2410,6 +2710,21 @@ window.__ModuleLoader__.load({
         'group.move.title': '移動到分組',
         'group.pick': '選擇現有群組',
         'group.new': '新增分組',
+        'group.new.title': "新增分組",
+        'group.new.sess': "工作階段分組",
+        'group.new.ws': "工作區分組",
+        'group.new.both': "新增工作階段或工作區分組",
+        'group.new.where': "選擇建立位置",
+        'group.new.placeholder': "分組名稱,可用 / 巢狀",
+        'group.new.nameHint': "名稱中的 / 即巢狀層級,例如 前端/元件",
+        'group.new.empty': "請輸入分組名稱",
+        'group.new.root': "最頂層",
+        'group.new.pickWorkspace': "選擇一個工作區",
+        'group.new.noWorkspace': "還沒有工作區,請先新增一個",
+        'group.new.pickFirst': "請先選擇一個工作區",
+        'group.delete.title': "刪除分組",
+        'group.delete.body': "「{name}」是空分組,刪除後無法復原。",
+        'menu.deleteGroup': "刪除分組",
       },
     }
 
@@ -2633,7 +2948,7 @@ window.__ModuleLoader__.load({
      * titles. Groups are virtual (projection of names). Rows keep the Host
      * workspace.sessionIds (manual) order — drag-to-reorder must be visible.
      */
-    function buildSessionTree(rows, groupBySlash) {
+    function buildSessionTree(rows, groupBySlash, explicitSess, groupScope) {
       const root = { path: '', name: '', groups: [], sessions: [] }
       const byPath = new Map([['', root]])
       // Slash grouping OFF (v0.13 view option): every row lands at the
@@ -2662,6 +2977,7 @@ window.__ModuleLoader__.load({
         }
         return node
       }
+      for (const segs of explicitSegsOf(explicitSess, groupScope)) ensure(segs)
       for (const row of rows || []) {
         const segs = splitTitleSegs(row.title)
         const folderPath = segs.slice(0, -1).join('/')
@@ -2772,7 +3088,30 @@ window.__ModuleLoader__.load({
       folderPath: '',
     })
 
-    function buildTree(items, groupBySlash) {
+    /**
+     * Declared-but-empty groups, resolved per level. `explicit` is the store's
+     * `folders.ws` bag (level idPrefix → path list); the empty path splits into
+     * segments the same way a title prefix does, so a declared "a/b" produces
+     * the same two-level chain a member would.
+     */
+    const EMPTY_FOLDERS = Object.freeze({})
+    /** True when this scope declares at least one group (empty groups included). */
+    const hasDeclared = (explicit, scope) => {
+      const raw = explicit && typeof explicit === 'object' ? explicit[String(scope)] : undefined
+      return Array.isArray(raw) && raw.length > 0
+    }
+
+    const explicitSegsOf = (explicit, scope) => {
+      const raw = explicit && typeof explicit === 'object' ? explicit[String(scope)] : undefined
+      const out = []
+      for (const path of Array.isArray(raw) ? raw : []) {
+        const segs = String(path).split('/').filter((s) => s !== '')
+        if (segs.length > 0) out.push(segs)
+      }
+      return out
+    }
+
+    function buildTree(items, groupBySlash, explicitWs) {
       const list = items || []
       const diskParentOf = diskParentMapOf(list)
       const childrenOf = new Map()
@@ -2800,6 +3139,9 @@ window.__ModuleLoader__.load({
                 folders: [],
                 workspaces: [],
                 idPath: (idPrefix !== '' ? idPrefix + '//' : '') + key,
+                // Declared-group scope of THIS level (v0.17.0): the exact key a
+                // new child group must be filed under in folders.ws.
+                scope: idPrefix,
               }
               byPath.set(key, next)
               node.folders.push(next)
@@ -2808,11 +3150,19 @@ window.__ModuleLoader__.load({
           }
           return node
         }
+        // Declared empty groups land BEFORE the members: a declared path that
+        // also carries members is the same node either way (ensure is
+        // idempotent), and declaring first means an empty one still renders.
+        if (groupBySlash !== false) {
+          for (const segs of explicitSegsOf(explicitWs, idPrefix)) ensure(segs)
+        }
         for (const workspace of wsList) {
           const segs = splitTitleSegs(workspace.title)
           const folderPath = segs.slice(0, -1).join('/')
           const leaf = segs.length > 0 ? segs[segs.length - 1] : (basename(workspace.path) || String(workspace.title || '') || String(workspace.workspaceId || ''))
           const subList = childrenOf.get(workspace.workspaceId)
+          // The disk level this workspace OWNS — its declared groups file here.
+          const subPrefix = (idPrefix !== '' ? idPrefix + '//' : '') + workspace.workspaceId
           const entry = {
             workspaceId: workspace.workspaceId,
             title: String(workspace.title || ''),
@@ -2820,7 +3170,8 @@ window.__ModuleLoader__.load({
             sessionIds: Array.isArray(workspace.sessionIds) ? workspace.sessionIds : [],
             leaf,
             folderPath,
-            sub: subList ? buildLevel(subList, (idPrefix !== '' ? idPrefix + '//' : '') + workspace.workspaceId) : null,
+            subPrefix,
+            sub: subList ? buildLevel(subList, subPrefix) : null,
           }
           // Slash grouping OFF (v0.13 view option): skip the name layer —
           // workspaces mount straight at their disk level; the DISK layer
@@ -2934,7 +3285,25 @@ window.__ModuleLoader__.load({
       // rim + a tinted wash so "this drop joins a group" reads stronger than
       // the reorder dashes above.
       '.bw-drop-into-strong{outline:2px solid var(--dsw-alias-brand-primary,#5b8def);outline-offset:-2px;background:color-mix(in srgb, var(--dsw-alias-brand-primary,#5b8def) 16%, transparent)}',
-      '.bw-newgroup-btn{flex:none;width:auto;padding:0 6px;font-size:12px;height:20px;border-radius:6px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.1));color:inherit;cursor:pointer}',
+      // v0.17.0: the new-group entry is an ICON button now (same family as the
+      // search / add buttons beside it); the wording moved into its tooltip.
+      '.bw-newgroup-btn{flex:none}',
+      '.bw-seg{display:flex;gap:0;width:fit-content;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));border-radius:7px;overflow:hidden}',
+      '.bw-seg-btn{border:none;background:transparent;color:var(--dsw-alias-label-secondary,#b8b8b8);font:inherit;font-size:12.5px;padding:5px 14px;cursor:pointer}',
+      '.bw-seg-btn:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12));color:var(--dsw-alias-label-primary,#e6e6e6)}',
+      '.bw-seg-btn-on{background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.16));color:var(--dsw-alias-label-primary,#e6e6e6);font-weight:500}',
+      '.bw-seg-btn+.bw-seg-btn{border-left:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25))}',
+      '.bw-gn-hint{font-size:12px;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
+      '.bw-gn-empty{font-size:12px;color:var(--dsw-alias-label-tertiary,#9a9a9a);padding:10px 8px;text-align:center}',
+      '.bw-gn-tree{max-height:250px;overflow:auto;padding:4px;box-sizing:border-box;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.22));border-radius:8px;background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.06))}',
+      '.bw-gn-row{display:flex;align-items:center;gap:6px;min-height:26px;padding-right:8px;border-radius:6px;cursor:pointer;user-select:none}',
+      '.bw-gn-row:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12))}',
+      '.bw-gn-row-on{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12));box-shadow:inset 0 0 0 1px var(--dsw-alias-brand-primary,#5b8def)}',
+      '.bw-gn-twist{flex:none;display:grid;place-items:center;width:14px;height:14px;padding:0;border:none;background:transparent;color:var(--dsw-alias-label-tertiary,#9a9a9a);cursor:pointer}',
+      '.bw-gn-twist-open{transform:rotate(90deg)}',
+      '.bw-gn-icon{flex:none;display:grid;place-items:center;width:16px;height:16px;color:var(--dsw-alias-label-secondary,#b8b8b8)}',
+      '.bw-gn-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;color:var(--dsw-alias-label-primary,#e6e6e6)}',
+      '.bw-gn-input{width:100%;box-sizing:border-box}',
       '.bw-row:hover{background:var(--dsw-specific-sidebar-nav-item-hover,var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12)))}',
       '.bw-row:hover{background:color-mix(in srgb,var(--dsw-specific-sidebar-nav-item-hover,rgba(127,127,127,.14)) 50%,transparent)}',
       '.bw-row-current{background:var(--dsw-specific-sidebar-nav-item-active,rgba(91,141,239,.15))}',
@@ -3068,8 +3437,16 @@ window.__ModuleLoader__.load({
      */
     const workspaceSlashOf = (value) => value === undefined ? true : value === true
 
+    /**
+     * Normalize a declared group path: split on "/", drop blank segments (so
+     * "  " and "a//b" cannot create nameless levels), trim each name. Returns
+     * '' when nothing is left — the store actions treat that as "do nothing".
+     */
+    const declaredPathOf = (raw) => String(raw == null ? '' : raw)
+      .split('/').map((s) => s.trim()).filter((s) => s !== '').join('/')
+
     const createViewStore = () => storeKit.defineStore({
-      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true }, styling: {}, groupBy: 'workspace-tree', orderBy: 'manual', sessionTitleSlash: true, workspaceTitleSlash: false }),
+      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true }, styling: {}, groupBy: 'workspace-tree', orderBy: 'manual', sessionTitleSlash: true, workspaceTitleSlash: false, folders: { ws: {}, sess: {} } }),
       // NOTE: hydration REPLACES the state with the persisted whole value —
       // init defaults never merge. Every action must tolerate a missing key
       // (states persisted by older plugin versions lack sessionGroups), and
@@ -3120,6 +3497,44 @@ window.__ModuleLoader__.load({
         setOrderBy: (d, value) => { d.orderBy = value },
         setSessionTitleSlash: (d, value) => { d.sessionTitleSlash = value !== false },
         setWorkspaceTitleSlash: (d, value) => { d.workspaceTitleSlash = value !== false },
+        // Explicit (possibly EMPTY) groups, v0.17.0. A group has always been a
+        // projection of "/" in member titles, so a group with no members simply
+        // did not exist and "create a group" had nothing to write. These two
+        // actions are that missing write path: a declared path renders as a
+        // real row even while it holds nothing, and disappears again when the
+        // user deletes it. Scope keys follow the tree's own identities —
+        // workspaces live in the DISK level they belong to (folders.ws keyed by
+        // the level's idPrefix: '' for the top level, '<wsId>' one disk level
+        // down, '<a>//<b>' deeper), sessions live in one workspace
+        // (folders.sess keyed by workspaceId). Both bags are plain path lists.
+        addFolder: (d, kind, scope, path) => {
+          const clean = declaredPathOf(path)
+          if (clean === '') return
+          if (!d.folders || typeof d.folders !== 'object') d.folders = { ws: {}, sess: {} }
+          const bagKey = kind === 'session' ? 'sess' : 'ws'
+          if (!d.folders[bagKey] || typeof d.folders[bagKey] !== 'object') d.folders[bagKey] = {}
+          const bag = d.folders[bagKey]
+          const key = String(scope == null ? '' : scope)
+          const cur = Array.isArray(bag[key]) ? bag[key].slice() : []
+          if (cur.indexOf(clean) === -1) cur.push(clean)
+          bag[key] = cur
+        },
+        // Deleting a declared group takes its declared DESCENDANTS with it —
+        // "a", "a/b" and "a/b/c" are one branch, and leaving the children
+        // behind would resurrect the parent as an implicit row.
+        removeFolder: (d, kind, scope, path) => {
+          const clean = declaredPathOf(path)
+          if (clean === '') return
+          if (!d.folders || typeof d.folders !== 'object') return
+          const bag = d.folders[kind === 'session' ? 'sess' : 'ws']
+          if (!bag || typeof bag !== 'object') return
+          const key = String(scope == null ? '' : scope)
+          const cur = Array.isArray(bag[key]) ? bag[key] : []
+          const prefix = clean + '/'
+          const next = cur.filter((p) => p !== clean && p.indexOf(prefix) !== 0)
+          if (next.length === 0) delete bag[key]
+          else bag[key] = next
+        },
       },
     })
 
@@ -3396,6 +3811,112 @@ window.__ModuleLoader__.load({
      * Degradation: callers keep a native control for hosts whose primitives
      * have no Menu, so picking never becomes impossible.
      */
+
+    /**
+     * "New group" dialog (v0.17.0). Three decisions, top to bottom:
+     *
+     *  1. WHICH LAYER — session groups, or workspace groups. A single segmented
+     *     pair of buttons; the workspace side only exists while "/" grouping is
+     *     on for workspaces, and a host where only one layer is live renders no
+     *     switch at all (the wording of the header button already promised it).
+     *  2. WHERE — an expandable TREE of containers rather than a flat dropdown:
+     *     the parent is picked visually, so "under this workspace" and "inside
+     *     that group" read the same way they do in the sidebar.
+     *  3. WHAT — the new group's name ("a/b" nests).
+     *
+     * Declared-empty groups did not use to exist (a group was a projection of
+     * member titles, so a member-less one could not be represented); this dialog
+     * writes the declaration itself, which is why it is not the move dialog.
+     */
+    function GroupNewDialog(props) {
+      const { kinds, initialKind, treeOf, onConfirm, onClose, t } = props
+      const [kind, setKind] = React.useState(initialKind)
+      const [picked, setPicked] = React.useState(null)
+      const [openKeys, setOpenKeys] = React.useState({})
+      const [name, setName] = React.useState('')
+      const [error, setError] = React.useState('')
+      const plan = treeOf(kind)
+      const toggle = (id) => setOpenKeys((prev) => ({ ...prev, [id]: !prev[id] }))
+      const pick = (node) => { setPicked(node); setError('') }
+      const submit = () => {
+        const clean = String(name).split('/').filter((s) => s !== '').join('/')
+        if (clean === '') { setError(t('group.new.empty')); return }
+        if (!picked) { setError(t('group.new.pickFirst')); return }
+        onConfirm(kind, picked.scope, picked.path === '' ? clean : picked.path + '/' + clean)
+      }
+      const renderNodes = (list, depth) => {
+        const out = []
+        for (const node of list) {
+          const hasKids = node.children.length > 0
+          // The first level opens by default: the root row is a header ("pick a
+          // workspace"), so a collapsed tree would show the user a header and
+          // nothing to pick. Deeper levels stay closed until asked for.
+          const expanded = openKeys[node.id] === true || (depth === 0 && openKeys[node.id] !== false)
+          out.push(E('div', {
+            key: 'n-' + node.id,
+            className: cls('bw-gn-row', picked && picked.id === node.id && 'bw-gn-row-on'),
+            style: { paddingLeft: 6 + depth * 14 },
+            role: 'treeitem',
+            'aria-selected': picked && picked.id === node.id ? 'true' : 'false',
+            onClick: () => pick(node),
+          },
+            hasKids ? E('button', {
+              type: 'button',
+              className: cls('bw-gn-twist', expanded && 'bw-gn-twist-open'),
+              tabIndex: -1,
+              'aria-label': node.label,
+              onClick: (e) => { e.stopPropagation(); toggle(node.id) },
+            }, E('span', { className: 'bw-chevron' })) : E('span', { className: 'bw-gn-twist' }),
+            E('span', { className: 'bw-gn-icon' }, node.kind === 'ws' ? icon('IconFolderOpen16', 15) : icon('IconFolderClose16', 15)),
+            E('span', { className: 'bw-gn-label' }, node.label),
+          ))
+          if (hasKids && expanded) out.push(...renderNodes(node.children, depth + 1))
+        }
+        return out
+      }
+      return E(ui.Modal, {
+        open: true,
+        onClose,
+        closeLabel: t('close'),
+        title: t('group.new.title'),
+        footer: E('div', { className: 'bw-modal-actions' },
+          E(BTN, { variant: 'outline', onClick: onClose }, t('cancel')),
+          E(BTN, { variant: 'primary', onClick: submit }, t('confirm')),
+        ),
+      },
+        E('div', { className: 'bw-modal-body' },
+          kinds.length > 1 ? E('div', { className: 'bw-seg', role: 'radiogroup', 'aria-label': t('group.new.title') },
+            E('button', {
+              type: 'button', role: 'radio', 'aria-checked': kind === 'session' ? 'true' : 'false',
+              className: cls('bw-seg-btn', kind === 'session' && 'bw-seg-btn-on'),
+              onClick: () => { setKind('session'); setPicked(null) },
+            }, t('group.new.sess')),
+            E('button', {
+              type: 'button', role: 'radio', 'aria-checked': kind === 'workspace' ? 'true' : 'false',
+              className: cls('bw-seg-btn', kind === 'workspace' && 'bw-seg-btn-on'),
+              onClick: () => { setKind('workspace'); setPicked(null) },
+            }, t('group.new.ws')),
+          ) : null,
+          E('div', { className: 'bw-gn-hint' }, plan.hint || t('group.new.where')),
+          E('div', { className: 'bw-gn-tree', role: 'tree', 'aria-label': t('group.new.where') },
+            plan.nodes.length > 0 ? renderNodes(plan.nodes, 0) : E('div', { className: 'bw-gn-empty' }, t('group.new.noWorkspace'))),
+          E('div', { className: 'bw-field' },
+            E('input', {
+              className: 'bw-input bw-gn-input',
+              value: name,
+              autoFocus: true,
+              placeholder: t('group.new.placeholder'),
+              'aria-label': t('group.new.title'),
+              onChange: (e) => { setName(e.target.value); setError('') },
+              onKeyDown: (e) => { if (e.key === 'Enter') submit() },
+            }),
+          ),
+          E('div', { className: 'bw-hint' }, t('group.new.nameHint')),
+          error !== '' ? E('div', { className: 'bw-error-text', role: 'alert' }, error) : null,
+        ),
+      )
+    }
+
     function MenuPicker({ options, value, onPick, placeholder, chevronOnly, title, t }) {
       const [open, setOpen] = React.useState(false)
       const list = Array.isArray(options) ? options : []
@@ -4368,6 +4889,12 @@ window.__ModuleLoader__.load({
       const prefsMap = useStore ? (useStore(s => s.prefs) || {}) : {}
       const stylingMap = useStore ? (useStore(s => s.styling) || {}) : {}
       const sessionOrderMap = useStore ? (useStore(s => s.sessionOrder) || {}) : {}
+      // Declared (possibly empty) groups, v0.17.0. Hydration replaces the whole
+      // state, so a snapshot written by an older version has no `folders` key —
+      // the fallback object keeps every read below total.
+      const foldersMap = useStore ? (useStore(s => s.folders) || {}) : {}
+      const wsFolders = foldersMap && typeof foldersMap.ws === 'object' && foldersMap.ws !== null ? foldersMap.ws : EMPTY_FOLDERS
+      const sessFolders = foldersMap && typeof foldersMap.sess === 'object' && foldersMap.sess !== null ? foldersMap.sess : EMPTY_FOLDERS
       // View options (v0.13). Selector reads take fallbacks: hydration
       // replaces the whole persisted value, so states written by older
       // plugin versions lack these keys (hard store discipline).
@@ -4634,10 +5161,10 @@ window.__ModuleLoader__.load({
       // their drop targets live inside workspace rows, which compression merges.
       const draggingWorkspace = drag !== null && drag.kind === 'workspace'
       const tree = React.useMemo(() => {
-        const built = buildTree(items, workspaceSlash)
+        const built = buildTree(items, workspaceSlash, wsFolders)
         if (!compactChains || draggingWorkspace) return built
         return { ...built, folders: built.folders.map((f) => materializeChain(compressTree(f))), workspaces: built.workspaces }
-      }, [items, compactChains, draggingWorkspace, workspaceSlash])
+      }, [items, compactChains, draggingWorkspace, workspaceSlash, wsFolders])
       // Disk-layer ancestry for drag semantics (same derivation as buildTree).
       const diskParentMap = React.useMemo(() => diskParentMapOf(items), [items])
 
@@ -4744,7 +5271,7 @@ window.__ModuleLoader__.load({
       // tree AND its disk-nested child levels.
       const wsAllPulseOf = (workspace) => {
         if (!statusPulse || searching) return null
-        let best = nodePulseOf(buildSessionTree(sessionsOf(workspace), sessionSlash))
+        let best = nodePulseOf(buildSessionTree(sessionsOf(workspace), sessionSlash, sessFolders, workspace.workspaceId))
         if (workspace.sub) {
           for (const folder of workspace.sub.folders) {
             const s = folderPulseOf(folder)
@@ -4827,6 +5354,53 @@ window.__ModuleLoader__.load({
        * button itself disappears entirely when neither is (see the header).
        */
       const pickerKindOf = () => workspaceSlash && sessionSlash ? undefined : (workspaceSlash ? 'workspace' : 'session')
+      // The header button opens "new group" (v0.17.0); its wording and its
+      // default layer follow which name layers are live. With workspaces
+      // disk-only there is no workspace-group layer to create into, so the
+      // default is the session layer — and a single live layer means no switch.
+      const newGroupLayers = () => (workspaceSlash && sessionSlash ? ['session', 'workspace'] : (workspaceSlash ? ['workspace'] : ['session']))
+      const defaultNewGroupLayer = () => (workspaceSlash && !sessionSlash ? 'workspace' : 'session')
+      const newGroupLabel = () => (workspaceSlash && sessionSlash ? t('group.new.both') : (workspaceSlash ? t('group.new.ws') : t('group.new.sess')))
+
+      // Container trees for the new-group dialog. Each node carries the exact
+      // write target: `scope` is the store's bags key (the disk level's idPrefix
+      // for workspaces, the workspaceId for sessions) and `path` is the parent
+      // group's name path — the dialog appends the new name to it.
+      const wsGroupNodesOf = (node) => {
+        const out = []
+        for (const f of node.folders || []) {
+          out.push({ id: f.scope + '|' + f.path, scope: f.scope, path: f.path, label: f.name, kind: 'folder', children: wsGroupNodesOf(f) })
+        }
+        for (const w of node.workspaces || []) {
+          out.push({
+            id: w.subPrefix + '|', scope: w.subPrefix, path: '', label: w.leaf || w.title, kind: 'ws',
+            children: w.sub ? wsGroupNodesOf(w.sub) : [],
+          })
+        }
+        return out
+      }
+      const sessGroupNodesOf = (node, workspaceId) => (node.groups || []).map((g) => ({
+        id: workspaceId + '|' + g.path, scope: workspaceId, path: g.path, label: g.name, kind: 'sgroup',
+        children: sessGroupNodesOf(g, workspaceId),
+      }))
+      const newGroupTreeOf = (kind) => {
+        if (kind === 'workspace') {
+          // "Top level" IS a real target here (a group at the root of the
+          // workspace tree), so it is a node like any other.
+          return { hint: null, nodes: [{ id: '|', scope: '', path: '', label: t('group.new.root'), kind: 'folder', children: wsGroupNodesOf(tree) }] }
+        }
+        // A session group lives INSIDE one workspace (folders.sess is keyed by
+        // workspaceId), so there is no "top level" to declare into: the
+        // workspace list is the top level itself, introduced by a plain HINT
+        // rather than wrapped in a fake root node (v0.17.1 — a header row that
+        // looked like a tree node read as a container you could pick).
+        const nodes = []
+        for (const w of items) {
+          const inner = sessGroupNodesOf(buildSessionTree(sessionsOf(w), sessionSlash, sessFolders, w.workspaceId), w.workspaceId)
+          nodes.push({ id: w.workspaceId + '|', scope: w.workspaceId, path: '', label: w.leaf || w.title, kind: 'ws', children: inner })
+        }
+        return { hint: t('group.new.pickWorkspace'), nodes }
+      }
       /**
        * Picker entries for the header button: every workspace, then its
        * sessions — each list present only while its OWN name layer is on, so
@@ -4906,7 +5480,7 @@ window.__ModuleLoader__.load({
         if (target.kind === 'sgroup') {
           const workspace = (items || []).find((w) => w.workspaceId === target.workspaceId)
           if (!workspace) { setDialog(null); return }
-          const node = findSessionGroup(buildSessionTree(sessionsOf(workspace), sessionSlash), target.path)
+          const node = findSessionGroup(buildSessionTree(sessionsOf(workspace), sessionSlash, sessFolders, workspace.workspaceId), target.path)
           if (!node) { setDialog(null); return }
           const affected = collectSessionRows(node)
           Promise.resolve()
@@ -5245,7 +5819,7 @@ window.__ModuleLoader__.load({
         if (name === target.name) { setDialog(null); return }
         const workspace = (items || []).find(w => w.workspaceId === target.workspaceId)
         if (!workspace) { setDialog(null); return }
-        const node = findSessionGroup(buildSessionTree(sessionsOf(workspace), sessionSlash), target.path)
+        const node = findSessionGroup(buildSessionTree(sessionsOf(workspace), sessionSlash, sessFolders, workspace.workspaceId), target.path)
         if (!node) { setDialog(null); return }
         const parentPath = target.path.includes('/') ? target.path.slice(0, target.path.lastIndexOf('/')) : ''
         const nextPath = parentPath !== '' ? parentPath + '/' + name : name
@@ -5305,8 +5879,8 @@ window.__ModuleLoader__.load({
         // row keeps its count badge); an open one shows the full session tree.
         if (!searching && !sessionsOpenOf(workspace.workspaceId)) return []
         const rows = sessionsOf(workspace)
-        if (rows.length === 0) return []
-        return renderSessionNode(buildSessionTree(rows, sessionSlash), workspace.workspaceId, depth)
+        if (rows.length === 0 && !hasDeclared(sessFolders, workspace.workspaceId)) return []
+        return renderSessionNode(buildSessionTree(rows, sessionSlash, sessFolders, workspace.workspaceId), workspace.workspaceId, depth)
       }
       const searchSessionNode = (node) => {
         const groups = []
@@ -5333,7 +5907,7 @@ window.__ModuleLoader__.load({
             pulse: (statusPulse && !open) ? nodePulseOf(group) : null,
             count: countSessionTree(group),
             onToggle: () => { if (!searching) actions.setSessionGroupExpanded(key, !open) },
-            onContextMenu: (e) => openCtx('sgroup', { workspaceId, path: group.path, name: group.name }, e),
+            onContextMenu: (e) => openCtx('sgroup', { workspaceId, path: group.path, name: group.name, empty: countSessionTree(group) === 0 }, e),
             dropInto: sgroupDropInto(workspaceId, group.path),
             dragEvents: sgroupDropEvents(workspaceId, group.path),
             custStyle: rowStyleOf('sgroup:' + workspaceId + '|' + group.path),
@@ -5362,7 +5936,7 @@ window.__ModuleLoader__.load({
 
       const renderWorkspaceEntry = (entry, depth, pulse) => {
         const { workspace } = entry
-        const count = countSessionTree(buildSessionTree(sessionsOf(workspace), sessionSlash))
+        const count = countSessionTree(buildSessionTree(sessionsOf(workspace), sessionSlash, sessFolders, workspace.workspaceId))
         const rows = [E(WorkspaceRow, {
           key: 'ws-' + workspace.workspaceId,
           workspace,
@@ -5412,7 +5986,7 @@ window.__ModuleLoader__.load({
           depth,
           expanded,
           onToggle: () => { if (!searching) actions.setExpanded(idPath, !expanded) },
-          onContextMenu: (e) => openCtx('folder', { path: node.path, name: node.name, idPath }, e),
+          onContextMenu: (e) => openCtx('folder', { path: node.path, name: node.name, idPath, scope: node.scope, empty: countWorkspaces(node) === 0 }, e),
           dropInto: wsDropInto(idPath),
           dragEvents: folderDropEvents(idPath),
           custStyle: rowStyleOf('folder:' + idPath),
@@ -5491,20 +6065,30 @@ window.__ModuleLoader__.load({
         // and offering the item would promise a container the tree no longer
         // renders. The two layers gate independently, so a session row keeps
         // the entry even when workspaces have gone disk-only.
-        const groupItem = { id: 'move-group', label: t('menu.moveToGroup'), icon: icon('IconFolderOutline16', 16) }
+        // IconFolderOutline16 is NOT in this host's icon set (retired early):
+        // probing it silently yielded a glyph-less row. IconFolderOpenOutline16
+        // is present and reads as "move into a group" just as well.
+        const groupItem = { id: 'move-group', label: t('menu.moveToGroup'), icon: icon('IconFolderOpenOutline16', 16) }
         const wsGroupItems = workspaceSlash ? [groupItem] : []
         const sgroupItems = sessionSlash ? [groupItem] : []
+        // "Delete group" only makes sense for a DECLARED group that holds
+        // nothing (v0.17.0): a group with members is a projection of their
+        // titles, so removing the declaration would change nothing on screen
+        // and the row would stay — offering it would be a lie.
+        const deleteFolderEntry = { id: 'delete-folder', label: t('menu.deleteGroup'), icon: icon('IconTrashOutline16', 16), danger: true }
+        const deleteSgroupEntry = { id: 'delete-sgroup', label: t('menu.deleteGroup'), icon: icon('IconTrashOutline16', 16), danger: true }
         if (ctx.kind === 'folder') return [
           { id: 'rename-folder', label: t('menu.renameFolder'), icon: icon('IconEditOutline16', 16) },
-          ...wsGroupItems,
+          ...(ctx.payload && ctx.payload.empty ? [deleteFolderEntry] : []),
           { type: 'separator', id: 'bw-sep' },
+          ...wsGroupItems,
           customizeEntry,
         ]
         if (ctx.kind === 'workspace') return [
           { id: 'rename', label: ot ? ot('rename') : t('menu.rename'), icon: icon('IconEditOutline16', 16) },
           { id: 'delete', label: ot ? ot('delete.workspace') : t('menu.delete'), icon: icon('IconTrashOutline16', 16), danger: true },
-          ...wsGroupItems,
           { type: 'separator', id: 'bw-sep' },
+          ...wsGroupItems,
           customizeEntry,
         ]
         if (ctx.kind === 'session') return [
@@ -5514,12 +6098,13 @@ window.__ModuleLoader__.load({
           // registry-global archive set and never touches the session log —
           // deliberately NOT styled destructive.
           { id: 'archive', label: ot ? ot('menu.archiveSession') : t('menu.archive'), icon: icon('IconArchiveOutline20', 16) },
-          ...sgroupItems,
           { type: 'separator', id: 'bw-sep' },
+          ...sgroupItems,
           customizeEntry,
         ]
         return [
           { id: 'rename-sgroup', label: t('menu.renameSgroup'), icon: icon('IconEditOutline16', 16) },
+          ...(ctx.payload && ctx.payload.empty ? [deleteSgroupEntry] : []),
           ...sgroupItems,
           { type: 'separator', id: 'bw-sep' },
           customizeEntry,
@@ -5548,6 +6133,8 @@ window.__ModuleLoader__.load({
           setDialog({ kind: 'group-move', target, initial: groupPrefixOf(target.title), groupPaths: collectGroupPaths(target.kind) })
         }
         else if (kind === 'folder' && id === 'rename-folder') setDialog({ kind: 'folder-rename', path: payload.path })
+        else if (kind === 'folder' && id === 'delete-folder') setDialog({ kind: 'folder-delete', path: payload.path, scope: payload.scope, name: payload.name })
+        else if (kind === 'sgroup' && id === 'delete-sgroup') setDialog({ kind: 'sgroup-delete', target: payload })
         else if (kind === 'workspace' && id === 'rename') setDialog({ kind: 'ws-rename', workspace: payload })
         else if (kind === 'workspace' && id === 'delete') setDialog({ kind: 'ws-delete', workspace: payload })
         else if (kind === 'sgroup' && id === 'rename-sgroup') setDialog({ kind: 'sgroup-rename', target: payload })
@@ -5584,6 +6171,25 @@ window.__ModuleLoader__.load({
           onClose: () => setDialog(null),
           t,
         })
+        // Declared-empty groups are the only ones that can be deleted (the menu
+        // only offers it there): removing the declaration of a group whose
+        // members still carry the prefix would change nothing on screen.
+        if (dialog.kind === 'folder-delete') return E(ConfirmDialog, {
+          key: 'folder-delete',
+          title: t('group.delete.title'),
+          body: t('group.delete.body', { name: dialog.name }),
+          onConfirm: () => { actions.removeFolder('workspace', dialog.scope, dialog.path); setDialog(null) },
+          onClose: () => setDialog(null),
+          t,
+        })
+        if (dialog.kind === 'sgroup-delete') return E(ConfirmDialog, {
+          key: 'sgroup-delete',
+          title: t('group.delete.title'),
+          body: t('group.delete.body', { name: dialog.target.name }),
+          onConfirm: () => { actions.removeFolder('session', dialog.target.workspaceId, dialog.target.path); setDialog(null) },
+          onClose: () => setDialog(null),
+          t,
+        })
         if (dialog.kind === 'ws-delete') return E(ConfirmDialog, {
           key: 'ws-delete',
           title: t('ws.delete.title'),
@@ -5615,6 +6221,15 @@ window.__ModuleLoader__.load({
           hint: t('folder.rename.hint'),
           initial: dialog.path,
           onConfirm: (v) => submitFolderRename(dialog.path, v),
+          onClose: () => setDialog(null),
+          t,
+        })
+        if (dialog.kind === 'group-new') return E(GroupNewDialog, {
+          key: 'group-new',
+          kinds: newGroupLayers(),
+          initialKind: dialog.layer === 'workspace' ? 'workspace' : 'session',
+          treeOf: newGroupTreeOf,
+          onConfirm: (kind, scope, path) => { actions.addFolder(kind, scope, path); setDialog(null) },
           onClose: () => setDialog(null),
           t,
         })
@@ -5689,17 +6304,18 @@ window.__ModuleLoader__.load({
         StyleNode(),
         E('div', { className: 'bw-header' },
           E('div', { className: 'bw-header-title' }, t('title')),
-          // Group discoverability (v0.15): a visible "New group" entry point
-          // that doubles as the row-drop zone. Clicking opens the picker
-          // shape; dropping a row onto it locks that row in the same dialog.
+          // Group discoverability: an ICON entry point (v0.17.0 — it used to be
+          // a text button, which crowded the header) that doubles as the row-drop
+          // zone. Its tooltip names the layer(s) the button can actually create
+          // into; the click opens the NEW-group dialog, not the move dialog.
           (workspaceSlash || sessionSlash) ? E('button', {
             type: 'button',
-            className: cls('bw-newgroup-btn', groupDropTarget() && 'bw-drop-into-strong'),
-            'aria-label': t('group.new'),
-            title: t('group.new'),
-            onClick: () => setDialog({ kind: 'group-move', target: null, targets: targetListOf(), initial: '', groupPaths: collectGroupPaths(pickerKindOf()) }),
+            className: cls('bw-icon-btn', 'bw-newgroup-btn', groupDropTarget() && 'bw-drop-into-strong'),
+            'aria-label': newGroupLabel(),
+            title: newGroupLabel(),
+            onClick: () => setDialog({ kind: 'group-new', layer: defaultNewGroupLayer() }),
             ...groupDropEvents,
-          }, t('group.new')) : null,
+          }, icon('IconFolderOpen16', 16)) : null,
           (searchOpen || query !== '') ? E('input', {
             className: 'bw-input',
             style: { width: 130, flex: 'none' },

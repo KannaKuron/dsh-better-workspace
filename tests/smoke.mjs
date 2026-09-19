@@ -144,11 +144,12 @@ test('quote-on-land effect: blank-born only, user renames pinned, stability wind
   assert.match(text, /!blankSeen\.has\(id\) \|\| touched\.has\(id\)/, 'untouched blankSeen/human guard')
   assert.doesNotMatch(text, /titledSeenRef/, '0.9.1 first-snapshot heuristic must be gone')
   // User renames route through the pinning wrapper; the automatic path alone
-  // keeps the raw injected renameSession. 5 call sites: drag-into-session-group,
-  // session rename dialog, session-group rename, plus the two group-move
-  // entry points (single session / session-group batch).
+  // keeps the raw injected renameSession. 8 call sites: drag-into-session-group,
+  // session rename dialog, session-group rename, the two group-move entry
+  // points (single session / session-group batch), and the three v0.18.0
+  // group-LEAVING moves (cross-group drop, workspace-row drop, menu entry).
   assert.match(text, /const renameByUser = \(sessionId, title\) => \{/)
-  assert.equal((text.match(/renameByUser\(/g) || []).length, 5, 'exactly 5 user call sites')
+  assert.equal((text.match(/renameByUser\(/g) || []).length, 8, 'exactly 8 user call sites')
   // The automatic quote waits out a stabilization window instead of racing
   // the async LLM name.
   assert.match(text, /TITLE_STABLE_MS = 20000/)
@@ -527,8 +528,17 @@ test('session reorder: host action preferred, browser-local order as the fallbac
     'the fallback commits the move into the local order')
   assert.match(text, /const sessionOrderMap = useStore \? \(useStore\(s => s\.sessionOrder\) \|\| \{\}\) : \{\}/,
     'the browser subscribes to the local order')
-  assert.match(text, /if \(typeof insertSessionBefore === 'function'\) \{\n          Promise\.resolve\(\)/,
-    'the host channel is tried first in the drop commit')
+  // v0.18.0 wrapped the commit in a `reorder` closure — the cross-group rename
+  // runs first, then the order. What this guards is unchanged: the host
+  // channel is still tried before the browser-local fallback.
+  const dropStart = text.indexOf('const commitSessionDrop = (workspaceId, targetSessionId, half) => {')
+  const dropEnd = text.indexOf('const commitSessionMoveOut = (workspaceId) => {', dropStart)
+  assert.ok(dropStart !== -1 && dropEnd !== -1 && dropStart < dropEnd, 'the session drop commit is missing')
+  const dropBody = text.slice(dropStart, dropEnd)
+  assert.ok(
+    dropBody.indexOf("typeof insertSessionBefore === 'function'") < dropBody.indexOf('actions.setSessionOrder'),
+    'the host channel is tried first in the drop commit',
+  )
 })
 
 /**
@@ -1078,6 +1088,48 @@ test('new group: icon button, live tooltip, layer switch and a tree picker (v0.1
   assert.doesNotMatch(text, /icon\('IconFolderOutline16'/, 'the retired glyph must not come back')
   assert.match(text, /id: 'delete-folder', label: t\('menu\.deleteGroup'\)/, 'an empty group can be deleted')
   assert.match(text, /ctx\.payload\.empty \? \[deleteFolderEntry\] : \[\]/, 'delete is offered for empty groups only')
+})
+
+/**
+ * Group-leaving drags (v0.18.0). The visible order of session rows is decided
+ * by the name groups, so the old cross-group drop — which only reordered the
+ * flat list — left the row exactly where it was and read as "the drag did
+ * nothing" (user report: dragging a session out of 测试1 kept it inside).
+ */
+test('session drag out of a group: cross-group drops move the row, the workspace row takes it out (v0.18.0)', () => {
+  const text = read('src/client.js')
+  // A drop on a row of another group rewrites the prefix (the move), and only
+  // then applies the order.
+  assert.match(text, /const titleMovedToGroup = \(title, anchorTitle\) => \{/)
+  assert.match(text, /const nextTitle = sessionSlash && target \? titleMovedToGroup\(source\.title, target\.title\) : null/)
+  assert.match(text, /chain\.then\(reorder\)\.catch\(fail\)/)
+  // The workspace row is the root of the session tree: the one drop target
+  // that always exists OUTSIDE every group.
+  assert.match(text, /const commitSessionMoveOut = \(workspaceId\) => \{/)
+  assert.match(text, /const wsRootDropActive = \(workspaceId\) => dragMatches\('session'\)/)
+  assert.match(text, /over: \{ kind: 'ws-root', target: workspace\.workspaceId \}/)
+  assert.match(text, /dropInto: wsRootDropActive\(workspace\.workspaceId\)/)
+  assert.match(text, /dropInto && 'bw-drop-into'/)
+  // ...and the same move is reachable from the context menu, for users who
+  // would rather not drag at all.
+  assert.match(text, /\{ id: 'move-out', label: t\('menu\.moveOutGroup'\)/)
+  assert.match(text, /else if \(kind === 'session' && id === 'move-out'\)/)
+  // Outside every group is still a way out: the tree container itself accepts
+  // the drop (row handlers stopPropagation, so only unclaimed drops reach it)
+  // and marks itself while such a drag is in flight.
+  assert.match(text, /const sessionCouldLeaveGroup = dragMatches\('session'\) && sessionSlash/)
+  assert.match(text, /sessionCouldLeaveGroup && 'bw-root-drop-out'/)
+
+  // Pure helper: the leaf's own text survives, the group comes from the anchor
+  // row ('' = the root level, i.e. out of every group).
+  const segsSrc = text.slice(text.indexOf('const splitPlainSegs ='), text.indexOf('const normPath ='))
+  const helpersSrc = text.slice(text.indexOf('const groupPrefixOf ='), text.indexOf('const collectGroupPaths ='))
+  assert.ok(segsSrc.length > 0 && helpersSrc.length > 0, 'the title helpers are missing')
+  const { titleMovedToGroup } = new Function(segsSrc + helpersSrc + '\nreturn { titleMovedToGroup }')()
+  assert.equal(titleMovedToGroup('组/A', 'B/x'), 'B/A', 'the anchor row decides the group')
+  assert.equal(titleMovedToGroup('组/A', '裸行'), 'A', 'an anchor at the root pulls the row out')
+  assert.equal(titleMovedToGroup('A', 'B/x'), 'B/A', 'a root row can be moved in')
+  assert.equal(titleMovedToGroup('组/A', ''), 'A', 'an empty anchor keeps the leaf as it is')
 })
 
 test('new-group dialog components stay at module scope (React discipline)', () => {

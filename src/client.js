@@ -72,6 +72,7 @@ window.__ModuleLoader__.load({
       'menu.renameFolder': '重命名分组',
       'menu.renameSgroup': '重命名会话分组',
       'menu.moveToGroup': '移动到分组…',
+      'menu.moveOutGroup': '移出分组',
       'settings.title': '更好的工作区',
       'settings.desc': '工作区树的外观与折叠偏好',
       'settings.expand': '展开',
@@ -201,6 +202,7 @@ window.__ModuleLoader__.load({
       'menu.renameFolder': 'Rename folder',
       'menu.renameSgroup': 'Rename session group',
       'menu.moveToGroup': 'Move to group…',
+      'menu.moveOutGroup': 'Move out of group',
       'settings.title': 'Better Workspaces',
       'settings.desc': 'Workspace tree appearance and folding preferences',
       'settings.expand': 'Expand',
@@ -338,6 +340,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': 'إعادة تسمية المجلد',
         'menu.renameSgroup': 'إعادة تسمية مجموعة الجلسات',
         'menu.moveToGroup': 'نقل إلى مجموعة…',
+        'menu.moveOutGroup': 'إخراج من المجموعة',
         'settings.title': 'مساحات عمل أفضل',
         'settings.desc': 'مظهر شجرة مساحات العمل وتفضيلات الطيّ',
         'settings.expand': 'توسيع',
@@ -467,6 +470,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': 'Ordner umbenennen',
         'menu.renameSgroup': 'Sitzungsgruppe umbenennen',
         'menu.moveToGroup': 'In Gruppe verschieben…',
+        'menu.moveOutGroup': 'Aus der Gruppe entfernen',
         'settings.title': 'Bessere Arbeitsbereiche',
         'settings.desc': 'Aussehen und Einklappverhalten des Arbeitsbereich-Baums',
         'settings.expand': 'Ausklappen',
@@ -596,6 +600,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': 'Renommer le dossier',
         'menu.renameSgroup': 'Renommer le groupe de sessions',
         'menu.moveToGroup': 'Déplacer vers le groupe…',
+        'menu.moveOutGroup': 'Retirer du groupe',
         'settings.title': 'Espaces de travail améliorés',
         'settings.desc': 'Apparence et repli de l\'arborescence des espaces de travail',
         'settings.expand': 'Développer',
@@ -725,6 +730,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': 'फ़ोल्डर का नाम बदलें',
         'menu.renameSgroup': 'सत्र समूह का नाम बदलें',
         'menu.moveToGroup': 'समूह में ले जाएँ…',
+        'menu.moveOutGroup': 'समूह से बाहर निकालें',
         'settings.title': 'बेहतर कार्यस्थान',
         'settings.desc': 'कार्यस्थान वृक्ष का रूप और समेटने की प्राथमिकताएँ',
         'settings.expand': 'फैलाएँ',
@@ -854,6 +860,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': 'Ganti nama folder',
         'menu.renameSgroup': 'Ganti nama grup sesi',
         'menu.moveToGroup': 'Pindahkan ke grup…',
+        'menu.moveOutGroup': 'Keluarkan dari grup',
         'settings.title': 'Ruang kerja yang lebih baik',
         'settings.desc': 'Tampilan dan pelipatan pohon ruang kerja',
         'settings.expand': 'Bentangkan',
@@ -983,6 +990,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': 'Rinomina cartella',
         'menu.renameSgroup': 'Rinomina gruppo di sessioni',
         'menu.moveToGroup': 'Sposta nel gruppo…',
+        'menu.moveOutGroup': 'Rimuovi dal gruppo',
         'settings.title': 'Aree di lavoro migliori',
         'settings.desc': 'Aspetto e compressione dell\'albero delle aree di lavoro',
         'settings.expand': 'Espandi',
@@ -1112,6 +1120,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': 'フォルダー名を変更',
         'menu.renameSgroup': 'セッショングループ名を変更',
         'menu.moveToGroup': 'グループに移動…',
+        'menu.moveOutGroup': 'グループから出す',
         'settings.title': 'より良いワークスペース',
         'settings.desc': 'ワークスペースツリーの外観と折りたたみ設定',
         'settings.expand': '展開',
@@ -1241,6 +1250,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': '폴더 이름 바꾸기',
         'menu.renameSgroup': '세션 그룹 이름 바꾸기',
         'menu.moveToGroup': '그룹으로 이동…',
+        'menu.moveOutGroup': '그룹에서 제거',
         'settings.title': '더 나은 워크스페이스',
         'settings.desc': '워크스페이스 트리의 모양과 접기 설정',
         'settings.expand': '펼치기',
@@ -1370,6 +1380,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': 'Mapnaam wijzigen',
         'menu.renameSgroup': 'Sessiegroep naam wijzigen',
         'menu.moveToGroup': 'Naar groep verplaatsen…',
+        'menu.moveOutGroup': 'Uit groep halen',
         'settings.title': 'Betere werkruimten',
         'settings.desc': 'Uiterlijk en inklapgedrag van de werkruimteboom',
         'settings.expand': 'Uitklappen',
@@ -1499,6 +1510,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': 'Zmień nazwę folderu',
         'menu.renameSgroup': 'Zmień nazwę grupy sesji',
         'menu.moveToGroup': 'Przenieś do grupy…',
+        'menu.moveOutGroup': 'Przenieś poza grupę',
         'settings.title': 'Lepsze obszary robocze',
         'settings.desc': 'Wygląd i zwijanie drzewa obszarów roboczych',
         'settings.expand': 'Rozwiń',
@@ -1628,6 +1640,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': 'Renomear pasta',
         'menu.renameSgroup': 'Renomear grupo de sessões',
         'menu.moveToGroup': 'Mover para o grupo…',
+        'menu.moveOutGroup': 'Remover do grupo',
         'settings.title': 'Espaços de trabalho melhores',
         'settings.desc': 'Aparência e recolhimento da árvore de espaços de trabalho',
         'settings.expand': 'Expandir',
@@ -1757,6 +1770,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': 'Переименовать папку',
         'menu.renameSgroup': 'Переименовать группу сессий',
         'menu.moveToGroup': 'Переместить в группу…',
+        'menu.moveOutGroup': 'Убрать из группы',
         'settings.title': 'Улучшенные рабочие области',
         'settings.desc': 'Внешний вид и сворачивание дерева рабочих областей',
         'settings.expand': 'Развернуть',
@@ -1886,6 +1900,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': 'Byt namn på mapp',
         'menu.renameSgroup': 'Byt namn på sessionsgrupp',
         'menu.moveToGroup': 'Flytta till grupp…',
+        'menu.moveOutGroup': 'Flytta ut ur gruppen',
         'settings.title': 'Bättre arbetsytor',
         'settings.desc': 'Utseende och ihopfällning för arbetsyteträdet',
         'settings.expand': 'Fäll ut',
@@ -2015,6 +2030,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': 'เปลี่ยนชื่อโฟลเดอร์',
         'menu.renameSgroup': 'เปลี่ยนชื่อกลุ่มเซสชัน',
         'menu.moveToGroup': 'ย้ายไปยังกลุ่ม…',
+        'menu.moveOutGroup': 'ย้ายออกจากกลุ่ม',
         'settings.title': 'พื้นที่ทำงานที่ดีขึ้น',
         'settings.desc': 'รูปลักษณ์และการย่อของต้นไม้พื้นที่ทำงาน',
         'settings.expand': 'ขยาย',
@@ -2144,6 +2160,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': 'Klasörü yeniden adlandır',
         'menu.renameSgroup': 'Oturum grubunu yeniden adlandır',
         'menu.moveToGroup': 'Gruba taşı…',
+        'menu.moveOutGroup': 'Gruptan çıkar',
         'settings.title': 'Daha iyi çalışma alanları',
         'settings.desc': 'Çalışma alanı ağacının görünümü ve daraltma tercihleri',
         'settings.expand': 'Genişlet',
@@ -2273,6 +2290,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': 'Đổi tên thư mục',
         'menu.renameSgroup': 'Đổi tên nhóm phiên',
         'menu.moveToGroup': 'Chuyển vào nhóm…',
+        'menu.moveOutGroup': 'Đưa ra khỏi nhóm',
         'settings.title': 'Không gian làm việc tốt hơn',
         'settings.desc': 'Giao diện và cách thu gọn của cây không gian làm việc',
         'settings.expand': 'Mở rộng',
@@ -2402,6 +2420,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': '重新命名分組',
         'menu.renameSgroup': '重新命名對話分組',
         'menu.moveToGroup': '移動到分組…',
+        'menu.moveOutGroup': '移出分組',
         'settings.title': '更好嘅工作區',
         'settings.desc': '工作區樹嘅外觀同收起偏好',
         'settings.expand': '展開',
@@ -2531,6 +2550,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': '重新命名分組',
         'menu.renameSgroup': '重新命名對話分組',
         'menu.moveToGroup': '移動到分組…',
+        'menu.moveOutGroup': '移出分組',
         'settings.title': '更好嘅工作區',
         'settings.desc': '工作區樹嘅外觀同收起偏好',
         'settings.expand': '展開',
@@ -2660,6 +2680,7 @@ window.__ModuleLoader__.load({
         'menu.renameFolder': '重新命名群組',
         'menu.renameSgroup': '重新命名工作階段群組',
         'menu.moveToGroup': '移動到分組…',
+        'menu.moveOutGroup': '移出分組',
         'settings.title': '更好的工作區',
         'settings.desc': '工作區樹的外觀與收合偏好',
         'settings.expand': '展開',
@@ -3314,6 +3335,10 @@ window.__ModuleLoader__.load({
       // rim + a tinted wash so "this drop joins a group" reads stronger than
       // the reorder dashes above.
       '.bw-drop-into-strong{outline:2px solid var(--dsw-alias-brand-primary,#5b8def);outline-offset:-2px;background:color-mix(in srgb, var(--dsw-alias-brand-primary,#5b8def) 16%, transparent)}',
+      // Session drag whose source sits in a group: a quiet dashed line at the
+      // bottom of the tree says "anywhere outside a group = out of it". Kept
+      // faint on purpose — the row outlines are the loud feedback.
+      '.bw-root-drop-out::after{content:"";position:absolute;left:10px;right:10px;bottom:6px;border-bottom:1px dashed var(--dsw-alias-border-secondary,rgba(230,230,230,.35));pointer-events:none}',
       // v0.17.0: the new-group entry is an ICON button now (same family as the
       // search / add buttons beside it); the wording moved into its tooltip.
       '.bw-newgroup-btn{flex:none}',
@@ -4246,13 +4271,13 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function WorkspaceRow({ workspace, depth, count, sessionsOpen, onToggle, onStart, onContextMenu, currentInside, dropHalf, dragEvents, custStyle, iconMode, pulse, t }) {
+    function WorkspaceRow({ workspace, depth, count, sessionsOpen, onToggle, onStart, onContextMenu, currentInside, dropHalf, dropInto, dragEvents, custStyle, iconMode, pulse, t }) {
       const iconEl = iconOf(iconMode, sessionsOpen)
       const iconChild = pulse
         ? E(PulseGlow, { state: pulse }, iconEl || (typeof ui.StateDot === 'function' ? E(ui.StateDot, { state: pulse, size: 10 }) : null))
         : iconEl
       return E('div', {
-        className: cls('bw-row', currentInside && 'bw-row-current', dropHalf === 'before' && 'bw-drop-before', dropHalf === 'after' && 'bw-drop-after'),
+        className: cls('bw-row', currentInside && 'bw-row-current', dropHalf === 'before' && 'bw-drop-before', dropHalf === 'after' && 'bw-drop-after', dropInto && 'bw-drop-into', dropInto && 'bw-drop-into-strong'),
         style: { paddingLeft: 6 + depth * 12, ...(custStyle || {}), ...(pulse ? { '--bw-pulse-color': PULSE_COLORS[pulse] || PULSE_COLORS.ongoing } : null) },
         onClick: onToggle,
         onContextMenu: onContextMenu,
@@ -5373,6 +5398,18 @@ window.__ModuleLoader__.load({
         return s.length > 0 ? s[s.length - 1] : (fallback || String(title || ''))
       }
       /**
+       * Retitle `title` so its leaf lands in the group `anchorTitle` lives in
+       * (v0.18.0). '' as the anchor group means the root level. Used by the
+       * cross-group session drop: the visible order of session rows is decided
+       * by these groups, so a drop that only reorders the flat list would leave
+       * the row exactly where it was.
+       */
+      const titleMovedToGroup = (title, anchorTitle) => {
+        const leaf = leafOf(title)
+        const group = groupPrefixOf(anchorTitle)
+        return group ? group + '/' + leaf : leaf
+      }
+      /**
        * Every existing group path, deduplicated (datalist source). `kind`
        * narrows it to the name layer the dialog is about: workspace rows
        * suggest workspace prefixes, session rows session prefixes; the
@@ -5661,6 +5698,22 @@ window.__ModuleLoader__.load({
           setDrag(null)
         },
         onDragOver: (event) => {
+          // A SESSION dragged onto the workspace row lands at the root level of
+          // its session tree — the way OUT of any group (v0.18.0). Only for
+          // rows that actually sit in a group: a top-level session gains
+          // nothing here, so this row must not light up for it (the browser
+          // then shows its plain "no drop" cursor, which tells the truth).
+          if (dragMatches('session')) {
+            if (!sessionSlash || drag.source.workspaceId !== workspace.workspaceId) return
+            if (leafOf(drag.source.title) === drag.source.title) return
+            event.preventDefault()
+            event.stopPropagation()
+            try { event.dataTransfer.dropEffect = 'move' } catch { }
+            setDrag(current => (current && current.over && current.over.kind === 'ws-root' && current.over.target === workspace.workspaceId)
+              ? current
+              : (current ? { ...current, over: { kind: 'ws-root', target: workspace.workspaceId } } : current))
+            return
+          }
           if (!dragMatches('workspace')) return
           event.preventDefault()
           event.stopPropagation()
@@ -5671,6 +5724,14 @@ window.__ModuleLoader__.load({
             : (current ? { ...current, over: { kind: 'workspace', target: workspace.workspaceId, half } } : current))
         },
         onDrop: (event) => {
+          if (dragMatches('session')) {
+            if (!sessionSlash || drag.source.workspaceId !== workspace.workspaceId) return
+            if (leafOf(drag.source.title) === drag.source.title) return
+            event.preventDefault()
+            event.stopPropagation()
+            commitSessionMoveOut(workspace.workspaceId)
+            return
+          }
           if (!dragMatches('workspace')) return
           event.preventDefault()
           event.stopPropagation()
@@ -5814,17 +5875,55 @@ window.__ModuleLoader__.load({
         const anchor = half === 'after'
           ? (index === -1 ? undefined : (flat[index + 1] ? flat[index + 1].id : undefined))
           : targetSessionId
-        if (typeof insertSessionBefore === 'function') {
-          Promise.resolve()
-            .then(() => (anchor !== undefined ? insertSessionBefore(workspaceId, source.sessionId, anchor) : insertSessionBefore(workspaceId, source.sessionId)))
-            .catch(fail)
-          return
+        // v0.18.0 — a drop on a row of ANOTHER group MOVES the row (the name
+        // prefix is rewritten to the target row's group). Until then only the
+        // flat list was reordered while the visible order is decided by the
+        // groups, so a cross-group drop left the row exactly where it was and
+        // read as "the drag did nothing" (user report). Same group keeps the
+        // pure reorder; with the name layer off every group is '' — which is
+        // the same thing.
+        const target = flat.find(s => s.id === targetSessionId)
+        const nextTitle = sessionSlash && target ? titleMovedToGroup(source.title, target.title) : null
+        const reorder = () => {
+          if (typeof insertSessionBefore === 'function') {
+            return (anchor !== undefined ? insertSessionBefore(workspaceId, source.sessionId, anchor) : insertSessionBefore(workspaceId, source.sessionId))
+          }
+          // Host channel gone: commit the same move into the browser-local order.
+          if (actions && typeof actions.setSessionOrder === 'function') {
+            actions.setSessionOrder(workspaceId, reorderIds(flat.map((s) => s.id), source.sessionId, anchor))
+          }
+          return undefined
         }
-        // Host channel gone: commit the same move into the browser-local order.
-        if (actions && typeof actions.setSessionOrder === 'function') {
-          actions.setSessionOrder(workspaceId, reorderIds(flat.map((s) => s.id), source.sessionId, anchor))
-        }
+        const chain = nextTitle !== null && nextTitle !== source.title
+          ? Promise.resolve().then(() => renameByUser(source.sessionId, nextTitle))
+          : Promise.resolve()
+        chain.then(reorder).catch(fail)
       }
+      /**
+       * Drop a session ON ITS OWN WORKSPACE ROW = leave the group (v0.18.0).
+       * The workspace row is the root of the session tree, so it is the one
+       * drop target that always exists OUTSIDE every group — the user's "drag
+       * it out of 测试1" gesture had nowhere to land before this.
+       */
+      const commitSessionMoveOut = (workspaceId) => {
+        const source = drag.source
+        setDrag(null)
+        if (!source || source.workspaceId !== workspaceId) return
+        const leaf = leafOf(source.title)
+        if (leaf === source.title) return
+        Promise.resolve()
+          .then(() => renameByUser(source.sessionId, leaf))
+          .then(() => {
+            // Append to the end of the workspace's flat order: the row now
+            // lives at the root level, and the host order is what the tree
+            // renders there — without this it would surface somewhere in the
+            // middle of the top-level rows, wherever its id happens to sit.
+            if (typeof insertSessionBefore === 'function') return insertSessionBefore(workspaceId, source.sessionId)
+            return undefined
+          })
+          .catch(fail)
+      }
+      const wsRootDropActive = (workspaceId) => dragMatches('session') && drag.over !== null && drag.over.kind === 'ws-root' && drag.over.target === workspaceId
       const commitSessionMoveInto = (workspaceId, groupPath) => {
         const source = drag.source
         setDrag(null)
@@ -6039,6 +6138,7 @@ window.__ModuleLoader__.load({
           onStart: () => { actions.setSessionsExpanded(workspace.workspaceId, true); startSession(workspace.workspaceId) },
           onContextMenu: (e) => openCtx('workspace', workspace, e),
           dropHalf: wsDropHalf(workspace.workspaceId),
+          dropInto: wsRootDropActive(workspace.workspaceId),
           dragEvents: workspaceDragEvents(workspace),
           custStyle: rowStyleOf('workspace:' + workspace.workspaceId),
           iconMode: (styleEntry('workspace:' + workspace.workspaceId) || {}).icon || 'solid',
@@ -6158,8 +6258,14 @@ window.__ModuleLoader__.load({
         // probing it silently yielded a glyph-less row. IconFolderOpenOutline16
         // is present and reads as "move into a group" just as well.
         const groupItem = { id: 'move-group', label: t('menu.moveToGroup'), icon: icon('IconFolderOpenOutline16', 16) }
+        // "Leave the group" (v0.18.0) — the counterpart of move-group, offered
+        // only where a group actually exists to leave: a SESSION row whose own
+        // title carries a "/" prefix, with the session name layer on. A
+        // top-level row gets no entry (there is nothing to leave).
+        const ungroupItem = { id: 'move-out', label: t('menu.moveOutGroup'), icon: icon('IconRightUpOutline16', 16) }
         const wsGroupItems = workspaceSlash ? [groupItem] : []
         const sgroupItems = sessionSlash ? [groupItem] : []
+        const sessionUngroupItems = sessionSlash && ctx.kind === 'session' && ctx.payload && groupPrefixOf(String(ctx.payload.title || '')) !== '' ? [ungroupItem] : []
         // "Delete group" only makes sense for a DECLARED group that holds
         // nothing (v0.17.0): a group with members is a projection of their
         // titles, so removing the declaration would change nothing on screen
@@ -6188,6 +6294,7 @@ window.__ModuleLoader__.load({
           // deliberately NOT styled destructive.
           { id: 'archive', label: ot ? ot('menu.archiveSession') : t('menu.archive'), icon: icon('IconArchiveOutline20', 16) },
           { type: 'separator', id: 'bw-sep' },
+          ...sessionUngroupItems,
           ...sgroupItems,
           customizeEntry,
         ]
@@ -6230,6 +6337,12 @@ window.__ModuleLoader__.load({
         else if (kind === 'session' && id === 'rename') setDialog({ kind: 'sess-rename', session: payload })
         else if (kind === 'session' && id === 'fork') forkSession(payload.id)
         else if (kind === 'session' && id === 'archive') { Promise.resolve().then(() => archiveSession(payload.id)).catch(fail) }
+        // Plain retitle back to the leaf: the row leaves its group and returns
+        // to the top level of its workspace (v0.18.0).
+        else if (kind === 'session' && id === 'move-out') {
+          const leaf = leafOf(String(payload.title || ''))
+          if (leaf !== payload.title) Promise.resolve().then(() => renameByUser(payload.id, leaf)).catch(fail)
+        }
       }
 
       /* --------------------------- dialogs --------------------------- */
@@ -6393,7 +6506,27 @@ window.__ModuleLoader__.load({
           .catch((reason) => { fail(messageOf(reason)) })
       }
 
-      return E('div', { className: 'bw-root' },
+      // v0.18.0 — "drag it OUT" must never land on nothing. The row level
+      // already covers the workspace row and the root-level session rows; this
+      // catches everything else (the empty space below the tree, the header
+      // gap), so a drop outside every group always means the same thing:
+      // leave the group. Row handlers stopPropagation, so this only fires
+      // where no row claimed the drop.
+      const sessionCouldLeaveGroup = dragMatches('session') && sessionSlash && drag.source && leafOf(drag.source.title) !== drag.source.title
+      const rootDropEvents = {
+        onDragOver: (event) => {
+          if (!sessionCouldLeaveGroup) return
+          event.preventDefault()
+          try { event.dataTransfer.dropEffect = 'move' } catch { }
+        },
+        onDrop: (event) => {
+          if (!sessionCouldLeaveGroup) return
+          event.preventDefault()
+          commitSessionMoveOut(drag.source.workspaceId)
+        },
+      }
+
+      return E('div', { className: cls('bw-root', sessionCouldLeaveGroup && 'bw-root-drop-out'), ...rootDropEvents },
         StyleNode(),
         E('div', { className: 'bw-header' },
           E('div', { className: 'bw-header-title' }, t('title')),

@@ -91,7 +91,13 @@ test('client half registers the expected seats (v0.12.1)', () => {
 test('client plugin exports the cordis plugin triple', () => {
   const text = read('src/client.js')
   assert.match(text, /name: 'dsh-better-workspace'/)
-  assert.match(text, /inject: \['slots', 'sessions', 'workspaces', 'locale', 'uiWorkspace', 'settingsScope'\]/)
+  // dsh 0.1.7 removed the settingsScope service: a hard inject would leave
+  // the fiber PENDING forever, so only era-guaranteed services stay; the
+  // settings face is acquired softly (settingsScope) / optionally
+  // (configForms) inside apply.
+  assert.match(text, /inject: \['slots', 'sessions', 'workspaces', 'locale', 'uiWorkspace'\]/)
+  assert.match(text, /ctx\.inject\(\['configForms'\]/)
+  assert.doesNotMatch(text, /'uiWorkspace', 'settingsScope'/)
   assert.match(text, /function apply\(ctx\)/)
 })
 

@@ -1,3 +1,4 @@
+import Schema from '@deepseek-ai/schemastery'
 /**
  * dsh-better-workspace — host half (plain JavaScript, no build step).
  *
@@ -9,6 +10,36 @@
  * intentionally side-effect free.
  */
 export const name = 'dsh-better-workspace'
+
+/**
+ * dsh >= 0.1.7 marks a Config field live-editable without remount; a
+ * 0.1.6-era schemastery predates the method and the guard keeps this module
+ * loadable there (values then behave as ordinary config, read through the
+ * registered settings namespace instead).
+ */
+function live(schema) {
+  return typeof schema.volatile === 'function' ? schema.volatile() : schema
+}
+
+/**
+ * Row Config = the settings surface on dsh >= 0.1.7 (values persist under the
+ * row id 'better-workspace' — the same string as the old settings namespace,
+ * so the one-shot legacy settings.yaml import maps old user values onto the
+ * new home). Inert metadata on older hosts. NOTE: settings are per-profile
+ * on the new host; the client hides the manual cross-device sync section
+ * accordingly (the shared settings.yaml home no longer exists).
+ */
+export const Config = Schema.object({
+  compactChains: live(Schema.boolean().default(true)),
+  statusPulse: live(Schema.boolean().default(true)),
+  styling: live(Schema.dict(Schema.any()).default({})),
+  appearance: live(Schema.dict(Schema.any()).default({})),
+})
+
+/** Read one Config value across eras: Volatile ref (>= 0.1.7) or plain value. */
+export function valueOf(value) {
+  return value && typeof value.get === 'function' ? value.get() : value
+}
 
 export function apply(ctx) {
   const log = ctx && ctx.logger && typeof ctx.logger.info === 'function'
@@ -24,7 +55,18 @@ export function apply(ctx) {
   // The dsh-settings and zod modules resolve only through the dsh Loader; the
   // smoke test imports this file in plain Node with a logger-only ctx and
   // never reaches this path.
-  ctx.inject(['settings'], (sctx) => {
+  // OLD-era namespace registration (dsh <= 0.1.6): the row Config above IS
+  // the surface on dsh >= 0.1.7 — register() no longer exists there and this
+  // block is skipped entirely.
+  const legacySettings = (() => {
+    try {
+      const settings = ctx.get('settings')
+      return !!(settings && typeof settings.register === 'function')
+    } catch {
+      return false
+    }
+  })()
+  if (legacySettings) ctx.inject(['settings'], (sctx) => {
     log('[dsh-better-workspace] settings inject fired')
     // The settings service calls the schema AS A FUNCTION to resolve a value
     // (schema(mergeLayers(...))) — that is @deepseek-ai/schemastery's contract:

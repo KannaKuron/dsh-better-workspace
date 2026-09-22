@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Better Workspace",
+    "description": "Upgrades the sidebar workspace list into a two-layer hierarchy tree (disk nesting by the official owningParentFolder semantics, optional name-slash grouping), explicit empty folders, appearance customization with live preview, and the official add-workspace flow for every backend."
+  }
+}

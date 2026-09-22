@@ -3683,6 +3683,10 @@ window.__ModuleLoader__.load({
     // simply never mirror and never sync, which is exactly the pre-0.9.5
     // browser-local behavior.
     let prefsScopeRef = null
+    // 'settingsScope' (dsh <= 0.1.6, the shared ~/.dsh/settings.yaml home —
+    // the only world where CROSS-DEVICE sync makes sense) or 'configForms'
+    // (dsh >= 0.1.7, per-profile patch persistence). null = browser-local.
+    let prefsScopeVia = null
     const HOST_SNAP_UNAVAILABLE = { status: 'unavailable', value: undefined }
     const hostPrefsOf = (snap) => (snap && snap.status === 'ready' && snap.value && typeof snap.value === 'object'
       ? snap.value
@@ -4864,19 +4868,24 @@ window.__ModuleLoader__.load({
             E(BTN, { variant: 'outline', onClick: () => setAppearance(DEFAULT_APPEARANCE) }, t('settings.appearance.reset')),
           ),
         ),
-        E('div', { className: 'bw-setting-label', style: { marginTop: 16 } }, t('sync.title')),
-        E('div', { className: 'bw-hint' }, t('sync.desc')),
-        E('div', { className: 'bw-sync-modes' },
-          modeButton('overwrite', t('sync.mode.overwrite')),
-          modeButton('merge', t('sync.mode.merge')),
-        ),
-        E('div', { className: 'bw-sync-actions' },
-          syncActionButton(t(IS_DESKTOP_SURFACE ? 'sync.pull.web' : 'sync.pull.desktop'), onPull, true, !scopeLive || snap.status === 'loading'),
-          syncActionButton(t('sync.push'), onPush, false, !scopeLive),
-        ),
-        syncMsg !== null ? E('div', { className: 'bw-hint' }, syncMsg)
-          : (scopeLive ? null : E('div', { className: 'bw-hint' }, t('sync.off'))),
-        scopeLive && snap.status === 'loading' ? E('div', { className: 'bw-hint' }, t('sync.loading')) : null,
+        // Manual cross-device sync exists only where a SHARED host home does
+        // (dsh <= 0.1.6 settings.yaml; both surfaces read one file). On
+        // dsh >= 0.1.7 settings persist per profile, so the section hides.
+        prefsScopeVia === 'settingsScope' ? E(React.Fragment, null,
+          E('div', { className: 'bw-setting-label', style: { marginTop: 16 } }, t('sync.title')),
+          E('div', { className: 'bw-hint' }, t('sync.desc')),
+          E('div', { className: 'bw-sync-modes' },
+            modeButton('overwrite', t('sync.mode.overwrite')),
+            modeButton('merge', t('sync.mode.merge')),
+          ),
+          E('div', { className: 'bw-sync-actions' },
+            syncActionButton(t(IS_DESKTOP_SURFACE ? 'sync.pull.web' : 'sync.pull.desktop'), onPull, true, !scopeLive || snap.status === 'loading'),
+            syncActionButton(t('sync.push'), onPush, false, !scopeLive),
+          ),
+          syncMsg !== null ? E('div', { className: 'bw-hint' }, syncMsg)
+            : (scopeLive ? null : E('div', { className: 'bw-hint' }, t('sync.off'))),
+          scopeLive && snap.status === 'loading' ? E('div', { className: 'bw-hint' }, t('sync.loading')) : null,
+        ) : null,
       )
     }
 
@@ -6788,13 +6797,37 @@ window.__ModuleLoader__.load({
       // block). Binding is best-effort: a missing/failed bind leaves the
       // plugin fully browser-local — the pre-0.9.5 behavior.
       prefsScopeRef = null
+      prefsScopeVia = null
       try {
         if (ctx.settingsScope && typeof ctx.settingsScope.bind === 'function') {
           prefsScopeRef = ctx.settingsScope.bind({ namespace: 'better-workspace' })
+          prefsScopeVia = 'settingsScope'
         }
       } catch (error) {
         console.warn('[dsh-better-workspace] settings scope bind failed; sync stays local', error)
         prefsScopeRef = null
+      }
+      // dsh >= 0.1.7: the settings service is gone; one ConfigForm per live
+      // profile entry replaces it (same getSnapshot/set/subscribe contract).
+      // Values then persist in THIS profile's patch — there is no shared home
+      // any more, so the manual cross-device sync section stays hidden.
+      try {
+        if (ctx.inject) {
+          ctx.inject(['configForms'], (fctx) => {
+            try {
+              if (prefsScopeVia === 'settingsScope') return
+              const forms = fctx && fctx.configForms
+              if (forms && typeof forms.get === 'function') {
+                prefsScopeRef = forms.get('better-workspace')
+                prefsScopeVia = 'configForms'
+              }
+            } catch (error) {
+              console.warn('[dsh-better-workspace] configForms acquisition failed', error)
+            }
+          })
+        }
+      } catch (error) {
+        console.warn('[dsh-better-workspace] configForms wiring failed', error)
       }
 
       // Settings → Plugins card only (the tab dispatches the intersection of
@@ -6849,7 +6882,7 @@ window.__ModuleLoader__.load({
 
     return {
       name: 'dsh-better-workspace',
-      inject: ['slots', 'sessions', 'workspaces', 'locale', 'uiWorkspace', 'settingsScope'],
+      inject: ['slots', 'sessions', 'workspaces', 'locale', 'uiWorkspace'],
       apply,
     }
   },

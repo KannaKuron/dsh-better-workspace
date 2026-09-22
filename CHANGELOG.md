@@ -3,6 +3,18 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.19.0 — 2026-09-22
+
+**类型**:feat(适配 dsh v0.1.7-alpha.1 设置体系,保持旧版本完全兼容)
+
+- **设置面双时代**(dsh 0.1.7 删除 settings.register/SettingsScope,设置 = 插件行 Config + profile patch 存储):
+  - host 半静态导出 `Config`(compactChains/statusPulse/styling/appearance 四字段,volatile 探测;行 id `better-workspace` 与旧命名空间同串,旧 settings.yaml 一次性导入直接落位);旧宿主的 settings.register 注册路径原样保留(时代探测门控)。
+  - client 半 inject 数组去掉硬声明的 `settingsScope`(0.1.7 上硬注入会让 fiber 永远 PENDING,树与卡片全死)——旧式软探测保留,新增 `ctx.inject(['configForms'], …)` 取 `configForms.get('better-workspace')`(与旧 scope 同契约,偏好写入落到本 profile 的 patch)。
+- **跨端手动同步区按时代渲染**:0.1.7 起设置按 profile 存储,共享的 settings.yaml 之家不复存在,同步按钮区在 configForms 时代隐藏(偏好仍双写持久化到本 profile;旧宿主上同步功能不变)。
+- **插件管理页展示资产**:新增 icon.svg + locale/{en,zh}.json 多语言标题/描述(旧宿主忽略)。
+- 仓库新增 devDependencies(schemastery),冒烟测试前需 `npm install`;38 项全绿(更新客户端注入断言)。
+- sidebar.workspaces 槽位契约、directoryFlow 官方占用、useWorkspaces/useSessions 注入面在 0.1.7 上复核无漂移。
+
 ## v0.18.0 — 2026-09-19
 
 **类型**:feat / fix(把「拖出分组」做成真的:跨组落点改写名称前缀、工作区行成为组外落点、右键补「移出分组」;用户实测反馈)

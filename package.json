@@ -1,6 +1,6 @@
 {
   "name": "dsh-better-workspace",
-  "version": "0.18.0",
+  "version": "0.19.0",
   "description": "侧边栏工作区树:按官方磁盘目录嵌套(官方 workspace-tree 语义),可选按名称中的 / 分组(默认关闭,设置里开启);添加工作区走官方目录流。Workspace tree for the DSH sidebar: disk-path nesting (official workspace-tree semantics), with optional \"/\"-name grouping (off by default); add-workspace rides the official directory flow.",
   "type": "module",
   "repository": {
@@ -13,7 +13,8 @@
   "main": "src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./client": "./src/client.js"
+    "./client": "./src/client.js",
+    "./locale/*.json": "./locale/*.json"
   },
   "engines": {
     "node": ">=18",
@@ -41,7 +42,9 @@
     "dsh.plugin.json",
     "README.md",
     "README_EN.md",
-    "LICENSE"
+    "LICENSE",
+    "locale",
+    "icon.svg"
   ],
   "scripts": {
     "test": "node --test tests/smoke.mjs",
@@ -64,5 +67,9 @@
   "homepage": "https://github.com/KannaKuron/dsh-better-workspace",
   "bugs": {
     "url": "https://github.com/KannaKuron/dsh-better-workspace/issues"
+  },
+  "icon": "./icon.svg",
+  "devDependencies": {
+    "@deepseek-ai/schemastery": "^3.18.1"
   }
 }

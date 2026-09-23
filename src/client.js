@@ -83,6 +83,10 @@ window.__ModuleLoader__.load({
       'settings.workspaceSlash.hint': '关闭时工作区只按官方文件夹(磁盘目录)嵌套,标题原样显示;开启后标题里的 / 重新成为分组层级(组名/名字)。默认关闭,只影响工作区;会话分组另有独立开关。',
       'settings.statusPulse': '状态呼吸灯',
       'settings.statusPulse.hint': '被折叠藏起的状态灯(完成绿 / 运行蓝 / 待交互琥珀)沿层级向外冒泡:工作区与分组行以图标呼吸发光(颜色随状态,自定义过发光的标题一起呼吸),会话分组行显示呼吸状态灯;默认开启,可在此关闭。',
+      'settings.sessionMenu': "会话右键菜单",
+      'settings.sessionMenu.hint': "开启时右键点击会话行即可打开操作菜单(包含官方的置顶、归档、停止并归档等);关闭后改为在行尾悬停显示官方样式的 ⋯ 按钮,点击打开同一个菜单。默认开启。",
+      'settings.rowActions': "会话行悬停按钮",
+      'settings.rowActions.hint': "悬停会话行时在行尾显示置顶 / 归档快捷按钮,与官方行保持一致;关闭后这些动作只保留在菜单里。默认开启。",
       'settings.appearance': '默认外观',
       'settings.appearance.hint': '没有单独自定义过的行使用这套外观;字体描边默认开启——背景画面下不描边文字常常看不清。字体颜色留空即跟随主题。',
       'settings.appearance.reset': '恢复默认外观',
@@ -213,6 +217,10 @@ window.__ModuleLoader__.load({
       'settings.workspaceSlash.hint': 'Off: workspaces nest purely by the official folders (disk directories) and titles render whole. On: "/" in a title becomes a group level again ("group/name"). Off by default, workspaces only — session grouping has its own switch.',
       'settings.statusPulse': 'Status breathing light',
       'settings.statusPulse.hint': 'Status dots hidden by collapse (done green / running blue / pending amber) bubble outward: workspace and folder rows breathe on their icon in the status color (custom-glow labels breathe along), session-group rows show a breathing dot; on by default, turn it off here.',
+      'settings.sessionMenu': "Session context menu",
+      'settings.sessionMenu.hint': "On: right-click a session row to open its action menu (including the official pin, archive, and stop-and-archive). Off: the row shows the official-style ⋯ button on hover instead, opening the same menu. On by default.",
+      'settings.rowActions': "Session row hover buttons",
+      'settings.rowActions.hint': "Show pin / archive quick buttons at the end of a hovered session row, matching the official rows. Off: these actions stay in the menu only. On by default.",
       'settings.appearance': 'Default appearance',
       'settings.appearance.hint': 'Rows that were never customized use this appearance; the outline is on by default — text without it is often unreadable over a background image. Leave the color empty to follow the theme.',
       'settings.appearance.reset': 'Reset to default',
@@ -351,6 +359,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': 'عند الإيقاف تتداخل مساحات العمل حسب المجلدات الرسمية (مجلدات القرص) فقط وتظهر العناوين كاملة؛ وعند التشغيل تعود "/" في العنوان مستوى تجميع («المجموعة/الاسم»). معطّل افتراضياً، ويخص مساحات العمل وحدها — لتجميع الجلسات مفتاحه المستقل.',
         'settings.statusPulse': 'مؤشر حالة نابض',
         'settings.statusPulse.hint': 'مؤشرات الحالة التي يخفيها الطيّ (مكتمل أخضر / قيد التشغيل أزرق / بانتظار تفاعل كهرماني) تتصاعد عبر المستويات: تصدر أسطر مساحات العمل والمجلدات وميضاً نابضاً للأيقونة بلون الحالة (وتنبض معها العناوين ذات التوهج المخصص)، وتعرض أسطر مجموعات الجلسات نقطة حالة نابضة؛ مفعّل افتراضياً ويمكن إيقافه هنا.',
+        'settings.sessionMenu': "قائمة النقر الأيمن للجلسة",
+        'settings.sessionMenu.hint': "عند التفعيل: انقر بزر الفأرة الأيمن على سطر الجلسة لفتح قائمة الإجراءات (بما في ذلك التثبيت والأرشفة الرسمية). عند الإيقاف: يظهر زر ⋯ بأسلوب رسمي عند تمرير المؤشر يفتح القائمة نفسها. مفعّل افتراضياً.",
+        'settings.rowActions': "أزرار تمرير سطر الجلسة",
+        'settings.rowActions.hint': "إظهار أزرار التثبيت / الأرشفة السريعة في نهاية سطر الجلسة عند تمرير المؤشر، مطابقة للأسطر الرسمية. عند الإيقاف: تبقى هذه الإجراءات في القائمة فقط. مفعّل افتراضياً.",
         'settings.appearance': 'المظهر الافتراضي',
         'settings.appearance.hint': 'تستخدم الأسطر غير المخصصة هذا المظهر؛ حدّ النص مفعّل افتراضياً — فبدونه يصعب قراءة النص فوق صورة خلفية. اترك اللون فارغاً لاتباع السمة.',
         'settings.appearance.reset': 'استعادة المظهر الافتراضي',
@@ -481,6 +493,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': 'Aus: Arbeitsbereiche verschachteln nur nach den offiziellen Ordnern (Verzeichnisse auf der Platte), Titel bleiben vollständig. An: "/" im Titel wird wieder eine Gruppenebene ("Gruppe/Name"). Standardmäßig aus, gilt nur für Arbeitsbereiche — Sitzungsgruppen haben einen eigenen Schalter.',
         'settings.statusPulse': 'Status-Pulslicht',
         'settings.statusPulse.hint': 'Vom Einklappen verdeckte Statuspunkte (fertig grün / läuft blau / wartet amber) steigen die Hierarchie hinauf: Arbeitsbereich- und Ordnerzeilen lassen ihr Symbol in der Statusfarbe pulsieren (eigens gefärbte Titel pulsieren mit), Sitzungsgruppen zeigen einen pulsierenden Statuspunkt; standardmäßig an, hier abschaltbar.',
+        'settings.sessionMenu': "Sitzungs-Kontextmenü",
+        'settings.sessionMenu.hint': "Ein: Rechtsklick auf eine Sitzungszeile öffnet das Aktionsmenü (inklusive offiziellem Anheften, Archivieren und Stoppen-und-Archivieren). Aus: beim Daraufzeigen erscheint stattdessen der offizielle ⋯-Knopf am Zeilenende und öffnet dasselbe Menü. Standardmäßig ein.",
+        'settings.rowActions': "Sitzungszeilen-Schnellknöpfe",
+        'settings.rowActions.hint': "Zeigt beim Daraufzeigen Schnellknöpfe zum Anheften / Archivieren am Zeilenende – wie die offiziellen Zeilen. Aus: diese Aktionen bleiben nur im Menü. Standardmäßig ein.",
         'settings.appearance': 'Standardaussehen',
         'settings.appearance.hint': 'Zeilen ohne eigene Anpassung nutzen dieses Aussehen; die Textkontur ist standardmäßig an – ohne sie ist Text über einem Hintergrundbild oft kaum lesbar. Bleibt die Farbe leer, folgt sie dem Thema.',
         'settings.appearance.reset': 'Standard wiederherstellen',
@@ -611,6 +627,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': 'Désactivé : les espaces s\'imbriquent uniquement selon les dossiers officiels (répertoires du disque) et les titres restent entiers. Activé : le « / » d\'un titre redevient un niveau de groupe (« groupe/nom »). Désactivé par défaut, espaces uniquement — les groupes de sessions ont leur propre interrupteur.',
         'settings.statusPulse': 'Voyant d\'état pulsant',
         'settings.statusPulse.hint': 'Les voyants masqués par le repli (terminé vert / en cours bleu / en attente ambre) remontent la hiérarchie: les lignes d\'espace de travail et de dossier font pulser leur icône dans la couleur d\'état (les titres à lueur personnalisée pulsent aussi), les lignes de groupe de sessions affichent un voyant pulsant; activé par défaut, désactivable ici.',
+        'settings.sessionMenu': "Menu contextuel des sessions",
+        'settings.sessionMenu.hint': "Activé : un clic droit sur une ligne de session ouvre son menu d’actions (épinglage, archivage et arrêt-avec-archivage officiels inclus). Désactivé : la ligne affiche plutôt le bouton ⋯ officiel au survol, ouvrant le même menu. Activé par défaut.",
+        'settings.rowActions': "Boutons de survol des sessions",
+        'settings.rowActions.hint': "Affiche des boutons rapides d’épinglage / d’archivage en fin de ligne au survol, comme les lignes officielles. Désactivé : ces actions restent dans le menu uniquement. Activé par défaut.",
         'settings.appearance': 'Apparence par défaut',
         'settings.appearance.hint': 'Les lignes sans personnalisation utilisent cette apparence; le contour du texte est activé par défaut — sans lui, le texte reste souvent illisible sur une image de fond. Laissez la couleur vide pour suivre le thème.',
         'settings.appearance.reset': 'Rétablir l\'apparence par défaut',
@@ -741,6 +761,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': 'बंद: कार्यस्थान केवल आधिकारिक फ़ोल्डरों (डिस्क निर्देशिकाओं) के अनुसार नेस्ट होते हैं और शीर्षक पूरे दिखते हैं। चालू: शीर्षक में "/" फिर से समूह स्तर बन जाता है ("समूह/नाम")। डिफ़ॉल्ट रूप से बंद, केवल कार्यस्थानों पर लागू — सत्र समूह का अपना स्विच है।',
         'settings.statusPulse': 'स्थिति की साँस लेती बत्ती',
         'settings.statusPulse.hint': 'समेटने से छिपी स्थिति बत्तियाँ (पूर्ण हरी / चल रहा नीली / प्रतीक्षारत अंबर) पदानुक्रम में ऊपर उठती हैं: कार्यस्थान और फ़ोल्डर पंक्तियों का चिह्न स्थिति के रंग में साँस लेता है (अनुकूलित चमक वाले शीर्षक भी साथ साँस लेते हैं), सत्र समूह पंक्तियों पर साँस लेता स्थिति बिंदु दिखता है; डिफ़ॉल्ट रूप से चालू, यहाँ बंद किया जा सकता है।',
+        'settings.sessionMenu': "सेशन संदर्भ मेनू",
+        'settings.sessionMenu.hint': "चालू: सेशन पंक्ति पर राइट-क्लिक करने से उसका क्रिया मेनू खुलता है (आधिकारिक पिन, आर्काइव और रोककर-आर्काइव सहित)। बंद: पंक्ति पर होवर करने पर आधिकारिक शैली का ⋯ बटन दिखता है, जो वही मेनू खोलता है। डिफ़ॉल्ट रूप से चालू।",
+        'settings.rowActions': "सेशन पंक्ति होवर बटन",
+        'settings.rowActions.hint': "होवर करने पर सेशन पंक्ति के अंत में पिन / आर्काइव क्विक बटन दिखाता है, आधिकारिक पंक्तियों जैसा। बंद: ये क्रियाएँ केवल मेनू में रहती हैं। डिफ़ॉल्ट रूप से चालू।",
         'settings.appearance': 'डिफ़ॉल्ट रूप',
         'settings.appearance.hint': 'जिन पंक्तियों को अलग से अनुकूलित नहीं किया गया वे यह रूप इस्तेमाल करती हैं; पाठ की रूपरेखा डिफ़ॉल्ट रूप से चालू है — पृष्ठभूमि छवि पर बिना रूपरेखा वाला पाठ अक्सर पढ़ा नहीं जाता। रंग खाली छोड़ने पर वह थीम का अनुसरण करता है।',
         'settings.appearance.reset': 'डिफ़ॉल्ट रूप पर लौटें',
@@ -871,6 +895,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': 'Mati: ruang kerja bersarang hanya menurut folder resmi (direktori disk) dan judul tampil utuh. Nyala: "/" pada judul kembali menjadi tingkat grup ("grup/nama"). Default mati, hanya ruang kerja — pengelompokan sesi punya sakelarnya sendiri.',
         'settings.statusPulse': 'Lampu status bernapas',
         'settings.statusPulse.hint': 'Lampu status yang tersembunyi karena pelipatan (selesai hijau / berjalan biru / menunggu kuning) menggelembung ke tingkat atas: baris ruang kerja dan folder membuat ikonnya bernapas dalam warna status (judul dengan pendar khusus ikut bernapas), baris grup sesi menampilkan titik status yang bernapas; aktif secara bawaan, bisa dimatikan di sini.',
+        'settings.sessionMenu': "Menu klik kanan sesi",
+        'settings.sessionMenu.hint': "Aktif: klik kanan pada baris sesi untuk membuka menu aksinya (termasuk pin, arsip, dan henti-dan-arsip resmi). Nonaktif: baris menampilkan tombol ⋯ gaya resmi saat dihover, membuka menu yang sama. Aktif secara bawaan.",
+        'settings.rowActions': "Tombol hover baris sesi",
+        'settings.rowActions.hint': "Menampilkan tombol cepat pin / arsip di ujung baris sesi saat dihover, mengikuti baris resmi. Nonaktif: aksi ini hanya ada di menu. Aktif secara bawaan.",
         'settings.appearance': 'Tampilan bawaan',
         'settings.appearance.hint': 'Baris yang belum disesuaikan memakai tampilan ini; garis luar teks aktif secara bawaan — tanpa itu teks sering tak terbaca di atas gambar latar. Biarkan warna kosong agar mengikuti tema.',
         'settings.appearance.reset': 'Kembalikan tampilan bawaan',
@@ -1001,6 +1029,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': 'Off: le aree di lavoro si annidano solo secondo le cartelle ufficiali (directory del disco) e i titoli restano interi. On: la "/" nel titolo torna a essere un livello di gruppo ("gruppo/nome"). Disattivato per impostazione predefinita, solo aree di lavoro — le sessioni hanno il proprio interruttore.',
         'settings.statusPulse': 'Spia di stato pulsante',
         'settings.statusPulse.hint': 'Le spie nascoste dalla compressione (completato verde / in esecuzione blu / in attesa ambra) risalgono la gerarchia: le righe di aree di lavoro e cartelle fanno pulsare l\'icona nel colore di stato (anche i titoli con bagliore personalizzato pulsano), le righe dei gruppi di sessioni mostrano una spia pulsante; attiva per impostazione predefinita, disattivabile qui.',
+        'settings.sessionMenu': "Menu contestuale sessione",
+        'settings.sessionMenu.hint': "Attivo: il clic destro su una riga di sessione apre il menu azioni (con pin, archiviazione e ferma-e-archivia ufficiali). Disattivo: la riga mostra il pulsante ⋯ ufficiale al passaggio, aprendo lo stesso menu. Attivo per impostazione predefinita.",
+        'settings.rowActions': "Pulsanti al passaggio della sessione",
+        'settings.rowActions.hint': "Mostra pulsanti rapidi di pin / archiviazione in fondo alla riga al passaggio, come le righe ufficiali. Disattivo: queste azioni restano solo nel menu. Attivo per impostazione predefinita.",
         'settings.appearance': 'Aspetto predefinito',
         'settings.appearance.hint': 'Le righe mai personalizzate usano questo aspetto; il contorno del testo è attivo per impostazione predefinita — senza di esso il testo è spesso illeggibile sopra un\'immagine di sfondo. Lascia il colore vuoto per seguire il tema.',
         'settings.appearance.reset': 'Ripristina l\'aspetto predefinito',
@@ -1131,6 +1163,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': 'オフ:ワークスペースは公式フォルダー(ディスクのディレクトリ)だけで入れ子になり、タイトルはそのまま表示されます。オン:タイトル内の「/」が再びグループ階層になります(「グループ/名前」)。既定はオフ、対象はワークスペースのみ — セッションのグループ化には専用のスイッチがあります。',
         'settings.statusPulse': 'ステータス表示灯',
         'settings.statusPulse.hint': '折りたたみで隠れたステータス表示(完了は緑 / 実行中は青 / 操作待ちは琥珀)が上位の階層へ伝わります:ワークスペースとフォルダーの行はアイコンがステータス色で明滅し(グローを設定したタイトルも連動),セッショングループの行には明滅するステータスドットが出ます;既定はオンで,ここでオフにできます。',
+        'settings.sessionMenu': "セッション右クリックメニュー",
+        'settings.sessionMenu.hint': "オン:セッション行を右クリックすると操作メニューを開きます(公式のピン留め・アーカイブ・停止してアーカイブを含む)。オフ:行にカーソルを合わせると公式スタイルの ⋯ ボタンが表示され、同じメニューを開きます。既定はオン。",
+        'settings.rowActions': "セッション行のホバーボタン",
+        'settings.rowActions.hint': "セッション行にカーソルを合わせると行末にピン / アーカイブのクイックボタンを表示し、公式の行と揃えます。オフ:これらの操作はメニュー内のみ。既定はオン。",
         'settings.appearance': '既定の外観',
         'settings.appearance.hint': '個別にカスタマイズしていない行に適用される外観です;文字の縁取りは既定でオンです——背景画像の上では縁取りのない文字が読みにくいためです。色を空にするとテーマに従います。',
         'settings.appearance.reset': '既定の外観に戻す',
@@ -1261,6 +1297,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': '끄면: 작업 공간은 공식 폴더(디스크 디렉터리)로만 중첩되고 제목은 그대로 표시됩니다. 켜면: 제목의 "/"가 다시 그룹 단계가 됩니다("그룹/이름"). 기본값은 끔이며 작업 공간에만 적용됩니다 — 세션 그룹화에는 별도 스위치가 있습니다.',
         'settings.statusPulse': '상태 표시등',
         'settings.statusPulse.hint': '접혀서 가려진 상태 표시(완료는 초록 / 실행은 파랑 / 대기는 호박색)가 상위 단계로 번집니다: 워크스페이스와 폴더 행은 아이콘이 상태 색으로 깜빡이고(글로우를 지정한 제목도 함께 깜빡임), 세션 그룹 행에는 깜빡이는 상태 점이 표시됩니다; 기본값은 켜짐이며 여기서 끌 수 있습니다.',
+        'settings.sessionMenu': "세션 우클릭 메뉴",
+        'settings.sessionMenu.hint': "켬: 세션 행을 우클릭하면 작업 메뉴가 열립니다(공식 고정, 보관, 중지 후 보관 포함). 끔: 행에 마우스를 올리면 공식 스타일의 ⋯ 버튼이 표시되어 같은 메뉴를 엽니다. 기본값은 켬.",
+        'settings.rowActions': "세션 행 호버 버튼",
+        'settings.rowActions.hint': "세션 행에 마우스를 올리면 행 끝에 고정 / 보관 빠른 버튼을 표시하여 공식 행과 일치시킵니다. 끔: 이 작업들은 메뉴에만 남습니다. 기본값은 켬.",
         'settings.appearance': '기본 모양',
         'settings.appearance.hint': '따로 지정하지 않은 행에 적용되는 모양입니다; 글자 외곽선은 기본으로 켜져 있습니다——배경 이미지 위에서는 외곽선 없는 글자가 잘 보이지 않기 때문입니다. 색을 비우면 테마를 따릅니다.',
         'settings.appearance.reset': '기본 모양으로 되돌리기',
@@ -1391,6 +1431,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': 'Uit: werkruimten nesten alleen volgens de officiële mappen (schijfmappen) en titels blijven volledig. Aan: "/" in een titel wordt weer een groepsniveau ("groep/naam"). Standaard uit, alleen werkruimten — sessiegroepen hebben hun eigen schakelaar.',
         'settings.statusPulse': 'Pulserend statuslampje',
         'settings.statusPulse.hint': 'Statuslampjes die door het inklappen verborgen zijn (voltooid groen / actief blauw / wachtend amber) borrelen door de hiërarchie omhoog: werkruimte- en mapregels laten hun pictogram in de statuskleur pulseren (titels met eigen gloed pulseren mee), sessiegroepregels tonen een pulserend statusstipje; standaard aan, hier uit te zetten.',
+        'settings.sessionMenu': "Sessie-contextmenu",
+        'settings.sessionMenu.hint': "Aan: rechtermuisklik op een sessierij opent het actiemenu (inclusief officieel vastmaken, archiveren en stoppen-en-archiveren). Uit: bij aanwijzen verschijnt in plaats daarvan de officiële ⋯-knop aan het rij-einde, die hetzelfde menu opent. Standaard aan.",
+        'settings.rowActions': "Sessierij-snelknoppen",
+        'settings.rowActions.hint': "Toont snelknoppen voor vastmaken / archiveren aan het einde van een aangewezen sessierij, gelijk aan de officiële rijen. Uit: deze acties blijven alleen in het menu. Standaard aan.",
         'settings.appearance': 'Standaarduiterlijk',
         'settings.appearance.hint': 'Regels zonder eigen aanpassing gebruiken dit uiterlijk; de tekstomtrek staat standaard aan — zonder omtrek is tekst op een achtergrondafbeelding vaak slecht leesbaar. Laat de kleur leeg om het thema te volgen.',
         'settings.appearance.reset': 'Standaarduiterlijk herstellen',
@@ -1521,6 +1565,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': 'Wył.: obszary robocze zagnieżdżają się wyłącznie według oficjalnych folderów (katalogów dysku), a tytuły są pełne. Wł.: "/" w tytule znów staje się poziomem grupy ("grupa/nazwa"). Domyślnie wył., dotyczy tylko obszarów roboczych — grupy sesji mają własny przełącznik.',
         'settings.statusPulse': 'Pulsująca lampka stanu',
         'settings.statusPulse.hint': 'Lampki ukryte przez zwinięcie (ukończono zielona / trwa niebieska / czeka bursztynowa) bąbelkują w górę hierarchii: wiersze obszarów roboczych i folderów pulsują ikoną w kolorze stanu (tytuły z własną poświatą pulsują razem), wiersze grup sesji pokazują pulsującą kropkę stanu; domyślnie włączone, tutaj można wyłączyć.',
+        'settings.sessionMenu': "Menu kontekstowe sesji",
+        'settings.sessionMenu.hint': "Włączone: kliknięcie prawym przyciskiem wiersza sesji otwiera jego menu akcji (w tym oficjalne przypinanie, archiwizację i zatrzymanie z archiwizacją). Wyłączone: przy najechaniu wiersz pokazuje oficjalny przycisk ⋯ otwierający to samo menu. Domyślnie włączone.",
+        'settings.rowActions': "Przyciski najechania wiersza sesji",
+        'settings.rowActions.hint': "Pokazuje szybkie przyciski przypnij / archiwizuj na końcu najechanego wiersza sesji, jak w oficjalnych wierszach. Wyłączone: te akcje zostają tylko w menu. Domyślnie włączone.",
         'settings.appearance': 'Domyślny wygląd',
         'settings.appearance.hint': 'Wiersze bez własnych ustawień używają tego wyglądu; obrys tekstu jest domyślnie włączony — bez niego tekst na obrazie tła bywa nieczytelny. Puste pole koloru oznacza podążanie za motywem.',
         'settings.appearance.reset': 'Przywróć domyślny wygląd',
@@ -1651,6 +1699,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': 'Desligado: as áreas de trabalho aninham-se apenas pelas pastas oficiais (diretórios do disco) e os títulos ficam inteiros. Ligado: a "/" no título volta a ser um nível de grupo ("grupo/nome"). Desligado por padrão, só áreas de trabalho — os grupos de sessões têm o próprio interruptor.',
         'settings.statusPulse': 'Luz de status pulsante',
         'settings.statusPulse.hint': 'As luzes escondidas pelo recolhimento (concluído verde / em execução azul / aguardando âmbar) sobem pela hierarquia: linhas de espaço de trabalho e pasta pulsam o ícone na cor do status (títulos com brilho personalizado pulsam junto), linhas de grupo de sessões mostram um ponto pulsante; ativado por padrão, pode ser desligado aqui.',
+        'settings.sessionMenu': "Menu de contexto da sessão",
+        'settings.sessionMenu.hint': "Ligado: clicar com o botão direito numa linha de sessão abre o menu de ações (incluindo fixar, arquivar e parar-e-arquivar oficiais). Desligado: a linha mostra o botão ⋯ oficial ao passar o cursor, abrindo o mesmo menu. Ligado por predefinição.",
+        'settings.rowActions': "Botões de passagem da sessão",
+        'settings.rowActions.hint': "Mostra botões rápidos de fixar / arquivar no fim da linha ao passar o cursor, como nas linhas oficiais. Desligado: essas ações ficam apenas no menu. Ligado por predefinição.",
         'settings.appearance': 'Aparência padrão',
         'settings.appearance.hint': 'Linhas sem personalização usam esta aparência; o contorno do texto vem ativado por padrão — sem ele, o texto costuma ficar ilegível sobre uma imagem de fundo. Deixe a cor vazia para seguir o tema.',
         'settings.appearance.reset': 'Restaurar aparência padrão',
@@ -1781,6 +1833,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': 'Выкл.: рабочие области вкладываются только по официальным папкам (каталогам диска), заголовки показываются целиком. Вкл.: «/» в заголовке снова становится уровнем группы («группа/имя»). По умолчанию выкл., только рабочие области — у групп сессий свой переключатель.',
         'settings.statusPulse': 'Пульсирующий индикатор состояния',
         'settings.statusPulse.hint': 'Индикаторы, скрытые сворачиванием (завершено — зелёный / выполняется — синий / ожидает — янтарный), всплывают вверх по иерархии: строки рабочих областей и папок пульсируют значком в цвете состояния (заголовки со своим свечением пульсируют вместе с ними), строки групп сессий показывают пульсирующую точку; включено по умолчанию, здесь можно отключить.',
+        'settings.sessionMenu': "Контекстное меню сессии",
+        'settings.sessionMenu.hint': "Вкл: правый клик по строке сессии открывает меню действий (включая официальные закрепление, архивацию и «остановить и архивировать»). Выкл: при наведении в строке появляется официальная кнопка ⋯, открывающая то же меню. Включено по умолчанию.",
+        'settings.rowActions': "Кнопки наведения строки сессии",
+        'settings.rowActions.hint': "Показывает быстрые кнопки закрепить / архивировать в конце строки при наведении, как в официальных строках. Выкл: эти действия остаются только в меню. Включено по умолчанию.",
         'settings.appearance': 'Оформление по умолчанию',
         'settings.appearance.hint': 'Строки без своей настройки используют это оформление; обводка текста включена по умолчанию — без неё текст на фоновом изображении часто нечитаем. Пустой цвет означает следование теме.',
         'settings.appearance.reset': 'Вернуть оформление по умолчанию',
@@ -1911,6 +1967,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': 'Av: arbetsytor kapslas in enbart efter de officiella mapparna (diskmappar) och titlar visas hela. På: "/" i en titel blir åter en gruppnivå ("grupp/namn"). Av som standard, endast arbetsytor — sessionsgrupper har sin egen växlare.',
         'settings.statusPulse': 'Pulserande statuslampa',
         'settings.statusPulse.hint': 'Statuslampor som döljs av ihopfällningen (klart grön / körs blå / väntar bärnsten) bubblar uppåt i hierarkin: rader för arbetsytor och mappar pulserar ikonen i statusfärgen (titlar med egen glöd pulserar med), sessionsgrupper visar en pulserande prick; på som standard, stängs av här.',
+        'settings.sessionMenu': "Sessionens högerklicksmeny",
+        'settings.sessionMenu.hint': "På: högerklick på en sessionsrad öppnar dess åtgärdsmeny (inklusive officiell fästning, arkivering och stoppa-och-arkivera). Av: raden visar istället den officiella ⋯-knappen vid hovring, som öppnar samma meny. På som standard.",
+        'settings.rowActions': "Hovringsknappar för sessionsraden",
+        'settings.rowActions.hint': "Visar snabbknappar för fäst / arkivera i radens slut vid hovring, som de officiella raderna. Av: åtgärderna finns bara i menyn. På som standard.",
         'settings.appearance': 'Standardutseende',
         'settings.appearance.hint': 'Rader utan egen anpassning använder detta utseende; textkonturen är på som standard — utan den är texten ofta oläslig ovanpå en bakgrundsbild. Lämna färgen tom för att följa temat.',
         'settings.appearance.reset': 'Återställ standardutseende',
@@ -2041,6 +2101,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': 'ปิด: พื้นที่ทำงานซ้อนกันตามโฟลเดอร์ทางการ (ไดเรกทอรีบนดิสก์) เท่านั้น และชื่อเรื่องแสดงเต็ม ปิดเป็นค่าเริ่มต้น ใช้กับพื้นที่ทำงานเท่านั้น — การจัดกลุ่มเซสชันมีสวิตช์แยก',
         'settings.statusPulse': 'ไฟสถานะหายใจ',
         'settings.statusPulse.hint': 'ไฟสถานะที่ถูกย่อซ่อนไว้ (เสร็จแล้วสีเขียว / กำลังทำงานสีน้ำเงิน / รอตอบสนองสีเหลืองอำพัน) จะลอยขึ้นตามลำดับชั้น: แถวพื้นที่ทำงานและโฟลเดอร์จะให้ไอคอนหายใจเป็นสีตามสถานะ (ชื่อที่มีการเรืองแสงกำหนดเองก็หายใจตาม) แถวกลุ่มเซสชันจะแสดงจุดสถานะที่หายใจ เปิดไว้เป็นค่าเริ่มต้น ปิดได้ที่นี่',
+        'settings.sessionMenu': "เมนูคลิกขวาของเซสชัน",
+        'settings.sessionMenu.hint': "เปิด: คลิกขวาที่แถวเซสชันเพื่อเปิดเมนูการกระทำ (รวมปักหมุด, เก็บถาวร และหยุด-แล้ว-เก็บถาวรแบบทางการ) ปิด: เมื่อชี้ที่แถวจะแสดงปุ่ม ⋯ สไตล์ทางการเปิดเมนูเดียวกันแทน เปิดตามค่าเริ่มต้น",
+        'settings.rowActions': "ปุ่มเมื่อชี้แถวเซสชัน",
+        'settings.rowActions.hint': "แสดงปุ่มด่วนปักหมุด / เก็บถาวรท้ายแถวเมื่อชี้ ให้ตรงกับแถวทางการ ปิด: การกระทำเหล่านี้มีเฉพาะในเมนู เปิดตามค่าเริ่มต้น",
         'settings.appearance': 'รูปลักษณ์เริ่มต้น',
         'settings.appearance.hint': 'แถวที่ยังไม่ได้กำหนดเองจะใช้รูปลักษณ์นี้ เส้นขอบตัวอักษรเปิดไว้เป็นค่าเริ่มต้น — บนภาพพื้นหลัง ตัวอักษรที่ไม่มีเส้นขอบมักอ่านยาก เว้นสีว่างไว้เพื่อตามธีม',
         'settings.appearance.reset': 'คืนค่ารูปลักษณ์เริ่มต้น',
@@ -2171,6 +2235,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': 'Kapalı: çalışma alanları yalnızca resmî klasörlere (disk dizinleri) göre iç içe geçer ve başlıklar tam görünür. Açık: başlıktaki "/" yeniden bir grup düzeyi olur ("grup/ad"). Varsayılan kapalı, yalnızca çalışma alanları — oturum gruplamasının kendi anahtarı var.',
         'settings.statusPulse': 'Nefes alan durum ışığı',
         'settings.statusPulse.hint': 'Daraltmayla gizlenen durum ışıkları (tamamlandı yeşil / çalışıyor mavi / bekliyor amber) hiyerarşide yukarı taşar: çalışma alanı ve klasör satırlarının simgesi durum renginde nefes alır (özel ışıması olan başlıklar da birlikte nefes alır), oturum grubu satırları nefes alan bir durum noktası gösterir; varsayılan olarak açık, buradan kapatılabilir.',
+        'settings.sessionMenu': "Oturum sağ tık menüsü",
+        'settings.sessionMenu.hint': "Açık: oturum satırına sağ tıklayınca eylem menüsü açılır (resmî sabitleme, arşivleme ve durdurup-arşivleme dahil). Kapalı: satırın üzerine gelince resmî ⋯ düğmesi görünür ve aynı menüyü açar. Varsayılan açık.",
+        'settings.rowActions': "Oturum satırı düğmeleri",
+        'settings.rowActions.hint': "Üzerine gelince satır sonunda sabitle / arşivle hızlı düğmelerini gösterir, resmî satırlarla aynı. Kapalı: bu eylemler yalnızca menüde kalır. Varsayılan açık.",
         'settings.appearance': 'Varsayılan görünüm',
         'settings.appearance.hint': 'Özel olarak uyarlanmamış satırlar bu görünümü kullanır; metin konturu varsayılan olarak açıktır — arka plan görseli üzerinde kontursuz metin çoğu zaman okunmaz. Rengi boş bırakırsanız temayı izler.',
         'settings.appearance.reset': 'Varsayılan görünüme dön',
@@ -2301,6 +2369,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': 'Tắt: không gian làm việc lồng nhau chỉ theo thư mục chính thức (thư mục trên đĩa) và tiêu đề hiển thị nguyên vẹn. Bật: "/" trong tiêu đề lại trở thành một cấp nhóm ("nhóm/tên"). Mặc định tắt, chỉ áp dụng cho không gian làm việc — nhóm phiên có công tắc riêng.',
         'settings.statusPulse': 'Đèn trạng thái nhấp nháy',
         'settings.statusPulse.hint': 'Những đèn trạng thái bị thu gọn che đi (xong màu xanh lá / đang chạy màu xanh dương / đang chờ màu hổ phách) sẽ nổi dần lên các tầng trên: hàng không gian làm việc và thư mục cho biểu tượng nhấp nháy theo màu trạng thái (tiêu đề có đặt phát sáng cũng nhấp nháy theo), hàng nhóm phiên hiện một chấm trạng thái nhấp nháy; mặc định bật, có thể tắt tại đây.',
+        'settings.sessionMenu': "Menu chuột phải phiên",
+        'settings.sessionMenu.hint': "Bật: nhấp chuột phải vào dòng phiên để mở menu thao tác (bao gồm ghim, lưu trữ và dừng-rồi-lưu trữ chính thức). Tắt: dòng hiển thị nút ⋯ kiểu chính thức khi di chuột, mở cùng menu đó. Bật theo mặc định.",
+        'settings.rowActions': "Nút hover dòng phiên",
+        'settings.rowActions.hint': "Hiện nút nhanh ghim / lưu trữ ở cuối dòng khi di chuột, giống các dòng chính thức. Tắt: các thao tác này chỉ còn trong menu. Bật theo mặc định.",
         'settings.appearance': 'Giao diện mặc định',
         'settings.appearance.hint': 'Những hàng chưa tùy chỉnh riêng dùng giao diện này; viền chữ mặc định bật — trên ảnh nền, chữ không viền thường khó đọc. Để trống màu để theo chủ đề.',
         'settings.appearance.reset': 'Khôi phục giao diện mặc định',
@@ -2431,6 +2503,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': '關閉時工作區只按官方資料夾(磁碟目錄)嵌套,標題原樣顯示;開啟後標題裡的 / 重新成為分組層級(組名/名字)。預設關閉;只影響工作區,對話分組另有獨立開關。',
         'settings.statusPulse': '狀態呼吸燈',
         'settings.statusPulse.hint': '被摺疊遮住嘅狀態燈(完成綠 / 運行藍 / 待互動琥珀)會沿住層級向外冒泡:工作區同分組行會以圖示呼吸發光(顏色跟狀態,自訂過發光嘅標題一齊呼吸),對話分組行就會顯示呼吸狀態燈;預設開啟,可以喺度閂咗佢。',
+        'settings.sessionMenu': "會話右鍵選單",
+        'settings.sessionMenu.hint': "開啟時右鍵點擊會話行即可開啟操作選單(包含官方的置頂、封存、停止並封存等);關閉後改為在行尾懸停顯示官方樣式的 ⋯ 按鈕,點擊開啟同一個選單。預設開啟。",
+        'settings.rowActions': "會話行懸停按鈕",
+        'settings.rowActions.hint': "懸停會話行時在行尾顯示置頂 / 封存快捷按鈕,與官方行保持一致;關閉後這些動作只保留在選單裡。預設開啟。",
         'settings.appearance': '預設外觀',
         'settings.appearance.hint': '未單獨自訂過嘅行會用呢套外觀;字體描邊預設開啟——有背景圖嗰陣唔描邊嘅字經常睇唔清。字體顏色留空就會跟主題。',
         'settings.appearance.reset': '還原預設外觀',
@@ -2561,6 +2637,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': '關閉時工作區只按官方資料夾(磁碟目錄)嵌套,標題原樣顯示;開啟後標題裡的 / 重新成為分組層級(組名/名字)。預設關閉;只影響工作區,對話分組另有獨立開關。',
         'settings.statusPulse': '狀態呼吸燈',
         'settings.statusPulse.hint': '被摺疊遮住嘅狀態燈(完成綠 / 運行藍 / 待互動琥珀)會沿住層級向外冒泡:工作區同分組行會以圖示呼吸發光(顏色跟狀態,自訂過發光嘅標題一齊呼吸),對話分組行就會顯示呼吸狀態燈;預設開啟,可以喺度閂咗佢。',
+        'settings.sessionMenu': "會話右鍵選單",
+        'settings.sessionMenu.hint': "開啟時右鍵點擊會話行即可開啟操作選單(包含官方的置頂、歸檔、停止並歸檔等);關閉後改為在行尾懸停顯示官方樣式的 ⋯ 按鈕,點擊開啟同一個選單。預設開啟。",
+        'settings.rowActions': "會話行懸停按鈕",
+        'settings.rowActions.hint': "懸停會話行時在行尾顯示置頂 / 歸檔快捷按鈕,與官方行保持一致;關閉後這些動作只保留在選單裡。預設開啟。",
         'settings.appearance': '預設外觀',
         'settings.appearance.hint': '未單獨自訂過嘅行會用呢套外觀;字體描邊預設開啟——有背景圖嗰陣唔描邊嘅字經常睇唔清。字體顏色留空就會跟主題。',
         'settings.appearance.reset': '還原預設外觀',
@@ -2691,6 +2771,10 @@ window.__ModuleLoader__.load({
         'settings.workspaceSlash.hint': '關閉時工作區只按官方資料夾(磁碟目錄)巢狀,標題原樣顯示;開啟後標題裡的 / 重新成為群組層級(群組名/名字)。預設關閉;只影響工作區,工作階段分組另有獨立開關。',
         'settings.statusPulse': '狀態呼吸燈',
         'settings.statusPulse.hint': '被收合藏起的狀態燈(完成綠 / 執行藍 / 待互動琥珀)會沿著層級向外冒出:工作區與群組列以圖示呼吸發光(顏色隨狀態,自訂過發光的標題一起呼吸),工作階段群組列則顯示呼吸狀態燈;預設開啟,可在此關閉。',
+        'settings.sessionMenu': "會話右鍵選單",
+        'settings.sessionMenu.hint': "開啟時右鍵點擊會話列即可開啟動作選單(包含官方的釘選、封存、停止並封存等);關閉後改為在列尾懸停顯示官方樣式的 ⋯ 按鈕,點擊開啟同一個選單。預設開啟。",
+        'settings.rowActions': "會話列懸停按鈕",
+        'settings.rowActions.hint': "懸停會話列時在列尾顯示釘選 / 封存快捷按鈕,與官方列保持一致;關閉後這些動作只保留在選單裡。預設開啟。",
         'settings.appearance': '預設外觀',
         'settings.appearance.hint': '未個別自訂過的列會使用這套外觀;字型外框預設開啟——在背景圖片上沒有外框的文字常常看不清楚。字型顏色留空即跟隨佈景主題。',
         'settings.appearance.reset': '還原預設外觀',
@@ -2863,12 +2947,22 @@ window.__ModuleLoader__.load({
       if (ui[name]) return name
       const aliases = ICON_ALIASES[name]
       if (aliases) for (const alias of aliases) if (ui[alias]) return alias
+      // Icon-set generation fallback (dsh 0.1.7): the primitives renamed the
+      // whole product set from pixel-size suffixes (…16/…14/…20) to stroke
+      // weights (…Regular/…Medium). Strip the trailing size and try the new
+      // spellings so pre-0.1.7 names keep rendering on current hosts — the
+      // header/menus call icon() with historical names directly.
+      const base = typeof name === 'string' ? name.replace(/\d+$/, '') : ''
+      if (base !== '' && base !== name) {
+        if (ui[base + 'Regular']) return base + 'Regular'
+        if (ui[base + 'Medium']) return base + 'Medium'
+      }
       return ''
     }
 
     /** Render a primitives icon by name; unknown names degrade to null, never crash. */
     const icon = (name, size) => {
-      const C = ui[name]
+      const C = ui[resolveIconName(name)]
       return C ? E(C, { size: size || 16 }) : null
     }
 
@@ -2891,6 +2985,35 @@ window.__ModuleLoader__.load({
       return p.kind || p.status || p.type || 'pending'
     }
 
+    // Official visiblePendingKind (dsh 0.1.7 tree.ts): only the three
+    // navigation kinds light the warning lamp; anything else a domain
+    // publishes stays off the sidebar.
+    const visiblePendingKind = (kind) => (kind === 'approval' || kind === 'plan-review' || kind === 'question' ? kind : undefined)
+
+    // In-place flavor for arrays built by the caller (same bucket order).
+    const pinnedPartitionInPlace = (rows) => {
+      const arranged = pinnedPartition(rows)
+      if (arranged !== rows) rows.splice(0, rows.length, ...arranged)
+      return rows
+    }
+
+    // Official pinned-block partition (sectionMembers): placeholders first,
+    // then the non-archived pinned rows, then everything else — preserving
+    // each caller-side order inside every bucket.
+    const pinnedPartition = (rows) => {
+      if (!rows || rows.length === 0) return rows
+      const blanks = []
+      const pins = []
+      const rest = []
+      for (const row of rows) {
+        if (row.pinned) pins.push(row)
+        else if (row.blank) blanks.push(row)
+        else rest.push(row)
+      }
+      if (pins.length === 0) return rows
+      return [...blanks, ...pins, ...rest]
+    }
+
     const sessionTitleOf = (summary, t, rememberedTitle) => {
       if (!summary) return ''
       if (summary.blank) return t('session.new')
@@ -2906,14 +3029,21 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * Official visibility rule (dsh tree.ts sessionVisible): subagent children
-     * live in their parent's catalog, archived sessions are visible nowhere,
-     * and a blank row is the provisional New Session of the current selection.
+     * Official visibility rule (dsh 0.1.7 tree.ts sessionVisible): subagent
+     * children live in their parent's catalog, a blank row is the provisional
+     * New Session of the current selection, and archived rows follow the
+     * archived filter — 'default' hides them, 'show' mixes them into their
+     * kept slots, 'only' restricts the view to them. Pre-filter hosts only
+     * ever pass 'default' (the historical hide-archived behavior).
      */
-    const sessionVisible = (summary, current, archivedSet) => !!summary
-      && summary.origin !== 'subagent'
-      && !(archivedSet && archivedSet.has(summary.id))
-      && (!summary.blank || summary.id === current)
+    const sessionVisible = (summary, current, archivedSet, archivedFilter) => {
+      if (!summary || summary.origin === 'subagent') return false
+      if (summary.blank && summary.id !== current) return false
+      const archived = archivedSet && archivedSet.has(summary.id)
+      if (archivedFilter === 'show') return true
+      if (archivedFilter === 'only') return !!archived
+      return !archived
+    }
 
     /**
      * The "open" session, across BOTH host generations.
@@ -3388,6 +3518,8 @@ window.__ModuleLoader__.load({
       '.bw-row-actions{flex:none;display:none;align-items:center;gap:2px}',
       '.bw-row:hover .bw-row-actions{display:flex}',
       '.bw-row:hover .bw-row-time,.bw-row:hover .bw-row-count,.bw-row:hover .bw-schedule-badge{display:none}',
+      '.bw-row-archived{opacity:.55}',
+      '.bw-pin-indicator{flex:none;display:inline-flex;align-items:center;color:var(--dsw-alias-brand-primary,#5b8def);margin:0 4px}',
       '.bw-dot{flex:none;width:6px;height:6px;border-radius:50%;background:transparent}',
       '.bw-session-row{font-size:12.5px;color:var(--dsw-alias-label-secondary,#b8b8b8);min-height:26px}',
       '.bw-sgroup-row{font-size:12.5px;color:var(--dsw-alias-label-tertiary,#9a9a9a);min-height:24px}',
@@ -3509,7 +3641,7 @@ window.__ModuleLoader__.load({
       .split('/').map((s) => s.trim()).filter((s) => s !== '').join('/')
 
     const createViewStore = () => storeKit.defineStore({
-      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true }, styling: {}, groupBy: 'workspace-tree', orderBy: 'manual', sessionTitleSlash: true, workspaceTitleSlash: false, folders: { ws: {}, sess: {} } }),
+      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true }, styling: {}, groupBy: 'workspace-tree', orderBy: 'manual', archivedFilter: 'default', sessionTitleSlash: true, workspaceTitleSlash: false, folders: { ws: {}, sess: {} } }),
       // NOTE: hydration REPLACES the state with the persisted whole value —
       // init defaults never merge. Every action must tolerate a missing key
       // (states persisted by older plugin versions lack sessionGroups), and
@@ -3558,6 +3690,7 @@ window.__ModuleLoader__.load({
         // (tree + both slash layers on + manual host order).
         setGroupBy: (d, value) => { d.groupBy = value },
         setOrderBy: (d, value) => { d.orderBy = value },
+        setArchivedFilter: (d, value) => { d.archivedFilter = value === 'show' || value === 'only' ? value : 'default' },
         setSessionTitleSlash: (d, value) => { d.sessionTitleSlash = value !== false },
         setWorkspaceTitleSlash: (d, value) => { d.workspaceTitleSlash = value !== false },
         // Explicit (possibly EMPTY) groups, v0.17.0. A group has always been a
@@ -3846,7 +3979,7 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function ConfirmDialog({ title, body, onConfirm, onClose, t }) {
+    function ConfirmDialog({ title, body, confirmLabel, onConfirm, onClose, t }) {
       return E(ui.Modal, {
         open: true,
         onClose,
@@ -3854,7 +3987,7 @@ window.__ModuleLoader__.load({
         title,
         footer: E('div', { className: 'bw-modal-actions' },
           E(BTN, { variant: 'outline', onClick: onClose }, t('cancel')),
-          E(BTN, { variant: 'primary', onClick: onConfirm }, t('confirm')),
+          E(BTN, { variant: 'primary', onClick: onConfirm }, confirmLabel || t('confirm')),
         ),
       }, E('div', { className: 'bw-modal-body' }, E('div', { className: 'bw-hint' }, body)), StyleNode())
     }
@@ -4337,7 +4470,7 @@ window.__ModuleLoader__.load({
       return s === 'ongoing' ? null : s
     }
 
-    function SessionRow({ node, depth, current, onOpen, onContextMenu, now, dropHalf, dragEvents, custStyle, breathing, t }) {
+    function SessionRow({ node, depth, current, onOpen, onContextMenu, now, dropHalf, dragEvents, custStyle, breathing, sessionActions, t }) {
       const state = sessionStateOf(node)
       const status = state === null ? null : {
         state,
@@ -4347,12 +4480,61 @@ window.__ModuleLoader__.load({
             ? (node.running ? t('status.running') : t('status.subagents', { n: node.subagents }))
             : t('status.completed'),
       }
+      // Official mirror surface (dsh 0.1.7 Rows.tsx): pinned rows carry the
+      // pin marker; archived rows render grayed and never open; the hover
+      // strip hosts the "..." trigger and the pin/archive quick buttons.
+      // The strip replaces the time cell on hover exactly like the official
+      // row, and its clicks never reach the row (stopPropagation).
+      const ot = sessionActions ? sessionActions.ot : null
+      const official = (key, params) => {
+        if (typeof ot !== 'function') return null
+        const value = ot(key, params)
+        return typeof value === 'string' && value !== '' && value !== key ? value : null
+      }
+      const archivedTitle = official('row.archived')
+      const pinnedTitle = official('row.pinned')
+      const strip = !node.blank && sessionActions && (sessionActions.trigger || sessionActions.quick)
+        ? E('span', { className: 'bw-row-actions', onClick: (e) => e.stopPropagation() },
+            sessionActions.trigger ? E('button', {
+              type: 'button',
+              className: 'bw-icon-btn',
+              'aria-label': official('actions.session.aria', { name: node.leaf || node.title }) || '...',
+              title: sessionActions.triggerTitle,
+              onClick: (e) => sessionActions.openMenu(node, e),
+            }, icon('IconEllipsisOutline16', 15)) : null,
+            sessionActions.quick && sessionActions.pin && !node.archived ? E('button', {
+              type: 'button',
+              className: 'bw-icon-btn',
+              'aria-label': official(node.pinned ? 'menu.unpinSession' : 'menu.pinSession') || '',
+              title: official(node.pinned ? 'actions.unpin' : 'actions.pin') || undefined,
+              onClick: (e) => { e.stopPropagation(); sessionActions.pin(node.id, !node.pinned) },
+            }, icon(node.pinned ? 'IconPinFillRegular' : 'IconPinOutlineRegular', 14)) : null,
+            sessionActions.quick && sessionActions.archive ? E('button', {
+              type: 'button',
+              className: 'bw-icon-btn',
+              'aria-label': official(node.archived ? 'menu.unarchiveSession' : 'menu.archiveSession') || '',
+              title: official(node.archived ? 'actions.unarchive' : 'actions.archive') || undefined,
+              onClick: (e) => { e.stopPropagation(); sessionActions.archive(node.id, !node.archived) },
+            }, icon(node.archived ? 'IconUnarchiveOutlineRegular' : 'IconArchiveOutline20', 14)) : null,
+          )
+        : null
       return E('div', {
-        className: cls('bw-row', 'bw-session-row', current && 'bw-row-current', dropHalf === 'before' && 'bw-drop-before', dropHalf === 'after' && 'bw-drop-after'),
+        className: cls('bw-row', 'bw-session-row', current && 'bw-row-current',
+          node.archived && 'bw-row-archived',
+          dropHalf === 'before' && 'bw-drop-before', dropHalf === 'after' && 'bw-drop-after'),
         style: { paddingLeft: 8 + depth * 12, ...(custStyle || {}) },
-        onClick: () => onOpen(node.id),
+        onClick: () => {
+          if (node.archived) {
+            // Official semantics (guardedOpen): an archived row is not
+            // openable — the click explains instead of navigating.
+            if (sessionActions && typeof sessionActions.explainArchived === 'function') sessionActions.explainArchived()
+            return
+          }
+          onOpen(node.id)
+        },
         onContextMenu: onContextMenu,
         role: 'treeitem',
+        'aria-description': node.archived ? archivedTitle || undefined : undefined,
         ...(dragEvents || {}),
       },
         E('span', { className: 'bw-row-icon', title: status ? status.title : undefined },
@@ -4369,6 +4551,8 @@ window.__ModuleLoader__.load({
           ? E('span', { className: 'bw-schedule-badge', role: 'img', 'aria-label': t('schedule.active'), title: t('schedule.active') }, icon('IconAlarmClockOutline16', 14))
           : null,
         E('span', { className: 'bw-row-time' }, timeLabel(node.updatedAt, now, t)),
+        node.pinned ? E('span', { className: 'bw-pin-indicator', role: 'img', 'aria-label': pinnedTitle || undefined, title: pinnedTitle || undefined }, icon('IconPinFillRegular', 13)) : null,
+        strip,
       )
     }
 
@@ -4409,9 +4593,25 @@ window.__ModuleLoader__.load({
      * name layer). The primitives Menu is feature-probed like every
      * component — without it the button simply never renders.
      */
-    function ViewOptionsMenu({ groupBy, orderBy, sessionSlash, onPick, onToggle, t }) {
+    function ViewOptionsMenu({ groupBy, orderBy, sessionSlash, archivedFilter, onPick, onToggle, onFilterPick, ot, t }) {
       const [open, setOpen] = React.useState(false)
       if (typeof ui.Menu !== 'function') return null
+      // Archived filter (dsh 0.1.7 official ViewOptionsMenu mirror): the
+      // section rides the OFFICIAL dictionary — when the host's 'workspace'
+      // dictionary lacks the keys (pre-filter hosts) the whole section stays
+      // hidden, matching that host's native menu. ot(key) returns the key
+      // itself for a missing entry, which is the detection.
+      const official = (key) => {
+        if (typeof ot !== 'function') return null
+        const value = ot(key)
+        return typeof value === 'string' && value !== '' && value !== key ? value : null
+      }
+      const filterLabel = official('filterBy.label')
+      const showLabel = official('viewOptions.showArchived')
+      const onlyLabel = official('viewOptions.onlyArchived')
+      const hasFilter = filterLabel !== null && showLabel !== null && onlyLabel !== null
+        && typeof onFilterPick === 'function'
+      const filter = archivedFilter === 'show' || archivedFilter === 'only' ? archivedFilter : 'default'
       return E(ui.Menu, {
         open,
         onClose: () => { setOpen(false) },
@@ -4424,6 +4624,14 @@ window.__ModuleLoader__.load({
           { type: 'label', id: 'bw-order-by', text: t('viewOptions.orderBy') },
           { id: 'manual', label: t('viewOptions.manualOrder') },
           { id: 'updated', label: t('viewOptions.updatedOrder') },
+          ...(hasFilter ? [
+            { type: 'separator', id: 'bw-filter-sep' },
+            { type: 'label', id: 'bw-filter-by', text: filterLabel },
+            // Both items are exclusive toggles (official semantics):
+            // re-picking the selected one returns to the default view.
+            { id: 'show-archived', label: showLabel, icon: icon('IconArchiveOutline20', 16) },
+            { id: 'only-archived', label: onlyLabel, icon: icon('IconArchiveCheckOutlineRegular', 16) },
+          ] : []),
           { type: 'separator', id: 'bw-slash-sep' },
           // The workspace name layer moved OUT of this menu in v0.15: it is
           // opt-in now and lives in the settings card, where "why is my tree
@@ -4431,10 +4639,14 @@ window.__ModuleLoader__.load({
           { id: 'session-slash', label: t('viewOptions.sessionSlash'), disabled: groupBy === 'flat' },
         ],
         selectedIds: [groupBy, orderBy]
-          .concat(sessionSlash ? ['session-slash'] : []),
+          .concat(sessionSlash ? ['session-slash'] : [])
+          .concat(filter === 'show' ? ['show-archived'] : [])
+          .concat(filter === 'only' ? ['only-archived'] : []),
         onSelect: (id) => {
           if (id === 'workspace' || id === 'workspace-tree' || id === 'flat') { onPick('groupBy', id); setOpen(false); return }
           if (id === 'manual' || id === 'updated') { onPick('orderBy', id); setOpen(false); return }
+          if (id === 'show-archived') { onFilterPick(filter === 'show' ? 'default' : 'show'); setOpen(false); return }
+          if (id === 'only-archived') { onFilterPick(filter === 'only' ? 'default' : 'only'); setOpen(false); return }
           if (id === 'session-slash') { onToggle('sessionTitleSlash', !sessionSlash); return }
         },
         align: 'end',
@@ -4482,6 +4694,18 @@ window.__ModuleLoader__.load({
       // filters them out (see ICON_PICKER_CHOICES).
       'IconPaperPlaneOutline14', 'IconShieldOutline16', 'IconPlanOutline14',
       'IconWrapLinesOutline16', 'IconCompactOutline16',
+      // dsh 0.1.7 generation (resolveIconName filters them out on older
+      // hosts): the renamed set added pin/archive-check/tree/list glyphs the
+      // native browser now ships. Historical names above resolve through the
+      // Regular/Medium generation fallback, so both spellings coexist here.
+      'IconPinOutlineRegular', 'IconPinFillRegular', 'IconSlidersTwoOutlineRegular',
+      'IconArchiveCheckOutlineRegular', 'IconUnarchiveOutlineRegular',
+      'IconWorkspaceTreeOutlineRegular', 'IconFlatListOutlineRegular',
+      'IconChevronsUpDownOutlineRegular', 'IconGaugeOutlineRegular',
+      'IconInfoOutlineRegular', 'IconWarningTriangleOutlineRegular',
+      'IconCompareSplitOutlineRegular', 'IconPluginPinwheelOutlineRegular',
+      'IconMicrophoneOutlineRegular', 'IconSendOutlineRegular',
+      'IconTreeCornerRegular', 'IconDeliverDocRegular', 'IconWrapFillRegular',
     ]
 
     /**
@@ -4771,6 +4995,8 @@ window.__ModuleLoader__.load({
       const localStyling = useStore ? (useStore(s => s.styling) || {}) : {}
       const compactChains = prefs.compactChains !== false
       const statusPulse = prefs.statusPulse !== false
+      const sessionMenu = prefs.sessionMenu !== false
+      const rowActions = prefs.rowActions !== false
       // Opt-in workspace name layer (v0.15): the same tri-state read the tree
       // uses — see workspaceSlashOf. Deliberately NOT a `prefs` entry: it rides
       // the view store's top-level key next to groupBy/orderBy and stays
@@ -4855,6 +5081,30 @@ window.__ModuleLoader__.load({
           }, E('span', { className: 'bw-switch-thumb' })),
         ),
         E('div', { className: 'bw-hint' }, t('settings.statusPulse.hint')),
+        E('div', { className: 'bw-setting-row', style: { marginTop: 10 } },
+          E('div', { className: 'bw-setting-label' }, t('settings.sessionMenu')),
+          E('button', {
+            type: 'button',
+            role: 'switch',
+            'aria-checked': sessionMenu,
+            'aria-label': t('settings.sessionMenu'),
+            className: cls('bw-switch', sessionMenu && 'bw-switch-on'),
+            onClick: () => { setPref('sessionMenu', !sessionMenu) },
+          }, E('span', { className: 'bw-switch-thumb' })),
+        ),
+        E('div', { className: 'bw-hint' }, t('settings.sessionMenu.hint')),
+        E('div', { className: 'bw-setting-row', style: { marginTop: 10 } },
+          E('div', { className: 'bw-setting-label' }, t('settings.rowActions')),
+          E('button', {
+            type: 'button',
+            role: 'switch',
+            'aria-checked': rowActions,
+            'aria-label': t('settings.rowActions'),
+            className: cls('bw-switch', rowActions && 'bw-switch-on'),
+            onClick: () => { setPref('rowActions', !rowActions) },
+          }, E('span', { className: 'bw-switch-thumb' })),
+        ),
+        E('div', { className: 'bw-hint' }, t('settings.rowActions.hint')),
         E('div', { className: 'bw-setting-label', style: { marginTop: 16 } }, t('settings.appearance')),
         E('div', { className: 'bw-hint' }, t('settings.appearance.hint')),
         E('div', { className: 'bw-appearance-box' },
@@ -4937,10 +5187,10 @@ window.__ModuleLoader__.load({
     function BetterBrowser(props) {
       const {
         wide, expandSidebar,
-        useSessions, useSessionPendingInteraction, useWorkspaces,
+        useSessions, useSessionPendingInteraction, useSessionStatus, useWorkspaces,
         useStore, actions,
         startSession, open, renameSession, forkSession, renameWorkspace, deleteWorkspace,
-        archiveSession, createWorkspace,
+        archiveSession, createWorkspace, pinSession, unpinSession, unarchiveSession,
         insertWorkspaceBefore, insertSessionBefore,
         useDirectoryFlow,
         pickDirectory, listDirectory, createDirectory,
@@ -4956,8 +5206,20 @@ window.__ModuleLoader__.load({
       const items = useWorkspaces(s => s.items)
       const phase = useWorkspaces(s => s.phase)
       const archivedSessionIds = useWorkspaces(s => s.archivedSessionIds) || []
+      // Registry-global pin set (dsh 0.1.7): absent on older hosts, which
+      // simply never see pinned rows or pin actions.
+      const pinnedSessionIds = useWorkspaces(s => s.pinnedSessionIds) || []
       const list = useSessions(s => s)
+      // Session UI status, BOTH eras: dsh 0.1.7 replaced the pending-only
+      // hook with the unified status map (running / pendingInteraction /
+      // completionUnread). Prefer it when bound; the legacy hook stays the
+      // pre-0.1.7 source, and summary fields fill whatever neither carries.
       const pending = useSessionPendingInteraction ? useSessionPendingInteraction(s => s) : null
+      const statusMap = typeof useSessionStatus === 'function' ? useSessionStatus(s => s) : null
+      const statusOf = (id) => {
+        if (!statusMap || typeof statusMap.get !== 'function') return undefined
+        return statusMap.get(id)
+      }
       const expandedMap = useStore ? (useStore(s => s.expanded) || {}) : {}
       const sessionsExpandedMap = useStore ? (useStore(s => s.sessionsExpanded) || {}) : {}
       const sessionGroupsMap = useStore ? (useStore(s => s.sessionGroups) || {}) : {}
@@ -4984,7 +5246,16 @@ window.__ModuleLoader__.load({
       const shared = makeSharedWrites(actions, stylingMap)
       const compactChains = prefsMap.compactChains !== false
       const statusPulse = prefsMap.statusPulse !== false
+      // Session-action surface gates (v0.20.0): the right-click menu and the
+      // official-style hover strip can each be turned off; defaults follow
+      // the plugin's historical behavior (right-click on, quick buttons on).
+      const sessionMenuEnabled = prefsMap.sessionMenu !== false
+      const rowActionsEnabled = prefsMap.rowActions !== false
+      // Archived-row visibility (v0.20.0, official ArchivedFilter mirror);
+      // persisted snapshots from older plugin versions lack the key.
+      const archivedFilter = useStore ? (useStore(s => s.archivedFilter) || 'default') : 'default'
       const archivedSet = React.useMemo(() => new Set(archivedSessionIds), [archivedSessionIds])
+      const pinnedSet = React.useMemo(() => new Set(pinnedSessionIds), [pinnedSessionIds])
       const subCounts = React.useMemo(() => subagentRunningCounts(list ? list.byId : {}), [list ? list.byId : null])
       // Current session across both host generations (see mainSessionIdOf).
       // `current` belongs in the deps: 0.1.5-rc.x switches it without
@@ -5210,21 +5481,25 @@ window.__ModuleLoader__.load({
       if (list && Array.isArray(list.ids)) {
         for (const id of list.ids) {
           const summary = list.byId[id]
-          if (accounted.has(id) || !sessionVisible(summary, currentId, archivedSet)) continue
+          if (accounted.has(id) || !sessionVisible(summary, currentId, archivedSet, archivedFilter)) continue
+          const st = statusOf(id)
           ungrouped.push({
             id,
             title: sessionTitleOf(summary, t, rememberedTitleOf(id)),
             leaf: sessionTitleOf(summary, t, rememberedTitleOf(id)),
             blank: !!summary.blank,
-            running: !!summary.running,
-            completed: summary.completed === true,
+            running: (st && st.running === true) || !!summary.running,
+            completed: summary.completed === true || (st && st.completionUnread === true),
             hasActiveSchedule: hasActiveScheduleOf(summary),
             subagents: subCounts.get(id) || 0,
             updatedAt: summary.updatedAt || 0,
-            pending: pendingKindOf(pending, id),
+            pending: visiblePendingKind(st && st.pendingInteraction && st.pendingInteraction.kind) || pendingKindOf(pending, id),
+            pinned: pinnedSet.has(id) && !archivedSet.has(id),
+            archived: archivedSet.has(id),
           })
         }
         ungrouped.sort((a, b) => b.updatedAt - a.updatedAt)
+        pinnedPartitionInPlace(ungrouped)
       }
 
       // While a workspace drag is active, single-child chains render UNCOMPRESSED:
@@ -5261,18 +5536,21 @@ window.__ModuleLoader__.load({
         const rows = []
         for (const id of workspace.sessionIds || []) {
           const summary = list && list.byId ? list.byId[id] : undefined
-          if (!sessionVisible(summary, currentId, archivedSet)) continue
+          if (!sessionVisible(summary, currentId, archivedSet, archivedFilter)) continue
+          const st = statusOf(id)
           rows.push({
             id,
             title: sessionTitleOf(summary, t, rememberedTitleOf(id)),
             leaf: sessionTitleOf(summary, t, rememberedTitleOf(id)),
             blank: !!summary.blank,
-            running: !!summary.running,
-            completed: summary.completed === true,
+            running: (st && st.running === true) || !!summary.running,
+            completed: summary.completed === true || (st && st.completionUnread === true),
             hasActiveSchedule: hasActiveScheduleOf(summary),
             subagents: subCounts.get(id) || 0,
             updatedAt: summary.updatedAt || 0,
-            pending: pendingKindOf(pending, id),
+            pending: visiblePendingKind(st && st.pendingInteraction && st.pendingInteraction.kind) || pendingKindOf(pending, id),
+            pinned: pinnedSet.has(id) && !archivedSet.has(id),
+            archived: archivedSet.has(id),
           })
         }
         // Browser-local reorder fallback (dsh 0.1.6-alpha.1 stopped injecting
@@ -5293,10 +5571,10 @@ window.__ModuleLoader__.load({
             const at = sorted.indexOf(pin)
             if (at > 0) { sorted.splice(at, 1); sorted.unshift(pin) }
           }
-          return sorted
+          return pinnedPartition(sorted)
         }
         const local = typeof insertSessionBefore === 'function' ? [] : sessionOrderOf(workspace.workspaceId)
-        if (local.length === 0) return rows
+        if (local.length === 0) return pinnedPartition(rows)
         const remaining = new Map(rows.map((row) => [row.id, row]))
         const out = []
         for (const id of local) {
@@ -5304,7 +5582,7 @@ window.__ModuleLoader__.load({
           if (row) { out.push(row); remaining.delete(id) }
         }
         for (const row of rows) if (remaining.has(row.id)) out.push(row)
-        return out
+        return pinnedPartition(out)
       }
 
       // Search flattens BOTH layers depth-first: every workspace (top level,
@@ -5390,6 +5668,60 @@ window.__ModuleLoader__.load({
       const openCtx = (kind, payload, e) => {
         if (e) e.preventDefault()
         setCtx({ kind, payload, x: e.clientX, y: e.clientY })
+      }
+
+      // Session-action surface (v0.20.0, official mirror): the right-click
+      // menu, the hover "..." trigger, and the pin/archive quick buttons all
+      // drive the same calls the official row entries make — pin/unpin and
+      // unarchive go straight to the uiWorkspace service; archive raises the
+      // stop-and-archive confirmation when the Host refuses a running
+      // session (WorkspaceArchiveError, workspace/session-active). Copy rides
+      // the official 'workspace' dictionary (auto-rewording), with graceful
+      // degradation on hosts that lack a key.
+      const officialText = (key, params, fallback) => {
+        const value = typeof officialT === 'function' ? officialT(key, params) : null
+        return typeof value === 'string' && value !== '' && value !== key ? value : fallback
+      }
+      const pinAvailable = typeof pinSession === 'function' && typeof unpinSession === 'function'
+      const unarchiveAvailable = typeof unarchiveSession === 'function'
+      const sessionActions = {
+        ot: officialT,
+        // Right-click is the default trigger; turning the setting off moves
+        // the trigger to the official-style "..." hover button.
+        trigger: !sessionMenuEnabled,
+        quick: rowActionsEnabled,
+        pin: pinAvailable
+          ? (id, pinning) => {
+            Promise.resolve().then(() => (pinning ? pinSession : unpinSession)(id)).catch((reason) => {
+              fail(officialText(pinning ? 'toast.pinFailed' : 'toast.unpinFailed', undefined, reason instanceof Error ? reason.message : String(reason || 'pin failed')))
+            })
+          }
+          : undefined,
+        archive: typeof archiveSession === 'function'
+          ? (id, archiving) => {
+            if (!archiving) {
+              if (!unarchiveAvailable) return
+              Promise.resolve().then(() => unarchiveSession(id)).catch((reason) => { console.warn('session unarchive rejected:', reason) })
+              return
+            }
+            Promise.resolve().then(() => archiveSession(id)).catch((reason) => {
+              // Official refusal flow: running work refuses the plain archive
+              // (WorkspaceArchiveError / workspace/session-active) and the
+              // confirmation offers to stop it first. Anything else reports
+              // through the error modal.
+              if (reason && reason.name === 'WorkspaceArchiveError') {
+                setDialog({ kind: 'sess-archive-confirm', sessionId: id })
+                return
+              }
+              fail(reason)
+            })
+          }
+          : undefined,
+        openMenu: (node, e) => openCtx('session', node, e),
+        explainArchived: () => {
+          const text = officialText('toast.archivedNotOpenable', undefined, '') || officialText('row.archived', undefined, '')
+          if (text) setErrorText(text)
+        },
       }
 
       /* ----------------------- group move helpers --------------------- */
@@ -5893,6 +6225,13 @@ window.__ModuleLoader__.load({
         // the same thing.
         const target = flat.find(s => s.id === targetSessionId)
         const nextTitle = sessionSlash && target ? titleMovedToGroup(source.title, target.title) : null
+        // Official pinned-block rule: a pinned row reorders only among pinned
+        // rows. A cross-block drop that would be a pure reorder is ignored;
+        // group moves keep working (the pin fronts the row in its new group).
+        if (target && nextTitle === null) {
+          const sourceRow = flat.find(s => s.id === source.sessionId)
+          if (sourceRow && !!sourceRow.pinned !== !!target.pinned) return
+        }
         const reorder = () => {
           if (typeof insertSessionBefore === 'function') {
             return (anchor !== undefined ? insertSessionBefore(workspaceId, source.sessionId, anchor) : insertSessionBefore(workspaceId, source.sessionId))
@@ -6124,9 +6463,10 @@ window.__ModuleLoader__.load({
         now,
         onOpen: (id) => open(id),
         onContextMenu: (e) => openCtx('session', session, e),
-        dropHalf: workspaceId ? sessDropHalf(session.id) : null,
-        dragEvents: workspaceId ? sessionDragEvents(session, workspaceId) : undefined,
+        dropHalf: workspaceId && !session.archived ? sessDropHalf(session.id) : null,
+        dragEvents: workspaceId && !session.archived ? sessionDragEvents(session, workspaceId) : undefined,
         custStyle: rowStyleOf('session:' + session.id),
+        sessionActions,
         breathing: statusPulse,
         t,
       })
@@ -6295,18 +6635,42 @@ window.__ModuleLoader__.load({
           ...wsGroupItems,
           customizeEntry,
         ]
-        if (ctx.kind === 'session') return [
-          { id: 'rename', label: ot ? ot('rename') : t('menu.rename'), icon: icon('IconEditOutline16', 16) },
-          { id: 'fork', label: ot ? ot('menu.fork') : t('menu.fork'), icon: icon('IconBranchOutline16', 16) },
-          // Official semantics (Rows.tsx): archive hides the row through the
-          // registry-global archive set and never touches the session log —
-          // deliberately NOT styled destructive.
-          { id: 'archive', label: ot ? ot('menu.archiveSession') : t('menu.archive'), icon: icon('IconArchiveOutline20', 16) },
-          { type: 'separator', id: 'bw-sep' },
-          ...sessionUngroupItems,
-          ...sgroupItems,
-          customizeEntry,
-        ]
+        if (ctx.kind === 'session') {
+          // Official 0.1.7 mirror (Rows.tsx session menu + the shipped slot
+          // entries): pin, rename, fork, archive — same order, same icons,
+          // same archived-state behavior (pin hides; archive becomes
+          // unarchive). Copy rides the official dictionary, so upstream
+          // rewording AND future item additions land without a plugin
+          // release; every verb is gated on its service method so older
+          // hosts simply never offer what they cannot do.
+          const payload = ctx.payload || {}
+          const archived = !!(payload.archived || (archivedSet && archivedSet.has(payload.id)))
+          const pinned = !!(payload.pinned || (pinnedSet && pinnedSet.has(payload.id)))
+          const official = (key, fallback) => {
+            const value = typeof ot === 'function' ? ot(key) : null
+            return typeof value === 'string' && value !== '' && value !== key ? value : fallback
+          }
+          return [
+            ...(pinAvailable && !archived ? [{
+              id: pinned ? 'unpin' : 'pin',
+              label: official(pinned ? 'menu.unpinSession' : 'menu.pinSession', t('menu.archive')),
+              icon: icon(pinned ? 'IconPinFillRegular' : 'IconPinOutlineRegular', 16),
+            }] : []),
+            { id: 'rename', label: official('rename', t('menu.rename')), icon: icon('IconEditOutline16', 16) },
+            { id: 'fork', label: official('menu.fork', t('menu.fork')), icon: icon('IconBranchOutline16', 16) },
+            // Official semantics: archive hides the row through the
+            // registry-global archive set and never touches the session log
+            // — deliberately NOT styled destructive. An archived row gets
+            // the restore entry instead.
+            archived
+              ? { id: 'unarchive', label: official('menu.unarchiveSession', t('menu.archive')), icon: icon('IconUnarchiveOutlineRegular', 16) }
+              : { id: 'archive', label: official('menu.archiveSession', t('menu.archive')), icon: icon('IconArchiveOutline20', 16) },
+            { type: 'separator', id: 'bw-sep' },
+            ...sessionUngroupItems,
+            ...sgroupItems,
+            customizeEntry,
+          ]
+        }
         return [
           { id: 'rename-sgroup', label: t('menu.renameSgroup'), icon: icon('IconEditOutline16', 16) },
           ...(ctx.payload && ctx.payload.empty ? [deleteSgroupEntry] : []),
@@ -6345,7 +6709,23 @@ window.__ModuleLoader__.load({
         else if (kind === 'sgroup' && id === 'rename-sgroup') setDialog({ kind: 'sgroup-rename', target: payload })
         else if (kind === 'session' && id === 'rename') setDialog({ kind: 'sess-rename', session: payload })
         else if (kind === 'session' && id === 'fork') forkSession(payload.id)
-        else if (kind === 'session' && id === 'archive') { Promise.resolve().then(() => archiveSession(payload.id)).catch(fail) }
+        else if (kind === 'session' && (id === 'pin' || id === 'unpin') && pinAvailable) {
+          Promise.resolve().then(() => (id === 'pin' ? pinSession : unpinSession)(payload.id)).catch((reason) => {
+            fail(officialText(id === 'pin' ? 'toast.pinFailed' : 'toast.unpinFailed', undefined, reason instanceof Error ? reason.message : String(reason || 'pin failed')))
+          })
+        }
+        else if (kind === 'session' && id === 'unarchive' && unarchiveAvailable) {
+          Promise.resolve().then(() => unarchiveSession(payload.id)).catch((reason) => { console.warn('session unarchive rejected:', reason) })
+        }
+        else if (kind === 'session' && id === 'archive' && typeof archiveSession === 'function') {
+          Promise.resolve().then(() => archiveSession(payload.id)).catch((reason) => {
+            if (reason && reason.name === 'WorkspaceArchiveError') {
+              setDialog({ kind: 'sess-archive-confirm', sessionId: payload.id })
+              return
+            }
+            fail(reason)
+          })
+        }
         // Plain retitle back to the leaf: the row leaves its group and returns
         // to the top level of its workspace (v0.18.0).
         else if (kind === 'session' && id === 'move-out') {
@@ -6417,6 +6797,27 @@ window.__ModuleLoader__.load({
           onClose: () => setDialog(null),
           t,
         })
+        if (dialog.kind === 'sess-archive-confirm') {
+          // Official stop-and-archive confirmation (dsh 0.1.7
+          // SessionArchiveConfirmDialog mirror): the Host refused the plain
+          // archive because this session still runs; confirming asks the
+          // Host to stop that work first. Copy rides the official dictionary.
+          const summary = list && list.byId ? list.byId[dialog.sessionId] : undefined
+          const displayTitle = summary ? sessionTitleOf(summary, t, rememberedTitleOf(dialog.sessionId)) : ''
+          return E(ConfirmDialog, {
+            key: 'sess-archive-confirm',
+            title: officialText('archive.confirm.title', undefined, t('menu.archive')),
+            body: officialText('archive.confirm.desc', { title: displayTitle }, ''),
+            confirmLabel: officialText('archive.confirm.action', undefined, undefined),
+            onConfirm: () => {
+              Promise.resolve().then(() => archiveSession(dialog.sessionId, { stopActivity: true }))
+                .then(() => setDialog(null))
+                .catch(fail)
+            },
+            onClose: () => setDialog(null),
+            t,
+          })
+        }
         if (dialog.kind === 'sgroup-rename') return E(TextDialog, {
           key: 'sgroup-rename',
           title: t('menu.renameSgroup'),
@@ -6565,7 +6966,10 @@ window.__ModuleLoader__.load({
             groupBy,
             orderBy,
             sessionSlash,
+            archivedFilter,
             onPick: (kind, value) => { if (kind === 'groupBy') actions.setGroupBy(value); else actions.setOrderBy(value) },
+            onFilterPick: (value) => { if (actions && typeof actions.setArchivedFilter === 'function') actions.setArchivedFilter(value) },
+            ot: officialT,
             onToggle: (key, value) => { if (key === 'sessionTitleSlash') actions.setSessionTitleSlash(value) },
             t,
           }),
@@ -6749,7 +7153,12 @@ window.__ModuleLoader__.load({
         insertSessionBefore: typeof workspaces.insertSessionBefore === 'function'
           ? (workspaceId, sessionId, beforeSessionId) => workspaces.insertSessionBefore(workspaceId, sessionId, beforeSessionId)
           : undefined,
-        archiveSession: (sessionId) => uiWorkspace.archiveSession(sessionId),
+        // options rides through for the 0.1.7 stop-and-archive hop; older
+        // services simply never receive a second argument.
+        archiveSession: (sessionId, options) => uiWorkspace.archiveSession(sessionId, options),
+        pinSession: typeof uiWorkspace.pinSession === 'function' ? (sessionId) => uiWorkspace.pinSession(sessionId) : undefined,
+        unpinSession: typeof uiWorkspace.unpinSession === 'function' ? (sessionId) => uiWorkspace.unpinSession(sessionId) : undefined,
+        unarchiveSession: typeof uiWorkspace.unarchiveSession === 'function' ? (sessionId) => uiWorkspace.unarchiveSession(sessionId) : undefined,
         createWorkspace: (input) => workspaces.create(input),
         pickDirectory: () => uiWorkspace.pickDirectory(),
         // Browse-side primitives: the in-app dialog needs them whenever the

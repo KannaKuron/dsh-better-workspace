@@ -624,7 +624,10 @@ test('view options: group/order menu + the two slash toggles (0.13.0)', () => {
   const text = read('src/client.js')
   // v0.15: the workspace name layer ships OFF (see the opt-in test below);
   // session grouping keeps its 0.13 default.
-  assert.match(text, /groupBy: 'workspace-tree', orderBy: 'manual', sessionTitleSlash: true, workspaceTitleSlash: false/)
+  assert.match(text, /groupBy: 'workspace-tree', orderBy: 'manual', archivedFilter: 'default', sessionTitleSlash: true, workspaceTitleSlash: false/)
+  // v0.20.0: the archived filter rides the same store (official mirror).
+  assert.match(text, /setArchivedFilter: \(d, value\)/)
+  assert.match(text, /useStore\(s => s\.archivedFilter\) \|\| 'default'/)
   for (const action of ['setGroupBy', 'setOrderBy', 'setSessionTitleSlash', 'setWorkspaceTitleSlash']) {
     assert.ok(text.includes(action + ': (d, value)'), 'store action ' + action)
   }
@@ -729,11 +732,15 @@ test('context menu: official alignment via the workspace dictionary (0.14.0)', (
   assert.match(text, /ctx\.locale\.bind\('workspace'\)/, 'binds the official dictionary')
   assert.match(text, /let officialT = null/)
   assert.match(text, /officialT,/)
-  // Menu entries follow official ids, icons, and danger semantics.
+  // Menu entries follow official ids, icons, and danger semantics; the
+  // v0.20.0 mirror (pin/rename/fork/archive-unarchive) reads the official
+  // dictionary through the params-aware official() wrapper.
   assert.match(text, /ot\('delete\.workspace'\)/)
-  assert.match(text, /ot\('menu\.fork'\)/)
-  assert.match(text, /ot\('menu\.archiveSession'\)/)
-  assert.match(text, /ot\('rename'\)/)
+  assert.match(text, /official\('menu\.fork', t\('menu\.fork'\)\)/)
+  assert.match(text, /official\('menu\.archiveSession', t\('menu\.archive'\)\)/)
+  assert.match(text, /official\('menu\.unarchiveSession', t\('menu\.archive'\)\)/)
+  assert.match(text, /official\(pinned \? 'menu\.unpinSession' : 'menu\.pinSession'/)
+  assert.match(text, /official\('rename', t\('menu\.rename'\)\)/)
   assert.match(text, /icon\('IconArchiveOutline20', 16\)/)
   assert.match(text, /icon\('IconTrashOutline16', 16\), danger: true/)
   // The archive entry must NOT be destructive (official Rows.tsx comment).
@@ -743,6 +750,57 @@ test('context menu: official alignment via the workspace dictionary (0.14.0)', (
   assert.match(text, /getAnchorRect: \(\) => new DOMRect\(ctx\.x, ctx\.y, 0, 0\)/)
   // The bw-only entries ride after a separator.
   assert.match(text, /id: 'customize', label: t\('custom\.title'\), icon: icon\('IconPersonalizationOutline16', 16\)/)
+})
+
+/**
+ * Official 0.1.7 mirror (v0.20.0): the session-action surface follows the
+ * shipped row entries — pin/rename/fork/archive(-unarchive) in official
+ * order, the stop-and-archive confirmation on the Host refusal, the
+ * archived-filter view option, pinned-row fronting, and the two settings
+ * gates (right-click trigger vs the official-style "..." button, row hover
+ * buttons). Also guards the 0.1.7 status-hook migration and the icon-set
+ * generation fallback that keeps pre-0.1.7 glyph names rendering.
+ */
+test('official mirror: pin/archive surface, archived filter, gates, status migration (v0.20.0)', () => {
+  const text = read('src/client.js')
+  // Status hooks, BOTH eras: useSessionStatus preferred, the pending-only
+  // hook kept for pre-0.1.7 hosts, summary fields filling the rest.
+  assert.match(text, /useSessionPendingInteraction, useSessionStatus, useWorkspaces/)
+  assert.match(text, /statusMap = typeof useSessionStatus === 'function' \? useSessionStatus\(s => s\) : null/)
+  assert.match(text, /visiblePendingKind\(st && st\.pendingInteraction && st\.pendingInteraction\.kind\) \|\| pendingKindOf\(pending, id\)/)
+  assert.match(text, /completed: summary\.completed === true \|\| \(st && st\.completionUnread === true\)/)
+  // Pin/unpin/unarchive reach the injected face feature-probed; archive
+  // passes the stopActivity hop through for the confirmation flow.
+  assert.match(text, /pinSession: typeof uiWorkspace\.pinSession === 'function'/)
+  assert.match(text, /unpinSession: typeof uiWorkspace\.unpinSession === 'function'/)
+  assert.match(text, /unarchiveSession: typeof uiWorkspace\.unarchiveSession === 'function'/)
+  assert.match(text, /archiveSession: \(sessionId, options\) => uiWorkspace\.archiveSession\(sessionId, options\)/)
+  assert.match(text, /reason\.name === 'WorkspaceArchiveError'/)
+  assert.match(text, /stopActivity: true/)
+  // The archived filter mirrors the official ArchivedFilter semantics and
+  // lives in the view store next to groupBy/orderBy.
+  assert.match(text, /if \(archivedFilter === 'show'\) return true/)
+  assert.match(text, /if \(archivedFilter === 'only'\) return !!archived/)
+  assert.match(text, /setArchivedFilter: \(d, value\)/)
+  // Pinned rows front their section (official sectionMembers partition) and
+  // archived rows never open or drag.
+  assert.match(text, /const pinnedPartition = \(rows\)/)
+  assert.match(text, /pinnedSet\.has\(id\) && !archivedSet\.has\(id\)/)
+  assert.match(text, /dragEvents: workspaceId && !session\.archived \? sessionDragEvents/)
+  // The two settings gates: right-click vs the official "..." trigger, and
+  // the hover quick buttons; both default ON (absent key = enabled).
+  assert.match(text, /sessionMenuEnabled = prefsMap\.sessionMenu !== false/)
+  assert.match(text, /rowActionsEnabled = prefsMap\.rowActions !== false/)
+  assert.match(text, /trigger: !sessionMenuEnabled/)
+  assert.match(text, /quick: rowActionsEnabled/)
+  // The view options menu rides the OFFICIAL dictionary for the filter
+  // section and hides it entirely where the host lacks the keys.
+  assert.match(text, /official\('filterBy\.label'\)/)
+  assert.match(text, /hasFilter \? \[/)
+  // Icon-set generation fallback: pre-0.1.7 pixel-suffix names resolve to
+  // the Regular/Medium spellings before degrading to null.
+  assert.match(text, /if \(ui\[base \+ 'Regular'\]\) return base \+ 'Regular'/)
+  assert.match(text, /const C = ui\[resolveIconName\(name\)\]/)
 })
 
 /**

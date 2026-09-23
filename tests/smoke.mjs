@@ -624,10 +624,15 @@ test('view options: group/order menu + the two slash toggles (0.13.0)', () => {
   const text = read('src/client.js')
   // v0.15: the workspace name layer ships OFF (see the opt-in test below);
   // session grouping keeps its 0.13 default.
-  assert.match(text, /groupBy: 'workspace-tree', orderBy: 'manual', archivedFilter: 'default', sessionTitleSlash: true, workspaceTitleSlash: false/)
+  assert.match(text, /groupBy: 'workspace-tree', orderBy: 'manual', archivedFilter: 'default', workspaceGroupMode: 'disk', sessionTitleSlash: true, workspaceTitleSlash: false, ungroupedOpen: true/)
   // v0.20.0: the archived filter rides the same store (official mirror).
   assert.match(text, /setArchivedFilter: \(d, value\)/)
   assert.match(text, /useStore\(s => s\.archivedFilter\) \|\| 'default'/)
+  // v0.21.0: grouping strategy, collapsible Ungrouped, listing quota.
+  assert.match(text, /setWorkspaceGroupMode: \(d, value\)/)
+  assert.match(text, /setUngroupedOpen: \(d, value\)/)
+  assert.match(text, /prefs: \{ compactChains: true, sessionLimit: 0 \}/)
+  assert.match(text, /useStore\(s => s\.ungroupedOpen\) !== false/)
   for (const action of ['setGroupBy', 'setOrderBy', 'setSessionTitleSlash', 'setWorkspaceTitleSlash']) {
     assert.ok(text.includes(action + ': (d, value)'), 'store action ' + action)
   }
@@ -653,15 +658,28 @@ test('view options: group/order menu + the two slash toggles (0.13.0)', () => {
     { workspaceId: 'a', title: 'web/前端', path: '/home/u/web' },
     { workspaceId: 'b', title: 'api', path: '/home/u/web/api' },
   ]
-  // Workspace slash toggle OFF: no name layer — workspaces mount straight
-  // at their disk level; the DISK layer is a filesystem fact and survives.
-  const flat = buildTree(items, false)
+  // 'disk' strategy: no name layer — workspaces mount straight at their disk
+  // level; the DISK layer is a filesystem fact and survives.
+  const flat = buildTree(items, 'disk')
   assert.deepEqual(flat.folders, [], 'no name groups')
   assert.deepEqual(flat.workspaces.map((w) => w.workspaceId), ['a'])
   assert.equal(flat.workspaces[0].leaf, 'web/前端', 'leaf keeps the full title')
   assert.equal(flat.workspaces[0].folderPath, '')
   assert.ok(flat.workspaces[0].sub, 'disk nesting survives')
   assert.equal(flat.workspaces[0].sub.workspaces[0].leaf, 'api')
+  // 'slash' strategy (issue #7): name groups WITHOUT disk nesting — b is no
+  // longer inferred to be a's child from the shared directory.
+  const slashOnly = buildTree(items, 'slash')
+  assert.equal(slashOnly.workspaces.map((w) => w.workspaceId).join(','), 'b', 'no disk inference at the root')
+  assert.equal(slashOnly.folders.length, 1, 'the slash of the title groups')
+  assert.equal(slashOnly.folders[0].name, 'web')
+  assert.equal(slashOnly.folders[0].workspaces[0].leaf, '前端')
+  assert.equal(slashOnly.folders[0].workspaces[0].sub, null, 'no disk children exist')
+  // 'disk-slash' strategy: both layers, the historical workspaceSlash-on shape.
+  const both = buildTree(items, 'disk-slash')
+  assert.equal(both.folders[0].workspaces[0].leaf, '前端')
+  assert.ok(both.folders[0].workspaces[0].sub, 'disk nesting survives under the name folder')
+  assert.equal(both.folders[0].workspaces[0].sub.workspaces[0].leaf, 'api')
 
   const rows = [
     { id: '1', title: 'proj/设计' },
@@ -804,6 +822,42 @@ test('official mirror: pin/archive surface, archived filter, gates, status migra
 })
 
 /**
+ * Issue round v0.21.0: four reports, one release. #9's two defects (the
+ * missing ./package.json export that kept the client half out of the desktop
+ * boot graph, and the customize-dialog icon pick that overwrote itself),
+ * #6's collapsible Ungrouped block, #7's tri-state grouping wired to BOTH
+ * faces, and #8's progressive session listing.
+ */
+test('issue round: exports fix, icon pick, ungrouped fold, tri-state, quota (v0.21.0)', () => {
+  const text = read('src/client.js')
+  // #9-1: desktop module discovery resolves <pkg>/package.json through the
+  // exports map; without this row the client half never enters the boot
+  // graph (ERR_PACKAGE_PATH_NOT_EXPORTED, silently swallowed).
+  const pkg = JSON.parse(read('package.json'))
+  assert.equal(pkg.exports['./package.json'], './package.json', 'the manifest subpath is exported')
+  // #9-2: the dialog fallback only FILLS the field readAppearance drops —
+  // a fresh pick must always win over it.
+  assert.match(text, /icon: patch\.icon \|\| prev\.icon \|\| 'solid'/)
+  assert.doesNotMatch(text, /icon: prev\.icon \|\| 'solid'/)
+  // #6: the Ungrouped bucket folds like a group row; search keeps it open.
+  assert.match(text, /const open = searching \|\| ungroupedOpen/)
+  assert.match(text, /setUngroupedOpen\(!open\)/)
+  // #7: the menu section and the settings segmented control write the ONE
+  // store key through the same action; buildTree speaks all three modes and
+  // slash-only skips the disk parent map entirely.
+  assert.match(text, /id: 'ws-disk-slash'/)
+  assert.match(text, /onWsGroupPick\(id\.slice\(3\)\)/)
+  assert.match(text, /setWorkspaceGroupMode\('slash'\)/)
+  assert.match(text, /const diskParentOf = diskOn \? diskParentMapOf\(list\) : new Map\(\)/)
+  assert.match(text, /d\.workspaceTitleSlash = d\.workspaceGroupMode !== 'disk'/, 'the legacy boolean rides along for downgrades')
+  // #8: the quota skips blank/running/subagent/pinned rows; the overflow row
+  // rides the legacy sessions.expand copy; search bypasses the quota.
+  assert.match(text, /row\.blank \|\| row\.running \|\| row\.subagents > 0 \|\| row\.pinned/)
+  assert.match(text, /limitSessionsForRender\(full, sessionLimit, limitLifted\[workspace\.workspaceId\]\)/)
+  assert.match(text, /t\('sessions\.expand', \{ n: limited\.hidden \}\)/)
+})
+
+/**
  * Group discoverability (v0.15.0): a row could always be grouped by retyping
  * its title, but nothing in the UI said so — no "new group" affordance, and
  * drag-into-group only worked once a group already existed. The header button
@@ -930,7 +984,7 @@ test('current session: mainView retention preferred, wire current as the 0.1.5-r
  */
 test('workspace "/" grouping: opt-in default, pre-0.13 snapshots stay on', () => {
   const text = read('src/client.js')
-  assert.match(text, /workspaceTitleSlash: false, folders: \{ ws: \{\}, sess: \{\} \} \}\)/, 'init ships the new default OFF plus the declared-group bags')
+  assert.match(text, /workspaceGroupMode: 'disk', sessionTitleSlash: true, workspaceTitleSlash: false, ungroupedOpen: true/, 'init ships the disk-only default plus the declared-group bags')
   assert.match(text, /const workspaceSlashOf = \(value\) => value === undefined \? true : value === true/, 'tri-state read')
   const start = text.indexOf('const workspaceSlashOf = (value) =>')
   const end = text.indexOf('\n', start)
@@ -939,15 +993,24 @@ test('workspace "/" grouping: opt-in default, pre-0.13 snapshots stay on', () =>
   assert.equal(workspaceSlashOf(true), true, 'explicit on')
   assert.equal(workspaceSlashOf(false), false, 'explicit off')
 
-  // The switch moved out of the sidebar view menu and into the settings card,
-  // where a flat tree has a findable explanation.
-  assert.doesNotMatch(text, /id: 'workspace-slash'/, 'gone from the view menu')
-  assert.match(text, /t\('settings\.workspaceSlash'\)/, 'carried by the settings card')
-  assert.match(text, /t\('settings\.workspaceSlash\.hint'\)/, 'with its explanation')
-  assert.match(text, /actions\.setWorkspaceTitleSlash\(!workspaceSlash\)/, 'the card writes the view store')
-  // Same tri-state read on both surfaces: a mismatch would show the switch in
+  // v0.21.0 (issue #7): the strategy is TRI-STATE and lives in BOTH faces —
+  // the view menu section and the settings card segmented control write the
+  // one store key, so they can never disagree.
+  const modeStart = text.indexOf('const workspaceGroupModeOf = (mode, legacySlash) =>')
+  const modeEnd = text.indexOf('const limitSessionsForRender', modeStart)
+  const { workspaceGroupModeOf } = new Function('workspaceSlashOf', text.slice(modeStart, modeEnd) + ' return { workspaceGroupModeOf }')(workspaceSlashOf)
+  assert.equal(workspaceGroupModeOf('slash', false), 'slash', 'a persisted mode always wins')
+  assert.equal(workspaceGroupModeOf(undefined, true), 'disk-slash', 'legacy on migrates to disk+slash')
+  assert.equal(workspaceGroupModeOf(undefined, false), 'disk', 'legacy off migrates to disk-only')
+  assert.equal(workspaceGroupModeOf(undefined, undefined), 'disk-slash', 'a pre-0.13 snapshot keeps grouping')
+  assert.doesNotMatch(text, /id: 'workspace-slash'/, 'still gone from the view menu')
+  assert.doesNotMatch(text, /t\('settings\.workspaceSlash'\)/, 'the retired switch copy is gone')
+  assert.match(text, /id: 'ws-disk-slash'/, 'the menu carries the tri-state section')
+  assert.match(text, /t\('settings\.workspaceGroup'\)/, 'carried by the settings card')
+  assert.match(text, /setWorkspaceGroupMode\('disk-slash'\)/, 'the card writes the store key')
+  // Same strategy read on both surfaces: a mismatch would show the switch in
   // one state and render the tree in the other.
-  assert.equal((text.match(/workspaceSlashOf\(useStore\(s => s\.workspaceTitleSlash\)\)/g) || []).length, 2, 'tree + card agree')
+  assert.equal((text.match(/workspaceGroupModeOf\(useStore\(s => s\.workspaceGroupMode\), useStore\(s => s\.workspaceTitleSlash\)\)/g) || []).length, 2, 'tree + card agree')
 })
 
 /**
@@ -1081,10 +1144,10 @@ test('declared groups: they render even with no members to project from (v0.17.0
   assert.match(text, /for \(const segs of explicitSegsOf\(explicitSess, groupScope\)\) ensure\(segs\)/,
     'session trees do the same')
   // A workspace whose sessions are all gone still shows its declared groups.
-  assert.match(text, /if \(rows\.length === 0 && !hasDeclared\(sessFolders, workspace\.workspaceId\)\) return \[\]/,
+  assert.match(text, /if \(full\.length === 0 && !hasDeclared\(sessFolders, workspace\.workspaceId\)\) return \[\]/,
     'empty session rows no longer short-circuit a declared group away')
   // Every caller threads the bag through.
-  assert.match(text, /buildTree\(items, workspaceSlash, wsFolders\)/, 'the main tree passes the workspace bag')
+  assert.match(text, /buildTree\(items, workspaceGroupMode, wsFolders\)/, 'the main tree passes the workspace bag')
   assert.equal((text.match(/buildSessionTree\(sessionsOf\(workspace\), sessionSlash, sessFolders, workspace\.workspaceId\)/g) || []).length, 4,
     'every session-tree caller passes the session bag and its workspace scope')
 })
@@ -1117,7 +1180,7 @@ test('new group: icon button, live tooltip, layer switch and a tree picker (v0.1
   // The dialog walks the UNCOMPRESSED tree: a merged single-child chain row
   // stands for a group AND its only workspace at once, which cannot be one
   // selectable and one unselectable node.
-  assert.match(text, /const rawTree = React\.useMemo\(\(\) => buildTree\(items, workspaceSlash, wsFolders\), \[items, workspaceSlash, wsFolders\]\)/,
+  assert.match(text, /const rawTree = React\.useMemo\(\(\) => buildTree\(items, workspaceGroupMode, wsFolders\), \[items, workspaceGroupMode, wsFolders\]\)/,
     'an uncompressed tree exists for the dialog')
   assert.match(text, /const folderLabelOf = \(node\) => String\(node\.name \|\| \(Array\.isArray\(node\.segs\)/,
     'labels survive a node shape that carries segs but no name')

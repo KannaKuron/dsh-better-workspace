@@ -3,6 +3,17 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.21.0 — 2026-09-23
+
+**类型**:feat + fix(一次收掉全部四个 open issue:#9 双修复 + #6/#7/#8 三特性)
+
+- **fix #9-1(阻断,桌面端)**:exports 缺 "./package.json" 导致 client 半在桌面渲染进程永不进启动图——宿主模块发现(ctx.loader.internal 不可用时)回退 require.resolve(<pkg>/package.json),遵守 exports map,缺行抛 ERR_PACKAGE_PATH_NOT_EXPORTED 被静默吞掉,包被永久缓存为非 client 包。补上 exports 行;冒烟测试加断言锁住。感谢 @EnderMas 教科书级定位。
+- **fix #9-2**:自定义外观弹窗的 onChange 把 patch.icon 覆盖回旧值(icon: prev.icon || 'solid'),图标选择永远无效。改为 patch.icon 优先(patch.icon || prev.icon || 'solid')。
+- **feat #6:「未分组」可折叠**——折叠行与工作区分组同款(chevron + 实时计数),状态存视图 store(ungroupedOpen,默认展开,老快照缺键容错);搜索时强制展开。
+- **feat #7:工作区分组三态**——磁盘目录(默认)/ 磁盘 + 名称 / 仅名称。「仅名称」完全不理会磁盘嵌套(buildTree 用空父 Map),只按标题里的 / 分组;视图菜单新增「工作区分组」区与设置卡分段控件**双入口写同一个 store 键**;store 新键 workspaceGroupMode,旧 workspaceTitleSlash 布尔自动迁移(显式值照旧、0.13 前快照保持分组),迁移函数 workspaceGroupModeOf 有测试;旧布尔随写随带,插件降级也不乱树。官方 flat 视图下三态菜单项禁用。
+- **feat #8:展开时限量显示会话(可选)**——prefs.sessionLimit(全部(默认)/5/10/25),开启后展开的工作区先只显示前 N 条,其余收进「展开 {n} 个会话」一行(复用遗留的 sessions.expand 词典键),点击后本挂载内全量;置顶/空白/运行中/子代理行不占额度(官方 collapsedSessionRows 语义);搜索与官方 flat 视图永不限量。
+- **词典**:9 键新增、2 键退役,21 门补齐;冒烟 39 → 40(v0.21.0 守卫:#9 两修复、#6 折叠、#7 三态双入口与迁移、#8 额度语义;buildTree 模式化后三态各补功能断言)。
+
 ## v0.20.0 — 2026-09-23
 
 **类型**:feat(适配 dsh v0.1.7 侧边栏官方更新:置顶 / 归档筛选 / 图标集换代,保持旧版本完全兼容)

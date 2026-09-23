@@ -3,6 +3,59 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.21.1 — 2026-09-23
+
+**类型**:fix(适配 dsh 0.1.7-rc.1 的复核轮:两个静默失效类加固 + 一个 console 噪音修复 + 图标集补齐 + 声明 dsh peer;契约面复核零漂移)
+
+### fix 1(加固,静默全失效类):host 半的 schemastery 改成惰性导入
+
+**机制(已实证)**:`src/index.js` 顶层 `import Schema from '@deepseek-ai/schemastery'`,而 schemastery 是 **peer**——普通 Node 从本包位置**解析不到**它(实测 `createRequire(<插件目录>).resolve('@deepseek-ai/schemastery')` → `MODULE_NOT_FOUND`),只靠宿主自己的解析(profile shared fallback)供上来。一旦那次解析失败,ESM 导入即失败,dsh Loader 把插件行的导入失败当**非致命跳过**(`vendor/loader/src/config/entry.ts` 的 `_init()`:`catch { this.ctx.logger.error(error); return }`,fiber 永不建立)→ 没有 host 半 → `ClientModuleRegistry` 扫不到 `dsh.client` → **client 半不进启动图 → 官方 occupant 静默接管座位,而宿主日志全绿**。与 issue #9 同一失败类(全绿日志 + 永久失效),触发点在 host 半而不是 exports。
+
+**证据**:① 用两个"除这一行外完全相同"的夹具插件实证该失败类——同一个 probe profile 启动后,静态导入版的 `apply()` **从不执行**,`await import` + try/catch 版照常执行(只是 `mod=null`);② 在本机 rc.1 上,发布版 `dsh-better-workspace@0.21.0`(仍是静态导入)装在**干净隔离 DSH_HOME** 里时**能正常加载**(`.bw-root` 在、`__DSH_BOOT__.entries` 含本包)——说明这条 fallback 在常规安装里是可用的,本次是**加固**,不是已观测到的失败。
+
+**修法**:`src/index.js` 去掉静态导入,改 `await import('@deepseek-ai/schemastery')` + try/catch:`Schema` 拿不到时 `Config` 导出 `undefined`(cordis `resolveConfig` 对 `!runtime.Config` 直接放行配置),插件**照常挂载**、浏览器功能完整,只有「行 Config 设置面」缺席。真机复核(rc.1 隔离实例):`.bw-root` 与层级树照常渲染、client 半在启动图里、console 插件自身告警 0;有 schemastery 时行为不变(Config 校验 + volatile 探测照旧,冒烟与真机双覆盖)。
+
+### fix 2:settingsScope 软探测在 0.1.7 上每次启动都写一条堆栈
+
+0.1.7 删除了 settings 服务,而**读一个从未注入的服务属性**会在 cordis Context 代理上抛 `cannot get property "settingsScope" without inject`;旧写法 `ctx.settingsScope && …` 虽然被 try/catch 兜住(行为一直是正确的本地降级),但**每次启动**都往 console 打一条插件自报错误的堆栈 —— 噪音掩盖真问题,也让这次审计第一眼以为该座位坏了。改走时代安全的 `ctx.get('settingsScope')`:服务存在即返回,不存在只是 `undefined`,属性永不被读。真机复核:rc.1 上插件自身 console 告警归零(仅剩会话恢复的本环境 symlink 产物)。
+
+### fix 3:图标集补 rc.1 新增的两个字形
+
+dsh 0.1.7-rc.1 相对 alpha.1 只新增 `IconUsersOutlineRegular` / `IconUsersOutlineMedium`(用于 agent-team / tool details 面),按不变量 12「新增字形一律先提交进候选清单」补入 `ICON_CHOICES`。真机确认这两个名字出现在外观对话框图标网格里(89 格,**无空格单元**);旧宿主由 `ICON_PICKER_CHOICES` 运行时过滤掉,不会变成空图标位(单测锁定);历史拼写 `IconUsersOutline16` 经代际回退落到 `IconUsersOutlineRegular`(真机:旧快照里存该拼写时,网格高亮到 Regular 那一格)。
+
+### fix 4:声明 `@deepseek-ai/dsh` peer(rc.1 唯一被强制执行的兼容机制)
+
+rc.1 的 `packages/boot/app-boot/src/plugin-compatibility.ts` **只**读取 `peerDependencies` 里 `@deepseek-ai/dsh` / `@deepseek-ai/dsh-*` 的 range(`semver.satisfies(..., { includePrerelease: true })`),不匹配就在安装前拒绝、启动时把整行置 `disabled`;`engines.dsh` 没有任何读取方。本插件此前虽有 `@deepseek-ai/dsh-settings`(满足门禁),但没有 umbrella 的 `@deepseek-ai/dsh`,兼容性语义不完整。现补 `"@deepseek-ai/dsh": ">=0.1.0"`:下界与 `engines.dsh` 同口径、**不设上界**——本插件跨版本靠运行时探测自愈,加 `<0.2.0` 之类的上界只会在下一次 dsh 升级时先行把它停用,而那时并没有任何真实破坏被观察到(`dsh-any-background@0.3.0` 被 rc.1 拦下并被迫授予机器级例外,就是这个失败模式的现实样本)。**两个 dsh peer 都标 `peerDependenciesMeta.optional`**:门禁不读 meta,但包管理器(`autoInstallPeers` 默认开启)会去 registry 解析 range,而 `@deepseek-ai/dsh` 与 `@deepseek-ai/dsh-settings` 在 npm 上**已发布的版本全是 prerelease**、普通 range 按 semver 排除 prerelease ⇒ 不标 optional 会让这类安装整体失败(`ERR_PNPM_NO_MATCHING_VERSION`)。冒烟新增断言锁死这两点。
+
+### rc.1 契约面复核结论(逐条,以 `/Users/kanna/project/deepseek-harness` @ `dsh-v0.1.7-rc.1` 为准)
+
+- `ui-workspace` 自 alpha.1 起**只有 8 行 zh 词典改动**(`子代理 → 子智能体`,commit `995caa05ed`)+ package.json 版本号;**`contract/slots.ts`、`Rows.tsx`、`session-actions/*` 逐字节未变**。菜单文案键(`rename` / `menu.fork` / `menu.archiveSession` / `menu.unarchiveSession` / `menu.pinSession` / `menu.unpinSession` / `archive.confirm.*` / `toast.pinFailed`)全部仍在 ⇒ `officialT` 键探测继续成立;官方行的图标也从 `…16/…14` 换成了 `…Regular`,本插件的代际回退正好接住。
+- `sidebar.workspaces`(single/root,官方 occupant 优先级 0,本插件 -1)、`sidebar.workspaces.directoryFlow` / `conversation.hero.workspace.directoryFlow`(single)声明与 owner 契约未变,标准钩子仍是 `useResource/useWorkspaces/usePanelInfo/useSessions/useSessionStatus/useSessionRetainInfo`;本插件「两个 directoryFlow 洞都不占用」的形态继续成立。
+- `useSessionStatus`(`SessionStatus = { running, pendingInteraction, completionUnread }`,**无 runningSubagentCount**)未变:子代理计数仍来自 SessionSummary 血缘,状态优先级 official = pending > running > subagents > completed;本插件 `sessionStateOf` 与之一致(真机三层树 + 子代理计数正常)。
+- `WorkspaceSnapshot.pinnedSessionIds` / `archivedSessionIds` 字段仍在(`packages/api/workspace-controller/src/client/model.ts:33-42`)。
+- `plugins.bundle.config` 仍是 keyed/root、按**包名**、`view: 'page'`;rc.1 上真机打开「设置 → 插件」:`更好的工作区` 卡片渲染完整(15 个分段按钮 + 2 个滑杆 + 全部开关文案),`locale/zh.json` 的标题/描述经 `package-meta.ts` 正确显示;跨端同步区按时代**隐藏**。
+- **设置写入链路真机实测**:卡片里把「单链分组折叠显示」关掉 → 隔离 profile 的 `cordis.patch.yml` 落盘 `- id: better-workspace / config: { compactChains: false }`,确认 `configForms` 消费面在 rc.1 有效(不只是能读)。
+- `exports["." "./client" "./locale/*.json" "./package.json"]` 四行齐全,issue #9 的断言仍在(冒烟测试强制)。
+- 0.1.7 的侧栏**没有**新增终端 / 网页 / 子智能体行:官方会话行仍是 `SessionNode` 一种;子智能体行不进列表(本插件同样按 origin 过滤),其「运行中」以 `runningSubagentCount` 表达。
+
+### 审计了但**故意不改**(留据)
+
+- 官方 0.1.7 把会话菜单/行按钮做成了官方槽 `sidebar.workspaces.session.menu.item` / `.row.action`(list 槽,带 `useMenuOpenState`)。本插件仍是**自绘菜单**:不变量 11 要求插件条目排在官方条目分隔线之后、且菜单必须承载本插件动作(移动到分组 / 移出分组 / 自定义外观),官方官方行渲染器不提供这些;按仓库「禁止顺手重构」纪律,本轮不改。**建议(下版议题)**:本插件既已自绘行,可把 pin/rename/fork/archive 四项改为注册进这两个官方 list 槽,由官方条目自己渲染 —— 但那是行为重构,需要用户确认。
+- 官方 zh 词典把 subagent 统一为「子智能体」(docs/i18n/terminology.md 术语表),本插件 `status.subagents` 仍是「{n} 个子任务运行中」;改它要动 21 门词典且纯文案,本轮不动,记一笔。
+- 官方 0.1.7 的行内 Toast(归档撤销 / 置顶失败提示)未镜像(见 v0.20.0 已知限制),本轮不改。
+
+### 验证与证据
+
+- `npm test`:42 项全绿(新增 2 项守卫:`IconUsersOutlineRegular/Medium` 候选+过滤+代际回退、host 半惰性导入不得回退;1 项旧断言跟上 fix 2)。
+- 隔离真机(`DSH_HOME=/tmp/dsh-adapt-bw/home`,profile `probe`,端口 3112,headless Chrome over CDP 9455/9456/9457):
+  - 启动无插件加载错误;侧栏 `.bw-root` 在,**磁盘层嵌套**(`工作/前端` → `工作/前端/子模块`,padding 6px → 18px)+ 名称分组两态同屏正确;
+  - console **无** `register skipped for sidebar.workspaces`、无 slot entry crash,插件自身告警为 0;
+  - `plugins.bundle.config` 卡片渲染 + 写入落盘(上文);
+  - 图标网格 89 格、0 空格、含两个新字形;
+  - **旧快照容错**:写入只含 `expanded/prefs/workspaceTitleSlash/styling` 的老 localStorage 快照(含已不存在的 `IconUsersOutline16` 图标值)后刷新 → 树按老语义(名称层开启)正常渲染、无错误弹窗、图标网格正常、旧值高亮到 `IconUsersOutlineRegular`。
+- **未覆盖(明确说明)**:① 桌面客户端(Electron renderer)端到端 —— 本机 `dsh-app` 实例属于用户日常环境,本轮按红线未启动/未改用户 profile,`exports["./package.json"]` 的桌面路径只做了静态断言与代码复核;② 旧宿主(0.1.0…0.1.6)运行时复跑 —— 无旧运行时可用,只做了「探测 + 降级」的代码与单测复核(新增写入路径均带 `typeof` 门控,`ctx.get` 为 cordis 全代 API);③ 官方 LAN/browse 后端的点击行为 —— 本轮未改该路径,未复跑 v0.16.0 那套流程。
+- 收尾:按端口 kill 掉隔离实例并删除 `/tmp/dsh-adapt-bw`。
+
 ## v0.21.0 — 2026-09-23
 
 **类型**:feat + fix(一次收掉全部四个 open issue:#9 双修复 + #6/#7/#8 三特性)

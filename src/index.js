@@ -1,4 +1,3 @@
-import Schema from '@deepseek-ai/schemastery'
 /**
  * dsh-better-workspace — host half (plain JavaScript, no build step).
  *
@@ -22,19 +21,48 @@ function live(schema) {
 }
 
 /**
+ * The schemastery module, resolved LAZILY (0.21.1): `@deepseek-ai/schemastery`
+ * is a PEER, so a profile whose `node_modules` does not hoist it — the desktop
+ * app's bundled runtime, or any install that resolved the peers elsewhere —
+ * used to fail the *static* import at the top of this file. The Loader treats a
+ * failed plugin import as a non-fatal skip (`ctx.logger.error` + no fiber), so
+ * the row silently never mounted: no host half, no `dsh.client` scan, no client
+ * bundle in the boot graph, and the official sidebar quietly took the seat —
+ * the same all-green-log failure class as issue #9, reproduced on a clean
+ * isolated DSH_HOME. Deferring the import hides the schema where the module is
+ * absent instead of killing the row; on a host that has it (every dsh install
+ * that serves the settings surface) nothing changes. Null when unresolvable.
+ */
+let Schema = null
+try {
+  Schema = (await import('@deepseek-ai/schemastery')).default
+} catch (error) {
+  Schema = null
+  console.warn(
+    '[dsh-better-workspace] @deepseek-ai/schemastery is not resolvable here; the row Config surface is absent'
+    + ' (the browser features do not depend on it): ' + (error && error.message || String(error)),
+  )
+}
+
+/**
  * Row Config = the settings surface on dsh >= 0.1.7 (values persist under the
  * row id 'better-workspace' — the same string as the old settings namespace,
  * so the one-shot legacy settings.yaml import maps old user values onto the
- * new home). Inert metadata on older hosts. NOTE: settings are per-profile
- * on the new host; the client hides the manual cross-device sync section
- * accordingly (the shared settings.yaml home no longer exists).
+ * new home). Inert metadata on older hosts, and absent when schemastery is
+ * unresolvable (cordis then passes the row config through unvalidated; the
+ * browser half reads every value with its own fallbacks either way).
+ * NOTE: settings are per-profile on the new host; the client hides the manual
+ * cross-device sync section accordingly (the shared settings.yaml home no
+ * longer exists).
  */
-export const Config = Schema.object({
-  compactChains: live(Schema.boolean().default(true)),
-  statusPulse: live(Schema.boolean().default(true)),
-  styling: live(Schema.dict(Schema.any()).default({})),
-  appearance: live(Schema.dict(Schema.any()).default({})),
-})
+export const Config = Schema === null
+  ? undefined
+  : Schema.object({
+    compactChains: live(Schema.boolean().default(true)),
+    statusPulse: live(Schema.boolean().default(true)),
+    styling: live(Schema.dict(Schema.any()).default({})),
+    appearance: live(Schema.dict(Schema.any()).default({})),
+  })
 
 /** Read one Config value across eras: Volatile ref (>= 0.1.7) or plain value. */
 export function valueOf(value) {

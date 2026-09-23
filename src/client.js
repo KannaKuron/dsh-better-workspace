@@ -4908,6 +4908,9 @@ window.__ModuleLoader__.load({
       'IconCompareSplitOutlineRegular', 'IconPluginPinwheelOutlineRegular',
       'IconMicrophoneOutlineRegular', 'IconSendOutlineRegular',
       'IconTreeCornerRegular', 'IconDeliverDocRegular', 'IconWrapFillRegular',
+      // dsh 0.1.7-rc.1 added the users pair (agent-team / subagent surfaces);
+      // committed here first and filtered on hosts that lack them.
+      'IconUsersOutlineRegular', 'IconUsersOutlineMedium',
     ]
 
     /**
@@ -7484,8 +7487,17 @@ window.__ModuleLoader__.load({
       prefsScopeRef = null
       prefsScopeVia = null
       try {
-        if (ctx.settingsScope && typeof ctx.settingsScope.bind === 'function') {
-          prefsScopeRef = ctx.settingsScope.bind({ namespace: 'better-workspace' })
+        // dsh >= 0.1.7 removed the settings service, and READING the service
+        // property on a host that never injected it throws on the cordis
+        // Context proxy ("cannot get property \"settingsScope\" without
+        // inject") — the pre-0.1.7 probe wrote a stack trace into the console
+        // on EVERY boot, noise that hides real failures and made this seat look
+        // broken during the rc.1 audit. ctx.get is the era-safe read: it
+        // answers with the service when it exists (both eras) and simply
+        // reports absence when it does not, so the property is never touched.
+        const scopeHost = ctx && typeof ctx.get === 'function' ? ctx.get('settingsScope') : null
+        if (scopeHost && typeof scopeHost.bind === 'function') {
+          prefsScopeRef = scopeHost.bind({ namespace: 'better-workspace' })
           prefsScopeVia = 'settingsScope'
         }
       } catch (error) {

@@ -1,6 +1,6 @@
 {
   "name": "dsh-better-workspace",
-  "version": "0.21.0",
+  "version": "0.21.1",
   "description": "侧边栏工作区树:按官方磁盘目录嵌套(官方 workspace-tree 语义),可选按名称中的 / 分组(默认关闭,设置里开启);添加工作区走官方目录流。Workspace tree for the DSH sidebar: disk-path nesting (official workspace-tree semantics), with optional \"/\"-name grouping (off by default); add-workspace rides the official directory flow.",
   "type": "module",
   "repository": {
@@ -62,8 +62,17 @@
   "license": "MIT",
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh": ">=0.1.0",
     "@deepseek-ai/dsh-settings": ">=0.1.0-rc.7",
     "@deepseek-ai/schemastery": "^3.18.1"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-settings": {
+      "optional": true
+    }
   },
   "homepage": "https://github.com/KannaKuron/dsh-better-workspace",
   "bugs": {

@@ -19,6 +19,26 @@ test('package.json declares a dual-face dsh web plugin', () => {
   assert.ok(pkg.files.includes('src/index.js'), 'host entry must ship')
 })
 
+test('package.json declares the dsh peers the 0.1.7+ compatibility gate reads', () => {
+  // dsh 0.1.7-rc.1 enforces exactly one thing at install and boot
+  // (packages/boot/app-boot/src/plugin-compatibility.ts): every
+  // peerDependencies entry named `@deepseek-ai/dsh` or `@deepseek-ai/dsh-*`,
+  // compared with prereleases participating. Without such an entry a plugin is
+  // never validated at all, which is how this one used to be invisible to the
+  // gate. The range mirrors engines.dsh and stays open-ended: an upper bound
+  // would only disable the plugin on the next dsh line before any real break
+  // was observed (dsh-any-background@0.3.0 was refused on 0.1.7-rc.1 for
+  // exactly that).
+  const pkg = JSON.parse(read('package.json'))
+  assert.equal(pkg.peerDependencies['@deepseek-ai/dsh'], '>=0.1.0')
+  // Both dsh peers must be OPTIONAL: the gate reads peerDependencies only, but
+  // a package manager with autoInstallPeers (pnpm's default) resolves the range
+  // against the registry — and every published version of both packages is a
+  // prerelease, which a plain range excludes (ERR_PNPM_NO_MATCHING_VERSION).
+  assert.equal(pkg.peerDependenciesMeta?.['@deepseek-ai/dsh']?.optional, true)
+  assert.equal(pkg.peerDependenciesMeta?.['@deepseek-ai/dsh-settings']?.optional, true)
+})
+
 test('dsh.plugin.json version matches package.json', () => {
   const pkg = JSON.parse(read('package.json'))
   const manifest = JSON.parse(read('dsh.plugin.json'))
@@ -171,6 +191,20 @@ test('host half imports cleanly and applies without side effects', async () => {
   plugin.apply({ logger: { info: (m) => { logged = String(m) } } })
   assert.match(logged, /dsh-better-workspace/)
   plugin.apply(undefined) // must not throw without a logger
+})
+
+/**
+ * Host-half self-containment (0.21.1): `@deepseek-ai/schemastery` is a peer,
+ * and a STATIC import of it made the whole row unloadable wherever the module
+ * does not resolve (isolated profile / desktop runtime) — no fiber, no
+ * `dsh.client` scan, no client half in the boot graph, and a silent fallback to
+ * the official sidebar. The import must stay dynamic so the row always mounts.
+ */
+test('host half keeps its schemastery peer import lazy (0.21.1)', () => {
+  const text = read('src/index.js')
+  assert.doesNotMatch(text, /^import\s+\w+\s+from\s+'@deepseek-ai\/schemastery'/m, 'no static schemastery import may come back')
+  assert.match(text, /await import\('@deepseek-ai\/schemastery'\)/, 'the module is resolved lazily')
+  assert.match(text, /export const Config = Schema === null/, 'Config degrades to absent instead of throwing')
 })
 
 test('locale dictionaries cover every static t() key in both languages', () => {
@@ -332,7 +366,13 @@ test('title cache: persisted key, batch learning, debounced save, bounded evicti
 test('manual cross-device sync: host scope bind, dual writes, pull modes', () => {
   const text = read('src/client.js')
   // Scope bound once per activation; failures degrade to browser-local.
-  assert.match(text, /ctx\.settingsScope && typeof ctx\.settingsScope\.bind === 'function'/)
+  // v0.21.1: the probe goes through ctx.get — reading the service PROPERTY on
+  // a host that never injected it throws on the cordis proxy ("cannot get
+  // property \"settingsScope\" without inject"), which put a stack trace in the
+  // console on every 0.1.7 boot.
+  assert.match(text, /ctx\.get\('settingsScope'\)/, 'the soft probe reads the service without injecting it')
+  assert.doesNotMatch(text, /ctx\.settingsScope/, 'the throwing property read is gone')
+  assert.match(text, /typeof scopeHost\.bind === 'function'/)
   assert.match(text, /bind\(\{ namespace: 'better-workspace' \}\)/)
   // Dual-write wrappers exist and route every preference mutation through them.
   // v0.12.0 dropped the explicit-folder channel with the feature itself.
@@ -487,6 +527,45 @@ test('icons: retired glyphs resolve to a survivor; the picker follows the host s
   const bare = listOf({ IconSendOutline14: () => null })
   for (const name of added) assert.ok(!bare.ICON_PICKER_CHOICES.includes(name), name + ' must be filtered out on a host that lacks it')
   assert.ok(bare.ICON_PICKER_CHOICES.includes('IconSendOutline14'), 'the survivor stays offered')
+})
+
+/**
+ * dsh 0.1.7-rc.1 added exactly two glyphs to the primitives set (the users
+ * pair used by the agent-team / subagent surfaces). Invariant 12: a new glyph
+ * is committed to the candidate list first; the runtime filter is what keeps a
+ * host without it from rendering an empty cell. The generation fallback must
+ * also land the historical pixel-suffix spelling on the new name.
+ */
+test('icons: the 0.1.7-rc.1 users pair is committed and host-filtered (0.21.1)', () => {
+  const text = read('src/client.js')
+  const start = text.indexOf('const ICON_ALIASES =')
+  const end = text.indexOf('/** Render a primitives icon by name')
+  const choicesStart = text.indexOf('const ICON_CHOICES = [')
+  const choicesEnd = text.indexOf('})()', choicesStart) + 4
+  const pickerCode = text.slice(start, end) + '\n' + text.slice(choicesStart, choicesEnd)
+  const listOf = (ui) => new Function('ui', pickerCode + '\nreturn { ICON_CHOICES, ICON_PICKER_CHOICES, resolveIconName }')(ui)
+
+  const pair = ['IconUsersOutlineRegular', 'IconUsersOutlineMedium']
+  const rc1 = { IconFolderOpenRegular: () => null }
+  for (const name of pair) rc1[name] = () => null
+  const onRc1 = listOf(rc1)
+  for (const name of pair) {
+    assert.ok(onRc1.ICON_CHOICES.includes(name), name + ' is committed to the candidate list')
+    assert.ok(onRc1.ICON_PICKER_CHOICES.includes(name), name + ' is offered on a host that exports it')
+  }
+  assert.equal(
+    onRc1.resolveIconName('IconUsersOutline16'), 'IconUsersOutlineRegular',
+    'the pixel-suffix spelling lands on the new generation name',
+  )
+  // Pre-0.1.7 hosts: the pair is unknown, so both disappear from the grid
+  // (never an empty cell) while the legacy spellings keep resolving.
+  const oldHost = listOf({ IconFolderOpen16: () => null })
+  for (const name of pair) {
+    assert.ok(!oldHost.ICON_PICKER_CHOICES.includes(name), name + ' must not become an empty icon cell on an old host')
+    assert.equal(oldHost.resolveIconName(name), '', name + ' resolves to nothing there')
+  }
+  assert.ok(oldHost.ICON_PICKER_CHOICES.includes('IconFolderOpen16'), 'the host’s own legacy spellings stay offered')
+  assert.ok(oldHost.ICON_PICKER_CHOICES.includes('solid') && oldHost.ICON_PICKER_CHOICES.includes('none'), 'legacy slots always survive')
 })
 
 /**

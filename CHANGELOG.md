@@ -3,6 +3,41 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.22.0 — 2026-09-24
+
+**类型**:feat(新会话页的工作区选择器换成侧栏同源的树)+ fix(自定义外观弹窗在会话运行时闪回默认)+ 文档/冒烟同步
+
+### feat:对话空态的工作区选择器 = 侧栏那棵树
+
+**问题**:新会话页「工作区」按钮的弹层是官方的一层平铺标题列表——连磁盘目录嵌套都没有,与左侧已经树化的侧栏完全对不上。
+
+**修法**:本插件以 `priority: -1` 注册同一个 single 座位 `conversation.hero.workspace`(官方 picker 优先级 0,lowest renders),弹层改为复用侧栏的 `buildTree` + `compressTree` + 同一个 viewStore(`groupBy` / `workspaceGroupMode` / `compactChains`),所以**侧栏任何视图选项改动这边立刻同步**;工作区行带缩进与文件夹字形、当前工作区带勾选、分组行可开合(选择器内本地记忆,默认全展开),底部「添加工作区」保留。侧栏切到「单列表 / 按工作区」时,选择器退化为一层完整标题(选择器必须能选到每个工作区)。
+
+**官方占用者照旧(关键)**:该座位**不声明任何 children** —— 子洞声明独占,官方 entry 即便被 shadow 也仍持有 `conversation.hero.workspace.directoryFlow` 的声明,而 `renderSlot` 授权只属于声明者。所以「添加工作区」改为从 slot ledger 直接读出**官方占用者的组件 + 它自己的注入面**(`slots.entries(HERO_FLOW_HOLE)[0].component` / `.inject()`),由本插件补上 owner 对话(`open` / `busy` / `onPicked` / `onCancel` / `onError`)后渲染:native 宿主弹官方 OS 选择器,browse 宿主弹官方应用内浏览器,**一行拾取交互都没有复制**。ledger 读不到时只是少一个「添加工作区」项(`try/catch`),选择器不退化。
+
+**菜单行自绘**:官方 `MenuItemButton` 的 `.itemIcon` 是**固定 14px**,缩进塞进去会被裁掉(真机首版实测:工作区行图标缺角),因此行内布局自己画(缩进槽 / chevron 或文件夹字形 / 标题 / 勾选);列表卡片、滚动、外部点击、方向键走查、焦点恢复仍由官方 `Menu` 承担 —— 它的键盘走查只认 `button[role="menuitem"]` 与 `button:not(:disabled)`,自绘行正好就是这个选择器。宿主没有 primitives `Menu` 时不注册该座位,官方 picker 继续工作。
+
+### fix:自定义外观弹窗在会话运行时「闪回默认」
+
+**机制**:`CustomizeDialog` 的 seed effect 依赖 `[open, initial]`,而 owner 每次渲染都重建 `initial` 对象;运行中的会话让浏览器每个快照 tick 都重渲染 ⇒ effect 反复用**已保存值**覆盖正在编辑的 draft。用户实测:「点开自定义选颜色,几秒后自己弹回默认,自定义手速被迫很快」。
+
+**修法**:seed 改由**行身份**驱动 —— owner 传 `seedKey`(`customize.entryKey`),effect 依赖 `[open, seedKey]`,`initial` 经 ref 读最新值。只有打开对话框或切换目标行才 seed;运行中的会话再怎么 tick 也不动 draft。冒烟新增防回归断言。
+
+### 词典
+
+新增 2 个键(21 门语言全覆盖):`heroPicker.error.title`(无法添加工作区)、`heroPicker.retry`(重试)—— 添加失败时的可重试错误弹窗,与官方 picker 同语义(错误来自 `createWorkspace`,「重试」重新打开官方目录流,洞空了则禁用)。
+
+### 验证(隔离实例 + Playwright,全部实测)
+
+- 隔离 DSH_HOME(复用 `dsh-shot-home` 的 profile 结构 + 自造 `storages/workspace.json` 与 10 个真实目录)+ 独立端口 3099 + 无头 Chromium(playwright 1.61.1,dsh 仓库 pnpm store 里那份;`~/Library/Caches/ms-playwright/chromium-1187`)。
+- **树结构**:「磁盘 + 名称」模式下弹层 = `工作 > 平行帮 > Web/Back`、`工作 > Fis管理后台 > Back/Web`、根层 `用户目录 / 测试 / 双点破解 / DSH / proj` + 磁盘嵌套 `sub`(缩进 14px),缩进序列 0/14/28px 与侧栏逐行一致;当前工作区带勾选。
+- **选项同步**:在**侧栏**视图菜单点「仅名称」→ 弹层立即变化(磁盘嵌套层消失,`sub` 缩进 14px → 0px),无需刷新、无需重开。
+- **交互**:点工作区行 → 空态页按钮文字 `工作/Fis管理后台/Back` → `工作/平行帮/Web`(即 owner 的 `onPick` + `selectWorkspace` 生效);点分组行 → 13 行折叠为 7 行;再点展开复原。
+- **添加工作区(browse 后端)**:`SSH_CONNECTION=<非空>` 启动隔离实例让 `directory-picker-auto` 判定 browse(`--host 0.0.0.0` 被 dsh 0.1.7 CLI 以安全理由拒绝,SSH 标记是等价且不暴露网络的复现手段)→ 点「添加工作区」→ 官方「选择工作区目录」分栏式应用内浏览器正常弹出(说明 occupant 组件 + 其注入面 + owner 对话三者都对)。
+- console **零插件自身报错**,也没有 `register skipped for conversation.hero.workspace`。
+
+⚠️ **未覆盖**:native 后端下点「添加工作区」的**真机点击**(会弹 macOS 系统选择器,隔离验证机上不便自动关闭)。渲染路径与 browse 完全同一条(同一个 ledger 读取 + 同一套 owner 对话),差别只在 occupant 内部那次 `pick()` 的调用时机。
+
 ## v0.21.1 — 2026-09-23
 
 **类型**:fix(适配 dsh 0.1.7-rc.1 的复核轮:两个静默失效类加固 + 一个 console 噪音修复 + 图标集补齐 + 声明 dsh peer;契约面复核零漂移)

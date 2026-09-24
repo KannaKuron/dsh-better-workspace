@@ -108,6 +108,40 @@ test('client half registers the expected seats (v0.12.1)', () => {
   assert.match(text, /props\.view === 'page'/)
 })
 
+test('hero picker: the sidebar tree shadows the shipped flat picker (v0.22.0)', () => {
+  const text = read('src/client.js')
+  // Same shadowing rule as the sidebar seat: lowest rank renders, and the
+  // shipped entry keeps its registration (and its child-hole declaration).
+  assert.match(text, /slots\.inject\('conversation\.hero\.workspace', guarded\(/)
+  assert.match(text, /name: 'conversation\.hero\.workspace',\s*\n\s*priority: -1,/)
+  // Still NO children declaration for the hero flow hole, and no injection
+  // into the hole itself: the shipped occupant component is rendered from the
+  // slot ledger (component + its own injected face) instead.
+  assert.doesNotMatch(text, /'conversation\.hero\.workspace\.directoryFlow':\s*\{/)
+  assert.match(text, /slots\.entries\(HERO_FLOW_HOLE\)/)
+  assert.match(text, /function HeroWorkspacePicker\(props\)/)
+  assert.match(text, /function PickerRow\(/)
+  // The tree reads the SAME view-store selectors the sidebar reads, so a view
+  // option changed on either surface moves both.
+  assert.match(text, /workspaceGroupModeOf\(state && state\.workspaceGroupMode, state && state\.workspaceTitleSlash\)/)
+  assert.match(text, /materializeChain\(compressTree\(f\)\)/)
+  // Rows are the primitives' keyboard currency, and a host without that Menu
+  // keeps the shipped picker instead of being left with no popover.
+  assert.match(text, /role: 'menuitem'/)
+  assert.match(text, /if \(typeof ui\.Menu === 'function'\) \{\s*\n\s*const heroInjected/)
+})
+
+test('customize dialog seeds the draft by row identity, not the rebuilt initial (v0.22.0)', () => {
+  const text = read('src/client.js')
+  assert.match(text, /function CustomizeDialog\(\{ open, seedKey, initial, defaults, kind, onChange, onReset, onClose, t \}\)/)
+  assert.match(text, /seedKey: customize \? customize\.entryKey : undefined,/)
+  assert.match(text, /\}, \[open, seedKey\]\)/)
+  // A running Session re-renders the browser every few seconds; keying the
+  // seed on the rebuilt initial object threw the operator's picks away.
+  assert.doesNotMatch(text, /\}, \[open, initial\]\)/,
+    'the rebuilt initial object must never re-seed the draft')
+})
+
 test('client plugin exports the cordis plugin triple', () => {
   const text = read('src/client.js')
   assert.match(text, /name: 'dsh-better-workspace'/)

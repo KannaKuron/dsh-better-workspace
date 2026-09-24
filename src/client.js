@@ -139,6 +139,8 @@ window.__ModuleLoader__.load({
       'flow.creating': '正在创建…',
       'add.guide.title': "应用内添加工作区",
       'add.guide': "此主机不提供桌面目录选择器。请到「新会话」页,用官方的「添加工作区」打开应用内浏览器。",
+      'heroPicker.error.title': "无法添加工作区",
+      'heroPicker.retry': "重试",
       'error.title': '出错了',
       'cancel': '取消',
       'create': '创建',
@@ -280,6 +282,8 @@ window.__ModuleLoader__.load({
       'flow.creating': 'Creating…',
       'add.guide.title': "Add workspace in-app",
       'add.guide': "This host has no desktop directory chooser. Use the official \"Add workspace\" entry on the New Session page.",
+      'heroPicker.error.title': "Could not add workspace",
+      'heroPicker.retry': "Retry",
       'error.title': 'Something went wrong',
       'cancel': 'Cancel',
       'create': 'Create',
@@ -429,6 +433,8 @@ window.__ModuleLoader__.load({
         'flow.creating': 'جارٍ الإنشاء…',
         'add.guide.title': "إضافة مساحة عمل داخل التطبيق",
         'add.guide': "لا يوفر هذا المضيف منتقي مجلدات سطح المكتب. استخدم إدخال \"إضافة مساحة عمل\" الرسمي في صفحة الجلسة الجديدة.",
+        'heroPicker.error.title': "تعذر إضافة مساحة العمل",
+        'heroPicker.retry': "إعادة المحاولة",
         'error.title': 'حدث خطأ ما',
         'cancel': 'إلغاء',
         'create': 'إنشاء',
@@ -570,6 +576,8 @@ window.__ModuleLoader__.load({
         'flow.creating': 'Wird erstellt…',
         'add.guide.title': "Arbeitsbereich in der App hinzufügen",
         'add.guide': "Dieser Host bietet keinen Desktop-Ordnerdialog. Nutze den offiziellen Eintrag „Arbeitsbereich hinzufügen“ auf der Seite „Neue Sitzung“.",
+        'heroPicker.error.title': "Arbeitsbereich konnte nicht hinzugefügt werden",
+        'heroPicker.retry': "Erneut versuchen",
         'error.title': 'Etwas ist schiefgelaufen',
         'cancel': 'Abbrechen',
         'create': 'Erstellen',
@@ -711,6 +719,8 @@ window.__ModuleLoader__.load({
         'flow.creating': 'Création…',
         'add.guide.title': "Ajouter un espace de travail dans l’application",
         'add.guide': "Cet hôte n’a pas de sélecteur de dossier natif. Utilisez l’entrée officielle « Ajouter un espace de travail » sur la page Nouvelle session.",
+        'heroPicker.error.title': "Impossible d'ajouter l'espace de travail",
+        'heroPicker.retry': "Réessayer",
         'error.title': 'Une erreur est survenue',
         'cancel': 'Annuler',
         'create': 'Créer',
@@ -852,6 +862,8 @@ window.__ModuleLoader__.load({
         'flow.creating': 'बनाया जा रहा है…',
         'add.guide.title': "ऐप में कार्यस्थान जोड़ें",
         'add.guide': "इस होस्ट में डेस्कटॉप फ़ोल्डर चयनकर्ता नहीं है। नए सत्र पृष्ठ पर आधिकारिक \"कार्यस्थान जोड़ें\" प्रविष्टि का उपयोग करें।",
+        'heroPicker.error.title': "कार्यस्थान जोड़ा नहीं जा सका",
+        'heroPicker.retry': "पुनः प्रयास करें",
         'error.title': 'कुछ गड़बड़ हो गई',
         'cancel': 'रद्द करें',
         'create': 'बनाएँ',
@@ -993,6 +1005,8 @@ window.__ModuleLoader__.load({
         'flow.creating': 'Membuat…',
         'add.guide.title': "Tambah ruang kerja di aplikasi",
         'add.guide': "Host ini tidak punya pemilih folder desktop. Gunakan entri resmi \"Tambah ruang kerja\" di halaman Sesi Baru.",
+        'heroPicker.error.title': "Tidak dapat menambahkan ruang kerja",
+        'heroPicker.retry': "Coba lagi",
         'error.title': 'Terjadi kesalahan',
         'cancel': 'Batal',
         'create': 'Buat',
@@ -1134,6 +1148,8 @@ window.__ModuleLoader__.load({
         'flow.creating': 'Creazione…',
         'add.guide.title': "Aggiungi area di lavoro nell’app",
         'add.guide': "Questo host non ha un selettore di cartelle desktop. Usa la voce ufficiale «Aggiungi area di lavoro» nella pagina Nuova sessione.",
+        'heroPicker.error.title': "Impossibile aggiungere l'area di lavoro",
+        'heroPicker.retry': "Riprova",
         'error.title': 'Si è verificato un errore',
         'cancel': 'Annulla',
         'create': 'Crea',
@@ -1275,6 +1291,8 @@ window.__ModuleLoader__.load({
         'flow.creating': '作成中…',
         'add.guide.title': "アプリ内でワークスペースを追加",
         'add.guide': "このホストにはデスクトップのフォルダー選択画面がありません。「新規セッション」ページの公式の「ワークスペースを追加」から開いてください。",
+        'heroPicker.error.title': "ワークスペースを追加できません",
+        'heroPicker.retry': "再試行",
         'error.title': 'エラーが発生しました',
         'cancel': 'キャンセル',
         'create': '作成',
@@ -1416,6 +1434,8 @@ window.__ModuleLoader__.load({
         'flow.creating': '만드는 중…',
         'add.guide.title': "앱에서 워크스페이스 추가",
         'add.guide': "이 호스트에는 데스크톱 폴더 선택기가 없습니다. 새 세션 페이지의 공식 \"워크스페이스 추가\" 항목을 사용하세요.",
+        'heroPicker.error.title': "워크스페이스를 추가할 수 없습니다",
+        'heroPicker.retry': "다시 시도",
         'error.title': '문제가 발생했습니다',
         'cancel': '취소',
         'create': '만들기',
@@ -1557,6 +1577,8 @@ window.__ModuleLoader__.load({
         'flow.creating': 'Bezig met aanmaken…',
         'add.guide.title': "Werkruimte in de app toevoegen",
         'add.guide': "Deze host heeft geen systeemmapkiezer. Gebruik de officiële optie \"Werkruimte toevoegen\" op de pagina Nieuwe sessie.",
+        'heroPicker.error.title': "Kan werkruimte niet toevoegen",
+        'heroPicker.retry': "Opnieuw proberen",
         'error.title': 'Er is iets misgegaan',
         'cancel': 'Annuleren',
         'create': 'Aanmaken',
@@ -1698,6 +1720,8 @@ window.__ModuleLoader__.load({
         'flow.creating': 'Tworzenie…',
         'add.guide.title': "Dodaj obszar roboczy w aplikacji",
         'add.guide': "Ten host nie ma systemowego wyboru folderów. Użyj oficjalnej pozycji „Dodaj obszar roboczy” na stronie Nowa sesja.",
+        'heroPicker.error.title': "Nie można dodać obszaru roboczego",
+        'heroPicker.retry': "Ponów",
         'error.title': 'Coś poszło nie tak',
         'cancel': 'Anuluj',
         'create': 'Utwórz',
@@ -1839,6 +1863,8 @@ window.__ModuleLoader__.load({
         'flow.creating': 'Criando…',
         'add.guide.title': "Adicionar área de trabalho no app",
         'add.guide': "Este host não tem seletor de pastas do sistema. Use a entrada oficial \"Adicionar área de trabalho\" na página Nova sessão.",
+        'heroPicker.error.title': "Não foi possível adicionar o espaço de trabalho",
+        'heroPicker.retry': "Tentar novamente",
         'error.title': 'Algo deu errado',
         'cancel': 'Cancelar',
         'create': 'Criar',
@@ -1980,6 +2006,8 @@ window.__ModuleLoader__.load({
         'flow.creating': 'Создание…',
         'add.guide.title': "Добавить рабочую область в приложении",
         'add.guide': "На этом хосте нет системного выбора папок. Используйте официальный пункт «Добавить рабочую область» на странице «Новый сеанс».",
+        'heroPicker.error.title': "Не удалось добавить рабочую область",
+        'heroPicker.retry': "Повторить",
         'error.title': 'Что-то пошло не так',
         'cancel': 'Отмена',
         'create': 'Создать',
@@ -2121,6 +2149,8 @@ window.__ModuleLoader__.load({
         'flow.creating': 'Skapar…',
         'add.guide.title': "Lägg till arbetsyta i appen",
         'add.guide': "Den här värden har ingen systemmappväljare. Använd den officiella posten \"Lägg till arbetsyta\" på sidan Ny session.",
+        'heroPicker.error.title': "Kunde inte lägga till arbetsytan",
+        'heroPicker.retry': "Försök igen",
         'error.title': 'Något gick fel',
         'cancel': 'Avbryt',
         'create': 'Skapa',
@@ -2262,6 +2292,8 @@ window.__ModuleLoader__.load({
         'flow.creating': 'กำลังสร้าง…',
         'add.guide.title': "เพิ่มเวิร์กสเปซในแอป",
         'add.guide': "โฮสต์นี้ไม่มีตัวเลือกโฟลเดอร์ของระบบ ใช้รายการ \"เพิ่มเวิร์กสเปซ\" อย่างเป็นทางการในหน้าเซสชันใหม่",
+        'heroPicker.error.title': "ไม่สามารถเพิ่มพื้นที่ทำงานได้",
+        'heroPicker.retry': "ลองอีกครั้ง",
         'error.title': 'เกิดข้อผิดพลาด',
         'cancel': 'ยกเลิก',
         'create': 'สร้าง',
@@ -2403,6 +2435,8 @@ window.__ModuleLoader__.load({
         'flow.creating': 'Oluşturuluyor…',
         'add.guide.title': "Uygulama içinde çalışma alanı ekle",
         'add.guide': "Bu ana makinede masaüstü klasör seçici yok. Yeni Oturum sayfasındaki resmî \"Çalışma alanı ekle\" girişini kullanın.",
+        'heroPicker.error.title': "Çalışma alanı eklenemedi",
+        'heroPicker.retry': "Yeniden dene",
         'error.title': 'Bir şeyler ters gitti',
         'cancel': 'İptal',
         'create': 'Oluştur',
@@ -2544,6 +2578,8 @@ window.__ModuleLoader__.load({
         'flow.creating': 'Đang tạo…',
         'add.guide.title': "Thêm không gian làm việc trong ứng dụng",
         'add.guide': "Máy chủ này không có trình chọn thư mục trên màn hình. Dùng mục chính thức \"Thêm không gian làm việc\" ở trang Phiên mới.",
+        'heroPicker.error.title': "Không thể thêm không gian làm việc",
+        'heroPicker.retry': "Thử lại",
         'error.title': 'Đã xảy ra lỗi',
         'cancel': 'Hủy',
         'create': 'Tạo',
@@ -2685,6 +2721,8 @@ window.__ModuleLoader__.load({
         'flow.creating': '建立緊…',
         'add.guide.title': "應用程式內新增工作區",
         'add.guide': "呢部主機冇桌面資料夾選擇器。請去「新工作階段」頁,用官方嘅「新增工作區」開應用程式內瀏覽器。",
+        'heroPicker.error.title': "無法新增工作區",
+        'heroPicker.retry': "重試",
         'error.title': '出咗錯',
         'cancel': '取消',
         'create': '建立',
@@ -2826,6 +2864,8 @@ window.__ModuleLoader__.load({
         'flow.creating': '建立緊…',
         'add.guide.title': "應用程式內新增工作區",
         'add.guide': "呢部主機冇桌面資料夾選擇器。請去「新工作階段」頁,用官方嘅「新增工作區」開應用程式內瀏覽器。",
+        'heroPicker.error.title': "無法新增工作區",
+        'heroPicker.retry': "重試",
         'error.title': '出咗錯',
         'cancel': '取消',
         'create': '建立',
@@ -2967,6 +3007,8 @@ window.__ModuleLoader__.load({
         'flow.creating': '正在建立…',
         'add.guide.title': "應用程式內新增工作區",
         'add.guide': "此主機沒有桌面資料夾選擇器。請至「新工作階段」頁,用官方的「新增工作區」開啟應用程式內瀏覽器。",
+        'heroPicker.error.title': "無法新增工作區",
+        'heroPicker.retry': "重試",
         'error.title': '發生錯誤',
         'cancel': '取消',
         'create': '建立',
@@ -3657,6 +3699,20 @@ window.__ModuleLoader__.load({
       '.bw-row-icon{flex:none;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
       '.bw-chevron{flex:none;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary,#9a9a9a);transition:transform .15s ease}',
       '.bw-chevron-open{transform:rotate(90deg)}',
+      // Hero picker rows (v0.22.0): hierarchy rides the row itself — an
+      // indentation gutter, a folder chevron or workspace glyph, and the
+      // trailing check. The row mirrors the primitives menu cell (same hover
+      // and focus fill) because the fixed 14px icon cell of that row crops any
+      // indentation nested inside it.
+      '.bw-pick-row{display:flex;align-items:center;gap:6px;width:100%;min-height:30px;padding:4px 8px;border:none;border-radius:8px;background:transparent;color:inherit;font:inherit;font-size:13px;cursor:pointer;text-align:left}',
+      '.bw-pick-row:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.15))}',
+      '.bw-pick-row:focus-visible{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.15));outline:none}',
+      '.bw-pick-indent{flex:none}',
+      '.bw-pick-glyph{flex:none;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
+      '.bw-pick-glyph svg{width:16px;height:16px}',
+      '.bw-pick-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.bw-pick-folder{font-weight:600}',
+      '.bw-pick-check{flex:none;display:inline-flex;align-items:center;color:var(--dsw-alias-brand-primary,#5b8def)}',
       // overflow:hidden (needed for the ellipsis) clips the outline: 3px of
       // padding covers the widest rim (2px at the top of the slider). margin
       // cancels it, so text still starts and truncates where it did.
@@ -5138,7 +5194,7 @@ window.__ModuleLoader__.load({
      * solid icon) clears the row's entry instead of pinning a redundant copy;
      * Reset removes the entry outright.
      */
-    function CustomizeDialog({ open, initial, defaults, kind, onChange, onReset, onClose, t }) {
+    function CustomizeDialog({ open, seedKey, initial, defaults, kind, onChange, onReset, onClose, t }) {
       // Icons render only for workspace / workspace-folder rows. Session rows
       // already carry the official status dot (pending/running/done) in the
       // leading slot, and session sub-group rows have no icon either — so the
@@ -5146,11 +5202,20 @@ window.__ModuleLoader__.load({
       const allowIcon = kind === 'folder' || kind === 'workspace'
       const fallback = readAppearance(defaults)
       const [draft, setDraft] = React.useState(DEFAULT_APPEARANCE)
+      // The seed reads the CURRENT initial through a ref, and the effect keys
+      // on the edited row (seedKey) instead of the initial object: the owner
+      // rebuilds that object on every render, and a running Session re-renders
+      // the browser every few seconds — keying on the object re-seeded the
+      // draft mid-edit and threw the operator's picks away (the "flash back to
+      // default" report). Only opening the dialog or switching rows re-seeds.
+      const initialRef = React.useRef(initial)
+      initialRef.current = initial
       React.useEffect(() => {
         if (!open) return
-        const base = readAppearance(initial)
-        setDraft({ ...base, icon: (initial && initial.icon) || 'solid' })
-      }, [open, initial])
+        const seed = initialRef.current
+        const base = readAppearance(seed)
+        setDraft({ ...base, icon: (seed && seed.icon) || 'solid' })
+      }, [open, seedKey])
       if (!open) return null
       const unchanged = APPEARANCE_FIELDS.every((field) => draft[field] === fallback[field])
         && (!allowIcon || (draft.icon || 'solid') === 'solid')
@@ -5414,6 +5479,256 @@ window.__ModuleLoader__.load({
         open ? E('div', { className: 'bw-plugin-body' },
           E(BetterWorkspaceSettings, { useStore, actions, t }),
         ) : null,
+      )
+    }
+
+    /* ====================== hero workspace picker ===================== */
+
+    /** The conversation empty-state picker's directory-flow hole (declared and owned by the shipped picker entry). */
+    const HERO_FLOW_HOLE = 'conversation.hero.workspace.directoryFlow'
+    /** Menu id of the picker's pinned add action — namespaced so it can never collide with a workspace id. */
+    const HERO_ADD_ID = '::bw-hero-add'
+    /** Stable empty array for memo dependencies. */
+    const EMPTY_LIST = []
+
+    /**
+     * One picker row. The row is drawn here rather than through the primitives
+     * MenuItemButton because the tree needs its own layout — an indentation
+     * gutter, the folder chevron and the trailing check — while the fixed
+     * 14px icon cell of that row crops any indentation placed inside it. The
+     * list chrome (card, scroll, outside click, arrow walk, focus return) is
+     * still the primitives Menu's: its keyboard walk reads
+     * `button[role="menuitem"]`, which is exactly what this renders.
+     */
+    function PickerRow({ depth, glyph, label, folder, checked, onSelect }) {
+      return E('button', {
+        type: 'button',
+        role: 'menuitem',
+        className: 'bw-pick-row',
+        onClick: onSelect,
+      },
+        E('span', { className: 'bw-pick-indent', style: { width: (depth * 14) + 'px' } }),
+        E('span', { className: 'bw-pick-glyph' }, glyph),
+        E('span', { className: cls('bw-pick-name', folder && 'bw-pick-folder') }, label),
+        checked ? E('span', { className: 'bw-pick-check' }, icon('IconCheckOutlineRegular', 14)) : null,
+      )
+    }
+
+    /**
+     * Conversation empty-state workspace picker (v0.22.0).
+     *
+     * The shipped picker lists every workspace title flat, in one level, with
+     * no disk nesting at all; this seat shadows it (priority -1 — lowest
+     * renders) and draws the SAME store-backed tree the sidebar draws: disk
+     * nesting by the official owning-parent semantics, the tri-state "/" name
+     * layer and chain compression all read the one view store, so a view
+     * option changed on either surface moves both. The chip, its anchor and
+     * the pick semantics stay with ui-conversation — this component renders the
+     * popover only and reports a pick through the owner's onPick.
+     *
+     * Adding a workspace stays official. Shadowing the seat forfeits the
+     * child-hole render authorization (a children declaration is exclusive,
+     * and the shipped entry keeps owning HERO_FLOW_HOLE), so the shipped
+     * occupant COMPONENT is read off the slot ledger and rendered directly —
+     * with this surface supplying the same owner conversation the shipped
+     * picker would, plus that entry's own injected face. Native and browse
+     * hosts therefore keep the interaction they shipped with; a host whose
+     * ledger hides the entry loses the add action, never the picker.
+     */
+    function HeroWorkspacePicker(props) {
+      const t = typeof props.t === 'function' ? props.t : (key => key)
+      const useWorkspaces = props.useWorkspaces
+      const useStore = props.useStore
+      const useDirectoryFlow = props.useDirectoryFlow
+      // Hook order must not depend on the injection face arriving: the fallback
+      // is a plain function (not a hook), so both branches call the same way.
+      const useFlowOccupancy = typeof useDirectoryFlow === 'function' ? useDirectoryFlow : () => 0
+      const anchorRef = props.anchorRef
+      const selectedId = props.selectedId
+      const onPick = props.onPick
+      const onClose = props.onClose
+      const heroFlowEntry = props.heroFlowEntry
+      const createWorkspace = props.createWorkspace
+
+      const snapshot = typeof useWorkspaces === 'function' ? useWorkspaces(state => state) : null
+      const groupBy = typeof useStore === 'function'
+        ? useStore(state => (state && state.groupBy) || 'workspace-tree')
+        : 'workspace-tree'
+      const groupMode = typeof useStore === 'function'
+        ? useStore(state => workspaceGroupModeOf(state && state.workspaceGroupMode, state && state.workspaceTitleSlash))
+        : 'disk'
+      const compactChains = typeof useStore === 'function'
+        ? useStore(state => !state || !state.prefs || state.prefs.compactChains !== false)
+        : true
+      const wsFolders = typeof useStore === 'function'
+        ? useStore(state => (state && state.folders && state.folders.ws) || EMPTY_FOLDERS)
+        : EMPTY_FOLDERS
+      // Occupancy is the only reactive fact here: the ledger read re-runs on
+      // every render, so the count just forces the re-render when the shipped
+      // occupant loads or unloads (its identity is stable while occupied).
+      const flowCount = useFlowOccupancy(count => count)
+      /** Picker-local collapse: the tree opens fully expanded (a chooser must show its targets) and a folder row folds only here. */
+      const [folded, setFolded] = React.useState(EMPTY_FOLDERS)
+      const [flowOpen, setFlowOpen] = React.useState(false)
+      const [picking, setPicking] = React.useState(false)
+      const [errorText, setErrorText] = React.useState(null)
+
+      const items = snapshot && Array.isArray(snapshot.items) ? snapshot.items : EMPTY_LIST
+      // Same construction the sidebar runs (buildTree + optional chain
+      // compression), so both surfaces answer the same view options.
+      const tree = React.useMemo(() => {
+        const built = buildTree(items, groupMode, wsFolders)
+        if (!compactChains) return built
+        return { ...built, folders: built.folders.map((f) => materializeChain(compressTree(f))), workspaces: built.workspaces }
+      }, [items, groupMode, wsFolders, compactChains])
+
+      const rows = React.useMemo(() => {
+        const out = []
+        const flatMode = groupBy !== 'workspace-tree'
+        const isFolded = (key) => folded[key] === true
+        const toggle = (key) => {
+          setFolded((prev) => {
+            const next = { ...prev }
+            if (next[key] === true) delete next[key]
+            else next[key] = true
+            return next
+          })
+        }
+        const pick = (workspace) => {
+          if (!workspace || workspace.workspaceId === undefined) return
+          if (typeof onPick === 'function') onPick(workspace.workspaceId)
+        }
+        // Tree rows carry the leaf the sidebar shows; flat rows carry the full
+        // title (official 'workspace' mode shows whole titles, and a picker
+        // must stay unambiguous once the folder context is gone).
+        const labelOf = (workspace) => String((flatMode ? workspace.title : workspace.leaf)
+          || workspace.title || workspace.leaf || '')
+        const workspaceRows = (entry, depth, deep) => {
+          const workspace = entry.workspace || entry
+          out.push(E(PickerRow, {
+            key: 'w:' + String(workspace.workspaceId),
+            depth,
+            glyph: icon('IconFolderCloseRegular', 16),
+            label: labelOf(workspace),
+            checked: workspace.workspaceId === selectedId,
+            onSelect: () => pick(workspace),
+          }))
+          // Disk-nested child workspaces always render: folding them away would
+          // put them out of reach of a chooser.
+          if (deep !== false && entry.sub) levelRows(entry.sub, depth + 1)
+        }
+        const folderRows = (node, depth) => {
+          // compressTree materialises a single-child chain ending in exactly
+          // one workspace as a 'ws' row: that row IS the workspace row.
+          if (node.kind === 'ws') { workspaceRows({ workspace: node.workspace }, depth, true); return }
+          const idPath = node.idPath || node.path
+          const collapsed = isFolded(idPath)
+          out.push(E(PickerRow, {
+            key: 'f:' + String(idPath),
+            depth,
+            glyph: E('span', { className: cls('bw-chevron', !collapsed && 'bw-chevron-open') }, icon('IconTriangleRightFill14', 14)),
+            label: folderLabelOf(node),
+            folder: true,
+            checked: false,
+            onSelect: () => toggle(idPath),
+          }))
+          if (collapsed) return
+          for (const child of node.folders) folderRows(child, depth + 1)
+          for (const entry of node.workspaces) workspaceRows(entry, depth + 1, true)
+        }
+        const levelRows = (level, depth) => {
+          for (const node of level.folders) folderRows(node, depth)
+          for (const entry of level.workspaces) workspaceRows(entry, depth, true)
+        }
+        if (!flatMode) levelRows(tree, 0)
+        else {
+          // Flat surfaces (official 'workspace' mode, and 'flat' where the
+          // sidebar carries no workspace rows at all): one level, full titles —
+          // a picker still has to offer every workspace.
+          const all = []
+          const collect = (level) => {
+            for (const node of level.folders) collect(node)
+            for (const entry of level.workspaces) { all.push(entry); if (entry.sub) collect(entry.sub) }
+          }
+          collect(tree)
+          for (const entry of all) workspaceRows(entry, 0, false)
+        }
+        return out
+      }, [tree, groupBy, folded, selectedId, onPick])
+
+      const flowAvailable = flowCount > 0
+      const addEntry = flowAvailable
+        ? { id: HERO_ADD_ID, label: t('add'), icon: icon('IconPlusOutlineRegular', 16) }
+        : null
+      const flowEntry = flowAvailable && typeof heroFlowEntry === 'function' ? heroFlowEntry() : null
+      const flowComponent = flowEntry && flowEntry.component ? flowEntry.component : null
+      let flowFace = null
+      if (flowEntry && typeof flowEntry.inject === 'function') {
+        try { flowFace = flowEntry.inject() } catch (error) { flowFace = null }
+      }
+      const openFlow = () => {
+        setErrorText(null)
+        setFlowOpen(true)
+        if (typeof onClose === 'function') onClose()
+      }
+      const adoptPath = (path) => {
+        setPicking(true)
+        Promise.resolve()
+          .then(() => createWorkspace({ path: String(path) }))
+          .then((workspace) => {
+            setFlowOpen(false)
+            if (workspace && workspace.workspaceId !== undefined && typeof onPick === 'function') onPick(workspace.workspaceId)
+          })
+          .catch((reason) => {
+            // The picker's own error surface: the shared picker flow answers a
+            // failed adoption with a retryable notice, and so does this one.
+            setFlowOpen(false)
+            setErrorText(messageOf(reason))
+          })
+          .then(() => { setPicking(false) })
+      }
+      const menuReady = typeof ui.Menu === 'function'
+      const menuOpen = props.open === true && (rows.length > 0 || addEntry !== null)
+      const flowNode = flowComponent && flowOpen
+        ? E(flowComponent, {
+          key: 'bw-hero-flow',
+          open: true,
+          busy: picking,
+          onPicked: adoptPath,
+          onCancel: () => { setFlowOpen(false) },
+          onError: (message) => { setFlowOpen(false); setErrorText(String(message)) },
+          ...(flowFace || EMPTY_FOLDERS),
+        })
+        : null
+      const errorNode = menuReady && errorText !== null
+        ? E(ui.Modal, {
+          open: true,
+          title: t('heroPicker.error.title'),
+          closeLabel: t('close'),
+          onClose: () => { setErrorText(null) },
+          footer: E('div', { className: 'bw-modal-actions' },
+            E(BTN, { variant: 'outline', onClick: () => { setErrorText(null) } }, t('cancel')),
+            E(BTN, { variant: 'primary', disabled: !flowAvailable, onClick: openFlow }, t('heroPicker.retry')),
+          ),
+        }, E('div', { className: 'bw-modal-body' }, E('div', { role: 'alert' }, errorText)))
+        : null
+      return E(React.Fragment, null,
+        menuReady ? E(ui.Menu, {
+          open: menuOpen,
+          // portal mode anchored on the owner's chip: the menu is the popover,
+          // never the trigger (ui-conversation renders the chip itself).
+          anchor: null,
+          items: EMPTY_LIST,
+          ...(addEntry ? { footer: [addEntry] } : {}),
+          portal: true,
+          dense: true,
+          side: 'bottom',
+          getAnchorRect: () => (anchorRef && anchorRef.current ? anchorRef.current.getBoundingClientRect() : null),
+          onClose: () => { if (typeof onClose === 'function') onClose() },
+          onSelect: (id) => { if (id === HERO_ADD_ID) openFlow() },
+        }, rows) : null,
+        flowNode,
+        errorNode,
       )
     }
 
@@ -7295,6 +7610,9 @@ window.__ModuleLoader__.load({
         E(CustomizeDialog, {
           open: customize !== null,
           kind: customize ? customize.kind : undefined,
+          // Row identity, not the rebuilt initial object, is what re-seeds the
+          // draft (see the dialog's seed effect).
+          seedKey: customize ? customize.entryKey : undefined,
           defaults: defaultAppearance,
           initial: customize
             ? { ...appearanceOf(customize.entryKey), icon: (styleEntry(customize.entryKey) || {}).icon || 'solid' }
@@ -7575,6 +7893,47 @@ window.__ModuleLoader__.load({
         },
         BetterBrowser,
       ))
+
+      // The HERO hole (v0.22.0): the shipped picker is shadowed at priority -1
+      // and this seat draws the sidebar's own tree instead of a flat title
+      // list. Same rules as the sidebar seat — NO children declaration (the
+      // shipped picker entry keeps owning HERO_FLOW_HOLE even while shadowed,
+      // and re-declaring throws), so the add action renders the shipped
+      // occupant component read off the ledger (see HeroWorkspacePicker).
+      // Hosts without a primitives Menu keep the shipped picker: shadowing
+      // there would leave the hero with no popover at all.
+      if (typeof ui.Menu === 'function') {
+        const heroInjected = () => ({
+          createWorkspace: (input) => workspaces.create(input),
+          /**
+           * The shipped occupant's ledger entry for the hero flow hole: the
+           * renderer picks the lowest-priority live entry, and so does this
+           * read (entries arrive priority-sorted). Best-effort by design — a
+           * host that hides the ledger costs the add action, never the picker.
+           */
+          heroFlowEntry: () => {
+            try {
+              const list = slots.entries(HERO_FLOW_HOLE)
+              const entry = Array.isArray(list) && list.length > 0 ? list[0] : null
+              return entry && entry.component ? entry : null
+            } catch (error) {
+              return null
+            }
+          },
+          hooks: { directoryFlow: flowSource(slots, HERO_FLOW_HOLE) },
+        })
+        slots.inject('conversation.hero.workspace', guarded(
+          'conversation.hero.workspace',
+          {
+            name: 'conversation.hero.workspace',
+            priority: -1,
+            store: viewStore,
+            inject: heroInjected,
+            locale: NS,
+          },
+          HeroWorkspacePicker,
+        ))
+      }
     }
 
     return {

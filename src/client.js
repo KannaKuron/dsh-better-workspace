@@ -39,6 +39,11 @@ window.__ModuleLoader__.load({
       'rail.add': '添加工作区',
       'empty': '暂无工作区',
       'empty.search': '没有匹配的结果',
+      'empty.noneArchived': '暂无已归档会话',
+      'empty.viewOthers': '查看其他会话',
+      'shortcut.forkFailed': '无法分叉会话，请重试',
+      'shortcut.noCompletedTurn': '当前会话没有已结束的轮次',
+      'workspace.defaultName': '默认工作区',
       'session.new': '新会话',
         'viewOptions.label': '视图选项',
         'viewOptions.groupBy': '分组方式',
@@ -182,6 +187,11 @@ window.__ModuleLoader__.load({
       'rail.add': 'Add workspace',
       'empty': 'No workspaces yet',
       'empty.search': 'No matches',
+      'empty.noneArchived': 'No archived sessions yet',
+      'empty.viewOthers': 'View other sessions',
+      'shortcut.forkFailed': 'Could not fork the session. Try again.',
+      'shortcut.noCompletedTurn': 'This session has no completed turn',
+      'workspace.defaultName': 'Default workspace',
       'session.new': 'New session',
         'viewOptions.label': 'View options',
         'viewOptions.groupBy': 'Group by',
@@ -333,6 +343,11 @@ window.__ModuleLoader__.load({
         'rail.add': 'إضافة مساحة عمل',
         'empty': 'لا توجد مساحات عمل بعد',
         'empty.search': 'لا توجد نتائج مطابقة',
+        'empty.noneArchived': 'لا توجد جلسات مؤرشفة بعد',
+        'empty.viewOthers': 'عرض الجلسات الأخرى',
+        'shortcut.forkFailed': 'تعذّر تفريع الجلسة. أعد المحاولة.',
+        'shortcut.noCompletedTurn': 'لا توجد جولة مكتملة في هذه الجلسة',
+        'workspace.defaultName': 'مساحة العمل الافتراضية',
         'session.new': 'جلسة جديدة',
         'viewOptions.label': 'خيارات العرض',
         'viewOptions.groupBy': 'التجميع حسب',
@@ -476,6 +491,11 @@ window.__ModuleLoader__.load({
         'rail.add': 'Arbeitsbereich hinzufügen',
         'empty': 'Noch keine Arbeitsbereiche',
         'empty.search': 'Keine Treffer',
+        'empty.noneArchived': 'Noch keine archivierten Sitzungen',
+        'empty.viewOthers': 'Andere Sitzungen anzeigen',
+        'shortcut.forkFailed': 'Sitzung konnte nicht geforkt werden. Erneut versuchen.',
+        'shortcut.noCompletedTurn': 'Diese Sitzung hat keinen abgeschlossenen Durchlauf',
+        'workspace.defaultName': 'Standard-Arbeitsbereich',
         'session.new': 'Neue Sitzung',
         'viewOptions.label': 'Ansichtsoptionen',
         'viewOptions.groupBy': 'Gruppieren',
@@ -619,6 +639,11 @@ window.__ModuleLoader__.load({
         'rail.add': 'Ajouter un espace de travail',
         'empty': 'Aucun espace de travail',
         'empty.search': 'Aucun résultat',
+        'empty.noneArchived': 'Aucune session archivée',
+        'empty.viewOthers': 'Voir les autres sessions',
+        'shortcut.forkFailed': 'Impossible de dupliquer la session. Réessayez.',
+        'shortcut.noCompletedTurn': "Cette session n'a aucun tour terminé",
+        'workspace.defaultName': 'Espace de travail par défaut',
         'session.new': 'Nouvelle session',
         'viewOptions.label': 'Options d’affichage',
         'viewOptions.groupBy': 'Regrouper par',
@@ -762,6 +787,11 @@ window.__ModuleLoader__.load({
         'rail.add': 'कार्यस्थान जोड़ें',
         'empty': 'अभी कोई कार्यस्थान नहीं',
         'empty.search': 'कोई मेल खाता परिणाम नहीं',
+        'empty.noneArchived': 'अभी कोई संग्रहीत सत्र नहीं',
+        'empty.viewOthers': 'अन्य सत्र देखें',
+        'shortcut.forkFailed': 'सत्र को फ़ोर्क नहीं किया जा सका। पुनः प्रयास करें।',
+        'shortcut.noCompletedTurn': 'इस सत्र में कोई पूर्ण चक्र नहीं है',
+        'workspace.defaultName': 'डिफ़ॉल्ट कार्यस्थान',
         'session.new': 'नया सत्र',
         'viewOptions.label': 'दृश्य विकल्प',
         'viewOptions.groupBy': 'समूहीकरण',
@@ -905,6 +935,11 @@ window.__ModuleLoader__.load({
         'rail.add': 'Tambah ruang kerja',
         'empty': 'Belum ada ruang kerja',
         'empty.search': 'Tidak ada hasil yang cocok',
+        'empty.noneArchived': 'Belum ada sesi yang diarsipkan',
+        'empty.viewOthers': 'Lihat sesi lain',
+        'shortcut.forkFailed': 'Tidak dapat menyalin sesi. Coba lagi.',
+        'shortcut.noCompletedTurn': 'Sesi ini tidak memiliki putaran yang selesai',
+        'workspace.defaultName': 'Ruang kerja default',
         'session.new': 'Sesi baru',
         'viewOptions.label': 'Opsi tampilan',
         'viewOptions.groupBy': 'Kelompokkan berdasarkan',
@@ -1048,6 +1083,11 @@ window.__ModuleLoader__.load({
         'rail.add': 'Aggiungi area di lavoro',
         'empty': 'Nessuna area di lavoro',
         'empty.search': 'Nessun risultato',
+        'empty.noneArchived': 'Nessuna sessione archiviata',
+        'empty.viewOthers': 'Vedi altre sessioni',
+        'shortcut.forkFailed': 'Impossibile creare una copia della sessione. Riprova.',
+        'shortcut.noCompletedTurn': 'Questa sessione non ha turni completati',
+        'workspace.defaultName': 'Area di lavoro predefinita',
         'session.new': 'Nuova sessione',
         'viewOptions.label': 'Opzioni vista',
         'viewOptions.groupBy': 'Raggruppa per',
@@ -1191,6 +1231,11 @@ window.__ModuleLoader__.load({
         'rail.add': 'ワークスペースを追加',
         'empty': 'ワークスペースがありません',
         'empty.search': '一致する結果がありません',
+        'empty.noneArchived': 'アーカイブされたセッションはありません',
+        'empty.viewOthers': '他のセッションを表示',
+        'shortcut.forkFailed': 'セッションを分岐できませんでした。もう一度お試しください。',
+        'shortcut.noCompletedTurn': 'このセッションには完了したターンがありません',
+        'workspace.defaultName': '既定のワークスペース',
         'session.new': '新しいセッション',
         'viewOptions.label': '表示オプション',
         'viewOptions.groupBy': 'グループ化',
@@ -1334,6 +1379,11 @@ window.__ModuleLoader__.load({
         'rail.add': '워크스페이스 추가',
         'empty': '워크스페이스가 없습니다',
         'empty.search': '일치하는 결과가 없습니다',
+        'empty.noneArchived': '보관된 세션이 없습니다',
+        'empty.viewOthers': '다른 세션 보기',
+        'shortcut.forkFailed': '세션을 분기할 수 없습니다. 다시 시도하세요.',
+        'shortcut.noCompletedTurn': '이 세션에는 완료된 턴이 없습니다',
+        'workspace.defaultName': '기본 워크스페이스',
         'session.new': '새 세션',
         'viewOptions.label': '보기 옵션',
         'viewOptions.groupBy': '그룹화',
@@ -1477,6 +1527,11 @@ window.__ModuleLoader__.load({
         'rail.add': 'Werkruimte toevoegen',
         'empty': 'Nog geen werkruimten',
         'empty.search': 'Geen resultaten',
+        'empty.noneArchived': 'Nog geen gearchiveerde sessies',
+        'empty.viewOthers': 'Andere sessies bekijken',
+        'shortcut.forkFailed': 'Kan de sessie niet forken. Probeer opnieuw.',
+        'shortcut.noCompletedTurn': 'Deze sessie heeft geen voltooide ronde',
+        'workspace.defaultName': 'Standaardwerkruimte',
         'session.new': 'Nieuwe sessie',
         'viewOptions.label': 'Weergaveopties',
         'viewOptions.groupBy': 'Groeperen op',
@@ -1620,6 +1675,11 @@ window.__ModuleLoader__.load({
         'rail.add': 'Dodaj obszar roboczy',
         'empty': 'Brak obszarów roboczych',
         'empty.search': 'Brak wyników',
+        'empty.noneArchived': 'Brak zarchiwizowanych sesji',
+        'empty.viewOthers': 'Zobacz inne sesje',
+        'shortcut.forkFailed': 'Nie udało się rozgałęzić sesji. Spróbuj ponownie.',
+        'shortcut.noCompletedTurn': 'Ta sesja nie ma ukończonej tury',
+        'workspace.defaultName': 'Domyślna przestrzeń robocza',
         'session.new': 'Nowa sesja',
         'viewOptions.label': 'Opcje widoku',
         'viewOptions.groupBy': 'Grupuj według',
@@ -1763,6 +1823,11 @@ window.__ModuleLoader__.load({
         'rail.add': 'Adicionar espaço de trabalho',
         'empty': 'Nenhum espaço de trabalho',
         'empty.search': 'Nenhum resultado',
+        'empty.noneArchived': 'Nenhuma sessão arquivada',
+        'empty.viewOthers': 'Ver outras sessões',
+        'shortcut.forkFailed': 'Não foi possível ramificar a sessão. Tente novamente.',
+        'shortcut.noCompletedTurn': 'Esta sessão não tem nenhum turno concluído',
+        'workspace.defaultName': 'Espaço de trabalho predefinido',
         'session.new': 'Nova sessão',
         'viewOptions.label': 'Opções de vista',
         'viewOptions.groupBy': 'Agrupar por',
@@ -1906,6 +1971,11 @@ window.__ModuleLoader__.load({
         'rail.add': 'Добавить рабочую область',
         'empty': 'Рабочих областей пока нет',
         'empty.search': 'Ничего не найдено',
+        'empty.noneArchived': 'Нет архивных сеансов',
+        'empty.viewOthers': 'Показать другие сеансы',
+        'shortcut.forkFailed': 'Не удалось ответвить сеанс. Повторите попытку.',
+        'shortcut.noCompletedTurn': 'В этом сеансе нет завершённых циклов',
+        'workspace.defaultName': 'Рабочая область по умолчанию',
         'session.new': 'Новая сессия',
         'viewOptions.label': 'Параметры вида',
         'viewOptions.groupBy': 'Группировка',
@@ -2049,6 +2119,11 @@ window.__ModuleLoader__.load({
         'rail.add': 'Lägg till arbetsyta',
         'empty': 'Inga arbetsytor ännu',
         'empty.search': 'Inga träffar',
+        'empty.noneArchived': 'Inga arkiverade sessioner',
+        'empty.viewOthers': 'Visa andra sessioner',
+        'shortcut.forkFailed': 'Kunde inte förgrena sessionen. Försök igen.',
+        'shortcut.noCompletedTurn': 'Den här sessionen har ingen avslutad omgång',
+        'workspace.defaultName': 'Standardarbetsyta',
         'session.new': 'Ny session',
         'viewOptions.label': 'Visningsalternativ',
         'viewOptions.groupBy': 'Gruppera efter',
@@ -2192,6 +2267,11 @@ window.__ModuleLoader__.load({
         'rail.add': 'เพิ่มพื้นที่ทำงาน',
         'empty': 'ยังไม่มีพื้นที่ทำงาน',
         'empty.search': 'ไม่พบผลลัพธ์ที่ตรงกัน',
+        'empty.noneArchived': 'ยังไม่มีเซสชันที่เก็บถาวร',
+        'empty.viewOthers': 'ดูเซสชันอื่น',
+        'shortcut.forkFailed': 'ไม่สามารถแยกเซสชันได้ ลองอีกครั้ง',
+        'shortcut.noCompletedTurn': 'เซสชันนี้ไม่มีรอบที่เสร็จสิ้น',
+        'workspace.defaultName': 'พื้นที่ทำงานเริ่มต้น',
         'session.new': 'เซสชันใหม่',
         'viewOptions.label': 'ตัวเลือกมุมมอง',
         'viewOptions.groupBy': 'จัดกลุ่มตาม',
@@ -2335,6 +2415,11 @@ window.__ModuleLoader__.load({
         'rail.add': 'Çalışma alanı ekle',
         'empty': 'Henüz çalışma alanı yok',
         'empty.search': 'Eşleşen sonuç yok',
+        'empty.noneArchived': 'Arşivlenmiş oturum yok',
+        'empty.viewOthers': 'Diğer oturumları görüntüle',
+        'shortcut.forkFailed': 'Oturum çatallanamadı. Yeniden deneyin.',
+        'shortcut.noCompletedTurn': 'Bu oturumda tamamlanmış tur yok',
+        'workspace.defaultName': 'Varsayılan çalışma alanı',
         'session.new': 'Yeni oturum',
         'viewOptions.label': 'Görünüm seçenekleri',
         'viewOptions.groupBy': 'Gruplandır',
@@ -2478,6 +2563,11 @@ window.__ModuleLoader__.load({
         'rail.add': 'Thêm không gian làm việc',
         'empty': 'Chưa có không gian làm việc',
         'empty.search': 'Không có kết quả phù hợp',
+        'empty.noneArchived': 'Chưa có phiên nào được lưu trữ',
+        'empty.viewOthers': 'Xem các phiên khác',
+        'shortcut.forkFailed': 'Không thể tách phiên. Hãy thử lại.',
+        'shortcut.noCompletedTurn': 'Phiên này chưa có lượt nào hoàn thành',
+        'workspace.defaultName': 'Không gian làm việc mặc định',
         'session.new': 'Phiên mới',
         'viewOptions.label': 'Tùy chọn hiển thị',
         'viewOptions.groupBy': 'Nhóm theo',
@@ -2621,6 +2711,11 @@ window.__ModuleLoader__.load({
         'rail.add': '新增工作區',
         'empty': '未有工作區',
         'empty.search': '搵唔到符合嘅結果',
+        'empty.noneArchived': '未有已封存嘅會話',
+        'empty.viewOthers': '睇其他會話',
+        'shortcut.forkFailed': '無法分叉會話，請重試',
+        'shortcut.noCompletedTurn': '呢個會話未有已完成嘅回合',
+        'workspace.defaultName': '預設工作區',
         'session.new': '新對話',
         'viewOptions.label': '檢視選項',
         'viewOptions.groupBy': '分組方式',
@@ -2764,6 +2859,11 @@ window.__ModuleLoader__.load({
         'rail.add': '新增工作區',
         'empty': '未有工作區',
         'empty.search': '搵唔到符合嘅結果',
+        'empty.noneArchived': '未有已封存嘅會話',
+        'empty.viewOthers': '睇其他會話',
+        'shortcut.forkFailed': '無法分叉會話，請重試',
+        'shortcut.noCompletedTurn': '呢個會話未有已完成嘅回合',
+        'workspace.defaultName': '預設工作區',
         'session.new': '新對話',
         'viewOptions.label': '檢視選項',
         'viewOptions.groupBy': '分組方式',
@@ -2907,6 +3007,11 @@ window.__ModuleLoader__.load({
         'rail.add': '新增工作區',
         'empty': '尚無工作區',
         'empty.search': '沒有相符的結果',
+        'empty.noneArchived': '尚無已封存的會話',
+        'empty.viewOthers': '查看其他工作階段',
+        'shortcut.forkFailed': '無法分岔工作階段，請重試',
+        'shortcut.noCompletedTurn': '此工作階段沒有已完成的回合',
+        'workspace.defaultName': '預設工作區',
         'session.new': '新工作階段',
         'viewOptions.label': '檢視選項',
         'viewOptions.groupBy': '分組方式',
@@ -3266,6 +3371,168 @@ window.__ModuleLoader__.load({
       && summary.projectionValues
       && Array.isArray(summary.projectionValues.schedule)
       && summary.projectionValues.schedule.length > 0)
+
+    /**
+     * First-use Workspace naming, official semantics (dsh 0.1.7-rc.2:
+     * api workspace-controller default-workspace.ts). The registry derives the
+     * automatic first-use title from the on-disk directory name
+     * ('default-workspace', language-neutral so one installation keeps one path
+     * across language switches), and every shipped browser surface labels
+     * exactly that title with the LOCALIZED default name — the stored title
+     * itself never changes. rc.2 dropped the old `defaultWorkspace.title`
+     * dictionary path and resolves the label at the display site instead;
+     * mirrored here so the tree, the hero picker and the rename prefill agree
+     * with the shipped browser. The copy comes from this plugin's dictionaries,
+     * which cover the 19 languages the official common dictionary leaves on its
+     * English fallback. A host without the key (pre-rc.2) simply keeps the
+     * stored title — the substitution is a display layer, never a write.
+     */
+    const DEFAULT_WORKSPACE_TITLE = 'default-workspace'
+    const withDisplayTitles = (items, localizedDefault) => {
+      const list = items || []
+      if (!localizedDefault) return list
+      let replaced = false
+      const out = list.map((workspace) => {
+        if (!workspace || workspace.title !== DEFAULT_WORKSPACE_TITLE) return workspace
+        replaced = true
+        return Object.assign({}, workspace, { title: String(localizedDefault) })
+      })
+      return replaced ? out : list
+    }
+
+    /**
+     * The SHIPPED sidebar's own business face, read off the slot ledger (dsh
+     * 0.1.7-rc.2). The shipped shortcut layer routes session search and
+     * add-workspace into a private request store whose ONLY consumer is the
+     * shipped browser's own effect; a seat shadowed at priority -1 never mounts
+     * that consumer, so this plugin consumes the same channel instead of
+     * leaving Cmd/Ctrl+K and Cmd/Ctrl+O consumed-but-dead. Same ledger-read
+     * technique as the hero picker's directory-flow occupant. Every read is
+     * best-effort and version-gated by the face's own shape: an older host has
+     * no requestSearch at all (no channel, no consumption), and a host that
+     * hides the ledger costs the channel only.
+     */
+    const shippedBrowserFaceOf = (slots, ownComponent) => {
+      try {
+        const entries = slots.entries('sidebar.workspaces')
+        for (const entry of entries || []) {
+          if (!entry || entry.component === ownComponent) continue
+          if (typeof entry.inject !== 'function') continue
+          const face = entry.inject()
+          if (face && typeof face === 'object' && typeof face.requestSearch === 'function') return face
+        }
+      } catch (error) {
+        return null
+      }
+      return null
+    }
+
+    /**
+     * The shipped schedule mark's seat occupant (dsh 0.1.7-rc.2:
+     * `sidebar.session.row.leading`, registered by
+     * @deepseek-ai/dsh-client-ui-schedule). rc.2 removed the list projection
+     * this plugin used to mirror the mark from and moved the mark into a seat
+     * DECLARED BY THE SHIPPED BROWSER — a shadowing entry cannot render another
+     * entry's child seat, so the occupant is read off the ledger and rendered
+     * inside our own row, exactly like the hero picker's directory-flow
+     * occupant. No occupant (the Schedule overlay is off, or an older host has
+     * no such seat) means no mark, which is the shipped default anyway.
+     */
+    const scheduleSeatOf = (slots) => {
+      try {
+        const entries = slots.entries('sidebar.session.row.leading')
+        const entry = entries && entries.length > 0 ? entries[0] : null
+        if (!entry || !entry.component || typeof entry.inject !== 'function') return null
+        return {
+          component: entry.component,
+          face: entry.inject(),
+          locale: typeof entry.locale === 'string' ? entry.locale : null,
+        }
+      } catch (error) {
+        return null
+      }
+    }
+
+    /**
+     * Bind one ledger occupant's `hooks` compartment into the `use<Name>`
+     * selector-hook props the slot renderer would synthesize (ui-slots
+     * PropsHooks): the occupant was written against that contract, so it is
+     * reproduced here — subscribe/getSnapshot captured once per source, the
+     * selected value cached across renders with the optional equality — the
+     * semantics of the shipped bindSnapshotSelector, whose
+     * use-sync-external-store shim is not on the client baseline whitelist.
+     */
+    const EMPTY_SELECTION = { empty: true }
+    const NOOP_SUBSCRIBE = () => () => {}
+    const NOOP_SNAPSHOT = () => null
+    /**
+     * Subscribe one bare observable source (HostObservable: getSnapshot +
+     * subscribe) without a selector. The capture is memoized so a component
+     * never resubscribes across renders, and a missing source degrades to a
+     * constant null instead of a conditional hook.
+     */
+    const useObservableSnapshot = (observable) => {
+      const subscribe = React.useMemo(
+        () => (observable && typeof observable.subscribe === 'function' ? (notify) => observable.subscribe(notify) : NOOP_SUBSCRIBE),
+        [observable],
+      )
+      const getSnapshot = React.useMemo(
+        () => (observable && typeof observable.getSnapshot === 'function' ? () => observable.getSnapshot() : NOOP_SNAPSHOT),
+        [observable],
+      )
+      return React.useSyncExternalStore(subscribe, getSnapshot)
+    }
+
+    const bindSelectorHook = (observable) => {
+      const subscribe = (notify) => observable.subscribe(notify)
+      const getSnapshot = () => observable.getSnapshot()
+      return function useSelector(selector, isEqual) {
+        const selectorRef = React.useRef(selector)
+        selectorRef.current = selector
+        const isEqualRef = React.useRef(isEqual)
+        isEqualRef.current = isEqual
+        const cached = React.useRef(EMPTY_SELECTION)
+        const getSelection = React.useCallback(() => {
+          const next = selectorRef.current(getSnapshot())
+          const previous = cached.current
+          if (previous !== EMPTY_SELECTION && typeof isEqualRef.current === 'function' && isEqualRef.current(previous, next)) {
+            return previous
+          }
+          cached.current = next
+          return next
+        }, [])
+        return React.useSyncExternalStore(subscribe, getSelection)
+      }
+    }
+
+    /** Split an inject face into plain props + `use<Name>` selector hooks. */
+    const bindOccupantFace = (face) => {
+      const props = {}
+      if (!face || typeof face !== 'object') return props
+      for (const key of Object.keys(face)) {
+        if (key === 'hooks' || key === 'keyedHooks') continue
+        props[key] = face[key]
+      }
+      const hooks = face.hooks
+      if (hooks && typeof hooks === 'object') {
+        for (const key of Object.keys(hooks)) {
+          const observable = hooks[key]
+          if (!observable || typeof observable.subscribe !== 'function' || typeof observable.getSnapshot !== 'function') continue
+          props['use' + key.charAt(0).toUpperCase() + key.slice(1)] = bindSelectorHook(observable)
+        }
+      }
+      return props
+    }
+
+    /**
+     * Render one occupant the SHIPPED browser seats (module level on purpose:
+     * React discipline — the occupant mounts once per row and keeps its own
+     * state across our re-renders).
+     */
+    function ShippedSeatOccupant({ seat, ownerProps, t }) {
+      const bound = React.useMemo(() => bindOccupantFace(seat.face), [seat])
+      return E(seat.component, Object.assign({}, ownerProps, bound, t ? { t } : null))
+    }
 
     /**
      * Running subagent descendants per session (light lineage walk over
@@ -3633,10 +3900,17 @@ window.__ModuleLoader__.load({
       '.bw-root{height:100%;display:flex;flex-direction:column;min-height:0;position:relative;color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-header{display:flex;align-items:center;gap:2px;padding:10px 10px 4px;flex:none}',
       '.bw-header-title{flex:1;font-size:12px;font-weight:600;letter-spacing:.02em;color:var(--dsw-alias-label-secondary,#b8b8b8);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '.bw-icon-btn{flex:none;width:24px;height:24px;border:none;background:transparent;border-radius:6px;display:grid;place-items:center;color:var(--dsw-alias-label-secondary,#b8b8b8);cursor:pointer;padding:0}',
+      '.bw-icon-btn{flex:none;width:24px;height:24px;border:none;background:transparent;border-radius:var(--dsw-radius-sm,6px);display:grid;place-items:center;color:var(--dsw-alias-label-secondary,#b8b8b8);cursor:pointer;padding:0}',
       '.bw-icon-btn:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.15));color:var(--dsw-alias-label-primary,#e6e6e6)}',
+      // Focus ring parity with the shipped icon buttons (dsh 0.1.7-rc.2
+      // focus.css + WorkspaceBrowser.module.css): the host publishes the ring
+      // width/colour as tokens and keeps offsets inside controls that clip an
+      // outer ring — ours sit in dense 28px rows, so they do the same. The
+      // tokens are absent before rc.2, where the literal fallbacks keep the
+      // pre-existing look.
+      '.bw-icon-btn:focus-visible,.bw-rail-btn:focus-visible,.bw-ctx-item:focus-visible,.bw-seg-btn:focus-visible,.bw-btn:focus-visible{outline:var(--dsw-focus-ring-width,2px) solid var(--dsw-focus-ring-color,var(--dsw-alias-state-business-primary,#5b8def));outline-offset:-2px}',
       '.bw-search-row{flex:none;padding:0 10px 6px}',
-      '.bw-input{width:100%;box-sizing:border-box;height:26px;background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.1));border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));border-radius:6px;color:inherit;padding:0 8px;font-size:12px;outline:none;font-family:inherit}',
+      '.bw-input{width:100%;box-sizing:border-box;height:26px;background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.1));border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));border-radius:var(--dsw-radius-sm,6px);color:inherit;padding:0 8px;font-size:12px;outline:none;font-family:inherit}',
       '.bw-input:focus{border-color:var(--dsw-alias-brand-primary,#5b8def)}',
       '.bw-input::placeholder{color:var(--dsw-alias-label-quaternary,#8a8a8a)}',
       // Dropdown triggers (MenuPicker): the same surface as .bw-input so a
@@ -3652,7 +3926,7 @@ window.__ModuleLoader__.load({
       '.bw-menu-block{display:block;width:100%}',
       '.bw-menu-inline{display:inline-block;width:auto;flex:none}',
       '.bw-tree{flex:1;overflow-y:auto;overflow-x:hidden;padding:2px 6px 12px;min-height:0}',
-      '.bw-row{display:flex;align-items:center;gap:6px;min-height:28px;padding:0 6px;border-radius:6px;cursor:pointer;user-select:none;font-size:13px;color:var(--dsw-alias-label-primary,#e6e6e6);position:relative}',
+      '.bw-row{display:flex;align-items:center;gap:6px;min-height:28px;padding:0 6px;border-radius:var(--dsw-radius-sm,6px);cursor:pointer;user-select:none;font-size:13px;color:var(--dsw-alias-label-primary,#e6e6e6);position:relative}',
       '.bw-drop-before::after{content:"";position:absolute;left:8px;right:8px;top:-1px;height:2px;border-radius:1px;background:var(--dsw-alias-brand-primary,#5b8def);pointer-events:none}',
       '.bw-drop-after::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;border-radius:1px;background:var(--dsw-alias-brand-primary,#5b8def);pointer-events:none}',
       '.bw-drop-into{outline:1.5px dashed var(--dsw-alias-brand-primary,#5b8def);outline-offset:-1.5px}',
@@ -3704,7 +3978,7 @@ window.__ModuleLoader__.load({
       // trailing check. The row mirrors the primitives menu cell (same hover
       // and focus fill) because the fixed 14px icon cell of that row crops any
       // indentation nested inside it.
-      '.bw-pick-row{display:flex;align-items:center;gap:6px;width:100%;min-height:30px;padding:4px 8px;border:none;border-radius:8px;background:transparent;color:inherit;font:inherit;font-size:13px;cursor:pointer;text-align:left}',
+      '.bw-pick-row{display:flex;align-items:center;gap:6px;width:100%;min-height:30px;padding:4px 8px;border:none;border-radius:var(--dsw-radius-sm,8px);background:transparent;color:inherit;font:inherit;font-size:13px;cursor:pointer;text-align:left}',
       '.bw-pick-row:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.15))}',
       '.bw-pick-row:focus-visible{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.15));outline:none}',
       '.bw-pick-indent{flex:none}',
@@ -3737,12 +4011,24 @@ window.__ModuleLoader__.load({
       '.bw-sgroup-row:hover{color:var(--dsw-alias-label-secondary,#b8b8b8)}',
       '.bw-session-row:hover{color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-empty{padding:28px 12px;text-align:center;font-size:12px;color:var(--dsw-alias-label-dimmed,#7a7a7a)}',
+      // Archived-only empty state (dsh 0.1.7-rc.2 official EmptySessions): the
+      // filter is a mode the user can get stuck in, so the body names it and
+      // offers the way back.
+      '.bw-empty-action{margin:8px auto 0;display:block;padding:0;border:none;background:none;cursor:pointer;font:inherit;font-size:12px;color:var(--dsw-alias-link,#5b8def)}',
+      '.bw-empty-action:hover{text-decoration:underline}',
+      // Row toast for the shipped fork shortcut's async failure (the shipped
+      // notice rides the shadowed overlay). Token chain kept transparent-safe
+      // like every other self-drawn surface.
+      '.bw-toast{position:absolute;left:10px;right:10px;bottom:12px;z-index:30;display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.3));border-radius:var(--dsw-radius-md,8px);background:var(--dsw-alias-toast-bg,var(--dsw-specific-menu,rgba(28,28,32,.92)));color:var(--dsw-alias-toast-label,var(--dsw-alias-label-primary,#e6e6e6));font-size:12px;box-shadow:0 8px 24px rgba(0,0,0,.35)}',
+      '.bw-toast-text{flex:1;min-width:0}',
+      '.bw-toast-close{flex:none;width:20px;height:20px;border:none;background:transparent;color:inherit;border-radius:var(--dsw-radius-xs,4px);display:grid;place-items:center;cursor:pointer;padding:0;opacity:.75}',
+      '.bw-toast-close:hover{opacity:1;background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.15))}',
       '.bw-swatch{width:20px;height:20px;border-radius:6px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));cursor:pointer;flex:none;background:transparent;padding:0}',
       '.bw-swatch-wide{width:auto;min-width:38px;padding:0 8px;font-size:11px;color:var(--dsw-alias-label-secondary,#b8b8b8)}',
       '.bw-swatch-active{outline:2px solid var(--dsw-alias-brand-primary,#5b8def);outline-offset:1px}',
       '.bw-color-input{width:36px;height:26px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));border-radius:6px;background:transparent;cursor:pointer;padding:0}',
       '.bw-seg{display:flex;gap:6px;flex-wrap:wrap}',
-      '.bw-seg-btn{height:24px;padding:0 10px;border-radius:6px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));background:transparent;color:var(--dsw-alias-label-secondary,#b8b8b8);font-size:12px;cursor:pointer;font-family:inherit}',
+      '.bw-seg-btn{height:24px;padding:0 10px;border-radius:var(--dsw-radius-sm,6px);border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));background:transparent;color:var(--dsw-alias-label-secondary,#b8b8b8);font-size:12px;cursor:pointer;font-family:inherit}',
       '.bw-seg-btn:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12))}',
       '.bw-seg-btn-active{background:var(--dsw-alias-brand-primary,#5b8def);border-color:transparent;color:var(--dsw-alias-brand-text,#fff)}',
       '.bw-seg-btn-active:hover{background:var(--dsw-alias-button-primary-hover,var(--dsw-alias-brand-primary,#5b8def));border-color:transparent}',
@@ -3755,13 +4041,13 @@ window.__ModuleLoader__.load({
       '.bw-rgb-label{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
       '.bw-rgb-input{width:52px;height:26px;box-sizing:border-box;background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.1));border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));border-radius:6px;color:inherit;font-size:12px;padding:0 6px;font-family:inherit}',
       '.bw-ctx-overlay{position:fixed;inset:0;z-index:40}',
-      '.bw-ctx-menu{position:fixed;min-width:170px;background:var(--dsw-specific-menu,var(--dsw-alias-bg-overlay,rgba(28,28,32,.72)));-webkit-backdrop-filter:var(--dsh-any-blur-card-panels,blur(12px) saturate(1.15));backdrop-filter:var(--dsh-any-blur-card-panels,blur(12px) saturate(1.15));border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.3));border-radius:8px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.35);display:flex;flex-direction:column}',
-      '.bw-ctx-item{display:flex;align-items:center;gap:8px;height:28px;padding:0 10px;border:none;background:transparent;color:var(--dsw-alias-label-primary,#e6e6e6);font-size:12.5px;border-radius:6px;cursor:pointer;text-align:left;font-family:inherit}',
+      '.bw-ctx-menu{position:fixed;min-width:170px;background:var(--dsw-specific-menu,var(--dsw-alias-bg-overlay,rgba(28,28,32,.72)));-webkit-backdrop-filter:var(--dsh-any-blur-card-panels,blur(12px) saturate(1.15));backdrop-filter:var(--dsh-any-blur-card-panels,blur(12px) saturate(1.15));border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.3));border-radius:var(--dsw-radius-sm,8px);padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.35);display:flex;flex-direction:column}',
+      '.bw-ctx-item{display:flex;align-items:center;gap:8px;height:28px;padding:0 10px;border:none;background:transparent;color:var(--dsw-alias-label-primary,#e6e6e6);font-size:12.5px;border-radius:var(--dsw-radius-sm,6px);cursor:pointer;text-align:left;font-family:inherit}',
       '.bw-ctx-item:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.14))}',
       '.bw-ctx-danger{color:var(--dsw-alias-state-error-primary,#f85149)}',
       '.bw-ctx-sep{height:1px;background:var(--dsw-alias-border-l1,rgba(127,127,127,.2));margin:4px 6px}',
       '.bw-settings{display:flex;flex-direction:column;gap:6px;max-width:640px}',
-      '.bw-plugin-card{list-style:none;border:1px solid var(--dsw-alias-border-l2,rgba(127,127,127,.18));border-radius:12px;background:var(--dsw-alias-bg-layer-3,rgba(127,127,127,.05));transition:border-color .16s,background .16s}',
+      '.bw-plugin-card{list-style:none;border:1px solid var(--dsw-alias-border-l2,rgba(127,127,127,.18));border-radius:var(--dsw-radius-md,12px);background:var(--dsw-alias-bg-layer-3,rgba(127,127,127,.05));transition:border-color .16s,background .16s}',
       '.bw-plugin-card:hover{border-color:var(--dsw-alias-label-dimmed,#7a7a7a)}',
       '.bw-plugin-card-open{background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.1));border-color:var(--dsw-alias-label-dimmed,#7a7a7a)}',
       '.bw-plugin-head{width:100%;appearance:none;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px}',
@@ -3782,7 +4068,7 @@ window.__ModuleLoader__.load({
       '.bw-switch-on .bw-switch-thumb{transform:translateX(16px)}',
       '.bw-plugin-body .bw-hint{font-size:12px;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
       '.bw-rail{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 0}',
-      '.bw-rail-btn{width:36px;height:36px;border:none;background:transparent;border-radius:8px;display:grid;place-items:center;color:var(--dsw-alias-label-secondary,#b8b8b8);cursor:pointer;padding:0}',
+      '.bw-rail-btn{width:36px;height:36px;border:none;background:transparent;border-radius:var(--dsw-radius-sm,8px);display:grid;place-items:center;color:var(--dsw-alias-label-secondary,#b8b8b8);cursor:pointer;padding:0}',
       '.bw-rail-btn:hover{background:var(--dsw-specific-sidebar-nav-item-hover,var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12)));color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-modal-body{display:flex;flex-direction:column;gap:10px;min-width:300px;max-width:380px;box-sizing:border-box}',
       '.bw-field{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--dsw-alias-label-secondary,#b8b8b8)}',
@@ -4655,7 +4941,7 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function WorkspaceRow({ workspace, depth, count, sessionsOpen, onToggle, onStart, onContextMenu, currentInside, dropHalf, dropInto, dragEvents, custStyle, iconMode, pulse, t }) {
+    function WorkspaceRow({ workspace, depth, count, sessionsOpen, onToggle, onStart, onContextMenu, currentInside, dropHalf, dropInto, dragEvents, custStyle, iconMode, pulse, newSessionLabel, newSessionAria, t }) {
       const iconEl = iconOf(iconMode, sessionsOpen)
       const iconChild = pulse
         ? E(PulseGlow, { state: pulse }, iconEl || (typeof ui.StateDot === 'function' ? E(ui.StateDot, { state: pulse, size: 10 }) : null))
@@ -4674,7 +4960,14 @@ window.__ModuleLoader__.load({
         E('span', { className: cls('bw-row-label', pulse && custStyle && custStyle.textShadow && 'bw-pulse-text'), title: workspace.title || workspace.leaf }, workspace.leaf),
         count > 0 ? E('span', { className: 'bw-row-count' }, String(count)) : null,
         E('span', { className: 'bw-row-actions', onClick: (e) => e.stopPropagation() },
-          E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('session.new'), onClick: (e) => { e.stopPropagation(); onStart() } }, icon('IconPlusOutline16')),
+          E('button', {
+            type: 'button',
+            className: 'bw-icon-btn',
+            'aria-label': newSessionLabel || t('session.new'),
+            'aria-keyshortcuts': newSessionAria,
+            title: newSessionLabel || t('session.new'),
+            onClick: (e) => { e.stopPropagation(); onStart() },
+          }, icon('IconPlusOutline16')),
         ),
       )
     }
@@ -4717,7 +5010,7 @@ window.__ModuleLoader__.load({
       return s === 'ongoing' ? null : s
     }
 
-    function SessionRow({ node, depth, current, onOpen, onContextMenu, now, dropHalf, dragEvents, custStyle, breathing, sessionActions, t }) {
+    function SessionRow({ node, depth, current, onOpen, onContextMenu, now, dropHalf, dragEvents, custStyle, breathing, sessionActions, scheduleSeat, t }) {
       const state = sessionStateOf(node)
       const status = state === null ? null : {
         state,
@@ -4727,6 +5020,23 @@ window.__ModuleLoader__.load({
             ? (node.running ? t('status.running') : t('status.subagents', { n: node.subagents }))
             : t('status.completed'),
       }
+      // Ambient Schedule mark, two host generations, exactly one of them live:
+      // · dsh 0.1.7-rc.2+ — the shipped row's leading seat
+      //   (`sidebar.session.row.leading`), declared by an entry this seat
+      //   shadows, so its occupant is rendered here (see scheduleSeatOf). The
+      //   shipped rule holds: the cell belongs to the mark only while the row's
+      //   own primary state is idle — a status dot and a seat occupant never
+      //   share it — and an archived or blank row keeps the cell empty.
+      // · up to 0.1.7-rc.1 — the active-Schedule list projection, which rc.2
+      //   deleted; the legacy badge below still serves those hosts, and its
+      //   `!markNode` gate is what keeps the two marks from ever doubling up.
+      const markNode = scheduleSeat && !status && !node.archived && !node.blank
+        ? E(QuietBoundary, { key: 'schedule-seat' }, E(ShippedSeatOccupant, {
+          seat: scheduleSeat,
+          ownerProps: { sessionId: node.id },
+          t: scheduleSeat.t,
+        }))
+        : null
       // Official mirror surface (dsh 0.1.7 Rows.tsx): pinned rows carry the
       // pin marker; archived rows render grayed and never open; the hover
       // strip hosts the "..." trigger and the pin/archive quick buttons.
@@ -4791,10 +5101,12 @@ window.__ModuleLoader__.load({
               // the settings toggle covers this breathing too.
               ? E(PulseGlow, { state: 'ongoing' }, E(ui.StateDot, { state: status.state, size: 10 }))
               : E(ui.StateDot, { state: status.state, size: 10 }))
-            : E('span', { className: 'bw-dot' }),
+            : (markNode || E('span', { className: 'bw-dot' })),
         ),
         E('span', { className: 'bw-row-label' }, node.leaf || node.title),
-        node.hasActiveSchedule
+        // Legacy projection mark (see markNode): only ever renders where the
+        // shipped seat does not exist, so the row never shows two marks.
+        node.hasActiveSchedule && !markNode
           ? E('span', { className: 'bw-schedule-badge', role: 'img', 'aria-label': t('schedule.active'), title: t('schedule.active') }, icon('IconAlarmClockOutline16', 14))
           : null,
         E('span', { className: 'bw-row-time' }, timeLabel(node.updatedAt, now, t)),
@@ -4854,8 +5166,15 @@ window.__ModuleLoader__.load({
         return typeof value === 'string' && value !== '' && value !== key ? value : null
       }
       const filterLabel = official('filterBy.label')
+      const hideLabel = official('viewOptions.hideArchived')
       const showLabel = official('viewOptions.showArchived')
       const onlyLabel = official('viewOptions.onlyArchived')
+      // rc.2 turns the filter into three explicit radio-style picks (hide /
+      // show / only) and names the default one; pre-rc.2 hosts only ship the
+      // two toggles, where re-picking the selected item returns to the default
+      // view. The presence of the hide label is the era probe, and the icons
+      // follow the same generation split (the rc.2 glyphs are absent earlier).
+      const threeState = hideLabel !== null
       const hasFilter = filterLabel !== null && showLabel !== null && onlyLabel !== null
         && typeof onFilterPick === 'function'
       const filter = archivedFilter === 'show' || archivedFilter === 'only' ? archivedFilter : 'default'
@@ -4874,9 +5193,8 @@ window.__ModuleLoader__.load({
           ...(hasFilter ? [
             { type: 'separator', id: 'bw-filter-sep' },
             { type: 'label', id: 'bw-filter-by', text: filterLabel },
-            // Both items are exclusive toggles (official semantics):
-            // re-picking the selected one returns to the default view.
-            { id: 'show-archived', label: showLabel, icon: icon('IconArchiveOutline20', 16) },
+            ...(threeState ? [{ id: 'hide-archived', label: hideLabel, icon: icon('IconArchiveOffOutlineRegular', 16) }] : []),
+            { id: 'show-archived', label: showLabel, icon: icon(threeState ? 'IconQueueOutlineRegular' : 'IconArchiveOutline20', 16) },
             { id: 'only-archived', label: onlyLabel, icon: icon('IconArchiveCheckOutlineRegular', 16) },
           ] : []),
           { type: 'separator', id: 'bw-wsgroup-sep' },
@@ -4894,16 +5212,18 @@ window.__ModuleLoader__.load({
         ],
         selectedIds: [groupBy, orderBy]
           .concat(sessionSlash ? ['session-slash'] : [])
-          .concat(filter === 'show' ? ['show-archived'] : [])
-          .concat(filter === 'only' ? ['only-archived'] : [])
+          // rc.2 keeps exactly one filter pick selected (the default one is a
+          // real item); the pre-rc.2 pair only shows a selection when it is on.
+          .concat(filter === 'show' ? ['show-archived'] : filter === 'only' ? ['only-archived'] : (threeState ? ['hide-archived'] : []))
           .concat(workspaceGroupMode === 'disk' ? ['ws-disk'] : [])
           .concat(workspaceGroupMode === 'disk-slash' ? ['ws-disk-slash'] : [])
           .concat(workspaceGroupMode === 'slash' ? ['ws-slash'] : []),
         onSelect: (id) => {
           if (id === 'workspace' || id === 'workspace-tree' || id === 'flat') { onPick('groupBy', id); setOpen(false); return }
           if (id === 'manual' || id === 'updated') { onPick('orderBy', id); setOpen(false); return }
-          if (id === 'show-archived') { onFilterPick(filter === 'show' ? 'default' : 'show'); setOpen(false); return }
-          if (id === 'only-archived') { onFilterPick(filter === 'only' ? 'default' : 'only'); setOpen(false); return }
+          if (id === 'hide-archived') { onFilterPick('default'); setOpen(false); return }
+          if (id === 'show-archived') { onFilterPick(threeState ? 'show' : (filter === 'show' ? 'default' : 'show')); setOpen(false); return }
+          if (id === 'only-archived') { onFilterPick(threeState ? 'only' : (filter === 'only' ? 'default' : 'only')); setOpen(false); return }
           if (id === 'ws-disk' || id === 'ws-disk-slash' || id === 'ws-slash') { onWsGroupPick(id.slice(3)); setOpen(false); return }
           if (id === 'session-slash') { onToggle('sessionTitleSlash', !sessionSlash); return }
         },
@@ -5573,7 +5893,14 @@ window.__ModuleLoader__.load({
       const [picking, setPicking] = React.useState(false)
       const [errorText, setErrorText] = React.useState(null)
 
-      const items = snapshot && Array.isArray(snapshot.items) ? snapshot.items : EMPTY_LIST
+      // Same resolved first-use name as the sidebar (see withDisplayTitles):
+      // the picker must label a Workspace exactly like the tree does.
+      const defaultWorkspaceName = t('workspace.defaultName')
+      const rawItems = snapshot && Array.isArray(snapshot.items) ? snapshot.items : EMPTY_LIST
+      const items = React.useMemo(
+        () => withDisplayTitles(rawItems, defaultWorkspaceName),
+        [rawItems, defaultWorkspaceName],
+      )
       // Same construction the sidebar runs (buildTree + optional chain
       // compression), so both surfaces answer the same view options.
       const tree = React.useMemo(() => {
@@ -5744,6 +6071,7 @@ window.__ModuleLoader__.load({
         insertWorkspaceBefore, insertSessionBefore,
         useDirectoryFlow,
         pickDirectory, listDirectory, createDirectory,
+        shippedBrowserFace, scheduleSeatReader,
         officialT,
         t,
       } = props
@@ -5753,7 +6081,16 @@ window.__ModuleLoader__.load({
         return null
       }
 
-      const items = useWorkspaces(s => s.items)
+      const storedItems = useWorkspaces(s => s.items)
+      // Official rc.2 first-use naming (see withDisplayTitles): every surface
+      // reads the RESOLVED name, exactly like the shipped browser's own
+      // workspaces projection, so the tree, the group labels and the rename
+      // prefill agree with the rest of the shell.
+      const defaultWorkspaceName = t('workspace.defaultName')
+      const items = React.useMemo(
+        () => withDisplayTitles(storedItems, defaultWorkspaceName),
+        [storedItems, defaultWorkspaceName],
+      )
       const phase = useWorkspaces(s => s.phase)
       const archivedSessionIds = useWorkspaces(s => s.archivedSessionIds) || []
       // Registry-global pin set (dsh 0.1.7): absent on older hosts, which
@@ -5817,6 +6154,68 @@ window.__ModuleLoader__.load({
       const archivedSet = React.useMemo(() => new Set(archivedSessionIds), [archivedSessionIds])
       const pinnedSet = React.useMemo(() => new Set(pinnedSessionIds), [pinnedSessionIds])
       const subCounts = React.useMemo(() => subagentRunningCounts(list ? list.byId : {}), [list ? list.byId : null])
+
+      /* --------------- shipped-browser channel (0.1.7-rc.2) --------------- */
+      // Read per render, never memoized: the shipped entry registers beside the
+      // slot declaration and the ledger must be re-read until it lands.
+      const shippedFace = typeof shippedBrowserFace === 'function' ? shippedBrowserFace() : null
+      const shortcutChannel = shippedFace && shippedFace.hooks ? shippedFace.hooks.workspaceShortcuts || null : null
+      const shortcutCatalog = shippedFace && shippedFace.hooks ? shippedFace.hooks.shortcuts || null : null
+      const shortcutState = useObservableSnapshot(shortcutChannel)
+      const shortcutRows = useObservableSnapshot(shortcutCatalog)
+      const shortcutStateOf = shortcutState && typeof shortcutState === 'object' ? shortcutState : null
+      const searchRequest = shortcutStateOf ? shortcutStateOf.searchRequest : 0
+      const addRequested = !!(shortcutStateOf && shortcutStateOf.addRequested)
+      const forkError = shortcutStateOf ? shortcutStateOf.forkError : null
+      const dismissForkError = shippedFace && typeof shippedFace.dismissForkError === 'function'
+        ? shippedFace.dismissForkError
+        : null
+      const closeAddWorkspace = shippedFace && typeof shippedFace.closeAddWorkspace === 'function'
+        ? shippedFace.closeAddWorkspace
+        : null
+      const reportDirectoryBusy = shippedFace && typeof shippedFace.setDirectoryBusy === 'function'
+        ? shippedFace.setDirectoryBusy
+        : null
+      // The shipped schedule mark's seat occupant (see scheduleSeatOf); absent
+      // whenever the Schedule overlay is off, which is the shipped default.
+      const scheduleSeat = typeof scheduleSeatReader === 'function' ? scheduleSeatReader() : null
+      /** Effective catalog row of one shipped command (current keybinding, label). */
+      const shortcutRowOf = (id) => {
+        const rows = Array.isArray(shortcutRows) ? shortcutRows : EMPTY_LIST
+        for (const row of rows) if (row && row.id === id) return row
+        return null
+      }
+      /**
+       * Feature copy with the command's CURRENT keys appended — the shipped
+       * sidebar shows them in its tooltips (Tooltip shortcutKeys) and this
+       * surface has no tooltip primitive, so the same information rides the
+       * native title/aria-label. Unbound (or an older host without the catalog)
+       * keeps the copy alone.
+       */
+      const shortcutLabel = (label, id) => {
+        const row = shortcutRowOf(id)
+        const keys = row && Array.isArray(row.keys) ? row.keys : EMPTY_LIST
+        return keys.length > 0 ? label + ' (' + keys.join('') + ')' : label
+      }
+      const shortcutAria = (id) => {
+        const row = shortcutRowOf(id)
+        return row && typeof row.aria === 'string' && row.aria !== '' ? row.aria : undefined
+      }
+      /**
+       * Shipped-browser copy with this plugin's aligned fallback: the official
+       * 'workspace' dictionary is the source of truth (upstream rewording lands
+       * without a release), and a host that predates a key keeps the local copy
+       * instead of printing the key itself.
+       */
+      const shippedText = (key, fallback) => {
+        if (typeof officialT !== 'function') return fallback
+        try {
+          const value = officialT(key)
+          return typeof value === 'string' && value !== '' && value !== key ? value : fallback
+        } catch (error) {
+          return fallback
+        }
+      }
       // Current session across both host generations (see mainSessionIdOf).
       // `current` belongs in the deps: 0.1.5-rc.x switches it without
       // necessarily handing back a new byId, so keying on byId alone would
@@ -5951,6 +6350,54 @@ window.__ModuleLoader__.load({
         if (autoStableRef.current) autoStableRef.current.delete(String(sessionId))
         return renameSession(sessionId, title)
       }
+
+      /* ------------ shipped-browser requests (dsh 0.1.7-rc.2) ------------ */
+      // The shipped shortcut layer resolves session.search / workspace.add into
+      // the shipped browser's private request store, whose only consumer is that
+      // component's effect — shadowed here, so this plugin consumes the same
+      // channel (see shippedBrowserFaceOf). Behavior mirrors the shipped
+      // consumer: the search request opens and focuses the field (this tree
+      // filters locally, which is this plugin's documented search surface), and
+      // the add request runs the same flow as the header button. The focus is
+      // deferred one render because the field mounts with the state flip.
+      const [focusPending, setFocusPending] = React.useState(false)
+      const searchInputRef = React.useRef(null)
+      const startAddFlowRef = React.useRef(null)
+      React.useEffect(() => {
+        if (searchRequest === 0) return
+        if (typeof closeAddWorkspace === 'function') closeAddWorkspace()
+        // The shipped consumer expands the rail first: the field only exists in
+        // the wide header, so the request has to surface the sidebar to land.
+        if (!wide && typeof expandSidebar === 'function') expandSidebar()
+        setSearchOpen(true)
+        setFocusPending(true)
+      }, [searchRequest])
+      React.useEffect(() => {
+        if (!focusPending) return
+        const field = searchInputRef.current
+        if (!field) return
+        try { field.focus({ preventScroll: true }) } catch (error) { field.focus() }
+        setFocusPending(false)
+      }, [focusPending, searchOpen])
+      React.useEffect(() => {
+        if (!addRequested) return
+        // Clear the request first: the flow is asynchronous and a re-render
+        // during it must not start a second one.
+        if (typeof closeAddWorkspace === 'function') closeAddWorkspace()
+        const flow = startAddFlowRef.current
+        if (typeof flow === 'function') flow()
+      }, [addRequested])
+      // The fork notification belongs to the shipped browser's own overlay,
+      // which is shadowed with it; without this the shortcut's async failure
+      // would be silent. Dismissal rides the shipped channel so both surfaces
+      // agree on the notice's lifetime.
+      React.useEffect(() => {
+        if (forkError === null || forkError === undefined) return
+        const timer = setTimeout(() => {
+          if (typeof dismissForkError === 'function') dismissForkError()
+        }, 6000)
+        return () => clearTimeout(timer)
+      }, [forkError ? forkError.seq : null])
 
       React.useEffect(() => {
         if (!list || !list.byId || typeof renameSession !== 'function') return
@@ -7045,12 +7492,41 @@ window.__ModuleLoader__.load({
         dragEvents: workspaceId && !session.archived ? sessionDragEvents(session, workspaceId) : undefined,
         custStyle: rowStyleOf('session:' + session.id),
         sessionActions,
+        scheduleSeat,
         breathing: statusPulse,
         t,
       })
 
+      /**
+       * rc.2 archived-only rule (official tree.ts groupByWorkspace): that view
+       * lists archives, not the Workspace inventory, so a Workspace whose
+       * visible Sessions are empty contributes no row at all — and a name group
+       * left without one is dropped with it (the shipped browser re-parents a
+       * surviving descendant onto the nearest rendered ancestor; our groups are
+       * derived from the members, so an emptied one simply disappears).
+       * `sessionsOf` already applies the SAME visibility rule the rows render
+       * with, so this can never disagree with the session list below the row.
+       */
+      const archivedOnly = archivedFilter === 'only'
+      const workspaceVisible = (workspace) => !archivedOnly
+        || !!(workspace && Array.isArray(workspace.sessionIds) && sessionsOf(workspace).length > 0)
+      const countVisibleAt = (level) => {
+        let total = 0
+        for (const folder of level.folders) {
+          total += folder.kind === 'ws'
+            ? (workspaceVisible(folder.workspace) ? 1 : 0)
+            : countVisibleAt(folder)
+        }
+        for (const entry of level.workspaces) {
+          if (workspaceVisible(entry)) total += 1
+          if (entry.sub) total += countVisibleAt(entry.sub)
+        }
+        return total
+      }
+
       const renderWorkspaceEntry = (entry, depth, pulse) => {
         const { workspace } = entry
+        if (!workspaceVisible(workspace)) return []
         const count = countSessionTree(buildSessionTree(sessionsOf(workspace), sessionSlash, sessFolders, workspace.workspaceId))
         const rows = [E(WorkspaceRow, {
           key: 'ws-' + workspace.workspaceId,
@@ -7069,6 +7545,10 @@ window.__ModuleLoader__.load({
           dragEvents: workspaceDragEvents(workspace),
           custStyle: rowStyleOf('workspace:' + workspace.workspaceId),
           iconMode: (styleEntry('workspace:' + workspace.workspaceId) || {}).icon || 'solid',
+          // Shipped sidebar parity: the row's new-session affordance names the
+          // current binding (Tooltip shortcutKeys upstream, native title here).
+          newSessionLabel: shortcutLabel(t('session.new'), 'session.new'),
+          newSessionAria: shortcutAria('session.new'),
           pulse,
           t,
         })]
@@ -7092,6 +7572,9 @@ window.__ModuleLoader__.load({
 
       const renderPlainFolder = (node, depth) => {
         if (node.kind === 'ws') return renderWorkspaceEntry({ workspace: node.workspace }, depth, wsPulseOf(node.workspace))
+        // Archived-only view: a group whose Workspaces all lost their archived
+        // Sessions is as empty as they are (see countVisibleAt).
+        if (archivedOnly && countVisibleAt(node) === 0) return []
         // idPath disambiguates same-named name groups living in different
         // disk levels; path stays the semantic key (rename prefix logic).
         const idPath = node.idPath || node.path
@@ -7173,7 +7656,19 @@ window.__ModuleLoader__.load({
       }
       const isEmpty = bodyRows.length === 0
       if (isEmpty) {
-        bodyRows = [E('div', { key: 'empty', className: 'bw-empty' }, searching ? t('empty.search') : (phase === 'pending' ? '…' : t('empty')))]
+        // rc.2 names the archived-only state and offers the way back
+        // (official EmptySessions): the filter is a mode the user can get
+        // stuck in, so the empty body explains it and leaves in one click.
+        bodyRows = archivedOnly && !searching
+          ? [E('div', { key: 'empty', className: 'bw-empty' },
+              E('div', null, shippedText('empty.noneArchived', t('empty.noneArchived'))),
+              E('button', {
+                type: 'button',
+                className: 'bw-empty-action',
+                onClick: () => { if (actions && typeof actions.setArchivedFilter === 'function') actions.setArchivedFilter('default') },
+              }, shippedText('empty.viewOthers', t('empty.viewOthers'))),
+            )]
+          : [E('div', { key: 'empty', className: 'bw-empty' }, searching ? t('empty.search') : (phase === 'pending' ? '…' : t('empty')))]
       }
 
       /* ------------------------- context menu ------------------------ */
@@ -7335,8 +7830,23 @@ window.__ModuleLoader__.load({
       if (!wide) {
         return E('div', { className: 'bw-rail' },
           StyleNode(),
-          E('button', { type: 'button', className: 'bw-rail-btn', 'aria-label': t('rail.search'), onClick: () => { expandSidebar(); setSearchOpen(true) } }, icon('IconSearchOutline16', 18)),
-          flowAvailable ? E('button', { type: 'button', className: 'bw-rail-btn', 'aria-label': t('rail.add'), onClick: () => { expandSidebar(); startAddFlow() }, disabled: flowBusy }, icon('IconProjectAddOutline16', 18)) : null,
+          E('button', {
+            type: 'button',
+            className: 'bw-rail-btn',
+            'aria-label': shortcutLabel(t('rail.search'), 'session.search'),
+            'aria-keyshortcuts': shortcutAria('session.search'),
+            title: shortcutLabel(t('rail.search'), 'session.search'),
+            onClick: () => { expandSidebar(); setSearchOpen(true); setFocusPending(true) },
+          }, icon('IconSearchOutline16', 18)),
+          flowAvailable ? E('button', {
+            type: 'button',
+            className: 'bw-rail-btn',
+            'aria-label': shortcutLabel(t('rail.add'), 'workspace.add'),
+            'aria-keyshortcuts': shortcutAria('workspace.add'),
+            title: shortcutLabel(t('rail.add'), 'workspace.add'),
+            onClick: () => { expandSidebar(); startAddFlow() },
+            disabled: flowBusy,
+          }, icon('IconProjectAddOutline16', 18)) : null,
         )
       }
 
@@ -7493,7 +8003,14 @@ window.__ModuleLoader__.load({
       // A `browse` host refuses that pick by design, so the click explains where
       // the official in-app flow lives instead of opening a plugin-built copy —
       // the shipped dialog cannot be rendered from here (see the capability block).
+      //
+      // The shipped shortcut channel also reports this interaction
+      // (setDirectoryBusy): a second Cmd/Ctrl+O while the chooser is open is
+      // answered with the host's own "already adding" reason instead of
+      // stacking a second picker.
       const startAddFlow = () => {
+        if (typeof reportDirectoryBusy === 'function') reportDirectoryBusy(true)
+        const settle = () => { if (typeof reportDirectoryBusy === 'function') reportDirectoryBusy(false) }
         Promise.resolve(pickerCapabilityNow())
           .then((kind) => {
             if (kind === 'browse') { setDialog({ kind: 'add-guide' }); return undefined }
@@ -7506,7 +8023,11 @@ window.__ModuleLoader__.load({
               })
           })
           .catch((reason) => { fail(messageOf(reason)) })
+          .then(settle, settle)
       }
+      // The shortcut consumer runs from an effect declared above, after this
+      // definition: the ref is the one stable handle it can call.
+      startAddFlowRef.current = startAddFlow
 
       // v0.18.0 — "drag it OUT" must never land on nothing. The row level
       // already covers the workspace row and the root-level session rows; this
@@ -7530,6 +8051,24 @@ window.__ModuleLoader__.load({
 
       return E('div', { className: cls('bw-root', sessionCouldLeaveGroup && 'bw-root-drop-out'), ...rootDropEvents },
         StyleNode(),
+        // The shipped fork notice rides the shipped browser's overlay, which is
+        // shadowed with it: the shortcut's async failure would otherwise be
+        // silent. Copy follows the shipped dictionary, the lifetime follows the
+        // shipped channel (the effect above dismisses it).
+        (forkError && typeof forkError === 'object')
+          ? E('div', { className: 'bw-toast', role: 'status' },
+              E('span', { className: 'bw-toast-text' }, forkError.reason === 'unavailable'
+                ? shippedText('shortcut.noCompletedTurn', t('shortcut.noCompletedTurn'))
+                : shippedText('shortcut.forkFailed', t('shortcut.forkFailed'))),
+              E('button', {
+                type: 'button',
+                className: 'bw-toast-close',
+                'aria-label': t('close'),
+                title: t('close'),
+                onClick: () => { if (typeof dismissForkError === 'function') dismissForkError() },
+              }, icon('IconCloseOutline16', 12)),
+            )
+          : null,
         E('div', { className: 'bw-header' },
           E('div', { className: 'bw-header-title' }, t('title')),
           // Group discoverability: an ICON entry point (v0.17.0 — it used to be
@@ -7545,6 +8084,7 @@ window.__ModuleLoader__.load({
             ...groupDropEvents,
           }, icon('IconFolderOpen16', 16)) : null,
           (searchOpen || query !== '') ? E('input', {
+            ref: searchInputRef,
             className: 'bw-input',
             style: { width: 130, flex: 'none' },
             value: query,
@@ -7567,8 +8107,23 @@ window.__ModuleLoader__.load({
             onToggle: (key, value) => { if (key === 'sessionTitleSlash') actions.setSessionTitleSlash(value) },
             t,
           }),
-          E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('search.placeholder'), onClick: () => setSearchOpen(v => !v) }, icon('IconSearchOutline16')),
-          flowAvailable ? E('button', { type: 'button', className: 'bw-icon-btn', 'aria-label': t('add'), onClick: startAddFlow, disabled: flowBusy }, icon('IconProjectAddOutline16')) : null,
+          E('button', {
+            type: 'button',
+            className: 'bw-icon-btn',
+            'aria-label': shortcutLabel(t('search.placeholder'), 'session.search'),
+            'aria-keyshortcuts': shortcutAria('session.search'),
+            title: shortcutLabel(t('search.placeholder'), 'session.search'),
+            onClick: () => setSearchOpen(v => !v),
+          }, icon('IconSearchOutline16')),
+          flowAvailable ? E('button', {
+            type: 'button',
+            className: 'bw-icon-btn',
+            'aria-label': shortcutLabel(t('add'), 'workspace.add'),
+            'aria-keyshortcuts': shortcutAria('workspace.add'),
+            title: shortcutLabel(t('add'), 'workspace.add'),
+            onClick: startAddFlow,
+            disabled: flowBusy,
+          }, icon('IconProjectAddOutline16')) : null,
         ),
         E('div', { ref: treeRef, className: 'bw-tree', role: 'tree', 'aria-label': t('title') }, bodyRows),
         dialogElement,
@@ -7733,6 +8288,25 @@ window.__ModuleLoader__.load({
         // Official 'workspace' dictionary translate (menu copy follows upstream);
         // null when the bind failed — the menu then uses the aligned bw copy.
         officialT,
+        // The shipped sidebar's OWN face (dsh 0.1.7-rc.2): the shortcut request
+        // channel and the catalog of effective keybindings. Both belong to the
+        // entry this seat shadows, so they are read off the ledger and consumed
+        // here (see shippedBrowserFaceOf) — otherwise Cmd/Ctrl+K and Cmd/Ctrl+O
+        // would be consumed by the shipped command with no consumer left.
+        shippedBrowserFace: () => shippedBrowserFaceOf(slots, BetterBrowser),
+        // The shipped schedule mark's seat occupant (dsh 0.1.7-rc.2), rendered
+        // inside our own row (see scheduleSeatOf); its copy is bound to the
+        // occupant's OWN dictionary namespace, like the slot renderer would.
+        scheduleSeatReader: () => {
+          if (typeof React.useSyncExternalStore !== 'function') return null
+          const seat = scheduleSeatOf(slots)
+          if (!seat) return null
+          let seatT = null
+          if (seat.locale && ctx.locale && typeof ctx.locale.bind === 'function') {
+            try { seatT = ctx.locale.bind(seat.locale) } catch (error) { seatT = null }
+          }
+          return { component: seat.component, face: seat.face, t: seatT }
+        },
         startSession: (workspaceId) => { uiWorkspace.startSession(workspaceId) },
         open: (sessionId) => { uiWorkspace.openSession(sessionId) },
         searchSessions,

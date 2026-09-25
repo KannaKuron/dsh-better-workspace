@@ -1382,3 +1382,145 @@ test('new-group dialog components stay at module scope (React discipline)', () =
   // Hooks before any early return; no nested component definitions.
   assert.doesNotMatch(body, /function [A-Z]\w*\(/, 'no component defined inside the component')
 })
+
+/**
+ * dsh 0.1.7-rc.2 alignment (v0.23.0). The sidebar/session-tree surface changed
+ * most in this release, and two of the changes BROKE this plugin silently:
+ * the active-Schedule list projection was deleted (official moved the mark
+ * into a seat the shadowed entry declares) and the shortcut layer routes
+ * session.search / workspace.add into the shadowed browser's private request
+ * store. Both are consumed through the ledger instead, and both degrade to
+ * "nothing" when the shipped side is not there.
+ */
+test('rc.2 archived filter: three explicit picks, legacy two-toggle fallback (v0.23.0)', () => {
+  const text = read('src/client.js')
+  const start = text.indexOf('function ViewOptionsMenu(')
+  const end = text.indexOf('function CustomizeDialog(', start)
+  const menu = text.slice(start, end)
+  assert.ok(menu.length > 0, 'ViewOptionsMenu not found')
+  // The era probe is the new default item's own label: pre-rc.2 hosts have no
+  // viewOptions.hideArchived key, and official() returns null for a missing one.
+  assert.match(menu, /const hideLabel = official\('viewOptions\.hideArchived'\)/)
+  assert.match(menu, /const threeState = hideLabel !== null/)
+  assert.match(menu, /\{ id: 'hide-archived', label: hideLabel, icon: icon\('IconArchiveOffOutlineRegular', 16\) \}/)
+  assert.match(menu, /icon\(threeState \? 'IconQueueOutlineRegular' : 'IconArchiveOutline20', 16\)/)
+  assert.match(menu, /\{ id: 'only-archived', label: onlyLabel, icon: icon\('IconArchiveCheckOutlineRegular', 16\) \}/)
+  // rc.2 picks a state directly instead of toggling back to the default...
+  assert.match(menu, /if \(id === 'hide-archived'\) \{ onFilterPick\('default'\)/)
+  assert.match(menu, /onFilterPick\(threeState \? 'show' : \(filter === 'show' \? 'default' : 'show'\)\)/)
+  assert.match(menu, /onFilterPick\(threeState \? 'only' : \(filter === 'only' \? 'default' : 'only'\)\)/)
+  // ...and keeps exactly one of the three selected.
+  assert.match(menu, /filter === 'only' \? \['only-archived'\] : \(threeState \? \['hide-archived'\] : \[\]\)/)
+})
+
+test('rc.2 archived-only view drops Workspaces without archived Sessions (v0.23.0)', () => {
+  const text = read('src/client.js')
+  // Official tree.ts groupByWorkspace: `if (archivedFilter === 'only' &&
+  // members.length === 0) continue` — the inventory is not the archive list.
+  assert.match(text, /const archivedOnly = archivedFilter === 'only'/)
+  assert.match(text, /const workspaceVisible = \(workspace\) => !archivedOnly/)
+  assert.match(text, /if \(!workspaceVisible\(workspace\)\) return \[\]/)
+  // A name group emptied by the filter goes with its members, disk sub-levels
+  // included (official re-parents a survivor onto the nearest rendered one).
+  assert.match(text, /if \(archivedOnly && countVisibleAt\(node\) === 0\) return \[\]/)
+  assert.match(text, /const countVisibleAt = \(level\) => \{/)
+  // The empty body names the mode and offers the way back (official
+  // EmptySessions: empty.noneArchived + empty.viewOthers).
+  assert.match(text, /shippedText\('empty\.noneArchived', t\('empty\.noneArchived'\)\)/)
+  assert.match(text, /shippedText\('empty\.viewOthers', t\('empty\.viewOthers'\)\)/)
+  assert.match(text, /className: 'bw-empty-action'/)
+  assert.match(text, /actions\.setArchivedFilter\('default'\)/)
+})
+
+test('rc.2 first-use Workspace name: display-only substitution, both surfaces (v0.23.0)', () => {
+  const text = read('src/client.js')
+  // Official api/workspace-controller/default-workspace.ts: the registry's
+  // automatic first-use title is the on-disk leaf, and consumers label exactly
+  // that title with the localized name.
+  assert.match(text, /const DEFAULT_WORKSPACE_TITLE = 'default-workspace'/)
+  assert.match(text, /const withDisplayTitles = \(items, localizedDefault\) => \{/)
+  assert.match(text, /Object\.assign\(\{\}, workspace, \{ title: String\(localizedDefault\) \}\)/)
+  // Sidebar AND hero picker build their trees from the resolved list, so both
+  // surfaces (and the rename prefill fed from them) agree.
+  assert.match(text, /const storedItems = useWorkspaces\(s => s\.items\)/)
+  assert.match(text, /withDisplayTitles\(storedItems, defaultWorkspaceName\)/)
+  assert.match(text, /const defaultWorkspaceName = t\('workspace\.defaultName'\)/)
+  const hero = text.slice(text.indexOf('function HeroWorkspacePicker('), text.indexOf('function BetterBrowser('))
+  assert.match(hero, /withDisplayTitles\(/, 'the hero picker resolves the same name')
+  // Display only: nothing writes the localized name back to the registry.
+  assert.doesNotMatch(text, /renameWorkspace\([^)]*defaultWorkspaceName/)
+})
+
+test('rc.2 schedule mark: the shipped seat occupant, legacy projection only as fallback (v0.23.0)', () => {
+  const text = read('src/client.js')
+  // rc.2 deleted packages/schedule/schedule/src/projection.ts, so
+  // projectionValues.schedule never exists there: the new source is the seat
+  // the SHIPPED browser declares, read off the ledger like the hero occupant.
+  assert.match(text, /const scheduleSeatOf = \(slots\) => \{/)
+  assert.match(text, /slots\.entries\('sidebar\.session\.row\.leading'\)/)
+  assert.match(text, /scheduleSeatReader: \(\) => \{/)
+  // A host without the seat (older dsh, or the Schedule overlay switched off)
+  // renders NOTHING — no probing, no self-drawn substitute.
+  assert.match(text, /const seat = scheduleSeatOf\(slots\)\s*\n\s*if \(!seat\) return null/)
+  // The occupant's hooks compartment is bound to the `use<Name>` props the
+  // slot renderer would synthesize (its use-sync-external-store shim is not on
+  // the client baseline whitelist).
+  assert.match(text, /const bindOccupantFace = \(face\) => \{/)
+  assert.match(text, /\['use' \+ key\.charAt\(0\)\.toUpperCase\(\) \+ key\.slice\(1\)\] = bindSelectorHook\(observable\)/)
+  assert.match(text, /return React\.useSyncExternalStore\(subscribe, getSelection\)/)
+  // Shipped row rule: the leading cell belongs to the mark only while the
+  // row's own primary state is idle, and never on an archived/blank row.
+  assert.match(text, /const markNode = scheduleSeat && !status && !node\.archived && !node\.blank/)
+  // Exactly one mark per row: the legacy projection badge is gated on the seat
+  // being absent, so a host that has both can never render two.
+  assert.match(text, /node\.hasActiveSchedule && !markNode/)
+  assert.match(text, /: \(markNode \|\| E\('span', \{ className: 'bw-dot' \}\)\)/)
+  // The foreign component renders behind the render-crash boundary.
+  assert.match(text, /E\(QuietBoundary, \{ key: 'schedule-seat' \}, E\(ShippedSeatOccupant/)
+})
+
+test('rc.2 shortcuts: the shadowed browser\'s request channel is consumed here (v0.23.0)', () => {
+  const text = read('src/client.js')
+  // session.search / workspace.add resolve into the SHIPPED browser's private
+  // store, whose only consumer is that component's effect. The seat is
+  // shadowed at priority -1, so the channel is read off the ledger...
+  assert.match(text, /const shippedBrowserFaceOf = \(slots, ownComponent\) => \{/)
+  assert.match(text, /slots\.entries\('sidebar\.workspaces'\)/)
+  assert.match(text, /entry\.component === ownComponent/)
+  // ...and version-gated on the face's own shape: an older host has no
+  // requestSearch, so there is no channel AND nothing is consumed.
+  assert.match(text, /typeof face\.requestSearch === 'function'\) return face/)
+  assert.match(text, /shippedBrowserFace: \(\) => shippedBrowserFaceOf\(slots, BetterBrowser\)/)
+  // Consumption mirrors the shipped effect: search opens + focuses the field,
+  // add runs the same flow as the header button, and both clear the request.
+  assert.match(text, /if \(searchRequest === 0\) return/)
+  assert.match(text, /if \(typeof closeAddWorkspace === 'function'\) closeAddWorkspace\(\)/)
+  assert.match(text, /if \(!addRequested\) return/)
+  assert.match(text, /const flow = startAddFlowRef\.current/)
+  // The in-flight directory interaction is reported back so a second
+  // Cmd/Ctrl+O is answered with the host's own reason instead of stacking.
+  assert.match(text, /if \(typeof reportDirectoryBusy === 'function'\) reportDirectoryBusy\(true\)/)
+  assert.match(text, /const settle = \(\) => \{ if \(typeof reportDirectoryBusy === 'function'\) reportDirectoryBusy\(false\) \}/)
+  // The shipped fork notice rides the shadowed overlay: it is re-rendered here
+  // and its dismissal delegates to the shipped channel.
+  assert.match(text, /forkError\.reason === 'unavailable'/)
+  assert.match(text, /typeof dismissForkError === 'function'\) dismissForkError\(\)/)
+  // Sidebar shows the CURRENT binding next to the command it belongs to.
+  assert.match(text, /const shortcutLabel = \(label, id\) => \{/)
+  assert.match(text, /'aria-keyshortcuts': shortcutAria\('session\.search'\)/)
+  assert.match(text, /'aria-keyshortcuts': shortcutAria\('workspace\.add'\)/)
+  assert.match(text, /newSessionLabel: shortcutLabel\(t\('session\.new'\), 'session\.new'\)/)
+  // The catalog is a bare observable: subscribed without a selector.
+  assert.match(text, /const useObservableSnapshot = \(observable\) => \{/)
+})
+
+test('rc.2 design tokens: radii and focus rings follow the host scale (v0.23.0)', () => {
+  const text = read('src/client.js')
+  // rc.2 published --dsw-radius-* and --dsw-focus-ring-*; every adopted value
+  // keeps its pre-rc.2 pixel value as the fallback so older hosts only gain
+  // the token when the host has it.
+  for (const token of ['--dsw-radius-xs', '--dsw-radius-sm', '--dsw-radius-md']) {
+    assert.ok(text.includes('var(' + token + ','), 'token without a fallback: ' + token)
+  }
+  assert.match(text, /outline:var\(--dsw-focus-ring-width,2px\) solid var\(--dsw-focus-ring-color,var\(--dsw-alias-state-business-primary,#5b8def\)\);outline-offset:-2px/)
+})

@@ -3,6 +3,59 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.23.0 — 2026-09-25
+
+**类型**:fix(rc.2 两处静默失效:定时任务角标与官方快捷键)+ feat/align(跟随官方 rc.2 的四处新语义与设计 token)+ 文档/冒烟同步
+
+对齐目标:dsh **0.1.7-rc.2**(`git diff dsh-v0.1.7-rc.1 dsh-v0.1.7-rc.2 -- packages/client`)。本轮官方在侧边栏/会话树面动作最大,其中两条直接让本插件的既有能力**静默失效**——因为它们都走「官方 entry 自己消费」的通道,而该 entry 被本插件以 `priority: -1` 压制,消费者永不挂载。
+
+### fix 1(静默全失效类):定时任务角标改读官方座位占用者
+
+**机制**:rc.2 删除了 `packages/schedule/schedule/src/projection.ts` 与 `ctx.sessionProjections.register(scheduleProjectionDefinition)`(rc.1 仍在),官方 `Rows.tsx` 同时删掉 `ActiveScheduleIndicator` / `hasActiveSchedule` / `schedule.active` 词典键,把角标移进**两个新 list 座位** `sidebar.session.row.leading`(行首 16px 单元格)/ `sidebar.session.row.hover`(悬停卡),由 `@deepseek-ai/dsh-client-ui-schedule` 占用。本插件 v0.6.0 起的角标读的正是 `projectionValues.schedule` ⇒ rc.2 下**永远不显示**(无报错、无日志)。
+
+**修法(跟随官方,不自绘)**:官方那两个座位由**被压制的官方 entry 声明**(`children` 表 = 声明 + 授权 + 运行时规格三合一),本插件作为 shadow 者拿不到渲染授权 —— 所以按 v0.22.0 hero flow 的同一套 ledger 手法,读 `slots.entries('sidebar.session.row.leading')[0]` 拿**占用者组件 + 它自己的注入面**,在自绘行里渲染官方 `SessionScheduleMark`:其 `hooks.catalog` 由本插件按 `ui-slots` 的 `use<Name>` 契约绑定(unsubscribe/getSnapshot 只捕获一次 + 选择器缓存,等价于官方 `bindSnapshotSelector`;其 `use-sync-external-store/shim/with-selector` 不在客户端基线白名单),`t` 按占用者自己的 locale 命名空间绑定,整个外来组件挂在 `QuietBoundary` 之后。官方行规则一并照搬:**该单元格只在行自身主状态空闲时归属角标**(有状态灯就不渲染座位)、归档行与 blank 行留空;座位缺席(Schedule overlay 关闭 = 官方默认,或更老的宿主没有这个座位)就什么都不渲染。
+**旧宿主保留**:≤rc.1 的宿主只有投影、没有座位,自绘角标以 `node.hasActiveSchedule && !markNode` 门控保留 —— 两者在任何宿主上互斥,一行永远不会出现两个角标(冒烟断言)。
+
+### fix 2(静默失效类):官方快捷键 ⌥⌘K / ⌥⌘O 在本插件下是死键
+
+**机制**:rc.2 新增 `@deepseek-ai/dsh-client-shortcuts` + `ui-shortcuts` 与六条命令。`session.search` / `workspace.add` 的 `resolve` 只把请求写进官方 browser 的私有 store(`createWorkspaceShortcutControls`),**唯一消费者是该组件自己的 `useEffect`**;座位被压制 ⇒ 按键被消费(`preventDefault`)却什么也不发生(`session.new/rename/fork/archive` 走导航服务与 `shell.overlay`,不受影响)。
+
+**修法**:同一套 ledger 读取(按 `requestSearch` 字段做版本门控,老宿主没有该字段 ⇒ 无通道也不消费)拿到官方 entry 的注入面,在本插件内**当它的消费者**:搜索键 = 打开并聚焦本插件的过滤框(本插件搜索是本地标题过滤,这是它自己的搜索面);添加键 = 跑与页头按钮同一个 `startAddFlow`;本插件自己的选择流程期间用 `setDirectoryBusy` 上报占用,第二次 ⌥⌘O 会得到官方那句「正在选择或添加工作区」而不是静默叠加;官方分叉失败的 toast 原本挂在被压制的浏览器上,这里用官方词典文案复现其通知并委托 `dismissForkError` 走官方通道。侧边栏同时按官方新版**显示当前键位**(`aria-keyshortcuts` + title 追加 `(⌥⌘K)` 这类键帽,覆盖搜索/添加/新建会话三个按钮)。
+
+### align:跟随官方 rc.2 的四处新语义
+
+1. **归档筛选三态**:官方视图菜单改为「隐藏已归档(`IconArchiveOffOutlineRegular`)/ 全部对话(显示已归档)(`IconQueueOutlineRegular`)/ 仅显示已归档(`IconArchiveCheckOutlineRegular`)」三条**直选**项,`selectedIds` 恒有一条选中,不再「再点一次回默认」;本插件自绘视图菜单照此对齐,**以 `viewOptions.hideArchived` 键做时代探测**:老宿主没有该键 ⇒ 保留原两态 toggle 语义(键探测降级,不猜版本)。
+2. **「仅显示已归档」丢弃没有归档会话的工作区**(官方 `tree.ts groupByWorkspace` 新增 `if (archivedFilter === 'only' && members.length === 0) continue`):本插件按同一规则用 `sessionsOf()`(与行内渲染同一个可见性函数,不可能与列表打架)过滤工作区行,名称分组连同磁盘 `sub` 层一起递归判空 —— 分组成员消失后它自己也不再渲染。
+3. **归档空态**:官方新增 `empty.noneArchived` / `empty.viewOthers`,空列表会点名当前筛选并给一键回退。本插件照做(官方词典优先、缺键回退本插件文案),回退直接写 `archivedFilter = 'default'`。
+4. **首次使用的工作区命名**:官方删掉 `defaultWorkspace.title` 词典路径,新增 `@deepseek-ai/dsh-api-workspace-controller/default-workspace` 的 `workspaceDisplayTitle(title, t('workspace.defaultName'))` —— 标题等于常量 `default-workspace` 时**显示**本地化「默认工作区」,stored title 不动。本插件在侧栏与空态选择器两个出口做同一层显示替换(纯展示、绝不回写),词典自带该键(21 门语言,比官方只有 zh/en 更完整;官方其余 19 门靠 common 词典回退到英文)。**未替换前真机现象**:全新 DSH_HOME 里侧栏会显示裸 `default-workspace`。
+
+### align:设计 token(圆角 / 焦点环)
+
+rc.2 新增 `--dsw-radius-xs/sm/md/lg/xl/panel`(ui-theme base.css)与 `--dsw-focus-ring-width/color`(新 focus.css),并给官方 iconButton 加 `:focus-visible{outline:var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color);outline-offset:-2px}`(dense 控件把环画在内侧)。本插件自绘 CSS 原为硬编码 6/8/12px 且按钮无 focus 环,现改为 token 引用并**保留原像素值作 fallback**(老宿主只拿到原样外观):行/图标按钮/输入框/右键菜单项/分段控件/应用卡片等。**菜单材质不动**:官方把 `--dsw-specific-menu` 拆出 `--dsw-menu-surface-fill` 并引入 `MenuSurface`(含 macOS 不透明 backing 门户),但 `design-platform.css` **保留**了 darwin 近不透明回退给「不用 MenuSurface 的浮层」——本插件自绘右键菜单正是该路径,不变量 14 的 token 链依旧正确,故不改(依据:官方注释「Overlays without MenuSurface's opaque backing cannot blur page content over native vibrancy reliably」)。
+
+### 复核结论:本轮**不需要**改的面
+
+- **slot 契约零漂移**:`sidebar.workspaces` 仍 single / 官方 priority 0;两个 `directoryFlow` 洞与空态洞的声明、占用者、owner props 未变;`sidebar.workspaces.session.menu.item` 的 inject 新增 `shortcuts`(加法,本插件自绘菜单不注册该座位);`RowToastProps` 新增 store(官方自用)。新座位 `sidebar.session.row.leading/hover` 只由本插件的 fix 1 以「读占用者」方式使用,**绝不在自己的 registration 里声明 children**(不变量 2)。
+- **设置面**(行 Config volatile / `configForms` 软探测)、**locale 契约**、`dsh.client.inject` 数组:rc.2 无变化,本插件照旧双时代探测。
+- **语法高亮统一 / 单文件改动与纯增删差异更紧凑 / 「代码工作工具」统一控制轨迹-差异-新任务模式、独立模式选择开关移除**:分别落在 ui-primitives(code-block)、ui-chat/ui-tool、ui-agent-preset;本插件不渲染代码块、差异或模式选择,**不适用**。
+- **open issue / PR**:0 个(`gh issue list --state all` / `gh pr list --state all` 全为 closed/merged),无待办。
+
+### 验证(隔离 DSH_HOME + 独立端口 + Playwright,全部实测)
+
+隔离环境:`DSH_HOME=/Users/kanna/sandbox/_verify-bw/home`(`dsh-better-workspace` 以本地 tarball 装进 profile、`dsh.profile.bundles` 挂载)+ 端口 19411 + 本机 Chrome(playwright `channel: 'chrome'`,缓存里的 chromium 与 playwright 1.61.1 期望版本不一致)。**未触碰用户 `~/.dsh/profiles/*` 与 19387 GUI**。22 项断言全过:
+
+- **默认工作区**:全新 home 首启后侧栏行显示「默认工作区」(非裸 `default-workspace`),空态选择器同字。
+- **⌥⌘K**:按下后 `.bw-input` 出现且 `document.activeElement` 即该输入框 ⇒ 官方 `session.search` 请求被本插件消费(不是死键)。web 端官方默认键位是 `primary+alt`,即 ⌥⌘K,不是 ⌘K。
+- **视图菜单**:恰好三条归档项,文案 = 隐藏已归档 / 全部对话(显示已归档)/ 仅显示已归档,无旧的裸「显示已归档」项。
+- **仅显示已归档**:工作区行数归零、空态出现「暂无已归档会话」+「查看其他会话」,点回退回到默认视图并恢复工作区行。
+- **⌥⌘O**:browse 后端下弹出本插件的「应用内添加工作区」提示 ⇒ 官方 `workspace.add` 请求同样被消费。
+- **键位显示**:搜索/添加/新建会话按钮的 title 与 aria-label 带当前键位(`搜索工作区或会话 (⌥⌘K)`、`添加工作区 (⌥⌘O)`、`新会话 (⌥⌘N)`),`aria-keyshortcuts` 已发布。
+- **空态选择器**:rc.2 下仍是侧栏同源的树(含默认工作区行 + 添加工作区入口)。
+- **Schedule 座位**(在隔离 profile 临时把 `time-context` / `schedule` / `ui-schedule` 三行 `disabled: false`):非 blank 且空闲的会话行上,诊断属性确认本插件**读到了占用者并挂载了官方 `SessionScheduleMark`**(无任务时它按官方语义返回 null,故不绘制;blank 行则完全不给座位),console 无任何插件报错。
+- console **零插件自身报错**,无 `register skipped` / `SlotOwnershipError`。
+
+⚠️ **本轮未覆盖**(留给桌面端集成轮或下一轮):① 有**活动定时任务**时角标实际绘制(隔离实例无法在不调用模型的前提下创建定时任务);② native 后端下 ⌥⌘O 的 OS 选择器真机点击;③ 桌面端 Electron renderer 路径(自绘菜单材质、hotkey 的 desktop:macos 默认键 ⌘K/⌘O 分支、座位渲染)。
+
 ## v0.22.0 — 2026-09-24
 
 **类型**:feat(新会话页的工作区选择器换成侧栏同源的树)+ fix(自定义外观弹窗在会话运行时闪回默认)+ 文档/冒烟同步

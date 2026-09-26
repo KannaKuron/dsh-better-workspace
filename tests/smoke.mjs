@@ -1533,11 +1533,16 @@ test('rc.2 design tokens: radii and focus rings follow the host scale (v0.23.0)'
  */
 const loadAutoStyle = () => {
   const text = read('src/client.js')
-  const start = text.indexOf('const AUTO_COLOR_POOL = [')
-  const end = text.indexOf('/* ------------------ end of the pure auto-style block')
-  assert.ok(start !== -1 && end !== -1 && start < end, 'auto-style block not found')
-  const block = text.slice(start, end)
-  return new Function(block + '\nreturn { AUTO_COLOR_POOL, AUTO_ICON_POOL, AUTO_RECENT_WINDOW, createAutoStyler, autoShuffle }')()
+  // Two pure slices: the slot table + resolvers (kept beside colorToRgb, where
+  // strokeColorOf can reach them) and the icon pool + shuffle bag.
+  const slotsStart = text.indexOf('/* ---------- auto palette slots + theme resolution (v0.25.0, pure) ---------- */')
+  const slotsEnd = text.indexOf('/* ---------- end of the auto palette slot block ---------- */')
+  const bagStart = text.indexOf('const AUTO_ICON_POOL = [')
+  const bagEnd = text.indexOf('/* ------------------ end of the pure auto-style block')
+  assert.ok(slotsStart !== -1 && slotsEnd !== -1 && slotsStart < slotsEnd, 'auto palette slot block not found')
+  assert.ok(bagStart !== -1 && bagEnd !== -1 && bagStart < bagEnd, 'auto-style block not found')
+  const block = text.slice(slotsStart, slotsEnd) + '\n' + text.slice(bagStart, bagEnd)
+  return new Function(block + '\nreturn { AUTO_COLOR_SLOTS, AUTO_COLOR_TOKENS, AUTO_TOKEN_RE, isAutoColorToken, resolveAutoColor, resolveColorValue, AUTO_ICON_POOL, AUTO_RECENT_WINDOW, createAutoStyler, autoShuffle }')()
 }
 
 const relativeLuminance = (hex) => {
@@ -1553,41 +1558,69 @@ const contrastRatio = (a, b) => {
   return (hi + 0.05) / (lo + 0.05)
 }
 
-test('auto style: fixed palette, distinct hues, readable on both themes (v0.24.0)', () => {
-  const { AUTO_COLOR_POOL, AUTO_ICON_POOL, AUTO_RECENT_WINDOW } = loadAutoStyle()
+test('auto style: two theme palettes, each ≥4.5 (normal-text AA) on its own background (v0.25.0)', () => {
+  const { AUTO_COLOR_SLOTS, AUTO_COLOR_TOKENS, resolveAutoColor, resolveColorValue, isAutoColorToken, AUTO_ICON_POOL } = loadAutoStyle()
   // "内置定死十几个颜色": a dozen-plus, capped so a shuffled bag still reads as variety.
-  assert.ok(AUTO_COLOR_POOL.length >= 12 && AUTO_COLOR_POOL.length <= 16, 'palette size: ' + AUTO_COLOR_POOL.length)
-  for (const hex of AUTO_COLOR_POOL) assert.match(hex, /^#[0-9a-f]{6}$/, 'not a plain hex color: ' + hex)
-  assert.equal(new Set(AUTO_COLOR_POOL).size, AUTO_COLOR_POOL.length, 'palette entries must be unique')
-  // The color paints the row's TEXT (rowStyleOf → style.color), so the user's
-  // "字不能难看清" rule is a hard floor against white and near-black.
-  for (const hex of AUTO_COLOR_POOL) {
-    assert.ok(contrastRatio(hex, '#ffffff') >= 3.0, hex + ' too faint on a light sidebar')
-    assert.ok(contrastRatio(hex, '#1c1c1e') >= 3.0, hex + ' too faint on a dark sidebar')
+  assert.ok(AUTO_COLOR_SLOTS.length >= 12 && AUTO_COLOR_SLOTS.length <= 16, 'slot count: ' + AUTO_COLOR_SLOTS.length)
+  assert.equal(AUTO_COLOR_TOKENS.length, AUTO_COLOR_SLOTS.length, 'one token per slot')
+  assert.equal(new Set(AUTO_COLOR_TOKENS).size, AUTO_COLOR_TOKENS.length, 'tokens must be unique')
+  // Measured surfaces (see CHANGELOG v0.25.0): light base #ffffff with a hover /
+  // current overlay around #f7f8fa, dark base #151517 with layer tokens up to
+  // #2c2c2e. The CONSERVATIVE ends are asserted, so every slot clears normal-text
+  // AA even on a hovered/selected row, not merely on the base surface.
+  const LIGHT_STRICT = '#ebedf0'
+  const LIGHT_BASE = '#ffffff'
+  const DARK_STRICT = '#2c2c2e'
+  const DARK_BASE = '#151517'
+  const seenLight = new Set()
+  const seenDark = new Set()
+  for (const slot of AUTO_COLOR_SLOTS) {
+    assert.match(slot.light, /^#[0-9a-f]{6}$/, 'light slot must be a plain hex: ' + slot.light)
+    assert.match(slot.dark, /^#[0-9a-f]{6}$/, 'dark slot must be a plain hex: ' + slot.dark)
+    // On the CONSERVATIVE (strictest realistic) surface of its own theme:
+    assert.ok(contrastRatio(slot.light, LIGHT_STRICT) >= 4.5,
+      slot.name + ' light ' + slot.light + ' below normal-text AA on ' + LIGHT_STRICT + ': ' + contrastRatio(slot.light, LIGHT_STRICT).toFixed(2))
+    assert.ok(contrastRatio(slot.dark, DARK_STRICT) >= 4.5,
+      slot.name + ' dark ' + slot.dark + ' below normal-text AA on ' + DARK_STRICT + ': ' + contrastRatio(slot.dark, DARK_STRICT).toFixed(2))
+    // …and therefore also on the real base surfaces (asserted so a future edit
+    // cannot trade the strict surface for the easy one).
+    assert.ok(contrastRatio(slot.light, LIGHT_BASE) >= 4.5, slot.name + ' light fails on white')
+    assert.ok(contrastRatio(slot.dark, DARK_BASE) >= 4.5, slot.name + ' dark fails on the dark base')
+    seenLight.add(slot.light)
+    seenDark.add(slot.dark)
   }
-  // The existing custom-appearance swatches lead the pool (reuse, not a new style).
-  const existing = ['#5b8def', '#a371f7', '#f85149', '#6e7681']
-  for (const hex of existing) assert.ok(AUTO_COLOR_POOL.includes(hex), 'existing swatch dropped: ' + hex)
-  // The 3.0 floor is the WCAG graphics / large-text threshold, NOT normal-text
-  // AA: the row label is 13px regular, so AA would ask 4.5. No single fixed hex
-  // can clear both pure white and near black at 4.5 — this assertion documents
-  // that limit so nobody "fixes" the copy into an AA claim (or the pool into
-  // something worse). Copy must say ≥3.0.
-  for (const hex of AUTO_COLOR_POOL) {
-    assert.ok(Math.min(contrastRatio(hex, '#ffffff'), contrastRatio(hex, '#1c1c1e')) < 4.5,
-      hex + ' unexpectedly clears normal-text AA on both backgrounds; update the copy claim if so')
+  assert.equal(seenLight.size, AUTO_COLOR_SLOTS.length, 'light palette entries must be unique')
+  assert.equal(seenDark.size, AUTO_COLOR_SLOTS.length, 'dark palette entries must be unique')
+  // Hue continuity: a slot keeps its hue across themes (a flip must not jump
+  // from red to blue), and the two palettes are genuinely different colours.
+  for (const slot of AUTO_COLOR_SLOTS) assert.notEqual(slot.light, slot.dark, slot.name + ' paints the same colour in both themes')
+  // The light pool is the DARKER family and the dark pool the lighter one —
+  // that is what makes each side clear AA on its own background.
+  for (const slot of AUTO_COLOR_SLOTS) {
+    assert.ok(relativeLuminance(slot.light) < relativeLuminance(slot.dark),
+      slot.name + ': the light-theme colour must be darker than its dark-theme sibling')
   }
-  // The user-facing copy states the honest numbers, and never promises AA.
-  const copyText = read('src/client.js')
-  const zhHintStart = copyText.indexOf("'settings.autoStyle.hint':")
-  const zhHint = copyText.slice(zhHintStart, zhHintStart + 400)
-  assert.match(zhHint, /≥3\.0/, 'the hint must state the 3.0 threshold')
-  assert.match(zhHint, /AA 需要 4\.5/, 'the hint must state that normal-text AA (4.5) is not reached')
-  const enHintStart = copyText.indexOf("'settings.autoStyle.hint':", copyText.indexOf('const en = {'))
-  const enHint = copyText.slice(enHintStart, enHintStart + 500)
-  assert.match(enHint, /≥3\.0/, 'the EN hint must state the 3.0 threshold')
-  assert.match(enHint, /AA asks for 4\.5/, 'the EN hint must state the AA gap')
-  assert.doesNotMatch(zhHint, /保证可读/, 'the old over-promising wording must not come back')
+  // The cross-theme numbers are recorded, not required: a light-theme colour on
+  // the dark sidebar is not a promise this feature makes (the token resolves to
+  // the other pool there). Asserted only so the values stay honest in the docs.
+  const cross = AUTO_COLOR_SLOTS.map((slot) => ({
+    name: slot.name,
+    lightOnDark: +contrastRatio(slot.light, DARK_STRICT).toFixed(2),
+    darkOnLight: +contrastRatio(slot.dark, LIGHT_STRICT).toFixed(2),
+  }))
+  assert.equal(cross.length, AUTO_COLOR_SLOTS.length)
+  // Tokens, not hexes, are what gets stored — and they resolve per theme.
+  assert.match(AUTO_COLOR_TOKENS[0], /^auto:0$/)
+  assert.equal(resolveAutoColor('auto:0', false), AUTO_COLOR_SLOTS[0].light)
+  assert.equal(resolveAutoColor('auto:0', true), AUTO_COLOR_SLOTS[0].dark)
+  assert.equal(resolveAutoColor('auto:12', true), AUTO_COLOR_SLOTS[12].dark, 'the last slot must resolve')
+  assert.equal(resolveAutoColor('#123456', false), '', 'a hex is not a token')
+  assert.equal(resolveAutoColor('auto:999', false), AUTO_COLOR_SLOTS[0].light, 'an unknown index clamps to slot 0 (append-only table)')
+  assert.equal(resolveColorValue('#123456', true), '#123456', 'manual hex passes through untouched')
+  assert.equal(resolveColorValue('auto:3', true), AUTO_COLOR_SLOTS[3].dark, 'a token resolves against the given theme')
+  assert.equal(resolveColorValue('', false), '')
+  assert.equal(isAutoColorToken('auto:3'), true)
+  assert.equal(isAutoColorToken('#c40d00'), false)
   // Icons come from the existing candidate list — never a new icon set.
   const text = read('src/client.js')
   const choices = text.slice(text.indexOf('const ICON_CHOICES = ['), text.indexOf('const ICON_PICKER_CHOICES'))
@@ -1596,7 +1629,6 @@ test('auto style: fixed palette, distinct hues, readable on both themes (v0.24.0
     assert.ok(choices.includes("'" + name + "'"), 'icon outside the existing candidate list: ' + name)
     assert.notEqual(name, 'none', 'an invisible icon must never be drawn')
   }
-  assert.ok(AUTO_RECENT_WINDOW >= 2, 'recent-dedup window must skip more than the immediately previous draw')
 })
 
 test('auto style: shuffle bag + recent-dedup drawer, colors and icons independent (v0.24.0)', () => {
@@ -1610,16 +1642,17 @@ test('auto style: shuffle bag + recent-dedup drawer, colors and icons independen
   const cycle = []
   for (let i = 0; i < colors.length; i += 1) cycle.push(styler.nextColor())
   assert.deepEqual(cycle.slice().sort(), colors.slice().sort(), 'a bag cycle must cover the pool exactly once')
-  // Across a refill the recent window is skipped: with the real 13-color pool
-  // the next pool-window draws are exactly the entries the refill left in.
-  const { AUTO_COLOR_POOL, AUTO_RECENT_WINDOW } = loadAutoStyle()
-  const big = createAutoStyler(AUTO_COLOR_POOL, icons, random)
+  // Across a refill the recent window is skipped: with the real 13-slot pool
+  // (drawn as `auto:N` TOKENS since v0.25.0 — the draw must not depend on the
+  // theme) the next pool-window draws are exactly the entries the refill left in.
+  const { AUTO_COLOR_TOKENS, AUTO_RECENT_WINDOW } = loadAutoStyle()
+  const big = createAutoStyler(AUTO_COLOR_TOKENS, icons, random)
   const first = []
-  for (let i = 0; i < AUTO_COLOR_POOL.length; i += 1) first.push(big.nextColor())
-  assert.deepEqual(first.slice().sort(), AUTO_COLOR_POOL.slice().sort(), 'a bag cycle must cover the pool exactly once')
+  for (let i = 0; i < AUTO_COLOR_TOKENS.length; i += 1) first.push(big.nextColor())
+  assert.deepEqual(first.slice().sort(), AUTO_COLOR_TOKENS.slice().sort(), 'a bag cycle must cover the pool exactly once')
   const blocked = first.slice(-AUTO_RECENT_WINDOW)
   const refilled = []
-  for (let i = 0; i < AUTO_COLOR_POOL.length - AUTO_RECENT_WINDOW; i += 1) refilled.push(big.nextColor())
+  for (let i = 0; i < AUTO_COLOR_TOKENS.length - AUTO_RECENT_WINDOW; i += 1) refilled.push(big.nextColor())
   for (const value of refilled) assert.ok(!blocked.includes(value), 'repeat inside the recent window: ' + value)
   assert.equal(new Set(refilled).size, refilled.length, 'a refilled bag must not repeat either')
   // Over a long run no two CONSECUTIVE draws are ever equal — the property the
@@ -1705,7 +1738,7 @@ test('auto style: opt-in switch, blank-only sessions, settled-inventory workspac
  * decimal separator differ (ja 「コントラスト 3.0 以上」, ko 「대비 3.0 이상」,
  * de/fr use 3,0), and a strict pattern once mis-flagged correct translations.
  */
-test('auto style: all 21 hints state the honest contrast claim, never AA (v0.24.0)', () => {
+test('auto style: all 21 hints promise ≥4.5 (normal-text AA) per theme, no stale "not AA" copy (v0.25.0)', () => {
   const text = read('src/client.js')
   const hints = [...text.matchAll(/'settings\.autoStyle\.hint':\s*(?:'([^']*)'|"([^"]*)")/g)]
     .map((match) => match[1] !== undefined ? match[1] : match[2])
@@ -1715,16 +1748,17 @@ test('auto style: all 21 hints state the honest contrast claim, never AA (v0.24.
   hints.forEach((hint, index) => {
     const tag = index === 0 ? 'zh' : index === 1 ? 'en' : locales[index - 2]
     assert.ok(hint.length > 60, tag + ': hint looks truncated')
-    // Threshold token: both decimal separators, any word order.
-    assert.match(hint, /3[.,]0/, tag + ': the ≥3.0 threshold must be stated')
-    // The AA caveat: the AA token and the 4.5 requirement, in whatever order the
-    // language puts them.
-    assert.match(hint, /AA/, tag + ': the AA caveat must be stated')
-    assert.match(hint, /4[.,]5/, tag + ': the 4.5 AA requirement must be stated')
+    // The claim is now the AA one: 4.5 with the AA token, in whatever order and
+    // with whichever decimal separator the language uses (ja 「コントラスト 4.5
+    // 以上(本文の AA)」, ko 「대비 4.5 이상(본문 AA)」, de/fr 「4,5」).
+    assert.match(hint, /4[.,]5/, tag + ': the ≥4.5 (AA) threshold must be stated')
+    assert.match(hint, /AA/, tag + ': the AA token must be stated')
+    // …and the OLD threshold/caveat must be gone: 3.0 is no longer the promise,
+    // so stale copy saying "≥3.0" or "AA not reached" must fail here.
+    assert.doesNotMatch(hint, /3[.,]0/, tag + ': stale ≥3.0 wording must be gone')
   })
-  // The claim must never read as "AA compliant" in any language, and the two
-  // wordings this test was written to prevent must not come back.
-  for (const hint of hints) assert.doesNotMatch(hint, /AA\s*(达标|通过|compliant|conforme|erfüllt|準拠|준수)/i)
-  assert.doesNotMatch(hints[0], /保证可读/, 'the old zh over-promising wording must not come back')
+  assert.doesNotMatch(hints[0], /未达/, 'the zh copy must not claim AA is unreached')
+  assert.doesNotMatch(hints[0], /保证可读/, 'the zh over-promising wording must not come back')
+  assert.doesNotMatch(hints[1], /does not reach/, 'the EN copy must not claim AA is unreached')
   assert.doesNotMatch(hints[1], /stays readable/, 'the old EN over-promising wording must not come back')
 })

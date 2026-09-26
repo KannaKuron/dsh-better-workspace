@@ -100,7 +100,7 @@ window.__ModuleLoader__.load({
       'settings.rowActions': "会话行悬停按钮",
       'settings.rowActions.hint': "悬停会话行时在行尾显示置顶 / 归档快捷按钮,与官方行保持一致;关闭后这些动作只保留在菜单里。默认开启。",
       'settings.autoStyle': '新增项自动配色',
-      'settings.autoStyle.hint': '开启后,新创建的会话会自动分到一个内置色,新工作区还会分到一个图标;颜色从固定的 13 色调色板按「洗牌 + 近期去重」抽取,连续新增不会撞色。每个色在浅色与深色背景下对比度都 ≥3.0(WCAG 图形/大字号阈值);正文级 AA 需要 4.5,本池未达,与既有手动色板同档(已排除 5 个对比度更低的旧色)。只影响开启之后新建的项;你手动设置过外观的行永不被覆盖,关闭开关也不回收已分配的样式。默认关闭。',
+      'settings.autoStyle.hint': '开启后,新创建的会话会自动分到一个内置色,新工作区还会分到一个图标;颜色从固定的 13 个槽位按「洗牌 + 近期去重」抽取,连续新增不会撞色。每个槽位配了两色 —— 浅色主题用深色系、深色主题用亮色系 —— 每个色在**对应主题**背景下的对比度都 ≥4.5,达到 WCAG 正文级 AA;切换主题时同一个槽位会自动换成另一套色,不需要重新设置。只影响开启之后新建的项;你手动设置过外观的行永不被覆盖,关闭开关也不回收已分配的样式。默认关闭。',
       'settings.appearance': '默认外观',
       'settings.appearance.hint': '没有单独自定义过的行使用这套外观;字体描边默认开启——背景画面下不描边文字常常看不清。字体颜色留空即跟随主题。',
       'settings.appearance.reset': '恢复默认外观',
@@ -250,7 +250,7 @@ window.__ModuleLoader__.load({
       'settings.rowActions': "Session row hover buttons",
       'settings.rowActions.hint': "Show pin / archive quick buttons at the end of a hovered session row, matching the official rows. Off: these actions stay in the menu only. On by default.",
       'settings.autoStyle': 'Auto color & icon for new items',
-      'settings.autoStyle.hint': 'When on, every newly created session gets a built-in color and every new workspace also gets an icon. Colors come from a fixed 13-color palette drawn with shuffle + recent-dedup, so consecutive items never look alike. Every entry keeps contrast ≥3.0 on both light and dark backgrounds (the WCAG graphics/large-text threshold); normal-text AA asks for 4.5, which this pool does not reach — the same tier as the existing manual palette (five weaker old swatches were excluded). Only items created after you turn it on are touched; rows you styled by hand are never overwritten, and turning it off does not undo what was already assigned. Off by default.',
+      'settings.autoStyle.hint': "When on, every newly created session gets a built-in color and every new workspace also gets an icon. Colors come from 13 fixed slots drawn with shuffle + recent-dedup, so consecutive items never look alike. Every slot ships two colors — a darker one for the light theme, a lighter one for the dark theme — and each clears WCAG normal-text AA (contrast ≥4.5) on its own theme's background; switching themes repaints the same slot automatically, with nothing to redo. Only items created after you turn it on are touched; rows you styled by hand are never overwritten, and turning it off does not undo what was already assigned. Off by default.",
       'settings.appearance': 'Default appearance',
       'settings.appearance.hint': 'Rows that were never customized use this appearance; the outline is on by default — text without it is often unreadable over a background image. Leave the color empty to follow the theme.',
       'settings.appearance.reset': 'Reset to default',
@@ -408,7 +408,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "أزرار تمرير سطر الجلسة",
         'settings.rowActions.hint': "إظهار أزرار التثبيت / الأرشفة السريعة في نهاية سطر الجلسة عند تمرير المؤشر، مطابقة للأسطر الرسمية. عند الإيقاف: تبقى هذه الإجراءات في القائمة فقط. مفعّل افتراضياً.",
         'settings.autoStyle': 'ألوان وأيقونات تلقائية للعناصر الجديدة',
-        'settings.autoStyle.hint': 'عند التفعيل يحصل كل جلسة جديدة على لون من لوحة مدمجة، ويحصل كل مساحة عمل جديدة أيضًا على أيقونة. تُسحب الألوان من 13 لونًا ثابتًا بترتيب عشوائي مع تجنّب التكرار القريب. يحافظ كل لون على تباين ≥3.0 على الخلفيتين الفاتحة والداكنة (عتبة WCAG للرسوم والنص الكبير)؛ أما AA للنص العادي فيتطلب 4.5 ولا تبلغه هذه اللوحة، وهي بمستوى اللوحة اليدوية الحالية (استُبعدت خمسة ألوان أضعف). يؤثر فقط على العناصر المنشأة بعد التفعيل، ولا يُستبدل أي سطر نسّقته يدويًا، والإيقاف لا يلغي ما تم تعيينه. معطّل افتراضيًا.',
+        'settings.autoStyle.hint': 'عند التفعيل يحصل كل جلسة جديدة على لون من لوحة مدمجة، ويحصل كل مساحة عمل جديدة أيضًا على أيقونة. تُسحب الألوان من 13 خانة ثابتة بترتيب عشوائي مع تجنّب التكرار القريب. لكل خانة لونان — أغمق للسمة الفاتحة وأفتح للسمة الداكنة — وكل لون يبلغ تباين ≥4.5 (معيار AA للنص العادي) على خلفية سمته؛ وعند تبديل السمة تُرسم الخانة نفسها تلقائيًا دون أي إعداد. يؤثر فقط على العناصر المنشأة بعد التفعيل، ولا يُستبدل أي سطر نسّقته يدويًا، والإيقاف لا يلغي ما تم تعيينه. معطّل افتراضيًا.',
         'settings.appearance': 'المظهر الافتراضي',
         'settings.appearance.hint': 'تستخدم الأسطر غير المخصصة هذا المظهر؛ حدّ النص مفعّل افتراضياً — فبدونه يصعب قراءة النص فوق صورة خلفية. اترك اللون فارغاً لاتباع السمة.',
         'settings.appearance.reset': 'استعادة المظهر الافتراضي',
@@ -558,7 +558,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "Sitzungszeilen-Schnellknöpfe",
         'settings.rowActions.hint': "Zeigt beim Daraufzeigen Schnellknöpfe zum Anheften / Archivieren am Zeilenende – wie die offiziellen Zeilen. Aus: diese Aktionen bleiben nur im Menü. Standardmäßig ein.",
         'settings.autoStyle': 'Automatische Farbe & Symbol für neue Einträge',
-        'settings.autoStyle.hint': 'Wenn aktiviert, erhält jede neu erstellte Sitzung eine Farbe aus einer festen Palette und jeder neue Arbeitsbereich zusätzlich ein Symbol. Die 13 Farben werden gemischt mit Vermeidung der letzten Treffer gezogen. Jeder Eintrag hält auf hellem wie dunklem Hintergrund Kontrast ≥3.0 (WCAG-Schwelle für Grafik/großen Text); Normaltext-AA verlangt 4.5 und wird von dieser Palette nicht erreicht – gleiche Stufe wie die vorhandene manuelle Palette (fünf schwächere alte Farben wurden entfernt). Nur danach erstellte Einträge werden erfasst; manuell gestaltete Zeilen werden nie überschrieben, und Ausschalten macht Zuweisungen nicht rückgängig. Standardmäßig aus.',
+        'settings.autoStyle.hint': 'Wenn aktiviert, erhält jede neu erstellte Sitzung eine Farbe aus einer festen Palette und jeder neue Arbeitsbereich zusätzlich ein Symbol. Die 13 festen Plätze werden gemischt mit Vermeidung der letzten Treffer gezogen. Jeder Platz hat zwei Farben — dunkler für das helle Thema, heller für das dunkle — und jede erreicht auf dem Hintergrund ihres eigenen Themas Kontrast ≥4.5 (AA für Fließtext); beim Themewechsel wird derselbe Platz automatisch neu eingefärbt. Nur danach erstellte Einträge werden erfasst; manuell gestaltete Zeilen werden nie überschrieben, und Ausschalten macht Zuweisungen nicht rückgängig. Standardmäßig aus.',
         'settings.appearance': 'Standardaussehen',
         'settings.appearance.hint': 'Zeilen ohne eigene Anpassung nutzen dieses Aussehen; die Textkontur ist standardmäßig an – ohne sie ist Text über einem Hintergrundbild oft kaum lesbar. Bleibt die Farbe leer, folgt sie dem Thema.',
         'settings.appearance.reset': 'Standard wiederherstellen',
@@ -708,7 +708,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "Boutons de survol des sessions",
         'settings.rowActions.hint': "Affiche des boutons rapides d’épinglage / d’archivage en fin de ligne au survol, comme les lignes officielles. Désactivé : ces actions restent dans le menu uniquement. Activé par défaut.",
         'settings.autoStyle': 'Couleur et icône automatiques pour les nouveaux éléments',
-        'settings.autoStyle.hint': 'Activé, chaque nouvelle session reçoit une couleur de la palette intégrée et chaque nouvel espace de travail aussi une icône. Les 13 couleurs sont tirées par mélange avec évitement des derniers tirages. Chaque couleur garde un contraste ≥3,0 sur fond clair comme sombre (seuil WCAG graphiques/grands textes) ; le niveau AA pour texte courant exige 4,5 et n’est pas atteint — même niveau que la palette manuelle existante (cinq anciennes couleurs plus faibles ont été écartées). Seuls les éléments créés après l’activation sont traités ; les lignes personnalisées à la main ne sont jamais écrasées et désactiver n’annule pas les attributions. Désactivé par défaut.',
+        'settings.autoStyle.hint': 'Activé, chaque nouvelle session reçoit une couleur de la palette intégrée et chaque nouvel espace de travail aussi une icône. Les 13 emplacements fixes sont tirés par mélange avec évitement des derniers tirages. Chaque emplacement a deux couleurs — plus sombre pour le thème clair, plus claire pour le thème sombre — et chacune atteint un contraste ≥4,5 (AA pour le texte courant) sur le fond de son propre thème ; changer de thème recolore le même emplacement automatiquement. Seuls les éléments créés après l’activation sont traités ; les lignes personnalisées à la main ne sont jamais écrasées et désactiver n’annule pas les attributions. Désactivé par défaut.',
         'settings.appearance': 'Apparence par défaut',
         'settings.appearance.hint': 'Les lignes sans personnalisation utilisent cette apparence; le contour du texte est activé par défaut — sans lui, le texte reste souvent illisible sur une image de fond. Laissez la couleur vide pour suivre le thème.',
         'settings.appearance.reset': 'Rétablir l\'apparence par défaut',
@@ -858,7 +858,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "सेशन पंक्ति होवर बटन",
         'settings.rowActions.hint': "होवर करने पर सेशन पंक्ति के अंत में पिन / आर्काइव क्विक बटन दिखाता है, आधिकारिक पंक्तियों जैसा। बंद: ये क्रियाएँ केवल मेनू में रहती हैं। डिफ़ॉल्ट रूप से चालू।",
         'settings.autoStyle': 'नए आइटम के लिए स्वचालित रंग और आइकन',
-        'settings.autoStyle.hint': 'चालू होने पर हर नए सत्र को अंतर्निहित पैलेट से एक रंग मिलता है और हर नए कार्यस्थान को एक आइकन भी। 13 रंगों को शफ़ल और हाल के दोहराव से बचाकर निकाला जाता है। हर रंग हल्की और गहरी दोनों पृष्ठभूमियों पर ≥3.0 कंट्रास्ट बनाए रखता है (WCAG ग्राफ़िक्स/बड़े पाठ की सीमा); सामान्य पाठ के लिए AA को 4.5 चाहिए जो यह पैलेट नहीं देता — यह मौजूदा मैनुअल पैलेट के समान स्तर है (पाँच कमज़ोर पुराने रंग हटाए गए)। केवल चालू करने के बाद बने आइटम प्रभावित होते हैं; हाथ से सजाई गई पंक्तियाँ कभी नहीं बदली जातीं और बंद करने पर पहले दिए रंग हटते नहीं। डिफ़ॉल्ट रूप से बंद।',
+        'settings.autoStyle.hint': 'चालू होने पर हर नए सत्र को अंतर्निहित पैलेट से एक रंग मिलता है और हर नए कार्यस्थान को एक आइकन भी। 13 स्थिर स्लॉट शफ़ल और हाल के दोहराव से बचाकर निकाले जाते हैं। हर स्लॉट में दो रंग हैं — हल्की थीम के लिए गहरा और गहरी थीम के लिए हल्का — और हर रंग अपनी थीम की पृष्ठभूमि पर ≥4.5 कंट्रास्ट (सामान्य पाठ के लिए AA) रखता है; थीम बदलने पर वही स्लॉट अपने आप रंग बदल लेता है। केवल चालू करने के बाद बने आइटम प्रभावित होते हैं; हाथ से सजाई गई पंक्तियाँ कभी नहीं बदली जातीं और बंद करने पर पहले दिए रंग हटते नहीं। डिफ़ॉल्ट रूप से बंद।',
         'settings.appearance': 'डिफ़ॉल्ट रूप',
         'settings.appearance.hint': 'जिन पंक्तियों को अलग से अनुकूलित नहीं किया गया वे यह रूप इस्तेमाल करती हैं; पाठ की रूपरेखा डिफ़ॉल्ट रूप से चालू है — पृष्ठभूमि छवि पर बिना रूपरेखा वाला पाठ अक्सर पढ़ा नहीं जाता। रंग खाली छोड़ने पर वह थीम का अनुसरण करता है।',
         'settings.appearance.reset': 'डिफ़ॉल्ट रूप पर लौटें',
@@ -1008,7 +1008,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "Tombol hover baris sesi",
         'settings.rowActions.hint': "Menampilkan tombol cepat pin / arsip di ujung baris sesi saat dihover, mengikuti baris resmi. Nonaktif: aksi ini hanya ada di menu. Aktif secara bawaan.",
         'settings.autoStyle': 'Warna & ikon otomatis untuk item baru',
-        'settings.autoStyle.hint': 'Saat aktif, setiap sesi baru mendapat warna dari palet bawaan dan setiap ruang kerja baru juga mendapat ikon. Tiga belas warna diambil dengan cara diacak sambil menghindari pengambilan terakhir. Setiap warna menjaga kontras ≥3,0 pada latar terang maupun gelap (ambang WCAG grafik/teks besar); AA untuk teks normal menuntut 4,5 dan tidak dicapai palet ini — setara palet manual yang ada (lima warna lama yang lebih lemah dikeluarkan). Hanya item yang dibuat setelah diaktifkan yang diproses; baris yang Anda atur sendiri tidak pernah ditimpa, dan menonaktifkannya tidak membatalkan yang sudah diberikan. Nonaktif secara bawaan.',
+        'settings.autoStyle.hint': 'Saat aktif, setiap sesi baru mendapat warna dari palet bawaan dan setiap ruang kerja baru juga mendapat ikon. Tiga belas slot tetap diambil dengan cara diacak sambil menghindari pengambilan terakhir. Setiap slot punya dua warna — lebih gelap untuk tema terang dan lebih terang untuk tema gelap — dan setiap warna mencapai kontras ≥4,5 (AA untuk teks biasa) pada latar temanya sendiri; mengganti tema otomatis mewarnai ulang slot yang sama. Hanya item yang dibuat setelah diaktifkan yang diproses; baris yang Anda atur sendiri tidak pernah ditimpa, dan menonaktifkannya tidak membatalkan yang sudah diberikan. Nonaktif secara bawaan.',
         'settings.appearance': 'Tampilan bawaan',
         'settings.appearance.hint': 'Baris yang belum disesuaikan memakai tampilan ini; garis luar teks aktif secara bawaan — tanpa itu teks sering tak terbaca di atas gambar latar. Biarkan warna kosong agar mengikuti tema.',
         'settings.appearance.reset': 'Kembalikan tampilan bawaan',
@@ -1158,7 +1158,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "Pulsanti al passaggio della sessione",
         'settings.rowActions.hint': "Mostra pulsanti rapidi di pin / archiviazione in fondo alla riga al passaggio, come le righe ufficiali. Disattivo: queste azioni restano solo nel menu. Attivo per impostazione predefinita.",
         'settings.autoStyle': 'Colore e icona automatici per i nuovi elementi',
-        'settings.autoStyle.hint': 'Se attivo, ogni nuova sessione riceve un colore dalla palette integrata e ogni nuovo spazio di lavoro anche un’icona. I 13 colori vengono estratti con mescolamento ed evitando gli ultimi estratti. Ogni colore mantiene un contrasto ≥3,0 su fondo chiaro e scuro (soglia WCAG per grafica/testo grande); il livello AA per il testo normale richiede 4,5 e non è raggiunto — stesso livello della palette manuale esistente (cinque vecchi colori più deboli sono stati esclusi). Sono interessati solo gli elementi creati dopo l’attivazione; le righe personalizzate a mano non vengono mai sovrascritte e disattivare non annulla quanto assegnato. Disattivo per impostazione predefinita.',
+        'settings.autoStyle.hint': 'Se attivo, ogni nuova sessione riceve un colore dalla palette integrata e ogni nuovo spazio di lavoro anche un’icona. I 13 slot fissi vengono estratti con mescolamento ed evitando gli ultimi estratti. Ogni slot ha due colori — più scuro per il tema chiaro, più chiaro per il tema scuro — e ognuno raggiunge un contrasto ≥4,5 (AA per il testo normale) sullo sfondo del proprio tema; cambiando tema lo stesso slot viene ricolorato automaticamente. Sono interessati solo gli elementi creati dopo l’attivazione; le righe personalizzate a mano non vengono mai sovrascritte e disattivare non annulla quanto assegnato. Disattivo per impostazione predefinita.',
         'settings.appearance': 'Aspetto predefinito',
         'settings.appearance.hint': 'Le righe mai personalizzate usano questo aspetto; il contorno del testo è attivo per impostazione predefinita — senza di esso il testo è spesso illeggibile sopra un\'immagine di sfondo. Lascia il colore vuoto per seguire il tema.',
         'settings.appearance.reset': 'Ripristina l\'aspetto predefinito',
@@ -1308,7 +1308,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "セッション行のホバーボタン",
         'settings.rowActions.hint': "セッション行にカーソルを合わせると行末にピン / アーカイブのクイックボタンを表示し、公式の行と揃えます。オフ:これらの操作はメニュー内のみ。既定はオン。",
         'settings.autoStyle': '新規項目の色とアイコンを自動割り当て',
-        'settings.autoStyle.hint': 'オンにすると、新しく作られたセッションには内蔵パレットから色が、新しいワークスペースにはさらにアイコンが割り当てられます。13 色はシャッフルと直近の重複回避で抽選されます。各色はライト/ダークどちらの背景でもコントラスト 3.0 以上を保ちます(WCAG の図形・大文字基準)。本文の AA は 4.5 が必要でこのパレットは未達です(既存の手動パレットと同水準、弱かった旧 5 色は除外)。オンにした後に作成された項目だけが対象で、手動で設定した行は上書きされず、オフにしても割り当て済みの色は元に戻りません。既定はオフです。',
+        'settings.autoStyle.hint': 'オンにすると、新しく作られたセッションには内蔵パレットから色が、新しいワークスペースにはさらにアイコンが割り当てられます。13 の固定スロットをシャッフルと直近の重複回避で抽選します。各スロットは 2 色(ライトテーマ用の濃い色とダークテーマ用の明るい色)を持ち、どちらも自分のテーマの背景でコントラスト 4.5 以上(本文の AA)を満たします。テーマを切り替えると、同じスロットが自動的に塗り替えられます。オンにした後に作成された項目だけが対象で、手動で設定した行は上書きされず、オフにしても割り当て済みの色は元に戻りません。既定はオフです。',
         'settings.appearance': '既定の外観',
         'settings.appearance.hint': '個別にカスタマイズしていない行に適用される外観です;文字の縁取りは既定でオンです——背景画像の上では縁取りのない文字が読みにくいためです。色を空にするとテーマに従います。',
         'settings.appearance.reset': '既定の外観に戻す',
@@ -1458,7 +1458,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "세션 행 호버 버튼",
         'settings.rowActions.hint': "세션 행에 마우스를 올리면 행 끝에 고정 / 보관 빠른 버튼을 표시하여 공식 행과 일치시킵니다. 끔: 이 작업들은 메뉴에만 남습니다. 기본값은 켬.",
         'settings.autoStyle': '새 항목 자동 색상 및 아이콘',
-        'settings.autoStyle.hint': '켜면 새로 만든 세션에 내장 팔레트의 색이, 새 워크스페이스에는 아이콘까지 자동으로 지정됩니다. 13가지 색은 섞기와 최근 중복 회피로 뽑습니다. 각 색은 밝은/어두운 배경 모두에서 대비 3.0 이상을 유지합니다(WCAG 그래픽/큰 텍스트 기준). 본문 AA는 4.5가 필요하며 이 팔레트는 미달입니다(기존 수동 팔레트와 같은 수준, 약했던 옛 색 5개는 제외). 켠 뒤에 만든 항목에만 적용되며, 직접 꾸민 행은 절대 덮어쓰지 않고, 끄더라도 이미 지정된 색은 되돌리지 않습니다. 기본값은 꺼짐입니다.',
+        'settings.autoStyle.hint': '켜면 새로 만든 세션에 내장 팔레트의 색이, 새 워크스페이스에는 아이콘까지 자동으로 지정됩니다. 13개의 고정 슬롯을 섞기와 최근 중복 회피로 뽑습니다. 슬롯마다 두 가지 색(밝은 테마용 진한 색, 어두운 테마용 밝은 색)이 있고, 각각 자기 테마 배경에서 대비 4.5 이상(본문 AA)을 만족합니다. 테마를 바꾸면 같은 슬롯이 자동으로 다시 칠해집니다. 켠 뒤에 만든 항목에만 적용되며, 직접 꾸민 행은 절대 덮어쓰지 않고, 끄더라도 이미 지정된 색은 되돌리지 않습니다. 기본값은 꺼짐입니다.',
         'settings.appearance': '기본 모양',
         'settings.appearance.hint': '따로 지정하지 않은 행에 적용되는 모양입니다; 글자 외곽선은 기본으로 켜져 있습니다——배경 이미지 위에서는 외곽선 없는 글자가 잘 보이지 않기 때문입니다. 색을 비우면 테마를 따릅니다.',
         'settings.appearance.reset': '기본 모양으로 되돌리기',
@@ -1608,7 +1608,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "Sessierij-snelknoppen",
         'settings.rowActions.hint': "Toont snelknoppen voor vastmaken / archiveren aan het einde van een aangewezen sessierij, gelijk aan de officiële rijen. Uit: deze acties blijven alleen in het menu. Standaard aan.",
         'settings.autoStyle': 'Automatische kleur en pictogram voor nieuwe items',
-        'settings.autoStyle.hint': 'Als dit aanstaat krijgt elke nieuwe sessie een kleur uit het ingebouwde palet en elke nieuwe werkruimte ook een pictogram. De dertien kleuren worden geschud en de laatst gebruikte worden vermeden. Elke kleur houdt contrast ≥3,0 op zowel lichte als donkere achtergrond (de WCAG-drempel voor grafiek/grote tekst); AA voor normale tekst vraagt 4,5 en dat haalt dit palet niet — hetzelfde niveau als het bestaande handmatige palet (vijf zwakkere oude kleuren zijn verwijderd). Alleen items die daarna worden gemaakt worden aangepast; rijen die u zelf hebt opgemaakt worden nooit overschreven en uitzetten draait eerdere toewijzingen niet terug. Standaard uit.',
+        'settings.autoStyle.hint': 'Als dit aanstaat krijgt elke nieuwe sessie een kleur uit het ingebouwde palet en elke nieuwe werkruimte ook een pictogram. De dertien vaste sleuven worden geschud en de laatst gebruikte worden vermeden. Elke sleuf heeft twee kleuren — donkerder voor het lichte thema, lichter voor het donkere — en elk haalt op de achtergrond van zijn eigen thema contrast ≥4,5 (AA voor normale tekst); bij een themawissel wordt dezelfde sleuf automatisch opnieuw gekleurd. Alleen items die daarna worden gemaakt worden aangepast; rijen die u zelf hebt opgemaakt worden nooit overschreven en uitzetten draait eerdere toewijzingen niet terug. Standaard uit.',
         'settings.appearance': 'Standaarduiterlijk',
         'settings.appearance.hint': 'Regels zonder eigen aanpassing gebruiken dit uiterlijk; de tekstomtrek staat standaard aan — zonder omtrek is tekst op een achtergrondafbeelding vaak slecht leesbaar. Laat de kleur leeg om het thema te volgen.',
         'settings.appearance.reset': 'Standaarduiterlijk herstellen',
@@ -1758,7 +1758,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "Przyciski najechania wiersza sesji",
         'settings.rowActions.hint': "Pokazuje szybkie przyciski przypnij / archiwizuj na końcu najechanego wiersza sesji, jak w oficjalnych wierszach. Wyłączone: te akcje zostają tylko w menu. Domyślnie włączone.",
         'settings.autoStyle': 'Automatyczny kolor i ikona dla nowych elementów',
-        'settings.autoStyle.hint': 'Po włączeniu każda nowa sesja otrzymuje kolor z wbudowanej palety, a każda nowa przestrzeń robocza także ikonę. Trzynaście kolorów losuje się tasowaniem z unikaniem ostatnich trafień. Każdy kolor zachowuje kontrast ≥3,0 na jasnym i ciemnym tle (próg WCAG dla grafiki/dużego tekstu); AA dla zwykłego tekstu wymaga 4,5 i ta paleta go nie osiąga — ten sam poziom co dotychczasowa paleta ręczna (pięć słabszych starych kolorów usunięto). Dotyczy tylko elementów utworzonych po włączeniu; ręcznie ostylowane wiersze nigdy nie są nadpisywane, a wyłączenie nie cofa przypisań. Domyślnie wyłączone.',
+        'settings.autoStyle.hint': 'Po włączeniu każda nowa sesja otrzymuje kolor z wbudowanej palety, a każda nowa przestrzeń robocza także ikonę. Trzynaście stałych slotów losuje się tasowaniem z unikaniem ostatnich trafień. Każdy slot ma dwa kolory — ciemniejszy dla jasnego motywu, jaśniejszy dla ciemnego — i każdy osiąga na tle swojego motywu kontrast ≥4,5 (AA dla zwykłego tekstu); zmiana motywu automatycznie przemalowuje ten sam slot. Dotyczy tylko elementów utworzonych po włączeniu; ręcznie ostylowane wiersze nigdy nie są nadpisywane, a wyłączenie nie cofa przypisań. Domyślnie wyłączone.',
         'settings.appearance': 'Domyślny wygląd',
         'settings.appearance.hint': 'Wiersze bez własnych ustawień używają tego wyglądu; obrys tekstu jest domyślnie włączony — bez niego tekst na obrazie tła bywa nieczytelny. Puste pole koloru oznacza podążanie za motywem.',
         'settings.appearance.reset': 'Przywróć domyślny wygląd',
@@ -1908,7 +1908,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "Botões de passagem da sessão",
         'settings.rowActions.hint': "Mostra botões rápidos de fixar / arquivar no fim da linha ao passar o cursor, como nas linhas oficiais. Desligado: essas ações ficam apenas no menu. Ligado por predefinição.",
         'settings.autoStyle': 'Cor e ícone automáticos para novos itens',
-        'settings.autoStyle.hint': 'Quando ligado, cada nova sessão recebe uma cor da paleta embutida e cada novo espaço de trabalho também um ícone. As 13 cores são sorteadas com embaralhamento e evitando as últimas. Cada cor mantém contraste ≥3,0 em fundo claro e escuro (o limite WCAG para gráficos/texto grande); o AA para texto normal exige 4,5 e esta paleta não o atinge — mesmo nível da paleta manual existente (cinco cores antigas mais fracas foram excluídas). Só os itens criados depois de ligar são afetados; linhas que você estilizou à mão nunca são sobrescritas e desligar não desfaz o que já foi atribuído. Desligado por padrão.',
+        'settings.autoStyle.hint': 'Quando ligado, cada nova sessão recebe uma cor da paleta embutida e cada novo espaço de trabalho também um ícone. Os 13 slots fixos são sorteados com embaralhamento e evitando as últimas escolhas. Cada slot tem duas cores — mais escura para o tema claro, mais clara para o tema escuro — e cada uma atinge no fundo do seu próprio tema contraste ≥4,5 (AA para texto normal); trocar de tema recolore o mesmo slot automaticamente. Só os itens criados depois de ligar são afetados; linhas que você estilizou à mão nunca são sobrescritas e desligar não desfaz o que já foi atribuído. Desligado por padrão.',
         'settings.appearance': 'Aparência padrão',
         'settings.appearance.hint': 'Linhas sem personalização usam esta aparência; o contorno do texto vem ativado por padrão — sem ele, o texto costuma ficar ilegível sobre uma imagem de fundo. Deixe a cor vazia para seguir o tema.',
         'settings.appearance.reset': 'Restaurar aparência padrão',
@@ -2058,7 +2058,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "Кнопки наведения строки сессии",
         'settings.rowActions.hint': "Показывает быстрые кнопки закрепить / архивировать в конце строки при наведении, как в официальных строках. Выкл: эти действия остаются только в меню. Включено по умолчанию.",
         'settings.autoStyle': 'Автоцвет и значок для новых элементов',
-        'settings.autoStyle.hint': 'Когда включено, каждый новый сеанс получает цвет из встроенной палитры, а новая рабочая область — ещё и значок. Тринадцать цветов вытягиваются перемешиванием с избеганием недавних. Каждый цвет сохраняет контраст ≥3,0 на светлом и тёмном фоне (порог WCAG для графики/крупного текста); AA для обычного текста требует 4,5, и эта палитра его не достигает — тот же уровень, что и существующая ручная палитра (пять более слабых старых цветов исключены). Затрагиваются только элементы, созданные после включения; строки, оформленные вручную, никогда не перезаписываются, а выключение не отменяет уже назначенное. По умолчанию выключено.',
+        'settings.autoStyle.hint': 'Когда включено, каждый новый сеанс получает цвет из встроенной палитры, а новая рабочая область — ещё и значок. Тринадцать фиксированных слотов вытягиваются перемешиванием с избеганием недавних. У каждого слота два цвета — темнее для светлой темы, светлее для тёмной, — и каждый даёт на фоне своей темы контраст ≥4,5 (AA для обычного текста); при смене темы тот же слот перекрашивается автоматически. Затрагиваются только элементы, созданные после включения; строки, оформленные вручную, никогда не перезаписываются, а выключение не отменяет уже назначенное. По умолчанию выключено.',
         'settings.appearance': 'Оформление по умолчанию',
         'settings.appearance.hint': 'Строки без своей настройки используют это оформление; обводка текста включена по умолчанию — без неё текст на фоновом изображении часто нечитаем. Пустой цвет означает следование теме.',
         'settings.appearance.reset': 'Вернуть оформление по умолчанию',
@@ -2208,7 +2208,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "Hovringsknappar för sessionsraden",
         'settings.rowActions.hint': "Visar snabbknappar för fäst / arkivera i radens slut vid hovring, som de officiella raderna. Av: åtgärderna finns bara i menyn. På som standard.",
         'settings.autoStyle': 'Automatisk färg och ikon för nya objekt',
-        'settings.autoStyle.hint': 'När den är på får varje ny session en färg från den inbyggda paletten och varje ny arbetsyta även en ikon. De tretton färgerna dras med blandning och undvikande av de senaste. Varje färg håller kontrast ≥3,0 mot både ljus och mörk bakgrund (WCAG-tröskeln för grafik/stor text); AA för normal text kräver 4,5 och nås inte av paletten — samma nivå som den befintliga manuella paletten (fem svagare gamla färger togs bort). Endast objekt som skapas efter att du slagit på påverkas; rader du stilt själv skrivs aldrig över och att stänga av ångrar inte det som tilldelats. Av som standard.',
+        'settings.autoStyle.hint': 'När den är på får varje ny session en färg från den inbyggda paletten och varje ny arbetsyta även en ikon. De tretton fasta platserna dras med blandning och undvikande av de senaste. Varje plats har två färger — mörkare för ljust tema, ljusare för mörkt — och båda når mot sin egen temas bakgrund kontrast ≥4,5 (AA för normal text); vid temabyte färgas samma plats om automatiskt. Endast objekt som skapas efter att du slagit på påverkas; rader du stilt själv skrivs aldrig över och att stänga av ångrar inte det som tilldelats. Av som standard.',
         'settings.appearance': 'Standardutseende',
         'settings.appearance.hint': 'Rader utan egen anpassning använder detta utseende; textkonturen är på som standard — utan den är texten ofta oläslig ovanpå en bakgrundsbild. Lämna färgen tom för att följa temat.',
         'settings.appearance.reset': 'Återställ standardutseende',
@@ -2358,7 +2358,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "ปุ่มเมื่อชี้แถวเซสชัน",
         'settings.rowActions.hint': "แสดงปุ่มด่วนปักหมุด / เก็บถาวรท้ายแถวเมื่อชี้ ให้ตรงกับแถวทางการ ปิด: การกระทำเหล่านี้มีเฉพาะในเมนู เปิดตามค่าเริ่มต้น",
         'settings.autoStyle': 'สีและไอคอนอัตโนมัติสำหรับรายการใหม่',
-        'settings.autoStyle.hint': 'เมื่อเปิด ทุกเซสชันที่สร้างใหม่จะได้สีจากชุดสีในตัว และพื้นที่ทำงานใหม่จะได้ไอคอนด้วย สี 13 สีจะถูกสุ่มแบบสลับพร้อมหลีกเลี่ยงสีที่เพิ่งใช้ ทุกสีรักษาคอนทราสต์ ≥3.0 บนพื้นสว่างและมืด (เกณฑ์ WCAG สำหรับภาพ/ตัวอักษรขนาดใหญ่) ส่วน AA สำหรับข้อความทั่วไปต้องใช้ 4.5 ซึ่งชุดนี้ยังไม่ถึง — อยู่ระดับเดียวกับชุดสีmanualที่มีอยู่ (ตัดสีเก่าที่อ่อนกว่า 5 สีออก) มีผลเฉพาะรายการที่สร้างหลังเปิดใช้ แถวที่คุณตั้งค่าเองจะไม่ถูกเขียนทับ และการปิดจะไม่เรียกคืนสิ่งที่แจกไปแล้ว ค่าเริ่มต้นคือปิด',
+        'settings.autoStyle.hint': 'เมื่อเปิด ทุกเซสชันที่สร้างใหม่จะได้สีจากชุดสีในตัว และพื้นที่ทำงานใหม่จะได้ไอคอนด้วย สล็อตคงที่ 13 ช่องจะถูกสุ่มแบบสลับพร้อมหลีกเลี่ยงสีที่เพิ่งใช้ แต่ละช่องมีสองสี — สีเข้มสำหรับธีมสว่างและสีอ่อนสำหรับธีมมืด — และทุกสีมีคอนทราสต์ ≥4.5 (AA สำหรับข้อความทั่วไป) บนพื้นของธีมนั้น เมื่อสลับธีมช่องเดิมจะถูกระบายสีใหม่ให้อัตโนมัติ มีผลเฉพาะรายการที่สร้างหลังเปิดใช้ แถวที่คุณตั้งค่าเองจะไม่ถูกเขียนทับ และการปิดจะไม่เรียกคืนสิ่งที่แจกไปแล้ว ค่าเริ่มต้นคือปิด',
         'settings.appearance': 'รูปลักษณ์เริ่มต้น',
         'settings.appearance.hint': 'แถวที่ยังไม่ได้กำหนดเองจะใช้รูปลักษณ์นี้ เส้นขอบตัวอักษรเปิดไว้เป็นค่าเริ่มต้น — บนภาพพื้นหลัง ตัวอักษรที่ไม่มีเส้นขอบมักอ่านยาก เว้นสีว่างไว้เพื่อตามธีม',
         'settings.appearance.reset': 'คืนค่ารูปลักษณ์เริ่มต้น',
@@ -2508,7 +2508,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "Oturum satırı düğmeleri",
         'settings.rowActions.hint': "Üzerine gelince satır sonunda sabitle / arşivle hızlı düğmelerini gösterir, resmî satırlarla aynı. Kapalı: bu eylemler yalnızca menüde kalır. Varsayılan açık.",
         'settings.autoStyle': 'Yeni öğeler için otomatik renk ve simge',
-        'settings.autoStyle.hint': 'Açıkken yeni oluşturulan her oturuma yerleşik paletten bir renk, her yeni çalışma alanına ayrıca bir simge atanır. On üç renk karıştırma ve son kullanılanları atlama yöntemiyle çekilir. Her renk açık ve koyu zeminde ≥3,0 kontrast korur (WCAG grafik/büyük metin eşiği); normal metin için AA 4,5 ister ve bu palet bunu karşılamaz — mevcut elle paletiyle aynı seviyede (daha zayıf beş eski renk çıkarıldı). Yalnızca açtıktan sonra oluşturulan öğeler etkilenir; elle biçimlendirdiğiniz satırlar hiçbir zaman üzerine yazılmaz ve kapatmak verilmiş stilleri geri almaz. Varsayılan olarak kapalı.',
+        'settings.autoStyle.hint': 'Açıkken yeni oluşturulan her oturuma yerleşik paletten bir renk, her yeni çalışma alanına ayrıca bir simge atanır. On üç sabit yuva karıştırma ve son kullanılanları atlama yöntemiyle çekilir. Her yuvanın iki rengi vardır — açık tema için daha koyu, koyu tema için daha açık — ve her biri kendi temasının zemininde ≥4,5 kontrast (normal metin için AA) sağlar; tema değiştiğinde aynı yuva otomatik olarak yeniden renklendirilir. Yalnızca açtıktan sonra oluşturulan öğeler etkilenir; elle biçimlendirdiğiniz satırlar hiçbir zaman üzerine yazılmaz ve kapatmak verilmiş stilleri geri almaz. Varsayılan olarak kapalı.',
         'settings.appearance': 'Varsayılan görünüm',
         'settings.appearance.hint': 'Özel olarak uyarlanmamış satırlar bu görünümü kullanır; metin konturu varsayılan olarak açıktır — arka plan görseli üzerinde kontursuz metin çoğu zaman okunmaz. Rengi boş bırakırsanız temayı izler.',
         'settings.appearance.reset': 'Varsayılan görünüme dön',
@@ -2658,7 +2658,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "Nút hover dòng phiên",
         'settings.rowActions.hint': "Hiện nút nhanh ghim / lưu trữ ở cuối dòng khi di chuột, giống các dòng chính thức. Tắt: các thao tác này chỉ còn trong menu. Bật theo mặc định.",
         'settings.autoStyle': 'Tự động tô màu và biểu tượng cho mục mới',
-        'settings.autoStyle.hint': 'Khi bật, mỗi phiên mới nhận một màu từ bảng màu tích hợp và mỗi không gian làm việc mới còn nhận thêm biểu tượng. Mười ba màu được rút theo cách xáo trộn và tránh các màu vừa dùng. Mỗi màu giữ độ tương phản ≥3,0 trên cả nền sáng và nền tối (ngưỡng WCAG cho đồ họa/chữ lớn); AA cho chữ thường cần 4,5 và bảng màu này chưa đạt — ngang mức bảng màu thủ công hiện có (năm màu cũ yếu hơn đã bị loại). Chỉ những mục tạo sau khi bật mới bị ảnh hưởng; hàng bạn tự tô màu không bao giờ bị ghi đè, và tắt đi không thu hồi những gì đã gán. Mặc định tắt.',
+        'settings.autoStyle.hint': 'Khi bật, mỗi phiên mới nhận một màu từ bảng màu tích hợp và mỗi không gian làm việc mới còn nhận thêm biểu tượng. Mười ba ô cố định được rút theo cách xáo trộn và tránh các màu vừa dùng. Mỗi ô có hai màu — đậm hơn cho giao diện sáng và nhạt hơn cho giao diện tối — và mỗi màu đạt độ tương phản ≥4,5 (AA cho chữ thường) trên nền của giao diện tương ứng; khi đổi giao diện, chính ô đó được tô lại tự động. Chỉ những mục tạo sau khi bật mới bị ảnh hưởng; hàng bạn tự tô màu không bao giờ bị ghi đè, và tắt đi không thu hồi những gì đã gán. Mặc định tắt.',
         'settings.appearance': 'Giao diện mặc định',
         'settings.appearance.hint': 'Những hàng chưa tùy chỉnh riêng dùng giao diện này; viền chữ mặc định bật — trên ảnh nền, chữ không viền thường khó đọc. Để trống màu để theo chủ đề.',
         'settings.appearance.reset': 'Khôi phục giao diện mặc định',
@@ -2808,7 +2808,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "會話行懸停按鈕",
         'settings.rowActions.hint': "懸停會話行時在行尾顯示置頂 / 封存快捷按鈕,與官方行保持一致;關閉後這些動作只保留在選單裡。預設開啟。",
         'settings.autoStyle': '新增項目自動配色',
-        'settings.autoStyle.hint': '開啟後,新開嘅會話會自動分到一個內置色,新工作區仲會分到一個圖示;顏色由固定 13 色調色板以「洗牌 + 近期去重」抽出,連續新增唔會撞色。每個色喺淺色同深色背景嘅對比度都 ≥3.0(WCAG 圖形/大字號門檻);正文級 AA 要 4.5,本池未達,同現有手動色板同級(已剔走 5 個對比度更低嘅舊色)。只影響開啟之後新開嘅項;你手動設定過外觀嘅行永不被覆蓋,熄咗開關亦唔會回收已分配嘅樣式。預設關閉。',
+        'settings.autoStyle.hint': '開啟後,新開嘅會話會自動分到一個內置色,新工作區仲會分到一個圖示;顏色由 13 個固定槽位以「洗牌 + 近期去重」抽出,連續新增唔會撞色。每個槽位有兩隻色 —— 淺色主題用深色系、深色主題用亮色系 —— 兩隻喺各自主題嘅背景上對比度都 ≥4.5,達到 WCAG 正文級 AA;換主題會自動為同一個槽位換色,唔使重新設定。只影響開啟之後新開嘅項;你手動設定過外觀嘅行永不被覆蓋,熄咗開關亦唔會回收已分配嘅樣式。預設關閉。',
         'settings.appearance': '預設外觀',
         'settings.appearance.hint': '未單獨自訂過嘅行會用呢套外觀;字體描邊預設開啟——有背景圖嗰陣唔描邊嘅字經常睇唔清。字體顏色留空就會跟主題。',
         'settings.appearance.reset': '還原預設外觀',
@@ -2958,7 +2958,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "會話行懸停按鈕",
         'settings.rowActions.hint': "懸停會話行時在行尾顯示置頂 / 歸檔快捷按鈕,與官方行保持一致;關閉後這些動作只保留在選單裡。預設開啟。",
         'settings.autoStyle': '新增項目自動配色',
-        'settings.autoStyle.hint': '開啟後,新開嘅會話會自動分到一個內置色,新工作區仲會分到一個圖示;顏色由固定 13 色調色板以「洗牌 + 近期去重」抽出,連續新增唔會撞色。每個色喺淺色同深色背景嘅對比度都 ≥3.0(WCAG 圖形/大字號門檻);正文級 AA 要 4.5,本池未達,同現有手動色板同級(已剔走 5 個對比度更低嘅舊色)。只影響開啟之後新開嘅項;你手動設定過外觀嘅行永不被覆蓋,熄咗開關亦唔會回收已分配嘅樣式。預設關閉。',
+        'settings.autoStyle.hint': '開啟後,新開嘅會話會自動分到一個內置色,新工作區仲會分到一個圖示;顏色由 13 個固定槽位以「洗牌 + 近期去重」抽出,連續新增唔會撞色。每個槽位有兩隻色 —— 淺色主題用深色系、深色主題用亮色系 —— 兩隻喺各自主題嘅背景上對比度都 ≥4.5,達到 WCAG 正文級 AA;換主題會自動為同一個槽位換色,唔使重新設定。只影響開啟之後新開嘅項;你手動設定過外觀嘅行永不被覆蓋,熄咗開關亦唔會回收已分配嘅樣式。預設關閉。',
         'settings.appearance': '預設外觀',
         'settings.appearance.hint': '未單獨自訂過嘅行會用呢套外觀;字體描邊預設開啟——有背景圖嗰陣唔描邊嘅字經常睇唔清。字體顏色留空就會跟主題。',
         'settings.appearance.reset': '還原預設外觀',
@@ -3108,7 +3108,7 @@ window.__ModuleLoader__.load({
         'settings.rowActions': "會話列懸停按鈕",
         'settings.rowActions.hint': "懸停會話列時在列尾顯示釘選 / 封存快捷按鈕,與官方列保持一致;關閉後這些動作只保留在選單裡。預設開啟。",
         'settings.autoStyle': '新增項目自動配色與圖示',
-        'settings.autoStyle.hint': '開啟後,新建立的工作階段會自動分到一個內建色,新工作區還會分到一個圖示;顏色從固定 13 色調色盤以「洗牌 + 近期去重」抽出,連續新增不會撞色。每個色在淺色與深色背景的對比度都 ≥3.0(WCAG 圖形/大字號門檻);正文級 AA 需要 4.5,本池未達,與現有手動色盤同級(已排除 5 個對比度更低的舊色)。只影響開啟之後新建的項目;你手動設定過外觀的列永遠不會被覆蓋,關閉開關也不會回收已分配的樣式。預設關閉。',
+        'settings.autoStyle.hint': '開啟後,新建立的工作階段會自動分到一個內建色,新工作區還會分到一個圖示;顏色從 13 個固定槽位以「洗牌 + 近期去重」抽出,連續新增不會撞色。每個槽位各有兩色 —— 淺色主題用深色系、深色主題用亮色系 —— 兩色在各自主題背景下對比度都 ≥4.5,達到 WCAG 正文級 AA;切換主題時同一個槽位會自動換色,不需重新設定。只影響開啟之後新建的項目;你手動設定過外觀的列永遠不會被覆蓋,關閉開關也不會回收已分配的樣式。預設關閉。',
         'settings.appearance': '預設外觀',
         'settings.appearance.hint': '未個別自訂過的列會使用這套外觀;字型外框預設開啟——在背景圖片上沒有外框的文字常常看不清楚。字型顏色留空即跟隨佈景主題。',
         'settings.appearance.reset': '還原預設外觀',
@@ -4869,6 +4869,70 @@ window.__ModuleLoader__.load({
       .map(n => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0'))
       .join('')
 
+    /* ---------- auto palette slots + theme resolution (v0.25.0, pure) ---------- */
+    /**
+     * Two palettes, one slot table — the "auto color" of a row is stored as the
+     * SLOT TOKEN (`auto:3`), never as a hex. Rendering resolves it against the
+     * live theme, so a theme flip re-colours every auto-assigned row with no
+     * migration, no rewrite of stored data and no cross-device mismatch (the
+     * host settings copy carries the token, and each device paints its own
+     * theme). Manual colours stay plain hex and are never touched.
+     *
+     * APPEND-ONLY, like ICON_CHOICES / ICON_ALIASES: a stored token must keep
+     * resolving forever, so never reorder or delete a slot (an out-of-range index
+     * clamps to slot 0 rather than rendering nothing).
+     *
+     * Contrast rule: each slot's LIGHT colour clears WCAG **4.5 (normal-text AA)**
+     * against the measured light row surface, and each slot's DARK colour clears
+     * 4.5 against the measured dark row surface. Backgrounds are not guesses —
+     * they were read off a live instance (see CHANGELOG v0.25.0): light
+     * `--dsw-alias-bg-base` #ffffff with a hover/current overlay around #f7f8fa,
+     * dark base #151517 with tokens up to #2c2c2e. The pairs below are computed
+     * against the CONSERVATIVE ends (#ebedf0 light, #2c2c2e dark), which is why
+     * the numbers in the comments sit above 5.0 — on the real surfaces they are
+     * higher still. Change a hex ⇒ re-run the contrast test in tests/smoke.mjs.
+     */
+    const AUTO_COLOR_SLOTS = [
+      { name: 'red', light: '#c40d00', dark: '#ff7369' }, // h=4   5.26 / 5.25
+      { name: 'amber', light: '#965000', dark: '#f08000' }, // h=32  5.20 / 5.17
+      { name: 'lime', light: '#496e00', dark: '#74ad00' }, // h=80  5.10 / 5.12
+      { name: 'green', light: '#007330', dark: '#00b54b' }, // h=145 5.12 / 5.12
+      { name: 'teal', light: '#006e65', dark: '#00b0a1' }, // h=175 5.24 / 5.13
+      { name: 'cyan', light: '#006a85', dark: '#00abd6' }, // h=192 5.27 / 5.17
+      { name: 'sky', light: '#0065ad', dark: '#24a4ff' }, // h=205 5.17 / 5.20
+      { name: 'blue', light: '#0055e8', dark: '#669eff' }, // h=218 5.17 / 5.24
+      { name: 'indigo', light: '#5938ff', dark: '#a28fff' }, // h=250 5.21 / 5.25
+      { name: 'violet', light: '#8700fc', dark: '#c480ff' }, // h=272 5.21 / 5.23
+      { name: 'magenta', light: '#b50097', dark: '#ff59e3' }, // h=310 5.25 / 5.17
+      { name: 'pink', light: '#c40052', dark: '#ff69a7' }, // h=335 5.16 / 5.20
+      { name: 'grey', light: '#5e6268', dark: '#9b9ea4' }, // h=220 5.23 / 5.19
+    ]
+    /** The values the shuffle bag draws — slot tokens, not colours. */
+    const AUTO_COLOR_TOKENS = AUTO_COLOR_SLOTS.map((slot, index) => 'auto:' + index)
+    const AUTO_TOKEN_RE = /^auto:(\d+)$/
+    const isAutoColorToken = (value) => typeof value === 'string' && AUTO_TOKEN_RE.test(value)
+    /**
+     * Token → hex for one theme. `dark` is explicit so the same function serves
+     * rendering (live flag), tests (both themes) and the pickers (preview).
+     */
+    const resolveAutoColor = (token, dark) => {
+      const match = AUTO_TOKEN_RE.exec(typeof token === 'string' ? token : '')
+      if (!match) return ''
+      const index = Number(match[1])
+      // Append-only table: an unknown index clamps to slot 0 instead of painting
+      // an invalid CSS colour (a row must never end up colourless by accident).
+      const slot = AUTO_COLOR_SLOTS[index] || AUTO_COLOR_SLOTS[0]
+      if (!slot) return ''
+      return dark === true ? slot.dark : slot.light
+    }
+    /** Any stored colour value → the hex to paint: tokens resolve, hexes pass. */
+    const resolveColorValue = (value, dark) => {
+      if (typeof value !== 'string' || value === '') return ''
+      return isAutoColorToken(value) ? resolveAutoColor(value, dark === undefined ? autoThemeDarkNow() : dark) : value
+    }
+    /* ---------- end of the auto palette slot block ---------- */
+
+
     /* ------------------- appearance: defaults + outline ------------------- */
 
     // Text outline. Width and color are DERIVED, never hand-picked: an outline
@@ -4950,7 +5014,8 @@ window.__ModuleLoader__.load({
         ? appearance.strokeColor
         : DEFAULT_APPEARANCE.strokeColor
       if (picked === STROKE_AUTO) {
-        const rgb = appearance.color ? colorToRgb(appearance.color) : null
+        const fontColor = resolveColorValue(appearance.color)
+        const rgb = fontColor ? colorToRgb(fontColor) : null
         return rgb ? contrastStrokeColor(rgb) : STROKE_FALLBACK
       }
       return colorToRgb(picked) ? picked : DEFAULT_APPEARANCE.strokeColor
@@ -5367,47 +5432,55 @@ window.__ModuleLoader__.load({
       })
     })()
 
-    /* ============== auto appearance for NEW items (v0.24.0) ============== */
+    /* ========= theme-aware auto appearance for NEW items (v0.25.0) ========= */
 
     /**
-     * Built-in palette of the "auto color + icon for new items" toggle
-     * (prefs.autoStyle, OFF by default). The row color is the row's TEXT color
-     * (rowStyleOf → style.color) plus the default text outline, so every entry
-     * has to stay visible on the light AND the dark sidebar — a decorative
-     * accent that only works on one theme would make the name hard to read.
+     * Live light/dark signal. The shipped theme runtime toggles the BOOLEAN
+     * attribute `data-ds-dark-theme` on <body>
+     * (packages/client/ui-theme/src/boot-theme.ts), so that attribute — not a
+     * luminance guess and not `prefers-color-scheme` (the host resolves `system`
+     * itself and may disagree with the OS) — is the authority.
      *
-     * Rule: WCAG contrast ≥ 3.0 against #ffffff AND against #1c1c1e — the
-     * graphics / large-text threshold, which is the usable bar in both themes.
-     * Normal-text AA (4.5) is NOT reached by any entry on both backgrounds, and
-     * cannot be: a single fixed hex has to clear both pure white and near black,
-     * and those two demands pull luminance in opposite directions. This pool is
-     * therefore the same tier as the shipped manual swatches (four of them are
-     * in it verbatim, and the five that were weaker than 3.0 on white are
-     * excluded), not an AA-grade text palette. Copy must say ≥3.0, never "AA".
-     *
-     * Four entries are the existing custom-appearance swatches verbatim
-     * (#f85149 / #5b8def / #a371f7 / #6e7681). The five swatches that only
-     * clear ~2.0–2.8 on white (#3fb950 / #d29922 / #39c5cf / #ff9f45 /
-     * #ec6cb9) are represented by their same-hue, one-step-darker siblings
-     * (#46a758 / #d97706 / #0891b2 and the pink/violet neighbours), so the
-     * palette keeps the shipped style while lifting every entry over 3.0 on both
-     * backgrounds. One dozen-plus distinct hues, fixed in code — never generated.
+     * A module-level store lets every row re-render on a flip without threading a
+     * prop through the tree, and it keeps the pure resolvers below testable:
+     * they take the flag as an argument.
      */
-    const AUTO_COLOR_POOL = [
-      '#f85149', // 红 / red       (existing swatch)  3.35 / 5.08
-      '#d97706', // 琥珀 / amber                    3.19 / 5.34
-      '#65a30d', // 青柠 / lime                     3.09 / 5.51
-      '#46a758', // 绿 / green                      3.03 / 5.61
-      '#0d9488', // 蓝绿 / teal                     3.74 / 4.54
-      '#0891b2', // 青 / cyan                       3.68 / 4.62
-      '#0090ff', // 天蓝 / sky                      3.26 / 5.21
-      '#5b8def', // 蓝 / blue        (existing swatch)  3.23 / 5.27
-      '#7c66dc', // 靛 / indigo                     4.38 / 3.88
-      '#a371f7', // 紫 / violet      (existing swatch)  3.35 / 5.07
-      '#d6409f', // 品红 / magenta                  4.12 / 4.13
-      '#e93d82', // 粉 / pink                       3.85 / 4.42
-      '#6e7681', // 灰 / grey        (existing swatch)  4.59 / 3.70
-    ]
+    let autoThemeDark = false
+    const autoThemeListeners = new Set()
+    let autoThemeObserver = null
+    const readThemeDark = () => {
+      try { return document.body.hasAttribute('data-ds-dark-theme') === true } catch (error) { return false }
+    }
+    // getSnapshot must stay cheap and stable: a boolean read per render.
+    const autoThemeDarkNow = () => {
+      const next = readThemeDark()
+      if (next !== autoThemeDark) autoThemeDark = next
+      return autoThemeDark
+    }
+    const subscribeAutoTheme = (listener) => {
+      autoThemeListeners.add(listener)
+      if (autoThemeObserver === null) {
+        autoThemeDarkNow()
+        try {
+          autoThemeObserver = new MutationObserver(() => {
+            const next = readThemeDark()
+            if (next === autoThemeDark) return
+            autoThemeDark = next
+            for (const fn of [...autoThemeListeners]) {
+              try { fn() } catch (error) { /* a listener must never break the flip */ }
+            }
+          })
+          autoThemeObserver.observe(document.body, { attributes: true, attributeFilter: ['data-ds-dark-theme'] })
+        } catch (error) { autoThemeObserver = undefined }
+      }
+      return () => { autoThemeListeners.delete(listener) }
+    }
+    /** Subscribe a component to the theme flip (rows repaint with the other pool). */
+    const useAutoThemeDark = () => {
+      if (typeof React.useSyncExternalStore !== 'function') return autoThemeDarkNow()
+      return React.useSyncExternalStore(subscribeAutoTheme, autoThemeDarkNow, autoThemeDarkNow)
+    }
+
 
     /**
      * Icon pool of the same toggle: names from the EXISTING candidate list
@@ -5475,7 +5548,9 @@ window.__ModuleLoader__.load({
 
     /** What this host can actually render, resolved once (the icon set is fixed per page). */
     const AUTO_ICON_CHOICES = AUTO_ICON_POOL.filter((name) => resolveIconName(name) !== '')
-    const autoStyler = createAutoStyler(AUTO_COLOR_POOL, AUTO_ICON_CHOICES)
+    // The bag draws SLOT TOKENS (not colours): the same draw stays valid in both
+    // themes, so a theme flip never invalidates the recent-draw window.
+    const autoStyler = createAutoStyler(AUTO_COLOR_TOKENS, AUTO_ICON_CHOICES)
 
     /**
      * Appearance controls shared by the per-row dialog and the settings card's
@@ -5488,7 +5563,13 @@ window.__ModuleLoader__.load({
      */
     function AppearanceControls({ value, onChange, allowIcon, t }) {
       const appearance = readAppearance(value)
-      const color = appearance.color || ''
+      // Subscribe to the theme flip: a row may carry an `auto:N` token, and the
+      // controls must show/preview the colour that token paints right now.
+      useAutoThemeDark()
+      // Displayed/every control below uses the RESOLVED hex; the raw value stays
+      // in the draft, so committing without touching the colour keeps the token
+      // (and with it the theme-following behaviour).
+      const color = resolveColorValue(appearance.color || '')
       const glow = appearance.glow
       const weight = appearance.weight
       const shadow = appearance.shadow
@@ -6734,7 +6815,9 @@ window.__ModuleLoader__.load({
       const appearanceOf = (key) => mergeAppearance(defaultAppearance, styleEntry(key))
       const rowStyleOf = (key) => {
         const appearance = appearanceOf(key)
-        const color = appearance.color || ''
+        // `auto:N` tokens resolve against the LIVE theme here, which is what makes
+        // a theme flip re-colour every auto-assigned row.
+        const color = resolveColorValue(appearance.color || '')
         const glow = Number(appearance.glow) || 0
         const weight = Number(appearance.weight) || 0
         const shadow = appearance.shadow === true

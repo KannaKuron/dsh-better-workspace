@@ -1568,6 +1568,26 @@ test('auto style: fixed palette, distinct hues, readable on both themes (v0.24.0
   // The existing custom-appearance swatches lead the pool (reuse, not a new style).
   const existing = ['#5b8def', '#a371f7', '#f85149', '#6e7681']
   for (const hex of existing) assert.ok(AUTO_COLOR_POOL.includes(hex), 'existing swatch dropped: ' + hex)
+  // The 3.0 floor is the WCAG graphics / large-text threshold, NOT normal-text
+  // AA: the row label is 13px regular, so AA would ask 4.5. No single fixed hex
+  // can clear both pure white and near black at 4.5 — this assertion documents
+  // that limit so nobody "fixes" the copy into an AA claim (or the pool into
+  // something worse). Copy must say ≥3.0.
+  for (const hex of AUTO_COLOR_POOL) {
+    assert.ok(Math.min(contrastRatio(hex, '#ffffff'), contrastRatio(hex, '#1c1c1e')) < 4.5,
+      hex + ' unexpectedly clears normal-text AA on both backgrounds; update the copy claim if so')
+  }
+  // The user-facing copy states the honest numbers, and never promises AA.
+  const copyText = read('src/client.js')
+  const zhHintStart = copyText.indexOf("'settings.autoStyle.hint':")
+  const zhHint = copyText.slice(zhHintStart, zhHintStart + 400)
+  assert.match(zhHint, /≥3\.0/, 'the hint must state the 3.0 threshold')
+  assert.match(zhHint, /AA 需要 4\.5/, 'the hint must state that normal-text AA (4.5) is not reached')
+  const enHintStart = copyText.indexOf("'settings.autoStyle.hint':", copyText.indexOf('const en = {'))
+  const enHint = copyText.slice(enHintStart, enHintStart + 500)
+  assert.match(enHint, /≥3\.0/, 'the EN hint must state the 3.0 threshold')
+  assert.match(enHint, /AA asks for 4\.5/, 'the EN hint must state the AA gap')
+  assert.doesNotMatch(zhHint, /保证可读/, 'the old over-promising wording must not come back')
   // Icons come from the existing candidate list — never a new icon set.
   const text = read('src/client.js')
   const choices = text.slice(text.indexOf('const ICON_CHOICES = ['), text.indexOf('const ICON_PICKER_CHOICES'))
@@ -1633,8 +1653,15 @@ test('auto style: opt-in switch, blank-only sessions, settled-inventory workspac
   assert.match(text, /'aria-checked': autoStyle,/)
   assert.match(text, /onClick: \(\) => \{ setPref\('autoStyle', !autoStyle\) \}/)
   // Sessions are recognized as new ONLY while blank (a pre-existing row is
-  // never blank), so a reload can never restyle the inventory.
+  // never blank), AND only after the first authoritative session snapshot was
+  // seeded: a blank row that already existed at that point is recorded without
+  // being styled, so "only items created after you turn it on" holds exactly
+  // (an independent reviewer caught the missing seed as a slight deviation).
   assert.match(text, /summary\.blank !== true \|\| seen\.sessions\.has\(id\)/)
+  assert.match(text, /if \(list && list\.byId && list\.phase !== 'pending'\) \{/)
+  assert.match(text, /if \(!seen\.sessionsSeeded\) \{ seen\.sessions\.add\(id\); continue \}/)
+  assert.match(text, /seen\.sessionsSeeded = true/)
+  assert.match(text, /sessionsSeeded: false, seeded: false,/)
   // Workspaces only after the first authoritative inventory is recorded.
   assert.match(text, /if \(phase === 'ready' && workspaceStreamState !== 'loading'\) \{/)
   assert.match(text, /if \(!seen\.seeded\) \{ seen\.workspaces\.add\(id\); continue \}/)

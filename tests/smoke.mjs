@@ -1660,7 +1660,16 @@ test('auto style: opt-in switch, blank-only sessions, settled-inventory workspac
   assert.match(text, /summary\.blank !== true \|\| seen\.sessions\.has\(id\)/)
   assert.match(text, /if \(list && list\.byId && list\.phase !== 'pending'\) \{/)
   assert.match(text, /if \(!seen\.sessionsSeeded\) \{ seen\.sessions\.add\(id\); continue \}/)
-  assert.match(text, /seen\.sessionsSeeded = true/)
+  // The seed flag must NOT be consumed by an incomplete intermediate snapshot:
+  // a cold-started Host can answer `ready` with an empty list while the real
+  // rows are still arriving, and a flag set there styles every pre-existing row
+  // that shows up next (one cold start in eight, caught by an independent
+  // acceptance run). Both sides therefore set the flag only when the snapshot
+  // actually registered rows.
+  assert.match(text, /if \(sessionRowsSeen\) seen\.sessionsSeeded = true/)
+  assert.match(text, /if \(workspaceRowsSeen\) seen\.seeded = true/)
+  assert.doesNotMatch(text, /^\s*seen\.sessionsSeeded = true\s*$/m, 'the session seed flag must not be set unconditionally')
+  assert.doesNotMatch(text, /^\s*seen\.seeded = true\s*$/m, 'the workspace seed flag must not be set unconditionally')
   assert.match(text, /sessionsSeeded: false, seeded: false,/)
   // Workspaces only after the first authoritative inventory is recorded.
   assert.match(text, /if \(phase === 'ready' && workspaceStreamState !== 'loading'\) \{/)
@@ -1686,4 +1695,36 @@ test('auto style: opt-in switch, blank-only sessions, settled-inventory workspac
   assert.ok(zhBlock.includes("'settings.autoStyle.hint':"), 'zh hint missing')
   assert.match(text, /t\('settings\.autoStyle'\)/)
   assert.match(text, /t\('settings\.autoStyle\.hint'\)/)
+})
+
+/**
+ * The honest-copy guard covers ALL 21 shipped languages: the previous wording
+ * ("都保证可读" / "stays readable") over-promised, because 3.0 is the WCAG
+ * graphics / large-text threshold while the 13px regular row label is normal
+ * text (AA = 4.5). Matching stays language-agnostic on purpose: word order and
+ * decimal separator differ (ja 「コントラスト 3.0 以上」, ko 「대비 3.0 이상」,
+ * de/fr use 3,0), and a strict pattern once mis-flagged correct translations.
+ */
+test('auto style: all 21 hints state the honest contrast claim, never AA (v0.24.0)', () => {
+  const text = read('src/client.js')
+  const hints = [...text.matchAll(/'settings\.autoStyle\.hint':\s*(?:'([^']*)'|"([^"]*)")/g)]
+    .map((match) => match[1] !== undefined ? match[1] : match[2])
+  const locales = [...text.matchAll(/\/\* locale: ([\w-]+) \*\//g)].map((match) => match[1])
+  assert.equal(locales.length, 19, 'the LOCALES table must still carry 19 marked languages')
+  assert.equal(hints.length, 21, 'expected exactly one hint per shipped language (zh + en + 19)')
+  hints.forEach((hint, index) => {
+    const tag = index === 0 ? 'zh' : index === 1 ? 'en' : locales[index - 2]
+    assert.ok(hint.length > 60, tag + ': hint looks truncated')
+    // Threshold token: both decimal separators, any word order.
+    assert.match(hint, /3[.,]0/, tag + ': the ≥3.0 threshold must be stated')
+    // The AA caveat: the AA token and the 4.5 requirement, in whatever order the
+    // language puts them.
+    assert.match(hint, /AA/, tag + ': the AA caveat must be stated')
+    assert.match(hint, /4[.,]5/, tag + ': the 4.5 AA requirement must be stated')
+  })
+  // The claim must never read as "AA compliant" in any language, and the two
+  // wordings this test was written to prevent must not come back.
+  for (const hint of hints) assert.doesNotMatch(hint, /AA\s*(达标|通过|compliant|conforme|erfüllt|準拠|준수)/i)
+  assert.doesNotMatch(hints[0], /保证可读/, 'the old zh over-promising wording must not come back')
+  assert.doesNotMatch(hints[1], /stays readable/, 'the old EN over-promising wording must not come back')
 })

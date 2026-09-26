@@ -6372,29 +6372,41 @@ window.__ModuleLoader__.load({
         }
         const seen = autoSeenRef.current
         const pending = []
-        // Sessions: the FIRST authoritative session snapshot seeds the ledger —
-        // a blank row that already existed when the toggle (or this mount)
-        // started is pre-existing, so it is recorded WITHOUT being styled. That
-        // makes "only items created after you turn it on" exact, and it is the
-        // same shape as the workspace seeding below. `phase` is
-        // 'pending' | 'ready' in the Host contract; an older host without the
-        // field simply counts as ready.
+        // Sessions: the FIRST authoritative session snapshot that actually
+        // carries rows seeds the ledger — a blank row that already existed when
+        // the toggle (or this mount) started is pre-existing, so it is recorded
+        // WITHOUT being styled. That makes "only items created after you turn it
+        // on" exact, and it is the same shape as the workspace seeding below.
+        //
+        // The seed flag is set only when a snapshot really registered something:
+        // a cold-started Host can answer `ready` with an EMPTY list while the
+        // real rows are still on their way, and a flag consumed there would style
+        // every pre-existing row that shows up next (observed once in eight cold
+        // starts). An intermediate snapshot therefore leaves the flag alone and
+        // the next populated one seeds instead. `phase` is 'pending' | 'ready' in
+        // the Host contract; an older host without the field counts as ready.
         if (list && list.byId && list.phase !== 'pending') {
+          let sessionRowsSeen = false
           for (const id of Object.keys(list.byId)) {
             const summary = list.byId[id]
             if (!summary || summary.blank !== true || seen.sessions.has(id)) continue
+            sessionRowsSeen = true
             if (!seen.sessionsSeeded) { seen.sessions.add(id); continue }
             seen.sessions.add(id)
             if (!autoStyle || stylingMap['session:' + id]) continue
             const color = autoStyler.nextColor()
             if (color) pending.push(['session:' + id, { color }])
           }
-          seen.sessionsSeeded = true
+          if (sessionRowsSeen) seen.sessionsSeeded = true
         }
+        // Workspaces: same rule — the first authoritative inventory that actually
+        // has rows seeds; an empty `ready` snapshot must not consume the flag.
         if (phase === 'ready' && workspaceStreamState !== 'loading') {
+          let workspaceRowsSeen = false
           for (const workspace of items || []) {
             const id = workspace ? workspace.workspaceId : undefined
             if (id === undefined || id === null) continue
+            workspaceRowsSeen = true
             if (!seen.seeded) { seen.workspaces.add(id); continue }
             if (seen.workspaces.has(id)) continue
             seen.workspaces.add(id)
@@ -6408,7 +6420,7 @@ window.__ModuleLoader__.load({
             if (icon) value.icon = icon
             if (Object.keys(value).length > 0) pending.push(['workspace:' + id, value])
           }
-          seen.seeded = true
+          if (workspaceRowsSeen) seen.seeded = true
         }
         // One batched write: local store + the host copy in a single update.
         if (pending.length > 0) shared.setStylingMany(pending)

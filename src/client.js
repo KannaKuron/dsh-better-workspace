@@ -6418,6 +6418,13 @@ window.__ModuleLoader__.load({
       // Auto color + icon for new items (v0.24.0). Default OFF: absent key =
       // off, so every existing snapshot keeps its behavior untouched.
       const autoStyle = prefsMap.autoStyle === true
+      // Subscribe the ROW renderer to the theme flip (v0.25.0 P1): resolving a
+      // stored `auto:N` token reads the live theme, but a read alone never
+      // repaints — without this subscription the rows kept the light pool after
+      // the Host switched to dark, so normal-text AA was broken on the switch
+      // path (measured 2.49). The value is passed explicitly into the resolver
+      // below so the colour and the outline pole come from one snapshot.
+      const autoDarkTheme = useAutoThemeDark()
       // Workspace stream state: a `ready` phase with a settled stream is the
       // first authoritative inventory — the point where "everything seen so
       // far is pre-existing" can be recorded once (older hosts without the
@@ -6816,8 +6823,10 @@ window.__ModuleLoader__.load({
       const rowStyleOf = (key) => {
         const appearance = appearanceOf(key)
         // `auto:N` tokens resolve against the LIVE theme here, which is what makes
-        // a theme flip re-colour every auto-assigned row.
-        const color = resolveColorValue(appearance.color || '')
+        // a theme flip re-colour every auto-assigned row. `autoDarkTheme` is the
+        // subscribed snapshot, passed explicitly: reading the DOM would give the
+        // same value, but only the subscription guarantees the repaint.
+        const color = resolveColorValue(appearance.color || '', autoDarkTheme)
         const glow = Number(appearance.glow) || 0
         const weight = Number(appearance.weight) || 0
         const shadow = appearance.shadow === true

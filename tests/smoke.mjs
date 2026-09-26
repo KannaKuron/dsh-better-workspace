@@ -1621,8 +1621,21 @@ test('auto style: two theme palettes, each ≥4.5 (normal-text AA) on its own ba
   assert.equal(resolveColorValue('', false), '')
   assert.equal(isAutoColorToken('auto:3'), true)
   assert.equal(isAutoColorToken('#c40d00'), false)
-  // Icons come from the existing candidate list — never a new icon set.
+  // The theme subscription must actually be WIRED into the row renderer
+  // (v0.25.0 P1): resolving an `auto:N` token reads the live theme, but a read
+  // alone never repaints. Without this subscription the exact bug shipped —
+  // colours right on load and after any unrelated re-render, yet stale for the
+  // whole session right after a theme switch (measured 2.49 on the switch path).
   const text = read('src/client.js')
+  const browserStart = text.indexOf('function BetterBrowser(props) {')
+  assert.ok(browserStart !== -1, 'BetterBrowser not found')
+  const rowStyleStart = text.indexOf('const rowStyleOf = (key) => {', browserStart)
+  assert.ok(rowStyleStart > browserStart, 'rowStyleOf not found inside BetterBrowser')
+  assert.match(text.slice(browserStart, rowStyleStart), /const autoDarkTheme = useAutoThemeDark\(\)/,
+    'BetterBrowser must subscribe to the theme flip (useAutoThemeDark), or a switch never repaints the rows')
+  assert.match(text, /const color = resolveColorValue\(appearance\.color \|\| '', autoDarkTheme\)/,
+    'the row colour must be resolved with the SUBSCRIBED theme, not a DOM read')
+  // Icons come from the existing candidate list — never a new icon set.
   const choices = text.slice(text.indexOf('const ICON_CHOICES = ['), text.indexOf('const ICON_PICKER_CHOICES'))
   assert.ok(AUTO_ICON_POOL.length >= 10, 'icon pool too small: ' + AUTO_ICON_POOL.length)
   for (const name of AUTO_ICON_POOL) {

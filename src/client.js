@@ -99,6 +99,8 @@ window.__ModuleLoader__.load({
       'settings.sessionMenu.hint': "开启时右键点击会话行即可打开操作菜单(包含官方的置顶、归档、停止并归档等);关闭后改为在行尾悬停显示官方样式的 ⋯ 按钮,点击打开同一个菜单。默认开启。",
       'settings.rowActions': "会话行悬停按钮",
       'settings.rowActions.hint': "悬停会话行时在行尾显示置顶 / 归档快捷按钮,与官方行保持一致;关闭后这些动作只保留在菜单里。默认开启。",
+      'settings.autoStyle': '新增项自动配色',
+      'settings.autoStyle.hint': '开启后,新创建的会话会自动分到一个内置色,新工作区还会分到一个图标;颜色从固定的 13 色调色板按「洗牌 + 近期去重」抽取,连续新增不会撞色,浅色与深色主题下都保证可读。只影响开启之后新建的项;你手动设置过外观的行永不被覆盖,关闭开关也不回收已分配的样式。默认关闭。',
       'settings.appearance': '默认外观',
       'settings.appearance.hint': '没有单独自定义过的行使用这套外观;字体描边默认开启——背景画面下不描边文字常常看不清。字体颜色留空即跟随主题。',
       'settings.appearance.reset': '恢复默认外观',
@@ -247,6 +249,8 @@ window.__ModuleLoader__.load({
       'settings.sessionMenu.hint': "On: right-click a session row to open its action menu (including the official pin, archive, and stop-and-archive). Off: the row shows the official-style ⋯ button on hover instead, opening the same menu. On by default.",
       'settings.rowActions': "Session row hover buttons",
       'settings.rowActions.hint': "Show pin / archive quick buttons at the end of a hovered session row, matching the official rows. Off: these actions stay in the menu only. On by default.",
+      'settings.autoStyle': 'Auto color & icon for new items',
+      'settings.autoStyle.hint': 'When on, every newly created session gets a built-in color and every new workspace also gets an icon. Colors come from a fixed 13-color palette drawn with shuffle + recent-dedup, so consecutive items never look alike and names stay readable on light and dark themes. Only items created after you turn it on are touched; rows you styled by hand are never overwritten, and turning it off does not undo what was already assigned. Off by default.',
       'settings.appearance': 'Default appearance',
       'settings.appearance.hint': 'Rows that were never customized use this appearance; the outline is on by default — text without it is often unreadable over a background image. Leave the color empty to follow the theme.',
       'settings.appearance.reset': 'Reset to default',
@@ -403,6 +407,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "عند التفعيل: انقر بزر الفأرة الأيمن على سطر الجلسة لفتح قائمة الإجراءات (بما في ذلك التثبيت والأرشفة الرسمية). عند الإيقاف: يظهر زر ⋯ بأسلوب رسمي عند تمرير المؤشر يفتح القائمة نفسها. مفعّل افتراضياً.",
         'settings.rowActions': "أزرار تمرير سطر الجلسة",
         'settings.rowActions.hint': "إظهار أزرار التثبيت / الأرشفة السريعة في نهاية سطر الجلسة عند تمرير المؤشر، مطابقة للأسطر الرسمية. عند الإيقاف: تبقى هذه الإجراءات في القائمة فقط. مفعّل افتراضياً.",
+        'settings.autoStyle': 'ألوان وأيقونات تلقائية للعناصر الجديدة',
+        'settings.autoStyle.hint': 'عند التفعيل يحصل كل جلسة جديدة على لون من لوحة مدمجة، ويحصل كل مساحة عمل جديدة أيضًا على أيقونة. تُسحب الألوان من 13 لونًا ثابتًا بترتيب عشوائي مع تجنّب التكرار القريب، فلا تتشابه العناصر المتتالية وتبقى الأسماء مقروءة في السمتين الفاتحة والداكنة. يؤثر فقط على العناصر المنشأة بعد التفعيل، ولا يُستبدل أي سطر نسّقته يدويًا، والإيقاف لا يلغي ما تم تعيينه. معطّل افتراضيًا.',
         'settings.appearance': 'المظهر الافتراضي',
         'settings.appearance.hint': 'تستخدم الأسطر غير المخصصة هذا المظهر؛ حدّ النص مفعّل افتراضياً — فبدونه يصعب قراءة النص فوق صورة خلفية. اترك اللون فارغاً لاتباع السمة.',
         'settings.appearance.reset': 'استعادة المظهر الافتراضي',
@@ -551,6 +557,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "Ein: Rechtsklick auf eine Sitzungszeile öffnet das Aktionsmenü (inklusive offiziellem Anheften, Archivieren und Stoppen-und-Archivieren). Aus: beim Daraufzeigen erscheint stattdessen der offizielle ⋯-Knopf am Zeilenende und öffnet dasselbe Menü. Standardmäßig ein.",
         'settings.rowActions': "Sitzungszeilen-Schnellknöpfe",
         'settings.rowActions.hint': "Zeigt beim Daraufzeigen Schnellknöpfe zum Anheften / Archivieren am Zeilenende – wie die offiziellen Zeilen. Aus: diese Aktionen bleiben nur im Menü. Standardmäßig ein.",
+        'settings.autoStyle': 'Automatische Farbe & Symbol für neue Einträge',
+        'settings.autoStyle.hint': 'Wenn aktiviert, erhält jede neu erstellte Sitzung eine Farbe aus einer festen Palette und jeder neue Arbeitsbereich zusätzlich ein Symbol. Die 13 Farben werden gemischt mit Vermeidung der letzten Treffer gezogen, damit aufeinanderfolgende Einträge nicht gleich aussehen und die Namen im hellen wie im dunklen Thema lesbar bleiben. Nur danach erstellte Einträge werden erfasst; manuell gestaltete Zeilen werden nie überschrieben, und Ausschalten macht Zuweisungen nicht rückgängig. Standardmäßig aus.',
         'settings.appearance': 'Standardaussehen',
         'settings.appearance.hint': 'Zeilen ohne eigene Anpassung nutzen dieses Aussehen; die Textkontur ist standardmäßig an – ohne sie ist Text über einem Hintergrundbild oft kaum lesbar. Bleibt die Farbe leer, folgt sie dem Thema.',
         'settings.appearance.reset': 'Standard wiederherstellen',
@@ -699,6 +707,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "Activé : un clic droit sur une ligne de session ouvre son menu d’actions (épinglage, archivage et arrêt-avec-archivage officiels inclus). Désactivé : la ligne affiche plutôt le bouton ⋯ officiel au survol, ouvrant le même menu. Activé par défaut.",
         'settings.rowActions': "Boutons de survol des sessions",
         'settings.rowActions.hint': "Affiche des boutons rapides d’épinglage / d’archivage en fin de ligne au survol, comme les lignes officielles. Désactivé : ces actions restent dans le menu uniquement. Activé par défaut.",
+        'settings.autoStyle': 'Couleur et icône automatiques pour les nouveaux éléments',
+        'settings.autoStyle.hint': 'Activé, chaque nouvelle session reçoit une couleur de la palette intégrée et chaque nouvel espace de travail aussi une icône. Les 13 couleurs sont tirées par mélange avec évitement des derniers tirages : deux éléments consécutifs ne se ressemblent pas et les noms restent lisibles en thème clair comme sombre. Seuls les éléments créés après l’activation sont traités ; les lignes personnalisées à la main ne sont jamais écrasées et désactiver n’annule pas les attributions. Désactivé par défaut.',
         'settings.appearance': 'Apparence par défaut',
         'settings.appearance.hint': 'Les lignes sans personnalisation utilisent cette apparence; le contour du texte est activé par défaut — sans lui, le texte reste souvent illisible sur une image de fond. Laissez la couleur vide pour suivre le thème.',
         'settings.appearance.reset': 'Rétablir l\'apparence par défaut',
@@ -847,6 +857,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "चालू: सेशन पंक्ति पर राइट-क्लिक करने से उसका क्रिया मेनू खुलता है (आधिकारिक पिन, आर्काइव और रोककर-आर्काइव सहित)। बंद: पंक्ति पर होवर करने पर आधिकारिक शैली का ⋯ बटन दिखता है, जो वही मेनू खोलता है। डिफ़ॉल्ट रूप से चालू।",
         'settings.rowActions': "सेशन पंक्ति होवर बटन",
         'settings.rowActions.hint': "होवर करने पर सेशन पंक्ति के अंत में पिन / आर्काइव क्विक बटन दिखाता है, आधिकारिक पंक्तियों जैसा। बंद: ये क्रियाएँ केवल मेनू में रहती हैं। डिफ़ॉल्ट रूप से चालू।",
+        'settings.autoStyle': 'नए आइटम के लिए स्वचालित रंग और आइकन',
+        'settings.autoStyle.hint': 'चालू होने पर हर नए सत्र को अंतर्निहित पैलेट से एक रंग मिलता है और हर नए कार्यस्थान को एक आइकन भी। 13 रंगों को शफ़ल और हाल के दोहराव से बचाकर निकाला जाता है, इसलिए लगातार बने आइटम एक जैसे नहीं दिखते और हल्की व गहरी थीम में नाम पढ़ने योग्य रहते हैं। केवल चालू करने के बाद बने आइटम प्रभावित होते हैं; हाथ से सजाई गई पंक्तियाँ कभी नहीं बदली जातीं और बंद करने पर पहले दिए रंग हटते नहीं। डिफ़ॉल्ट रूप से बंद।',
         'settings.appearance': 'डिफ़ॉल्ट रूप',
         'settings.appearance.hint': 'जिन पंक्तियों को अलग से अनुकूलित नहीं किया गया वे यह रूप इस्तेमाल करती हैं; पाठ की रूपरेखा डिफ़ॉल्ट रूप से चालू है — पृष्ठभूमि छवि पर बिना रूपरेखा वाला पाठ अक्सर पढ़ा नहीं जाता। रंग खाली छोड़ने पर वह थीम का अनुसरण करता है।',
         'settings.appearance.reset': 'डिफ़ॉल्ट रूप पर लौटें',
@@ -995,6 +1007,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "Aktif: klik kanan pada baris sesi untuk membuka menu aksinya (termasuk pin, arsip, dan henti-dan-arsip resmi). Nonaktif: baris menampilkan tombol ⋯ gaya resmi saat dihover, membuka menu yang sama. Aktif secara bawaan.",
         'settings.rowActions': "Tombol hover baris sesi",
         'settings.rowActions.hint': "Menampilkan tombol cepat pin / arsip di ujung baris sesi saat dihover, mengikuti baris resmi. Nonaktif: aksi ini hanya ada di menu. Aktif secara bawaan.",
+        'settings.autoStyle': 'Warna & ikon otomatis untuk item baru',
+        'settings.autoStyle.hint': 'Saat aktif, setiap sesi baru mendapat warna dari palet bawaan dan setiap ruang kerja baru juga mendapat ikon. Tiga belas warna diambil dengan cara diacak sambil menghindari pengambilan terakhir, sehingga item yang berurutan tidak tampak sama dan nama tetap terbaca di tema terang maupun gelap. Hanya item yang dibuat setelah diaktifkan yang diproses; baris yang Anda atur sendiri tidak pernah ditimpa, dan menonaktifkannya tidak membatalkan yang sudah diberikan. Nonaktif secara bawaan.',
         'settings.appearance': 'Tampilan bawaan',
         'settings.appearance.hint': 'Baris yang belum disesuaikan memakai tampilan ini; garis luar teks aktif secara bawaan — tanpa itu teks sering tak terbaca di atas gambar latar. Biarkan warna kosong agar mengikuti tema.',
         'settings.appearance.reset': 'Kembalikan tampilan bawaan',
@@ -1143,6 +1157,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "Attivo: il clic destro su una riga di sessione apre il menu azioni (con pin, archiviazione e ferma-e-archivia ufficiali). Disattivo: la riga mostra il pulsante ⋯ ufficiale al passaggio, aprendo lo stesso menu. Attivo per impostazione predefinita.",
         'settings.rowActions': "Pulsanti al passaggio della sessione",
         'settings.rowActions.hint': "Mostra pulsanti rapidi di pin / archiviazione in fondo alla riga al passaggio, come le righe ufficiali. Disattivo: queste azioni restano solo nel menu. Attivo per impostazione predefinita.",
+        'settings.autoStyle': 'Colore e icona automatici per i nuovi elementi',
+        'settings.autoStyle.hint': 'Se attivo, ogni nuova sessione riceve un colore dalla palette integrata e ogni nuovo spazio di lavoro anche un’icona. I 13 colori vengono estratti con mescolamento ed evitando gli ultimi estratti, così elementi consecutivi non si somigliano e i nomi restano leggibili nei temi chiaro e scuro. Sono interessati solo gli elementi creati dopo l’attivazione; le righe personalizzate a mano non vengono mai sovrascritte e disattivare non annulla quanto assegnato. Disattivo per impostazione predefinita.',
         'settings.appearance': 'Aspetto predefinito',
         'settings.appearance.hint': 'Le righe mai personalizzate usano questo aspetto; il contorno del testo è attivo per impostazione predefinita — senza di esso il testo è spesso illeggibile sopra un\'immagine di sfondo. Lascia il colore vuoto per seguire il tema.',
         'settings.appearance.reset': 'Ripristina l\'aspetto predefinito',
@@ -1291,6 +1307,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "オン:セッション行を右クリックすると操作メニューを開きます(公式のピン留め・アーカイブ・停止してアーカイブを含む)。オフ:行にカーソルを合わせると公式スタイルの ⋯ ボタンが表示され、同じメニューを開きます。既定はオン。",
         'settings.rowActions': "セッション行のホバーボタン",
         'settings.rowActions.hint': "セッション行にカーソルを合わせると行末にピン / アーカイブのクイックボタンを表示し、公式の行と揃えます。オフ:これらの操作はメニュー内のみ。既定はオン。",
+        'settings.autoStyle': '新規項目の色とアイコンを自動割り当て',
+        'settings.autoStyle.hint': 'オンにすると、新しく作られたセッションには内蔵パレットから色が、新しいワークスペースにはさらにアイコンが割り当てられます。13 色はシャッフルと直近の重複回避で抽選されるため、続けて作っても似た見た目にならず、ライト/ダークどちらのテーマでも名前が読みやすく保たれます。オンにした後に作成された項目だけが対象で、手動で設定した行は上書きされず、オフにしても割り当て済みの色は元に戻りません。既定はオフです。',
         'settings.appearance': '既定の外観',
         'settings.appearance.hint': '個別にカスタマイズしていない行に適用される外観です;文字の縁取りは既定でオンです——背景画像の上では縁取りのない文字が読みにくいためです。色を空にするとテーマに従います。',
         'settings.appearance.reset': '既定の外観に戻す',
@@ -1439,6 +1457,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "켬: 세션 행을 우클릭하면 작업 메뉴가 열립니다(공식 고정, 보관, 중지 후 보관 포함). 끔: 행에 마우스를 올리면 공식 스타일의 ⋯ 버튼이 표시되어 같은 메뉴를 엽니다. 기본값은 켬.",
         'settings.rowActions': "세션 행 호버 버튼",
         'settings.rowActions.hint': "세션 행에 마우스를 올리면 행 끝에 고정 / 보관 빠른 버튼을 표시하여 공식 행과 일치시킵니다. 끔: 이 작업들은 메뉴에만 남습니다. 기본값은 켬.",
+        'settings.autoStyle': '새 항목 자동 색상 및 아이콘',
+        'settings.autoStyle.hint': '켜면 새로 만든 세션에 내장 팔레트의 색이, 새 워크스페이스에는 아이콘까지 자동으로 지정됩니다. 13가지 색은 섞기와 최근 중복 회피로 뽑기 때문에 연달아 만들어도 비슷해 보이지 않고 밝은/어두운 테마 모두에서 이름을 읽을 수 있습니다. 켠 뒤에 만든 항목에만 적용되며, 직접 꾸민 행은 절대 덮어쓰지 않고, 끄더라도 이미 지정된 색은 되돌리지 않습니다. 기본값은 꺼짐입니다.',
         'settings.appearance': '기본 모양',
         'settings.appearance.hint': '따로 지정하지 않은 행에 적용되는 모양입니다; 글자 외곽선은 기본으로 켜져 있습니다——배경 이미지 위에서는 외곽선 없는 글자가 잘 보이지 않기 때문입니다. 색을 비우면 테마를 따릅니다.',
         'settings.appearance.reset': '기본 모양으로 되돌리기',
@@ -1587,6 +1607,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "Aan: rechtermuisklik op een sessierij opent het actiemenu (inclusief officieel vastmaken, archiveren en stoppen-en-archiveren). Uit: bij aanwijzen verschijnt in plaats daarvan de officiële ⋯-knop aan het rij-einde, die hetzelfde menu opent. Standaard aan.",
         'settings.rowActions': "Sessierij-snelknoppen",
         'settings.rowActions.hint': "Toont snelknoppen voor vastmaken / archiveren aan het einde van een aangewezen sessierij, gelijk aan de officiële rijen. Uit: deze acties blijven alleen in het menu. Standaard aan.",
+        'settings.autoStyle': 'Automatische kleur en pictogram voor nieuwe items',
+        'settings.autoStyle.hint': 'Als dit aanstaat krijgt elke nieuwe sessie een kleur uit het ingebouwde palet en elke nieuwe werkruimte ook een pictogram. De dertien kleuren worden geschud en de laatst gebruikte worden vermeden, zodat opeenvolgende items niet op elkaar lijken en namen leesbaar blijven in licht en donker thema. Alleen items die daarna worden gemaakt worden aangepast; rijen die u zelf hebt opgemaakt worden nooit overschreven en uitzetten draait eerdere toewijzingen niet terug. Standaard uit.',
         'settings.appearance': 'Standaarduiterlijk',
         'settings.appearance.hint': 'Regels zonder eigen aanpassing gebruiken dit uiterlijk; de tekstomtrek staat standaard aan — zonder omtrek is tekst op een achtergrondafbeelding vaak slecht leesbaar. Laat de kleur leeg om het thema te volgen.',
         'settings.appearance.reset': 'Standaarduiterlijk herstellen',
@@ -1735,6 +1757,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "Włączone: kliknięcie prawym przyciskiem wiersza sesji otwiera jego menu akcji (w tym oficjalne przypinanie, archiwizację i zatrzymanie z archiwizacją). Wyłączone: przy najechaniu wiersz pokazuje oficjalny przycisk ⋯ otwierający to samo menu. Domyślnie włączone.",
         'settings.rowActions': "Przyciski najechania wiersza sesji",
         'settings.rowActions.hint': "Pokazuje szybkie przyciski przypnij / archiwizuj na końcu najechanego wiersza sesji, jak w oficjalnych wierszach. Wyłączone: te akcje zostają tylko w menu. Domyślnie włączone.",
+        'settings.autoStyle': 'Automatyczny kolor i ikona dla nowych elementów',
+        'settings.autoStyle.hint': 'Po włączeniu każda nowa sesja otrzymuje kolor z wbudowanej palety, a każda nowa przestrzeń robocza także ikonę. Trzynaście kolorów losuje się tasowaniem z unikaniem ostatnich trafień, więc kolejne elementy nie wyglądają podobnie, a nazwy pozostają czytelne w jasnym i ciemnym motywie. Dotyczy tylko elementów utworzonych po włączeniu; ręcznie ostylowane wiersze nigdy nie są nadpisywane, a wyłączenie nie cofa przypisań. Domyślnie wyłączone.',
         'settings.appearance': 'Domyślny wygląd',
         'settings.appearance.hint': 'Wiersze bez własnych ustawień używają tego wyglądu; obrys tekstu jest domyślnie włączony — bez niego tekst na obrazie tła bywa nieczytelny. Puste pole koloru oznacza podążanie za motywem.',
         'settings.appearance.reset': 'Przywróć domyślny wygląd',
@@ -1883,6 +1907,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "Ligado: clicar com o botão direito numa linha de sessão abre o menu de ações (incluindo fixar, arquivar e parar-e-arquivar oficiais). Desligado: a linha mostra o botão ⋯ oficial ao passar o cursor, abrindo o mesmo menu. Ligado por predefinição.",
         'settings.rowActions': "Botões de passagem da sessão",
         'settings.rowActions.hint': "Mostra botões rápidos de fixar / arquivar no fim da linha ao passar o cursor, como nas linhas oficiais. Desligado: essas ações ficam apenas no menu. Ligado por predefinição.",
+        'settings.autoStyle': 'Cor e ícone automáticos para novos itens',
+        'settings.autoStyle.hint': 'Quando ligado, cada nova sessão recebe uma cor da paleta embutida e cada novo espaço de trabalho também um ícone. As 13 cores são sorteadas com embaralhamento e evitando as últimas, então itens consecutivos não ficam parecidos e os nomes continuam legíveis nos temas claro e escuro. Só os itens criados depois de ligar são afetados; linhas que você estilizou à mão nunca são sobrescritas e desligar não desfaz o que já foi atribuído. Desligado por padrão.',
         'settings.appearance': 'Aparência padrão',
         'settings.appearance.hint': 'Linhas sem personalização usam esta aparência; o contorno do texto vem ativado por padrão — sem ele, o texto costuma ficar ilegível sobre uma imagem de fundo. Deixe a cor vazia para seguir o tema.',
         'settings.appearance.reset': 'Restaurar aparência padrão',
@@ -2031,6 +2057,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "Вкл: правый клик по строке сессии открывает меню действий (включая официальные закрепление, архивацию и «остановить и архивировать»). Выкл: при наведении в строке появляется официальная кнопка ⋯, открывающая то же меню. Включено по умолчанию.",
         'settings.rowActions': "Кнопки наведения строки сессии",
         'settings.rowActions.hint': "Показывает быстрые кнопки закрепить / архивировать в конце строки при наведении, как в официальных строках. Выкл: эти действия остаются только в меню. Включено по умолчанию.",
+        'settings.autoStyle': 'Автоцвет и значок для новых элементов',
+        'settings.autoStyle.hint': 'Когда включено, каждый новый сеанс получает цвет из встроенной палитры, а новая рабочая область — ещё и значок. Тринадцать цветов вытягиваются перемешиванием с избеганием недавних, поэтому подряд созданные элементы не выглядят одинаково, а имена читаются и в светлой, и в тёмной теме. Затрагиваются только элементы, созданные после включения; строки, оформленные вручную, никогда не перезаписываются, а выключение не отменяет уже назначенное. По умолчанию выключено.',
         'settings.appearance': 'Оформление по умолчанию',
         'settings.appearance.hint': 'Строки без своей настройки используют это оформление; обводка текста включена по умолчанию — без неё текст на фоновом изображении часто нечитаем. Пустой цвет означает следование теме.',
         'settings.appearance.reset': 'Вернуть оформление по умолчанию',
@@ -2179,6 +2207,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "På: högerklick på en sessionsrad öppnar dess åtgärdsmeny (inklusive officiell fästning, arkivering och stoppa-och-arkivera). Av: raden visar istället den officiella ⋯-knappen vid hovring, som öppnar samma meny. På som standard.",
         'settings.rowActions': "Hovringsknappar för sessionsraden",
         'settings.rowActions.hint': "Visar snabbknappar för fäst / arkivera i radens slut vid hovring, som de officiella raderna. Av: åtgärderna finns bara i menyn. På som standard.",
+        'settings.autoStyle': 'Automatisk färg och ikon för nya objekt',
+        'settings.autoStyle.hint': 'När den är på får varje ny session en färg från den inbyggda paletten och varje ny arbetsyta även en ikon. De tretton färgerna dras med blandning och undvikande av de senaste, så intilliggande objekt inte ser likadana ut och namnen förblir läsbara i ljust och mörkt tema. Endast objekt som skapas efter att du slagit på påverkas; rader du stilt själv skrivs aldrig över och att stänga av ångrar inte det som tilldelats. Av som standard.',
         'settings.appearance': 'Standardutseende',
         'settings.appearance.hint': 'Rader utan egen anpassning använder detta utseende; textkonturen är på som standard — utan den är texten ofta oläslig ovanpå en bakgrundsbild. Lämna färgen tom för att följa temat.',
         'settings.appearance.reset': 'Återställ standardutseende',
@@ -2327,6 +2357,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "เปิด: คลิกขวาที่แถวเซสชันเพื่อเปิดเมนูการกระทำ (รวมปักหมุด, เก็บถาวร และหยุด-แล้ว-เก็บถาวรแบบทางการ) ปิด: เมื่อชี้ที่แถวจะแสดงปุ่ม ⋯ สไตล์ทางการเปิดเมนูเดียวกันแทน เปิดตามค่าเริ่มต้น",
         'settings.rowActions': "ปุ่มเมื่อชี้แถวเซสชัน",
         'settings.rowActions.hint': "แสดงปุ่มด่วนปักหมุด / เก็บถาวรท้ายแถวเมื่อชี้ ให้ตรงกับแถวทางการ ปิด: การกระทำเหล่านี้มีเฉพาะในเมนู เปิดตามค่าเริ่มต้น",
+        'settings.autoStyle': 'สีและไอคอนอัตโนมัติสำหรับรายการใหม่',
+        'settings.autoStyle.hint': 'เมื่อเปิด ทุกเซสชันที่สร้างใหม่จะได้สีจากชุดสีในตัว และพื้นที่ทำงานใหม่จะได้ไอคอนด้วย สี 13 สีจะถูกสุ่มแบบสลับพร้อมหลีกเลี่ยงสีที่เพิ่งใช้ รายการที่สร้างติดกันจึงไม่ดูคล้ายกันและชื่อยังอ่านได้ทั้งธีมสว่างและมืด มีผลเฉพาะรายการที่สร้างหลังเปิดใช้ แถวที่คุณตั้งค่าเองจะไม่ถูกเขียนทับ และการปิดจะไม่เรียกคืนสิ่งที่แจกไปแล้ว ค่าเริ่มต้นคือปิด',
         'settings.appearance': 'รูปลักษณ์เริ่มต้น',
         'settings.appearance.hint': 'แถวที่ยังไม่ได้กำหนดเองจะใช้รูปลักษณ์นี้ เส้นขอบตัวอักษรเปิดไว้เป็นค่าเริ่มต้น — บนภาพพื้นหลัง ตัวอักษรที่ไม่มีเส้นขอบมักอ่านยาก เว้นสีว่างไว้เพื่อตามธีม',
         'settings.appearance.reset': 'คืนค่ารูปลักษณ์เริ่มต้น',
@@ -2475,6 +2507,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "Açık: oturum satırına sağ tıklayınca eylem menüsü açılır (resmî sabitleme, arşivleme ve durdurup-arşivleme dahil). Kapalı: satırın üzerine gelince resmî ⋯ düğmesi görünür ve aynı menüyü açar. Varsayılan açık.",
         'settings.rowActions': "Oturum satırı düğmeleri",
         'settings.rowActions.hint': "Üzerine gelince satır sonunda sabitle / arşivle hızlı düğmelerini gösterir, resmî satırlarla aynı. Kapalı: bu eylemler yalnızca menüde kalır. Varsayılan açık.",
+        'settings.autoStyle': 'Yeni öğeler için otomatik renk ve simge',
+        'settings.autoStyle.hint': 'Açıkken yeni oluşturulan her oturuma yerleşik paletten bir renk, her yeni çalışma alanına ayrıca bir simge atanır. On üç renk karıştırma ve son kullanılanları atlama yöntemiyle çekilir; böylece arka arkaya eklenen öğeler benzemez ve adlar açık ile koyu temada okunur kalır. Yalnızca açtıktan sonra oluşturulan öğeler etkilenir; elle biçimlendirdiğiniz satırlar hiçbir zaman üzerine yazılmaz ve kapatmak verilmiş stilleri geri almaz. Varsayılan olarak kapalı.',
         'settings.appearance': 'Varsayılan görünüm',
         'settings.appearance.hint': 'Özel olarak uyarlanmamış satırlar bu görünümü kullanır; metin konturu varsayılan olarak açıktır — arka plan görseli üzerinde kontursuz metin çoğu zaman okunmaz. Rengi boş bırakırsanız temayı izler.',
         'settings.appearance.reset': 'Varsayılan görünüme dön',
@@ -2623,6 +2657,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "Bật: nhấp chuột phải vào dòng phiên để mở menu thao tác (bao gồm ghim, lưu trữ và dừng-rồi-lưu trữ chính thức). Tắt: dòng hiển thị nút ⋯ kiểu chính thức khi di chuột, mở cùng menu đó. Bật theo mặc định.",
         'settings.rowActions': "Nút hover dòng phiên",
         'settings.rowActions.hint': "Hiện nút nhanh ghim / lưu trữ ở cuối dòng khi di chuột, giống các dòng chính thức. Tắt: các thao tác này chỉ còn trong menu. Bật theo mặc định.",
+        'settings.autoStyle': 'Tự động tô màu và biểu tượng cho mục mới',
+        'settings.autoStyle.hint': 'Khi bật, mỗi phiên mới nhận một màu từ bảng màu tích hợp và mỗi không gian làm việc mới còn nhận thêm biểu tượng. Mười ba màu được rút theo cách xáo trộn và tránh các màu vừa dùng, nên các mục tạo liên tiếp không giống nhau và tên vẫn đọc được ở cả giao diện sáng và tối. Chỉ những mục tạo sau khi bật mới bị ảnh hưởng; hàng bạn tự tô màu không bao giờ bị ghi đè, và tắt đi không thu hồi những gì đã gán. Mặc định tắt.',
         'settings.appearance': 'Giao diện mặc định',
         'settings.appearance.hint': 'Những hàng chưa tùy chỉnh riêng dùng giao diện này; viền chữ mặc định bật — trên ảnh nền, chữ không viền thường khó đọc. Để trống màu để theo chủ đề.',
         'settings.appearance.reset': 'Khôi phục giao diện mặc định',
@@ -2771,6 +2807,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "開啟時右鍵點擊會話行即可開啟操作選單(包含官方的置頂、封存、停止並封存等);關閉後改為在行尾懸停顯示官方樣式的 ⋯ 按鈕,點擊開啟同一個選單。預設開啟。",
         'settings.rowActions': "會話行懸停按鈕",
         'settings.rowActions.hint': "懸停會話行時在行尾顯示置頂 / 封存快捷按鈕,與官方行保持一致;關閉後這些動作只保留在選單裡。預設開啟。",
+        'settings.autoStyle': '新增項目自動配色',
+        'settings.autoStyle.hint': '開啟後,新開嘅會話會自動分到一個內置色,新工作區仲會分到一個圖示;顏色由固定 13 色調色板以「洗牌 + 近期去重」抽出,連續新增唔會撞色,淺色同深色主題都睇得清。只影響開啟之後新開嘅項;你手動設定過外觀嘅行永不被覆蓋,熄咗開關亦唔會回收已分配嘅樣式。預設關閉。',
         'settings.appearance': '預設外觀',
         'settings.appearance.hint': '未單獨自訂過嘅行會用呢套外觀;字體描邊預設開啟——有背景圖嗰陣唔描邊嘅字經常睇唔清。字體顏色留空就會跟主題。',
         'settings.appearance.reset': '還原預設外觀',
@@ -2919,6 +2957,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "開啟時右鍵點擊會話行即可開啟操作選單(包含官方的置頂、歸檔、停止並歸檔等);關閉後改為在行尾懸停顯示官方樣式的 ⋯ 按鈕,點擊開啟同一個選單。預設開啟。",
         'settings.rowActions': "會話行懸停按鈕",
         'settings.rowActions.hint': "懸停會話行時在行尾顯示置頂 / 歸檔快捷按鈕,與官方行保持一致;關閉後這些動作只保留在選單裡。預設開啟。",
+        'settings.autoStyle': '新增項目自動配色',
+        'settings.autoStyle.hint': '開啟後,新開嘅會話會自動分到一個內置色,新工作區仲會分到一個圖示;顏色由固定 13 色調色板以「洗牌 + 近期去重」抽出,連續新增唔會撞色,淺色同深色主題都睇得清。只影響開啟之後新開嘅項;你手動設定過外觀嘅行永不被覆蓋,熄咗開關亦唔會回收已分配嘅樣式。預設關閉。',
         'settings.appearance': '預設外觀',
         'settings.appearance.hint': '未單獨自訂過嘅行會用呢套外觀;字體描邊預設開啟——有背景圖嗰陣唔描邊嘅字經常睇唔清。字體顏色留空就會跟主題。',
         'settings.appearance.reset': '還原預設外觀',
@@ -3067,6 +3107,8 @@ window.__ModuleLoader__.load({
         'settings.sessionMenu.hint': "開啟時右鍵點擊會話列即可開啟動作選單(包含官方的釘選、封存、停止並封存等);關閉後改為在列尾懸停顯示官方樣式的 ⋯ 按鈕,點擊開啟同一個選單。預設開啟。",
         'settings.rowActions': "會話列懸停按鈕",
         'settings.rowActions.hint': "懸停會話列時在列尾顯示釘選 / 封存快捷按鈕,與官方列保持一致;關閉後這些動作只保留在選單裡。預設開啟。",
+        'settings.autoStyle': '新增項目自動配色與圖示',
+        'settings.autoStyle.hint': '開啟後,新建立的工作階段會自動分到一個內建色,新工作區還會分到一個圖示;顏色從固定 13 色調色盤以「洗牌 + 近期去重」抽出,連續新增不會撞色,淺色與深色主題都保持可讀。只影響開啟之後新建的項目;你手動設定過外觀的列永遠不會被覆蓋,關閉開關也不會回收已分配的樣式。預設關閉。',
         'settings.appearance': '預設外觀',
         'settings.appearance.hint': '未個別自訂過的列會使用這套外觀;字型外框預設開啟——在背景圖片上沒有外框的文字常常看不清楚。字型顏色留空即跟隨佈景主題。',
         'settings.appearance.reset': '還原預設外觀',
@@ -4406,6 +4448,25 @@ window.__ModuleLoader__.load({
         else next[key] = value
         scopeSet('styling', next)
       },
+      /**
+       * Auto-assignment writes SEVERAL keys in one pass (every new item of a
+       * snapshot). The host write is derived from the rendered snapshot, so
+       * writing them one by one would leave the host copy holding only the
+       * last one — batch them into a single local+host update instead.
+       * @param entries - `[key, value]` pairs; null values delete.
+       */
+      setStylingMany: (entries) => {
+        if (!Array.isArray(entries) || entries.length === 0) return
+        if (actions && typeof actions.setStyling === 'function') {
+          for (const entry of entries) actions.setStyling(entry[0], entry[1])
+        }
+        const next = { ...stylingMap }
+        for (const entry of entries) {
+          if (entry[1] === null) delete next[entry[0]]
+          else next[entry[0]] = entry[1]
+        }
+        scopeSet('styling', next)
+      },
       setPref: (key, value) => {
         if (actions && typeof actions.setPref === 'function') actions.setPref(key, value)
         scopeSet(key, value)
@@ -5306,6 +5367,108 @@ window.__ModuleLoader__.load({
       })
     })()
 
+    /* ============== auto appearance for NEW items (v0.24.0) ============== */
+
+    /**
+     * Built-in palette of the "auto color + icon for new items" toggle
+     * (prefs.autoStyle, OFF by default). The row color is the row's TEXT color
+     * (rowStyleOf → style.color) plus the default text outline, so every entry
+     * has to stay readable on the light AND the dark sidebar — a decorative
+     * accent that only works on one theme would make the name hard to read.
+     * Rule: WCAG contrast ≥ 3.0 against #ffffff AND against #1c1c1e.
+     *
+     * Four entries are the existing custom-appearance swatches verbatim
+     * (#f85149 / #5b8def / #a371f7 / #6e7681). The five swatches that only
+     * clear ~2.0–2.8 on white (#3fb950 / #d29922 / #39c5cf / #ff9f45 /
+     * #ec6cb9) are represented by their same-hue, one-step-darker siblings
+     * (#46a758 / #d97706 / #0891b2 and the pink/violet neighbours), so the
+     * palette keeps the shipped style and gains the readability the toggle
+     * promises. One dozen-plus distinct hues, fixed in code — never generated.
+     */
+    const AUTO_COLOR_POOL = [
+      '#f85149', // 红 / red       (existing swatch)  3.35 / 5.08
+      '#d97706', // 琥珀 / amber                    3.19 / 5.34
+      '#65a30d', // 青柠 / lime                     3.09 / 5.51
+      '#46a758', // 绿 / green                      3.03 / 5.61
+      '#0d9488', // 蓝绿 / teal                     3.74 / 4.54
+      '#0891b2', // 青 / cyan                       3.68 / 4.62
+      '#0090ff', // 天蓝 / sky                      3.26 / 5.21
+      '#5b8def', // 蓝 / blue        (existing swatch)  3.23 / 5.27
+      '#7c66dc', // 靛 / indigo                     4.38 / 3.88
+      '#a371f7', // 紫 / violet      (existing swatch)  3.35 / 5.07
+      '#d6409f', // 品红 / magenta                  4.12 / 4.13
+      '#e93d82', // 粉 / pink                       3.85 / 4.42
+      '#6e7681', // 灰 / grey        (existing swatch)  4.59 / 3.70
+    ]
+
+    /**
+     * Icon pool of the same toggle: names from the EXISTING candidate list
+     * (ICON_CHOICES), so the set stays the host's own and the runtime filter
+     * below drops whatever this host does not export — exactly like the icon
+     * picker. Legacy folder modes (solid/outline) and 'none' stay out: the
+     * point is a visible, distinct glyph per item.
+     */
+    const AUTO_ICON_POOL = [
+      'IconBranchOutline16', 'IconCodeOutline16', 'IconDataOutline16', 'IconGoalOutline16',
+      'IconGlobeOutline14', 'IconListPenOutline16', 'IconChecklistOutline14', 'IconBrowseOutline16',
+      'IconDownloadOutline16', 'IconApiOutline14', 'IconSkillOutline16', 'IconSparkle16',
+    ]
+
+    /** How many recent draws the next draw tries to avoid (per pool). */
+    const AUTO_RECENT_WINDOW = 3
+
+    /** Fisher-Yates on a copy; `random` is injectable so tests are deterministic. */
+    const autoShuffle = (list, random) => {
+      const out = list.slice()
+      for (let i = out.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(random() * (i + 1))
+        const swap = out[i]
+        out[i] = out[j]
+        out[j] = swap
+      }
+      return out
+    }
+
+    /**
+     * Draw-without-replacement drawer: a shuffled BAG per pool, refilled with
+     * the pool minus the last AUTO_RECENT_WINDOW draws. One bag cycle never
+     * repeats a value, and the refill keeps a value from coming back
+     * immediately after the cycle boundary — consecutive new items therefore
+     * look clearly different, which pure Math.random() would not guarantee.
+     * Colors and icons draw from independent bags. (Pure; unit-tested.)
+     * @param colors - fixed color pool.
+     * @param icons - fixed icon pool (already filtered for this host).
+     * @param random - [0,1) source, defaults to Math.random.
+     * @returns `{ nextColor(), nextIcon() }`, each null when its pool is empty.
+     */
+    const createAutoStyler = (colors, icons, random = Math.random) => {
+      const bags = { color: [], icon: [] }
+      const recent = { color: [], icon: [] }
+      const draw = (kind, pool) => {
+        if (!Array.isArray(pool) || pool.length === 0) return null
+        if (bags[kind].length === 0) {
+          const blocked = new Set(recent[kind])
+          const fresh = pool.filter((value) => !blocked.has(value))
+          bags[kind] = autoShuffle(fresh.length > 0 ? fresh : pool.slice(), random)
+          recent[kind] = []
+        }
+        const value = bags[kind].pop()
+        recent[kind].push(value)
+        while (recent[kind].length > AUTO_RECENT_WINDOW) recent[kind].shift()
+        return value
+      }
+      return {
+        nextColor: () => draw('color', colors),
+        nextIcon: () => draw('icon', icons),
+      }
+    }
+
+    /* ------------------ end of the pure auto-style block ------------------ */
+
+    /** What this host can actually render, resolved once (the icon set is fixed per page). */
+    const AUTO_ICON_CHOICES = AUTO_ICON_POOL.filter((name) => resolveIconName(name) !== '')
+    const autoStyler = createAutoStyler(AUTO_COLOR_POOL, AUTO_ICON_CHOICES)
+
     /**
      * Appearance controls shared by the per-row dialog and the settings card's
      * "default appearance" section: color, glow, weight, shadow, the text
@@ -5590,6 +5753,9 @@ window.__ModuleLoader__.load({
       const statusPulse = prefs.statusPulse !== false
       const sessionMenu = prefs.sessionMenu !== false
       const rowActions = prefs.rowActions !== false
+      // Auto color + icon for new items (v0.24.0): OFF unless explicitly on —
+      // the switch is opt-in, and an absent key means off.
+      const autoStyle = prefs.autoStyle === true
       // Progressive listing quota (v0.21.0, issue #8): 0 = unlimited.
       const rawLimit = Math.floor(Number(prefs.sessionLimit))
       const sessionLimit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 500) : 0
@@ -5712,6 +5878,18 @@ window.__ModuleLoader__.load({
           }, E('span', { className: 'bw-switch-thumb' })),
         ),
         E('div', { className: 'bw-hint' }, t('settings.rowActions.hint')),
+        E('div', { className: 'bw-setting-row', style: { marginTop: 10 } },
+          E('div', { className: 'bw-setting-label' }, t('settings.autoStyle')),
+          E('button', {
+            type: 'button',
+            role: 'switch',
+            'aria-checked': autoStyle,
+            'aria-label': t('settings.autoStyle'),
+            className: cls('bw-switch', autoStyle && 'bw-switch-on'),
+            onClick: () => { setPref('autoStyle', !autoStyle) },
+          }, E('span', { className: 'bw-switch-thumb' })),
+        ),
+        E('div', { className: 'bw-hint' }, t('settings.autoStyle.hint')),
         E('div', { className: 'bw-setting-row', style: { marginTop: 10 } },
           E('div', { className: 'bw-setting-label' }, t('settings.sessionLimit')),
           E('div', { className: 'bw-seg' },
@@ -6148,12 +6326,74 @@ window.__ModuleLoader__.load({
       // the plugin's historical behavior (right-click on, quick buttons on).
       const sessionMenuEnabled = prefsMap.sessionMenu !== false
       const rowActionsEnabled = prefsMap.rowActions !== false
+      // Auto color + icon for new items (v0.24.0). Default OFF: absent key =
+      // off, so every existing snapshot keeps its behavior untouched.
+      const autoStyle = prefsMap.autoStyle === true
+      // Workspace stream state: a `ready` phase with a settled stream is the
+      // first authoritative inventory — the point where "everything seen so
+      // far is pre-existing" can be recorded once (older hosts without the
+      // field simply report undefined, which is not 'loading').
+      const workspaceStreamState = useWorkspaces(s => s.state)
       // Archived-row visibility (v0.20.0, official ArchivedFilter mirror);
       // persisted snapshots from older plugin versions lack the key.
       const archivedFilter = useStore ? (useStore(s => s.archivedFilter) || 'default') : 'default'
       const archivedSet = React.useMemo(() => new Set(archivedSessionIds), [archivedSessionIds])
       const pinnedSet = React.useMemo(() => new Set(pinnedSessionIds), [pinnedSessionIds])
       const subCounts = React.useMemo(() => subagentRunningCounts(list ? list.byId : {}), [list ? list.byId : null])
+
+      /* ------------- auto appearance for new items (v0.24.0) -------------- */
+      // One mount-scoped ledger of what has already been accounted for, so an
+      // item is NEVER assigned twice and NEVER overwritten:
+      // · a session counts as new only while the wire still reports it blank —
+      //   the trustworthy birth mark this plugin already relies on elsewhere
+      //   (pre-existing sessions are never blank, so a reload can never restyle
+      //   the inventory, and a late-arriving old row is not restyled either);
+      // · a workspace counts as new only once the FIRST authoritative inventory
+      //   has been recorded (`phase: 'ready'` with a settled stream), so the
+      //   progressive fill of the workspace list cannot masquerade as creation.
+      // The ledger is maintained even while the toggle is OFF — that is exactly
+      // what keeps items created during the off period from being styled later.
+      // Existing styling wins: an entry the user set (or one pulled from the
+      // host copy) makes the item skip, so nothing manual is ever repainted.
+      const autoSeenRef = React.useRef(null)
+      React.useEffect(() => {
+        if (autoSeenRef.current === null) {
+          autoSeenRef.current = { sessions: new Set(), workspaces: new Set(), seeded: false }
+        }
+        const seen = autoSeenRef.current
+        const pending = []
+        if (list && list.byId) {
+          for (const id of Object.keys(list.byId)) {
+            const summary = list.byId[id]
+            if (!summary || summary.blank !== true || seen.sessions.has(id)) continue
+            seen.sessions.add(id)
+            if (!autoStyle || stylingMap['session:' + id]) continue
+            const color = autoStyler.nextColor()
+            if (color) pending.push(['session:' + id, { color }])
+          }
+        }
+        if (phase === 'ready' && workspaceStreamState !== 'loading') {
+          for (const workspace of items || []) {
+            const id = workspace ? workspace.workspaceId : undefined
+            if (id === undefined || id === null) continue
+            if (!seen.seeded) { seen.workspaces.add(id); continue }
+            if (seen.workspaces.has(id)) continue
+            seen.workspaces.add(id)
+            if (!autoStyle || stylingMap['workspace:' + id]) continue
+            // Colors and icons draw from independent bags; a host that exports
+            // none of the pool icons still gets the color.
+            const value = {}
+            const color = autoStyler.nextColor()
+            if (color) value.color = color
+            const icon = autoStyler.nextIcon()
+            if (icon) value.icon = icon
+            if (Object.keys(value).length > 0) pending.push(['workspace:' + id, value])
+          }
+          seen.seeded = true
+        }
+        // One batched write: local store + the host copy in a single update.
+        if (pending.length > 0) shared.setStylingMany(pending)
+      }, [autoStyle, list ? list.byId : null, items, phase, workspaceStreamState, stylingMap])
 
       /* --------------- shipped-browser channel (0.1.7-rc.2) --------------- */
       // Read per render, never memoized: the shipped entry registers beside the

@@ -1524,3 +1524,139 @@ test('rc.2 design tokens: radii and focus rings follow the host scale (v0.23.0)'
   }
   assert.match(text, /outline:var\(--dsw-focus-ring-width,2px\) solid var\(--dsw-focus-ring-color,var\(--dsw-alias-state-business-primary,#5b8def\)\);outline-offset:-2px/)
 })
+
+/**
+ * Auto appearance for new items (v0.24.0, prefs.autoStyle — OFF by default).
+ * The palette is FIXED in code and every entry has to stay readable as the
+ * row's text color on the light AND the dark sidebar, so the readability rule
+ * is asserted here rather than trusted.
+ */
+const loadAutoStyle = () => {
+  const text = read('src/client.js')
+  const start = text.indexOf('const AUTO_COLOR_POOL = [')
+  const end = text.indexOf('/* ------------------ end of the pure auto-style block')
+  assert.ok(start !== -1 && end !== -1 && start < end, 'auto-style block not found')
+  const block = text.slice(start, end)
+  return new Function(block + '\nreturn { AUTO_COLOR_POOL, AUTO_ICON_POOL, AUTO_RECENT_WINDOW, createAutoStyler, autoShuffle }')()
+}
+
+const relativeLuminance = (hex) => {
+  const value = parseInt(hex.slice(1), 16)
+  const channels = [(value >> 16) & 255, (value >> 8) & 255, value & 255].map((raw) => {
+    const s = raw / 255
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4)
+  })
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]
+}
+const contrastRatio = (a, b) => {
+  const [hi, lo] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x)
+  return (hi + 0.05) / (lo + 0.05)
+}
+
+test('auto style: fixed palette, distinct hues, readable on both themes (v0.24.0)', () => {
+  const { AUTO_COLOR_POOL, AUTO_ICON_POOL, AUTO_RECENT_WINDOW } = loadAutoStyle()
+  // "内置定死十几个颜色": a dozen-plus, capped so a shuffled bag still reads as variety.
+  assert.ok(AUTO_COLOR_POOL.length >= 12 && AUTO_COLOR_POOL.length <= 16, 'palette size: ' + AUTO_COLOR_POOL.length)
+  for (const hex of AUTO_COLOR_POOL) assert.match(hex, /^#[0-9a-f]{6}$/, 'not a plain hex color: ' + hex)
+  assert.equal(new Set(AUTO_COLOR_POOL).size, AUTO_COLOR_POOL.length, 'palette entries must be unique')
+  // The color paints the row's TEXT (rowStyleOf → style.color), so the user's
+  // "字不能难看清" rule is a hard floor against white and near-black.
+  for (const hex of AUTO_COLOR_POOL) {
+    assert.ok(contrastRatio(hex, '#ffffff') >= 3.0, hex + ' too faint on a light sidebar')
+    assert.ok(contrastRatio(hex, '#1c1c1e') >= 3.0, hex + ' too faint on a dark sidebar')
+  }
+  // The existing custom-appearance swatches lead the pool (reuse, not a new style).
+  const existing = ['#5b8def', '#a371f7', '#f85149', '#6e7681']
+  for (const hex of existing) assert.ok(AUTO_COLOR_POOL.includes(hex), 'existing swatch dropped: ' + hex)
+  // Icons come from the existing candidate list — never a new icon set.
+  const text = read('src/client.js')
+  const choices = text.slice(text.indexOf('const ICON_CHOICES = ['), text.indexOf('const ICON_PICKER_CHOICES'))
+  assert.ok(AUTO_ICON_POOL.length >= 10, 'icon pool too small: ' + AUTO_ICON_POOL.length)
+  for (const name of AUTO_ICON_POOL) {
+    assert.ok(choices.includes("'" + name + "'"), 'icon outside the existing candidate list: ' + name)
+    assert.notEqual(name, 'none', 'an invisible icon must never be drawn')
+  }
+  assert.ok(AUTO_RECENT_WINDOW >= 2, 'recent-dedup window must skip more than the immediately previous draw')
+})
+
+test('auto style: shuffle bag + recent-dedup drawer, colors and icons independent (v0.24.0)', () => {
+  const { createAutoStyler, autoShuffle } = loadAutoStyle()
+  const colors = ['c1', 'c2', 'c3', 'c4', 'c5']
+  const icons = ['i1', 'i2', 'i3']
+  let seed = 42
+  const random = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648 }
+  const styler = createAutoStyler(colors, icons, random)
+  // One bag cycle draws every entry exactly once — no repeat while the bag lasts.
+  const cycle = []
+  for (let i = 0; i < colors.length; i += 1) cycle.push(styler.nextColor())
+  assert.deepEqual(cycle.slice().sort(), colors.slice().sort(), 'a bag cycle must cover the pool exactly once')
+  // Across a refill the recent window is skipped: with the real 13-color pool
+  // the next pool-window draws are exactly the entries the refill left in.
+  const { AUTO_COLOR_POOL, AUTO_RECENT_WINDOW } = loadAutoStyle()
+  const big = createAutoStyler(AUTO_COLOR_POOL, icons, random)
+  const first = []
+  for (let i = 0; i < AUTO_COLOR_POOL.length; i += 1) first.push(big.nextColor())
+  assert.deepEqual(first.slice().sort(), AUTO_COLOR_POOL.slice().sort(), 'a bag cycle must cover the pool exactly once')
+  const blocked = first.slice(-AUTO_RECENT_WINDOW)
+  const refilled = []
+  for (let i = 0; i < AUTO_COLOR_POOL.length - AUTO_RECENT_WINDOW; i += 1) refilled.push(big.nextColor())
+  for (const value of refilled) assert.ok(!blocked.includes(value), 'repeat inside the recent window: ' + value)
+  assert.equal(new Set(refilled).size, refilled.length, 'a refilled bag must not repeat either')
+  // Over a long run no two CONSECUTIVE draws are ever equal — the property the
+  // user actually sees when adding several items in a row.
+  let previous = null
+  for (let i = 0; i < 120; i += 1) {
+    const value = big.nextColor()
+    assert.notEqual(value, previous, 'two consecutive items drew the same color')
+    previous = value
+  }
+  // The icon bag is independent of the color bag.
+  assert.ok(icons.includes(styler.nextIcon()))
+  assert.ok(colors.includes(styler.nextColor()))
+  // Shuffle is a permutation, and an injectable random keeps it reproducible.
+  assert.deepEqual(autoShuffle(colors, () => 0).slice().sort(), colors.slice().sort())
+  assert.deepEqual(autoShuffle(colors, () => 0), autoShuffle(colors, () => 0))
+  // Degenerate pools degrade to "nothing to assign", never a crash.
+  const empty = createAutoStyler([], [], random)
+  assert.equal(empty.nextColor(), null)
+  assert.equal(empty.nextIcon(), null)
+})
+
+test('auto style: opt-in switch, blank-only sessions, settled-inventory workspaces (v0.24.0)', () => {
+  const text = read('src/client.js')
+  // Default OFF: the store never seeds the key, and the reader demands `true`
+  // (an absent key on every persisted snapshot therefore means off).
+  assert.match(text, /const autoStyle = prefsMap\.autoStyle === true/)
+  assert.match(text, /const autoStyle = prefs\.autoStyle === true/)
+  assert.doesNotMatch(text, /init: \(\) => \(\{[\s\S]{0,400}autoStyle/)
+  // The settings card exposes it as a real switch (same shape as the others).
+  assert.match(text, /'aria-checked': autoStyle,/)
+  assert.match(text, /onClick: \(\) => \{ setPref\('autoStyle', !autoStyle\) \}/)
+  // Sessions are recognized as new ONLY while blank (a pre-existing row is
+  // never blank), so a reload can never restyle the inventory.
+  assert.match(text, /summary\.blank !== true \|\| seen\.sessions\.has\(id\)/)
+  // Workspaces only after the first authoritative inventory is recorded.
+  assert.match(text, /if \(phase === 'ready' && workspaceStreamState !== 'loading'\) \{/)
+  assert.match(text, /if \(!seen\.seeded\) \{ seen\.workspaces\.add\(id\); continue \}/)
+  assert.match(text, /if \(seen\.workspaces\.has\(id\)\) continue/)
+  // Never overwrite: an existing entry (hand-set or pulled from the host copy)
+  // makes the item skip — for both kinds.
+  assert.match(text, /if \(!autoStyle \|\| stylingMap\['session:' \+ id\]\) continue/)
+  assert.match(text, /if \(!autoStyle \|\| stylingMap\['workspace:' \+ id\]\) continue/)
+  // Turning the toggle off stops assignment but keeps what was assigned: the
+  // effect only writes, and the ledger/sets are never cleared.
+  assert.doesNotMatch(text, /actions\.setStyling\([^)]*, null\)[\s\S]{0,80}autoStyle/)
+  assert.doesNotMatch(text, /seen\.sessions\.clear\(|seen\.workspaces\.clear\(/)
+  // Colors and icons draw from independent bags, and the batch write keeps the
+  // host copy from holding only the last assignment.
+  assert.match(text, /const color = autoStyler\.nextColor\(\)[\s\S]{0,200}const icon = autoStyler\.nextIcon\(\)/)
+  assert.match(text, /if \(pending\.length > 0\) shared\.setStylingMany\(pending\)/)
+  assert.match(text, /setStylingMany: \(entries\) => \{/)
+  // Copy keys exist for every shipped language (the key-set test covers the
+  // rest); both are actually rendered by the card.
+  const zhBlock = text.slice(text.indexOf('const zh = {'), text.indexOf('const en = {'))
+  assert.ok(zhBlock.includes("'settings.autoStyle':"), 'zh label missing')
+  assert.ok(zhBlock.includes("'settings.autoStyle.hint':"), 'zh hint missing')
+  assert.match(text, /t\('settings\.autoStyle'\)/)
+  assert.match(text, /t\('settings\.autoStyle\.hint'\)/)
+})

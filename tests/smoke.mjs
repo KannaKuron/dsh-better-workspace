@@ -1621,11 +1621,25 @@ test('auto style: two theme palettes, each ≥4.5 (normal-text AA) on its own ba
   assert.equal(resolveColorValue('', false), '')
   assert.equal(isAutoColorToken('auto:3'), true)
   assert.equal(isAutoColorToken('#c40d00'), false)
-  // The theme subscription must actually be WIRED into the row renderer
-  // (v0.25.0 P1): resolving an `auto:N` token reads the live theme, but a read
-  // alone never repaints. Without this subscription the exact bug shipped —
-  // colours right on load and after any unrelated re-render, yet stale for the
-  // whole session right after a theme switch (measured 2.49 on the switch path).
+  // Icons come from the existing candidate list — never a new icon set.
+  // (The theme-subscription guards live in their own tests below, so a mutation
+  // in either shape reports independently.)
+  const text = read('src/client.js')
+  const choices = text.slice(text.indexOf('const ICON_CHOICES = ['), text.indexOf('const ICON_PICKER_CHOICES'))
+  assert.ok(AUTO_ICON_POOL.length >= 10, 'icon pool too small: ' + AUTO_ICON_POOL.length)
+  for (const name of AUTO_ICON_POOL) {
+    assert.ok(choices.includes("'" + name + "'"), 'icon outside the existing candidate list: ' + name)
+    assert.notEqual(name, 'none', 'an invisible icon must never be drawn')
+  }
+})
+
+/**
+ * P1 guards, split on purpose (v0.25.0). The verifier mutated the fix and saw
+ * only "fail 1" while both assertions lived in one test: the first throw masked
+ * the second, so a half-fix ("subscription present but never used") looked the
+ * same as "no subscription at all". Two tests report independently.
+ */
+test('auto style: the row renderer subscribes to the theme flip (v0.25.0 P1 guard 1/2)', () => {
   const text = read('src/client.js')
   const browserStart = text.indexOf('function BetterBrowser(props) {')
   assert.ok(browserStart !== -1, 'BetterBrowser not found')
@@ -1633,15 +1647,15 @@ test('auto style: two theme palettes, each ≥4.5 (normal-text AA) on its own ba
   assert.ok(rowStyleStart > browserStart, 'rowStyleOf not found inside BetterBrowser')
   assert.match(text.slice(browserStart, rowStyleStart), /const autoDarkTheme = useAutoThemeDark\(\)/,
     'BetterBrowser must subscribe to the theme flip (useAutoThemeDark), or a switch never repaints the rows')
+})
+
+test('auto style: the row colour resolves with the SUBSCRIBED theme (v0.25.0 P1 guard 2/2)', () => {
+  const text = read('src/client.js')
+  // "Subscription present but unused" is the half-fix this catches: reading the
+  // theme without passing it keeps the old implicit DOM read, and a switch then
+  // repaints only after some unrelated re-render.
   assert.match(text, /const color = resolveColorValue\(appearance\.color \|\| '', autoDarkTheme\)/,
     'the row colour must be resolved with the SUBSCRIBED theme, not a DOM read')
-  // Icons come from the existing candidate list — never a new icon set.
-  const choices = text.slice(text.indexOf('const ICON_CHOICES = ['), text.indexOf('const ICON_PICKER_CHOICES'))
-  assert.ok(AUTO_ICON_POOL.length >= 10, 'icon pool too small: ' + AUTO_ICON_POOL.length)
-  for (const name of AUTO_ICON_POOL) {
-    assert.ok(choices.includes("'" + name + "'"), 'icon outside the existing candidate list: ' + name)
-    assert.notEqual(name, 'none', 'an invisible icon must never be drawn')
-  }
 })
 
 test('auto style: shuffle bag + recent-dedup drawer, colors and icons independent (v0.24.0)', () => {

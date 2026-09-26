@@ -6424,6 +6424,14 @@ window.__ModuleLoader__.load({
       // the Host switched to dark, so normal-text AA was broken on the switch
       // path (measured 2.49). The value is passed explicitly into the resolver
       // below so the colour and the outline pole come from one snapshot.
+      //
+      // Placement: this sits before every OTHER hook, so the hook order is fixed
+      // for a mount. The one branch above it is the injected-hook shape gate
+      // (`typeof useWorkspaces !== 'function' → return null`), which is constant
+      // for the lifetime of a mount — the hook count therefore never varies, and
+      // that branch renders no rows at all. If anyone ever turns that gate into a
+      // condition that can CHANGE mid-mount, this subscription must move above it
+      // first, or React sees a varying hook count.
       const autoDarkTheme = useAutoThemeDark()
       // Workspace stream state: a `ready` phase with a settled stream is the
       // first authoritative inventory — the point where "everything seen so

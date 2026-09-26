@@ -54,8 +54,8 @@ hint / README(中英)/ 代码注释从「两底 ≥3.0;正文 AA 未达」改为
 
 - **现象(验收者真实点击复现)**:刷新到浅色 ⇒ 行 `#007330` ✓;点「设置→通用→深色」⇒ `data-ds-dark-theme` 已为 true 但行**仍是 `#007330`**(应 `#00b54b`),等 10 秒不变;不刷新、只点一下侧栏分组触发一次重渲染 ⇒ 立刻变对。反向(深→浅)同样失败,只有刷新才正确。**切换路径上实测对比度 2.49**,即正文级 AA 在这条主路径上失效。
 - **根因**:`useAutoThemeDark()` 只接在 `AppearanceControls`(设置卡控件)上,**渲染行的 `BetterBrowser` 没接订阅**;`rowStyleOf` 里 `resolveColorValue(color)` 也没传主题 ⇒ 值来自渲染期 DOM 读取 —— 读 DOM 本身没错,错在**没有任何东西让行组件重渲染**(注释承诺的 "every row re-render on a flip" 没落到代码上)。
-- **修法(2 处,`src/client.js`)**:①`BetterBrowser` 顶部(任何 early return 之前)加 `const autoDarkTheme = useAutoThemeDark()`;②`rowStyleOf` 改为 `resolveColorValue(appearance.color || '', autoDarkTheme)`,让**订阅到的快照**显式进入解析(颜色与描边极色同源,不依赖渲染期再读 DOM)。
-- **守卫(此前缺失)**:`grep useAutoThemeDark tests/smoke.mjs` 原为 0 命中 —— 色值与 21 门文案都有守卫,唯独主题订阅没有。新增两条断言:BetterBrowser 源码段内必须出现 `const autoDarkTheme = useAutoThemeDark()`;`rowStyleOf` 必须以 `resolveColorValue(appearance.color || '', autoDarkTheme)` 解析。**可证伪性已核对**:把这两条断言跑在修复前的源码(`a4a5395`)上,两条都 FAIL。
+- **修法(2 处,`src/client.js`)**:①`BetterBrowser` 顶部(**其它 hook 之前**;组件最上方那个「宿主缺 hooks ⇒ return null」的形状门控除外 —— 它在一次挂载内恒定、且该分支根本不渲染行,验收者已判定不构成缺陷)加 `const autoDarkTheme = useAutoThemeDark()`;②`rowStyleOf` 改为 `resolveColorValue(appearance.color || '', autoDarkTheme)`,让**订阅到的快照**显式进入解析(颜色与描边极色同源,不依赖渲染期再读 DOM)。
+- **守卫(此前缺失)**:`grep useAutoThemeDark tests/smoke.mjs` 原为 0 命中 —— 色值与 21 门文案都有守卫,唯独主题订阅没有。新增两条断言:BetterBrowser 源码段内必须出现 `const autoDarkTheme = useAutoThemeDark()`;`rowStyleOf` 必须以 `resolveColorValue(appearance.color || '', autoDarkTheme)` 解析。**可证伪性已核对**:把这两条断言跑在修复前的源码(`a4a5395`)上,两条都 FAIL。**两条随后拆成两个独立 `test()`**(验收者指出:同一测试内前一条先抛会遮蔽后一条,半吊子改法看起来与"完全没订阅"一样)。**变异验证(在副本仓库跑,主仓不受影响)**:①整体删掉订阅 ⇒ guard 1/2 FAIL、guard 2/2 PASS;②保留订阅但删掉显式传参 ⇒ guard 1/2 PASS、guard 2/2 FAIL —— 两种半吊子改法各自被独立捕获。
 - **修复后真机验证(隔离 DSH_HOME + 端口 19417 + Playwright,13/13,双向均不刷新)**:新会话拿到 `auto:2`(青柠槽)。
   - 浅色基线:行 `rgb(73,110,0)` = `#496e00`,**实测对比度 5.63**(对 `rgb(247,248,250)`)。
   - **点「通用设置→深色」后不做任何其它交互**:切换后 **0.5s** 采样已是 `rgb(116,173,0)` = `#74ad00`(同槽位深色池),**实测 5.40**(对 `rgb(39,40,43)`);3.0s 再采样仍是同一值 ⇒ **不再需要"靠一次重渲染自愈"**,而是切换即重绘。

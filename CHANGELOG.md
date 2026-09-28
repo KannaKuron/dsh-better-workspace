@@ -3,6 +3,13 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.27.0 — 2026-09-28
+
+**类型**:chore(清理 0.1.6 以前的兼容:删旧设置座位与 settingsNamespace era 探测,宿主下限提高到 0.1.6-alpha.2)
+
+- **删旧设置座位**:client 半不再注册 settings-list 旧座位;设置卡只挂插件详情页座位(plugins.bundle.config,0.1.6-alpha.2+)。冒烟断言反转为防回归守卫。
+- **删 settingsNamespace() era 探测**:该 helper 在 dsh 0.1.2-alpha.2 就已移除;host 半旧时代注册直接传普通字符串命名空间,并随之去掉 @deepseek-ai/dsh-settings 的动态 import。0.1.7 分界的双时代探测(settings.register 软探测 / configForms)保留——0.1.6-alpha.2 宿主仍走旧路径。
+- **宿主下限**:engines.dsh 与 peer @deepseek-ai/dsh 从 >=0.1.0 提到 >=0.1.6-alpha.2。冒烟字面量断言同步。
 ## v0.26.0 — 2026-09-28
 
 **类型**:feat(设置卡内部分组)

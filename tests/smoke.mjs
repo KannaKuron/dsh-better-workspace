@@ -30,7 +30,7 @@ test('package.json declares the dsh peers the 0.1.7+ compatibility gate reads', 
   // was observed (dsh-any-background@0.3.0 was refused on 0.1.7-rc.1 for
   // exactly that).
   const pkg = JSON.parse(read('package.json'))
-  assert.equal(pkg.peerDependencies['@deepseek-ai/dsh'], '>=0.1.0')
+  assert.equal(pkg.peerDependencies['@deepseek-ai/dsh'], '>=0.1.6-alpha.2')
   // Both dsh peers must be OPTIONAL: the gate reads peerDependencies only, but
   // a package manager with autoInstallPeers (pnpm's default) resolves the range
   // against the registry — and every published version of both packages is a
@@ -59,7 +59,7 @@ test('cordis.patch.yml inserts exactly one plugin row', () => {
 test('package.json declares the dsh engine floor (plugin market requirement)', () => {
   const pkg = JSON.parse(read('package.json'))
   assert.equal(pkg.engines.node, '>=18')
-  assert.equal(pkg.engines.dsh, '>=0.1.0')
+  assert.equal(pkg.engines.dsh, '>=0.1.6-alpha.2')
 })
 
 test('client half is a __ModuleLoader__ bundle with baseline requires only', () => {
@@ -103,7 +103,7 @@ test('client half registers the expected seats (v0.12.1)', () => {
   assert.doesNotMatch(text, /slots\.inject\('conversation\.hero\.workspace\.directoryFlow'/,
     'the hero hole must stay official')
   // Settings ride BOTH host eras.
-  assert.match(text, /slots\.inject\('settings\.plugin\.item',[\s\S]*?key: 'better-workspace',/)
+  assert.doesNotMatch(text, /settings\.plugin\.item/, 'the legacy settings-list seat must stay gone')
   assert.match(text, /slots\.inject\('plugins\.bundle\.config',[\s\S]*?key: 'dsh-better-workspace',/)
   assert.match(text, /props\.view === 'page'/)
 })

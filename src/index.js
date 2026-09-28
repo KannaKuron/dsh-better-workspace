@@ -100,26 +100,19 @@ export function apply(ctx) {
     // (schema(mergeLayers(...))) — that is @deepseek-ai/schemastery's contract:
     // its schemas are callable and fill defaults on undefined. zod objects are
     // NOT callable, so a zod schema throws "TypeError: ... is not a function"
-    // at register(); the namespace is then never served and the Settings →
-    // Plugins tab (served namespaces ∩ settings.plugin.item cards) never
-    // dispatches our card. Both modules resolve at runtime through normal Node
+    // at register(); the namespace is then never served and the settings card
+    // never gets data. The module resolves at runtime through normal Node
     // resolution from the plugin's own node_modules (the same static-import
     // pattern dsh-context uses).
-    Promise.all([import('@deepseek-ai/dsh-settings'), import('@deepseek-ai/schemastery')])
-      .then(([ds, sm]) => {
+    import('@deepseek-ai/schemastery')
+      .then((sm) => {
         const settings = sctx && sctx.settings
         if (!settings || typeof settings.register !== 'function') return
         const Schema = sm.default
-        // dsh >= 0.1.2-alpha.2 removed the settingsNamespace() helper from
-        // @deepseek-ai/dsh-settings: register() now takes a plain string and
-        // validates it at runtime (parseSettingsNamespace). The helper's old
-        // signature was compile-time branding only, so a plain string is also
-        // accepted by the older register() — one call, both eras. Only use the
-        // helper when the installed package still ships it.
-        const ns = typeof ds.settingsNamespace === 'function'
-          ? ds.settingsNamespace('better-workspace')
-          : 'better-workspace'
-        settings.register(ns, Schema.object({
+        // register() takes a plain string since dsh 0.1.2-alpha.2 removed the
+        // settingsNamespace() helper (the helper was compile-time branding only).
+        // The 0.1.6 floor guarantees the plain-string register() is what runs.
+        settings.register('better-workspace', Schema.object({
           // Cross-device preferences live in the HOST settings store
           // (~/.dsh/settings.yaml): web and the desktop app share one
           // DSH_HOME, so appearance (styling) and the two toggles follow

@@ -10,10 +10,9 @@
  *     declares the sidebar.workspaces.directoryFlow child hole without
  *     occupying it, so the official composed picker (OS chooser or in-app
  *     browser, whichever the Host serves) drives the add-workspace flow.
- *  2. settings.plugin.item (Settings → Plugins card) and
- *     plugins.bundle.config (the Plugins panel's bundle page, dsh
- *     0.1.6-alpha.2+; keyed by package name): the settings card, one seat
- *     per host era — a seat whose slot is never declared never registers.
+ *  2. plugins.bundle.config (the Plugins panel's bundle page, dsh
+ *     0.1.6-alpha.2+; keyed by package name): the settings card — the single
+ *     settings seat since the host floor was raised past the old list seat.
  *
  * Every require below is a dsh client baseline module (see
  * @deepseek-ai/dsh-client-web seed.ts): react, @deepseek-ai/dsh-client-store,
@@ -8857,26 +8856,12 @@ window.__ModuleLoader__.load({
         console.warn('[dsh-better-workspace] configForms wiring failed', error)
       }
 
-      // Settings → Plugins card only (the tab dispatches the intersection of
-      // served namespaces — registered host-side — and settings.plugin.item
-      // cards). The old left-nav settings.section entry was removed: the
-      // plugins-section card is the single settings surface now.
-      slots.inject('settings.plugin.item', guarded(
-        'settings.plugin.item',
-        {
-          name: 'settings.plugin.item',
-          key: 'better-workspace',
-          locale: NS,
-          store: viewStore,
-        },
-        BetterWorkspacePluginCard,
-      ))
-
-      // dsh 0.1.6-alpha.2+ moves third-party configuration to the Plugins
+      // dsh 0.1.6-alpha.2+ hosts third-party configuration on the Plugins
       // panel's bundle page: plugins.bundle.config, keyed by PACKAGE name and
-      // rendered with view: 'page'. The inject waits for the declaration, so
-      // older hosts simply never grow this seat — the settings.plugin.item
-      // card above remains the settings surface there.
+      // rendered with view: 'page'. This is the only settings seat now — the
+      // legacy settings-list card (the pre-alpha.2 Settings → Plugins list)
+      // went away with the raised host floor. The inject waits for the
+      // declaration, so older hosts simply never grow this seat.
       slots.inject('plugins.bundle.config', guarded(
         'plugins.bundle.config',
         {

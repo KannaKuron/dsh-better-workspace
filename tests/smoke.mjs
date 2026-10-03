@@ -1789,3 +1789,31 @@ test('auto style: all 21 hints promise ≥4.5 (normal-text AA) per theme, no sta
   assert.doesNotMatch(hints[1], /does not reach/, 'the EN copy must not claim AA is unreached')
   assert.doesNotMatch(hints[1], /stays readable/, 'the old EN over-promising wording must not come back')
 })
+
+test('customize dialog honors the Modal height contract (v0.27.1, issue #10)', () => {
+  const text = read('src/client.js')
+  // The Modal .dialog frame is overflow:hidden; a card that grows past the
+  // window gets clipped on BOTH ends (title unreachable on top, footer's
+  // reset/done unreachable below ~1074px). The official contract caps growth
+  // against the Modal padding box (max-height:100%) and scrolls the content
+  // region (contentClassName), exactly like the in-tree RiskConfirmation.
+  assert.ok(text.includes("'.bw-custom-dialog{max-height:100%}'"),
+    'the card needs the max-height cap')
+  assert.ok(text.includes("'.bw-custom-scroll{min-height:0;overflow-y:auto;overscroll-behavior:contain}'"),
+    'the content region needs its own scroll + overscroll containment')
+  assert.ok(text.includes("@supports (height:100dvh){.bw-custom-dialog{max-height:calc(100dvh - 48px)}}"),
+    'the 100dvh fallback must stay for hosts sizing against viewport units')
+  // The CustomizeDialog call must actually wire both classes into ui.Modal —
+  // CSS alone is inert if the call site never passes it.
+  const head = text.slice(text.indexOf('function CustomizeDialog'))
+  const seg = head.slice(0, head.indexOf('StyleNode()'))
+  assert.ok(seg.includes("className: 'bw-custom-dialog'"),
+    'CustomizeDialog must pass className to ui.Modal')
+  assert.ok(seg.includes("contentClassName: 'bw-custom-scroll'"),
+    'CustomizeDialog must pass contentClassName to ui.Modal')
+  // No accidental spread: exactly the CSS declarations + the one call site.
+  assert.equal((text.match(/bw-custom-dialog/g) || []).length, 3,
+    'bw-custom-dialog must appear exactly 3 times (css ×2 + className ×1)')
+  assert.equal((text.match(/bw-custom-scroll/g) || []).length, 2,
+    'bw-custom-scroll must appear exactly 2 times (css ×1 + contentClassName ×1)')
+})

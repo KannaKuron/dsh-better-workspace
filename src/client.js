@@ -4176,6 +4176,11 @@ window.__ModuleLoader__.load({
       '.bw-rail-btn{width:36px;height:36px;border:none;background:transparent;border-radius:var(--dsw-radius-sm,8px);display:grid;place-items:center;color:var(--dsw-alias-label-secondary,#b8b8b8);cursor:pointer;padding:0}',
       '.bw-rail-btn:hover{background:var(--dsw-specific-sidebar-nav-item-hover,var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12)));color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-modal-body{display:flex;flex-direction:column;gap:10px;min-width:300px;max-width:380px;box-sizing:border-box}',
+      // issue #10: Modal 高度契约 — 卡片按 Modal 的 padding box 限高,超高内容滚 contentClassName 区
+      // (官方 RiskConfirmation 同款范式;.dialog 为 overflow:hidden,不限高则上下被裁)
+      '.bw-custom-dialog{max-height:100%}',
+      '.bw-custom-scroll{min-height:0;overflow-y:auto;overscroll-behavior:contain}',
+      '@supports (height:100dvh){.bw-custom-dialog{max-height:calc(100dvh - 48px)}}',
       '.bw-field{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--dsw-alias-label-secondary,#b8b8b8)}',
       '.bw-appearance{display:flex;flex-direction:column;gap:10px}',
       '.bw-appearance-box{margin-top:8px;padding:10px 12px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.22));border-radius:8px;background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.06))}',
@@ -5872,6 +5877,9 @@ window.__ModuleLoader__.load({
         onClose,
         closeLabel: t('close'),
         title: t('custom.title'),
+        // issue #10: 限高 + 内容滚动,窗口矮于内容时 footer 按钮仍可见可点
+        className: 'bw-custom-dialog',
+        contentClassName: 'bw-custom-scroll',
         footer: E('div', { className: 'bw-modal-actions' },
           E(BTN, { variant: 'outline', onClick: () => { onReset(); onClose() } }, t('custom.reset')),
           E(BTN, { variant: 'primary', onClick: commit }, t('custom.done')),

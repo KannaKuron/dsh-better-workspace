@@ -3,6 +3,26 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.27.1 — 2026-10-04
+
+**类型**:fix(issue #10:「自定义外观」弹窗比窗口高时上下被裁)
+
+- **现象**:对 workspace / workspace-folder 行点「自定义外观」,Modal 自然高约 1026px(六组控件 + 图标网格);
+  窗口矮于约 1074px 时上下两端被 `.dialog` 的 `overflow:hidden` 直接切掉——顶部标题与底部
+  「恢复默认外观 / 完成」都不可见,找不到提交按钮。200% 缩放矮窗口必现(报告者 WhatCannotBeSaid
+  实测:1280×720 视口上下各裁 153px)。
+- **根因**:`CustomizeDialog` 没遵守 `@deepseek-ai/dsh-client-ui-primitives` Modal 的高度契约
+  (consumers cap growth with max-height:100%, never their own viewport calc);其余 8 处 ui.Modal 内容都矮,
+  只有这一处超高暴露。
+- **修复**(照官方 RiskConfirmation 范式):CSS 表新增 bw-custom-dialog(max-height:100%;@supports
+  100dvh 下 calc(100dvh - 48px))+ bw-custom-scroll(min-height:0 / overflow-y:auto /
+  overscroll-behavior:contain);CustomizeDialog 调用点把两类名经 className / contentClassName 传入。
+  修复后卡片高 = 视口 − 48px,内容区滚动,footer 按钮常驻可点。
+- **守卫**:smoke 新增字面量断言(CSS 三条声明 + 调用点两个 props + 出现次数锁定,防止类名被误删或
+  扩散到其他 Modal)。
+- 依据:issue #10 报告自带三档视口量测与补丁建议,本修复即其建议核实后的落地;报告者注明的
+  「其余 8 处 Modal 不必一起动」一并采纳(内容都矮,零收益)。
+
 ## v0.27.0 — 2026-09-28
 
 **类型**:chore(清理 0.1.6 以前的兼容:删旧设置座位与 settingsNamespace era 探测,宿主下限提高到 0.1.6-alpha.2)

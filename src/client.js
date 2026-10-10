@@ -4553,14 +4553,20 @@ window.__ModuleLoader__.load({
     // v0.16.0: the sidebar no longer draws its own in-app browser. The browse
     // backend SHIPS one (dsh-client-ui-directory-picker-browse, mounted as a
     // host+surface pair, its client half registering into both directory-flow
-    // holes) — but it can only be rendered by the entry that DECLARED the
-    // child hole (the shipped WorkspaceBrowser), and a child declaration is
-    // exclusive, so shadowing that seat forfeits the authorization for good
-    // (ui-renderer: "not declared by this entry's children"). A native Host
-    // still gets the official OS chooser; a browse Host is pointed at the
-    // official in-app flow in the conversation empty state instead of a
-    // second-hand imitation. The probe stays: it decides which of the two
-    // this page gets, and a refused pick still classifies the backend.
+    // holes) — but it can only be RENDER-AUTHORIZED by the entry that
+    // DECLARED the child hole (the shipped WorkspaceBrowser), and a child
+    // declaration is exclusive, so shadowing that seat forfeits that
+    // authorization for good (ui-renderer: "not declared by this entry's
+    // children").
+    // v0.28.0: that gap no longer punts browse hosts to the empty-state page.
+    // The shipped occupant registers into BOTH holes (the sidebar hole
+    // included), so the sidebar reads its component off the slot ledger —
+    // the v0.22.0 hero read, third use of the shipped-occupant pattern — and
+    // renders it with its own owner conversation. A native Host still gets
+    // the official OS chooser; a ledger that hides the entry keeps the
+    // add-guide pointer as the floor. The probe stays: it decides which of
+    // the two this page gets, and a refused pick still classifies the
+    // backend.
     const pickerState = { kind: 'unknown', probe: null, api: null }
     /**
      * True for the refusal a Host serving the OTHER capability throws: the wire
@@ -6412,6 +6418,7 @@ window.__ModuleLoader__.load({
         insertWorkspaceBefore, insertSessionBefore,
         useDirectoryFlow,
         pickDirectory, listDirectory, createDirectory,
+        sidebarFlowEntry,
         shippedBrowserFace, scheduleSeatReader,
         officialT,
         t,
@@ -8409,20 +8416,47 @@ window.__ModuleLoader__.load({
           onClose: () => setDialog(null),
           t,
         })
-        if (dialog.kind === 'add-guide') return E(ui.Modal, {
-          key: 'add-guide',
-          open: true,
-          onClose: () => setDialog(null),
-          closeLabel: t('close'),
-          title: t('add.guide.title'),
-          footer: E('div', { className: 'bw-modal-actions' },
-            E(BTN, { variant: 'primary', onClick: () => setDialog(null) }, t('confirm')),
-          ),
-        },
-          E('div', { className: 'bw-modal-body' },
-            E('div', { className: 'bw-hint' }, t('add.guide')),
-          ),
-        )
+        if (dialog.kind === 'add-guide' || dialog.kind === 'add-flow') {
+          // v0.28.0: a browse host gets the SHIPPED in-app dialog right here.
+          // The occupant's component is read off the sidebar hole's ledger
+          // (the hero read, v0.22.0) and rendered with this seat's owner
+          // conversation: a confirmed directory is adopted exactly like a
+          // native pick, dismissal just closes. The ledger hiding the entry
+          // (or an 'add-guide' outright) keeps the pointer dialog as the
+          // floor. All references below are callback-scoped: adoptDirectory
+          // and fail are defined after this IIFE, so no render-time TDZ.
+          const flowEntry = dialog.kind === 'add-flow'
+            && typeof sidebarFlowEntry === 'function' ? sidebarFlowEntry() : null
+          if (flowEntry && flowEntry.component) {
+            let flowFace = null
+            if (typeof flowEntry.inject === 'function') {
+              try { flowFace = flowEntry.inject() } catch (error) { flowFace = null }
+            }
+            return E(flowEntry.component, {
+              key: 'bw-sidebar-flow',
+              open: true,
+              busy: flowBusy,
+              onPicked: (path) => { setDialog(null); if (path) adoptDirectory(String(path)) },
+              onCancel: () => { setDialog(null) },
+              onError: (message) => { setDialog(null); fail(String(message)) },
+              ...(flowFace || EMPTY_FOLDERS),
+            })
+          }
+          return E(ui.Modal, {
+            key: 'add-guide',
+            open: true,
+            onClose: () => setDialog(null),
+            closeLabel: t('close'),
+            title: t('add.guide.title'),
+            footer: E('div', { className: 'bw-modal-actions' },
+              E(BTN, { variant: 'primary', onClick: () => setDialog(null) }, t('confirm')),
+            ),
+          },
+            E('div', { className: 'bw-modal-body' },
+              E('div', { className: 'bw-hint' }, t('add.guide')),
+            ),
+          )
+        }
         return null
       })()
 
@@ -8445,9 +8479,12 @@ window.__ModuleLoader__.load({
       }
 
       // v0.16.0: the sidebar add affordance rides the OFFICIAL chooser only.
-      // A `browse` host refuses that pick by design, so the click explains where
-      // the official in-app flow lives instead of opening a plugin-built copy —
-      // the shipped dialog cannot be rendered from here (see the capability block).
+      // A `browse` host refuses that pick by design — the click used to
+      // explain where the official in-app flow lives instead. v0.28.0: the
+      // browse host now gets that flow RIGHT HERE: 'add-flow' opens the
+      // dialog that reads the shipped occupant off the sidebar hole's ledger
+      // (see the dialog rendering above; the renderSlot authorization stays
+      // with the shipped entry, but the component is on the ledger).
       //
       // The shipped shortcut channel also reports this interaction
       // (setDirectoryBusy): a second Cmd/Ctrl+O while the chooser is open is
@@ -8458,12 +8495,12 @@ window.__ModuleLoader__.load({
         const settle = () => { if (typeof reportDirectoryBusy === 'function') reportDirectoryBusy(false) }
         Promise.resolve(pickerCapabilityNow())
           .then((kind) => {
-            if (kind === 'browse') { setDialog({ kind: 'add-guide' }); return undefined }
+            if (kind === 'browse') { setDialog({ kind: 'add-flow' }); return undefined }
             return Promise.resolve()
               .then(() => pickDirectory())
               .then((path) => (path ? adoptDirectory(String(path)) : undefined))
               .catch((reason) => {
-                if (pickerRefusal(reason)) { setDialog({ kind: 'add-guide' }); return }
+                if (pickerRefusal(reason)) { setDialog({ kind: 'add-flow' }); return }
                 fail(messageOf(reason))
               })
           })
@@ -8781,6 +8818,21 @@ window.__ModuleLoader__.load({
         // Host composes the browse backend instead of the OS chooser.
         listDirectory: (path, signal) => uiWorkspace.listDirectory(path, signal),
         createDirectory: (path, name) => uiWorkspace.createDirectory(path, name),
+        // v0.28.0: the shipped occupant's ledger entry for the SIDEBAR flow
+        // hole (same read as the hero one, v0.22.0). The browse surface
+        // registers into both holes, so its in-app dialog renders from the
+        // sidebar too; a native entry read this way is renderless and would
+        // only re-run the OS chooser the native branch already drives
+        // directly, so the browse probe keeps choosing the path.
+        sidebarFlowEntry: () => {
+          try {
+            const list = slots.entries('sidebar.workspaces.directoryFlow')
+            const entry = Array.isArray(list) && list.length > 0 ? list[0] : null
+            return entry && entry.component ? entry : null
+          } catch (error) {
+            return null
+          }
+        },
         hooks: {
           directoryFlow: flowSource(slots, 'sidebar.workspaces.directoryFlow'),
         },
@@ -8799,14 +8851,16 @@ window.__ModuleLoader__.load({
         }
       }
 
-      // The SIDEBAR hole is occupied by our own picking flow at priority -1:
-      // rendering the official occupant is impossible here (a child-hole
-      // declaration is exclusive — the shipped browser entry keeps owning
-      // 'sidebar.workspaces.directoryFlow' even after losing the render race,
-      // and re-declaring throws), so the flow probes the backend itself — the
-      // OS chooser through the same official host service on native Hosts,
-      // the polished in-app dialog on browse Hosts. The HERO hole stays
-      // untouched: the conversation empty-state flow is purely official.
+      // The SIDEBAR hole's directory flow is NOT occupied by this plugin
+      // (v0.16.0): a child-hole declaration is exclusive — the shipped
+      // browser entry keeps owning 'sidebar.workspaces.directoryFlow' even
+      // after losing the render race, and re-declaring throws — so the add
+      // flow probes the backend itself: the OS chooser through the same
+      // official host service on native Hosts, and since v0.28.0 the SHIPPED
+      // in-app dialog on browse Hosts, read off the hole's ledger and
+      // rendered with this seat's owner conversation (the hero read,
+      // v0.22.0). The HERO hole is likewise never declared here; the
+      // empty-state picker reads its occupant the same way.
 
       // One shared store handle: the browser and the settings page must see the
       // same persisted state (expansion, folder list, prefs, styling).

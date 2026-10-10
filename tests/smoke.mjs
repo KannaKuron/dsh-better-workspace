@@ -827,17 +827,33 @@ test('view options: group/order menu + the two slash toggles (0.13.0)', () => {
  * browser is the owner (open/busy/onPicked/onCancel/onError), the composed
  * picker serves the declared child hole, and a picked directory is adopted
  * with createWorkspace + startSession — the shipped browser's behavior.
+ * v0.28.0: a browse Host renders the SHIPPED in-app dialog right in the
+ * sidebar — the occupant's component read off the sidebar hole's ledger
+ * (the v0.22.0 hero read) — instead of being pointed at the empty-state
+ * page; the pointer dialog stays as the floor when the ledger hides the
+ * entry.
  */
-test('add-workspace flow: official chooser, browse Host pointed at the official flow (v0.16.0)', () => {
+test('add-workspace flow: official chooser, browse Host renders the shipped dialog in place (v0.28.0)', () => {
   const text = read('src/client.js')
   // The affordance probes the composed backend and rides the OFFICIAL chooser;
-  // a browse Host is pointed at the official in-app flow instead of opening a
-  // plugin-built browser (which the seat shadowing made unrenderable for good).
+  // a browse Host opens 'add-flow', which renders the SHIPPED occupant read
+  // off the sidebar hole's ledger (never a plugin-built browser — the seat
+  // shadowing makes that unrenderable for good).
   assert.match(text, /pickerCapabilityNow\(\)/)
   assert.match(text, /const startAddFlow = \(\) => \{/)
-  assert.match(text, /if \(kind === 'browse'\) \{ setDialog\(\{ kind: 'add-guide' \}\); return undefined \}/)
-  assert.match(text, /if \(pickerRefusal\(reason\)\) \{ setDialog\(\{ kind: 'add-guide' \}\); return \}/)
-  assert.match(text, /if \(dialog\.kind === 'add-guide'\)/)
+  assert.match(text, /if \(kind === 'browse'\) \{ setDialog\(\{ kind: 'add-flow' \}\); return undefined \}/)
+  assert.match(text, /if \(pickerRefusal\(reason\)\) \{ setDialog\(\{ kind: 'add-flow' \}\); return \}/)
+  // The ledger read: browserInjected exposes it, the browser consumes it, and
+  // the dialog branch renders the occupant with this seat's owner
+  // conversation — falling back to the add-guide pointer when absent.
+  assert.match(text, /sidebarFlowEntry: \(\) => \{/)
+  assert.match(text, /slots\.entries\('sidebar\.workspaces\.directoryFlow'\)/)
+  assert.match(text, /pickDirectory, listDirectory, createDirectory,\s*\n\s*sidebarFlowEntry,/)
+  assert.match(text, /if \(dialog\.kind === 'add-guide' \|\| dialog\.kind === 'add-flow'\) \{/)
+  assert.match(text, /const flowEntry = dialog\.kind === 'add-flow'/)
+  assert.match(text, /E\(flowEntry\.component, \{/)
+  assert.match(text, /onPicked: \(path\) => \{ setDialog\(null\); if \(path\) adoptDirectory\(String\(path\)\) \}/)
+  assert.match(text, /'add\.guide'/, 'the pointer dialog stays as the fallback floor')
   assert.doesNotMatch(text, /DirectoryBrowseDialog|BetterFlow|markPickerBrowse/,
     'the hand-made directory browser must never return')
   // Native Hosts ride the SAME official host service (no custom chooser).

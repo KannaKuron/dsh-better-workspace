@@ -3,6 +3,18 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.28.0 — 2026-10-10
+
+**类型**:feat(browse 宿主下,侧栏「添加工作区」直接弹出官方应用内浏览器——不再指路对话空态)
+
+- **背景**:remote-web-ui 之类插件把 webserver 绑到 `0.0.0.0`/LAN 时,宿主组装的是 browse 目录后端(`directory-picker-auto`:`bindHost !== '127.0.0.1'` 一律 browse,pick 被拒为 `directory-picker/unavailable`)。v0.16.0 的设计里本插件侧栏在这种宿主上只弹 `add-guide` 提示、把用户指到「新会话」页的官方入口——每次添加都要绕一大圈,用户实测直呼太麻烦。
+- **关键事实(官方源码实证)**:官方 browse surface(`@deepseek-ai/dsh-client-ui-directory-picker-browse` 的 client 半)把 `BrowseDirectoryFlow` 注册进**两个** directoryFlow 洞——`conversation.hero.workspace.directoryFlow` **和** `sidebar.workspaces.directoryFlow`。v0.22.0 为对话空态发明的「ledger 读官方 occupant 直接渲染」手法(`slots.entries(<hole>)[0]` → `{ component, inject(), locale }`,v0.23.0 定型为通用读法)在侧栏洞上同样可用——v0.16.0 选指路不是平台不允许,而是当时还没有这个读法。
+- **修法**:`startAddFlow()` 的 browse 分支与 pick 被拒分支从 `setDialog({ kind: 'add-guide' })` 改为 `setDialog({ kind: 'add-flow' })`;dialog 渲染读 `sidebarFlowEntry()`(browserInjected 新增,与 heroFlowEntry 同款的 try/catch ledger 读)拿官方 `BrowseDirectoryFlow` 组件 + 它自己的 inject 面(listDirectory/createDirectory/t),补本座位的 owner 对话(open/busy/onPicked/onCancel/onError)直接渲染;选定路径照旧 `adoptDirectory`(createWorkspace + startSession,与官方浏览器同款)。**ledger 读不到(老宿主/surface 未挂/中途卸载)降级回原有 `add-guide` 提示**,降级面一行未动。
+- **安全性**:不是 children 声明(防回归断言仍在),不是自绘浏览器(`DirectoryBrowseDialog`/`BetterFlow`/`markPickerBrowse` 禁令仍在)——渲染的就是官方组件、官方注入面、官方词典。探测误判(native 被判成 browse)读到 native occupant 也无害:`NativeDirectoryFlow` 是 renderless 的,open 上升沿自动跑一次 pick,等于回到 OS 选择器路径。onPicked/onCancel/onError 全是回调引用,dialog IIFE 与 adoptDirectory/fail 的定义顺序不构成 TDZ。
+- **native 路径零改动**:loopback/桌面宿主照旧直接调官方 `uiWorkspace.pickDirectory()`。
+- **冒烟测试 58 项全绿**:add-workspace flow 守卫反转为新契约(browse/refusal → `add-flow`、`sidebarFlowEntry` 读法存在且读侧栏洞、dialog 合并分支渲染 `flowEntry.component`、`add.guide` 保留为降级面),自绘浏览器/父分组弹窗/native 直连断言原样保留。
+- **隔离真机验证(独立 DSH_HOME + 0.0.0.0:3197 绑定 + headless Chrome over CDP,全程不碰用户实例)**:压掉首启弹层(ui-settings-general `welcomeNoticeVersion`,与用户真实 profile 同款)后,CDP 点击侧栏「添加工作区」(title=「添加工作区 (⌥⌘O)」,官方快捷键目录活着)→ **官方 DirectoryBrowser 弹出**(「选择工作区目录」标题在场、官方「新建文件夹」控件在场、add-guide 指路文案**缺席**)、console 零错误、零 `register skipped`;截图留档。宿主组装的正是 browse 后端(0.0.0.0 绑定,`directory-picker-auto` 规则),即用户 remote-web-ui 场景的同款路径。
+
 ## v0.27.2 — 2026-10-05
 
 **类型**:chore(清理 `dsh.client.inject` 里的死引用 `@deepseek-ai/dsh-client-runtime`)

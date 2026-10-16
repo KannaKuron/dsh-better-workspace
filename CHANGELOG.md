@@ -3,6 +3,17 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.30.0 — 2026-10-17
+
+**类型**:feat(会话菜单跟随 dsh 0.2.1-alpha.5 官方第五条目「复制 Session ID」;配额 keep 集对齐官方 attention 语义)。
+
+- **复制 Session ID(v0.30.0 主项,镜像官方 order 450 SessionIdMenuItem)**:会话右键菜单在归档之后插入第五条目——文案 `official('menu.sessionId', t(...))` 直取官方词典,图标同款 `IconCopyOutlineRegular`;整行 feature-detect `ui.writeClipboard`(宿主原语缺失时整行隐藏,老宿主零噪音);点击后复制成功与否均有提示——宿主有 primitives `ui.Toast`(alpha.5 官方 portal/toast)时走官方样式(success/fail 两 tone),没有时回退自绘 `bw-toast` chip(复用 fork 提示样式 + 关闭钮);6 秒自动消失。**镜像官方行必须连反馈一起镜像**(官方 = copy + toast 一体)。
+- **配额 keep 集对齐官方 attention 语义(修 issue #8 的残余缺陷)**:`limitSessionsForRender` 在 blank/running/子代理/置顶四类豁免之外,追加「前 50 条非 blank 内的 pending/completed/当前会话始终显示」(`SESSION_ATTENTION_WINDOW = 50` = 官方 watermark auto 上限,alpha.5 起官方折叠即此语义)——此前配额开启时**当前会话本身可能被收进 overflow**,与官方「等待你的会话始终显示」的 hint 相悖;计数基仍是配额 N,只放行豁免类。
+- **alpha.5 官方侧对照(只读不改行为)**:官方折叠改用客户端 watermark(base 5 / auto 上限 50 / Show more 步进 +5),本插件的配额是插件侧可选语义(默认 0=不限量),两者并存不冲突;官方已退役 `WorkspaceBrowserInjected.dismissForkError`——本插件 fork 错误镜像在 alpha.5 上经 typeof 防御自然失活,代码保留供老宿主(rc.2 时代)继续工作,注释标注现状;watermark 机制为客户端行为,插件侧零改动。
+- **词典**:`menu.sessionId` / `toast.sessionIdCopied` / `toast.sessionIdCopyFailed` × 21 门新增(zh/en 用官方原文,其余 19 门自译)。
+- **冒烟**:59 项全绿(新增 copy-notice 双通道测试块;配额测试加 attention 窗口断言;菜单镜像测试加第五条目断言)。
+- engines.dsh 维持 `>=0.1.6-alpha.2` 开放下界不抬门槛(alpha.4 门禁 engines 一票裁决,开放式下界全覆盖);Windows 双端真机验证待做。
+
 ## v0.29.0 — 2026-10-13
 
 **类型**:feat(设置卡可折叠分区;家族跟进 dsh-gitbash-shell v0.38.4 已验收形态)。

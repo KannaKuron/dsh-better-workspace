@@ -895,6 +895,13 @@ test('context menu: official alignment via the workspace dictionary (0.14.0)', (
   // Rendered through the official primitives Menu, positioned by the event.
   assert.match(text, /typeof ui\.Menu === 'function'\) \? E\(ui\.Menu/)
   assert.match(text, /getAnchorRect: \(\) => new DOMRect\(ctx\.x, ctx\.y, 0, 0\)/)
+  // dsh 0.2.1-alpha.5's fifth official entry rides after archive (order 450):
+  // the clipboard write is feature-probed on the host primitive, so the whole
+  // row hides where the primitives lack it.
+  assert.match(text, /official\('menu\.sessionId', t\('menu\.sessionId'\)\)/)
+  assert.match(text, /id: 'copy-id',/)
+  assert.match(text, /icon\('IconCopyOutlineRegular', 16\)/)
+  assert.match(text, /typeof ui\.writeClipboard === 'function' \? \[\{\n\s*id: 'copy-id',/)
   // The bw-only entries ride after a separator.
   assert.match(text, /id: 'customize', label: t\('custom\.title'\), icon: icon\('IconPersonalizationOutline16', 16\)/)
 })
@@ -951,6 +958,40 @@ test('official mirror: pin/archive surface, archived filter, gates, status migra
 })
 
 /**
+ * dsh 0.2.1-alpha.5 mirror (v0.30.0): the session-id menu row reports through
+ * the official primitives Toast when the host ships it (body portal, official
+ * look) and falls back to the plugin's own chip otherwise; the quota's
+ * always-visible set follows the official attention semantics (see the issue
+ * round test), and the retired forkError mirror keeps its typeof defenses.
+ */
+test('copy-session-id notice: official toast or fallback chip (v0.30.0)', () => {
+  const text = read('src/client.js')
+  // Feature probes, both directions.
+  assert.match(text, /const officialToast = typeof ui\.Toast === 'function' \? ui\.Toast : null/)
+  assert.match(text, /id === 'copy-id' && typeof ui\.writeClipboard === 'function'/)
+  // Official wiring: copied === true is success, everything else fails.
+  assert.match(text, /ok: copied === true/)
+  // The official path keys on seq; the fallback chip rides the fork-notice
+  // styling with its own close button; both self-dismiss (onDone / cap).
+  assert.match(text, /key: 'bw-copy-' \+ copyNotice\.seq/)
+  assert.match(text, /tone: copyNotice\.ok \? 'success' : undefined/)
+  assert.match(text, /onDone: \(\) => setCopyNotice\(null\)/)
+  assert.match(text, /\(copyNotice && !officialToast\)\n\s*\? E\('div', \{ className: 'bw-toast', role: 'status' \}/)
+  assert.match(text, /onClick: \(\) => setCopyNotice\(null\),/)
+  // Copy rides the official dictionary with the aligned local fallback, for
+  // both outcomes.
+  assert.match(text, /officialText\(copyNotice\.ok \? 'toast\.sessionIdCopied' : 'toast\.sessionIdCopyFailed',/)
+  // The retired forkError mirror stays defensive (rc.2-era hosts).
+  assert.match(text, /typeof dismissForkError === 'function'/)
+  // Dictionary: all three keys are local (pre-0.2.1 hosts have no official
+  // copy) — zh carries them and the key-set test pins the other 20.
+  const zhKeys = text.slice(text.indexOf('const zh = {'), text.indexOf('const en = {'))
+  assert.match(zhKeys, /'menu\.sessionId': '复制 Session ID',/)
+  assert.match(zhKeys, /'toast\.sessionIdCopied': 'Session ID 已复制',/)
+  assert.match(zhKeys, /'toast\.sessionIdCopyFailed': '复制失败，请重试',/)
+})
+
+/**
  * Issue round v0.21.0: four reports, one release. #9's two defects (the
  * missing ./package.json export that kept the client half out of the desktop
  * boot graph, and the customize-dialog icon pick that overwrote itself),
@@ -979,10 +1020,15 @@ test('issue round: exports fix, icon pick, ungrouped fold, tri-state, quota (v0.
   assert.match(text, /setWorkspaceGroupMode\('slash'\)/)
   assert.match(text, /const diskParentOf = diskOn \? diskParentMapOf\(list\) : new Map\(\)/)
   assert.match(text, /d\.workspaceTitleSlash = d\.workspaceGroupMode !== 'disk'/, 'the legacy boolean rides along for downgrades')
-  // #8: the quota skips blank/running/subagent/pinned rows; the overflow row
-  // rides the legacy sessions.expand copy; search bypasses the quota.
+  // #8: the quota skips blank/running/subagent/pinned rows (v0.30.0: plus the
+  // official attention window — pending/completed/current stay visible within
+  // the first 50 non-blank rows, the shipped watermark's auto cap); the
+  // overflow row rides the legacy sessions.expand copy; search bypasses the
+  // quota.
   assert.match(text, /row\.blank \|\| row\.running \|\| row\.subagents > 0 \|\| row\.pinned/)
-  assert.match(text, /limitSessionsForRender\(full, sessionLimit, limitLifted\[workspace\.workspaceId\]\)/)
+  assert.match(text, /const SESSION_ATTENTION_WINDOW = 50/)
+  assert.match(text, /row\.pending \|\| row\.completed \|\| row\.id === currentId/)
+  assert.match(text, /limitSessionsForRender\(full, sessionLimit, limitLifted\[workspace\.workspaceId\], currentId\)/)
   assert.match(text, /t\('sessions\.expand', \{ n: limited\.hidden \}\)/)
 })
 

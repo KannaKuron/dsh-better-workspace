@@ -27,6 +27,10 @@ window.__ModuleLoader__.load({
 
     const E = React.createElement
     const NS = 'betterWorkspace'
+    // Official transient banner (dsh 0.2.1-alpha.5 primitives Toast; body
+    // portal, self-fading). Absent on older hosts — the copy-session-id
+    // notice then falls back to this plugin's own chip.
+    const officialToast = typeof ui.Toast === 'function' ? ui.Toast : null
 
     /* ============================== i18n ============================== */
 
@@ -81,6 +85,9 @@ window.__ModuleLoader__.load({
       'menu.renameSgroup': '重命名会话分组',
       'menu.moveToGroup': '移动到分组…',
       'menu.moveOutGroup': '移出分组',
+      'menu.sessionId': '复制 Session ID',
+      'toast.sessionIdCopied': 'Session ID 已复制',
+      'toast.sessionIdCopyFailed': '复制失败，请重试',
       'settings.title': '更好的工作区',
       'settings.desc': '工作区树的外观与折叠偏好',
       'settings.expand': '展开',
@@ -234,6 +241,9 @@ window.__ModuleLoader__.load({
       'menu.renameSgroup': 'Rename session group',
       'menu.moveToGroup': 'Move to group…',
       'menu.moveOutGroup': 'Move out of group',
+      'menu.sessionId': 'Copy Session ID',
+      'toast.sessionIdCopied': 'Session ID copied',
+      'toast.sessionIdCopyFailed': 'Copy failed. Try again.',
       'settings.title': 'Better Workspaces',
       'settings.desc': 'Workspace tree appearance and folding preferences',
       'settings.expand': 'Expand',
@@ -395,6 +405,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': 'إعادة تسمية مجموعة الجلسات',
         'menu.moveToGroup': 'نقل إلى مجموعة…',
         'menu.moveOutGroup': 'إخراج من المجموعة',
+        'menu.sessionId': 'نسخ معرّف الجلسة',
+        'toast.sessionIdCopied': 'تم نسخ معرّف الجلسة',
+        'toast.sessionIdCopyFailed': 'فشل النسخ، حاول مجددًا',
         'settings.title': 'مساحات عمل أفضل',
         'settings.desc': 'مظهر شجرة مساحات العمل وتفضيلات الطيّ',
         'settings.expand': 'توسيع',
@@ -548,6 +561,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': 'Sitzungsgruppe umbenennen',
         'menu.moveToGroup': 'In Gruppe verschieben…',
         'menu.moveOutGroup': 'Aus der Gruppe entfernen',
+        'menu.sessionId': 'Session-ID kopieren',
+        'toast.sessionIdCopied': 'Session-ID kopiert',
+        'toast.sessionIdCopyFailed': 'Kopieren fehlgeschlagen. Bitte erneut versuchen.',
         'settings.title': 'Bessere Arbeitsbereiche',
         'settings.desc': 'Aussehen und Einklappverhalten des Arbeitsbereich-Baums',
         'settings.expand': 'Ausklappen',
@@ -701,6 +717,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': 'Renommer le groupe de sessions',
         'menu.moveToGroup': 'Déplacer vers le groupe…',
         'menu.moveOutGroup': 'Retirer du groupe',
+        'menu.sessionId': 'Copier l’ID de session',
+        'toast.sessionIdCopied': 'ID de session copié',
+        'toast.sessionIdCopyFailed': 'Échec de la copie. Veuillez réessayer.',
         'settings.title': 'Espaces de travail améliorés',
         'settings.desc': 'Apparence et repli de l\'arborescence des espaces de travail',
         'settings.expand': 'Développer',
@@ -854,6 +873,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': 'सत्र समूह का नाम बदलें',
         'menu.moveToGroup': 'समूह में ले जाएँ…',
         'menu.moveOutGroup': 'समूह से बाहर निकालें',
+        'menu.sessionId': 'सेशन आईडी कॉपी करें',
+        'toast.sessionIdCopied': 'सेशन आईडी कॉपी हो गई',
+        'toast.sessionIdCopyFailed': 'कॉपी विफल रहा, कृपया पुनः प्रयास करें',
         'settings.title': 'बेहतर कार्यस्थान',
         'settings.desc': 'कार्यस्थान वृक्ष का रूप और समेटने की प्राथमिकताएँ',
         'settings.expand': 'फैलाएँ',
@@ -1007,6 +1029,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': 'Ganti nama grup sesi',
         'menu.moveToGroup': 'Pindahkan ke grup…',
         'menu.moveOutGroup': 'Keluarkan dari grup',
+        'menu.sessionId': 'Salin ID Sesi',
+        'toast.sessionIdCopied': 'ID Sesi disalin',
+        'toast.sessionIdCopyFailed': 'Gagal menyalin, silakan coba lagi',
         'settings.title': 'Ruang kerja yang lebih baik',
         'settings.desc': 'Tampilan dan pelipatan pohon ruang kerja',
         'settings.expand': 'Bentangkan',
@@ -1160,6 +1185,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': 'Rinomina gruppo di sessioni',
         'menu.moveToGroup': 'Sposta nel gruppo…',
         'menu.moveOutGroup': 'Rimuovi dal gruppo',
+        'menu.sessionId': 'Copia ID sessione',
+        'toast.sessionIdCopied': 'ID sessione copiato',
+        'toast.sessionIdCopyFailed': 'Copia non riuscita. Riprova.',
         'settings.title': 'Aree di lavoro migliori',
         'settings.desc': 'Aspetto e compressione dell\'albero delle aree di lavoro',
         'settings.expand': 'Espandi',
@@ -1313,6 +1341,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': 'セッショングループ名を変更',
         'menu.moveToGroup': 'グループに移動…',
         'menu.moveOutGroup': 'グループから出す',
+        'menu.sessionId': 'セッション ID をコピー',
+        'toast.sessionIdCopied': 'セッション ID をコピーしました',
+        'toast.sessionIdCopyFailed': 'コピーに失敗しました。もう一度お試しください',
         'settings.title': 'より良いワークスペース',
         'settings.desc': 'ワークスペースツリーの外観と折りたたみ設定',
         'settings.expand': '展開',
@@ -1466,6 +1497,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': '세션 그룹 이름 바꾸기',
         'menu.moveToGroup': '그룹으로 이동…',
         'menu.moveOutGroup': '그룹에서 제거',
+        'menu.sessionId': '세션 ID 복사',
+        'toast.sessionIdCopied': '세션 ID가 복사되었습니다',
+        'toast.sessionIdCopyFailed': '복사에 실패했습니다. 다시 시도해 주세요',
         'settings.title': '더 나은 워크스페이스',
         'settings.desc': '워크스페이스 트리의 모양과 접기 설정',
         'settings.expand': '펼치기',
@@ -1619,6 +1653,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': 'Sessiegroep naam wijzigen',
         'menu.moveToGroup': 'Naar groep verplaatsen…',
         'menu.moveOutGroup': 'Uit groep halen',
+        'menu.sessionId': 'Sessie-ID kopiëren',
+        'toast.sessionIdCopied': 'Sessie-ID gekopieerd',
+        'toast.sessionIdCopyFailed': 'Kopiëren mislukt. Probeer het opnieuw.',
         'settings.title': 'Betere werkruimten',
         'settings.desc': 'Uiterlijk en inklapgedrag van de werkruimteboom',
         'settings.expand': 'Uitklappen',
@@ -1772,6 +1809,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': 'Zmień nazwę grupy sesji',
         'menu.moveToGroup': 'Przenieś do grupy…',
         'menu.moveOutGroup': 'Przenieś poza grupę',
+        'menu.sessionId': 'Kopiuj ID sesji',
+        'toast.sessionIdCopied': 'Skopiowano ID sesji',
+        'toast.sessionIdCopyFailed': 'Kopiowanie nie powiodło się. Spróbuj ponownie.',
         'settings.title': 'Lepsze obszary robocze',
         'settings.desc': 'Wygląd i zwijanie drzewa obszarów roboczych',
         'settings.expand': 'Rozwiń',
@@ -1925,6 +1965,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': 'Renomear grupo de sessões',
         'menu.moveToGroup': 'Mover para o grupo…',
         'menu.moveOutGroup': 'Remover do grupo',
+        'menu.sessionId': 'Copiar ID da sessão',
+        'toast.sessionIdCopied': 'ID da sessão copiado',
+        'toast.sessionIdCopyFailed': 'Falha ao copiar. Tente novamente.',
         'settings.title': 'Espaços de trabalho melhores',
         'settings.desc': 'Aparência e recolhimento da árvore de espaços de trabalho',
         'settings.expand': 'Expandir',
@@ -2078,6 +2121,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': 'Переименовать группу сессий',
         'menu.moveToGroup': 'Переместить в группу…',
         'menu.moveOutGroup': 'Убрать из группы',
+        'menu.sessionId': 'Копировать ID сессии',
+        'toast.sessionIdCopied': 'ID сессии скопирован',
+        'toast.sessionIdCopyFailed': 'Не удалось скопировать. Попробуйте снова.',
         'settings.title': 'Улучшенные рабочие области',
         'settings.desc': 'Внешний вид и сворачивание дерева рабочих областей',
         'settings.expand': 'Развернуть',
@@ -2231,6 +2277,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': 'Byt namn på sessionsgrupp',
         'menu.moveToGroup': 'Flytta till grupp…',
         'menu.moveOutGroup': 'Flytta ut ur gruppen',
+        'menu.sessionId': 'Kopiera sessions-ID',
+        'toast.sessionIdCopied': 'Sessions-ID kopierat',
+        'toast.sessionIdCopyFailed': 'Kopieringen misslyckades. Försök igen.',
         'settings.title': 'Bättre arbetsytor',
         'settings.desc': 'Utseende och ihopfällning för arbetsyteträdet',
         'settings.expand': 'Fäll ut',
@@ -2384,6 +2433,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': 'เปลี่ยนชื่อกลุ่มเซสชัน',
         'menu.moveToGroup': 'ย้ายไปยังกลุ่ม…',
         'menu.moveOutGroup': 'ย้ายออกจากกลุ่ม',
+        'menu.sessionId': 'คัดลอก ID เซสชัน',
+        'toast.sessionIdCopied': 'คัดลอก ID เซสชันแล้ว',
+        'toast.sessionIdCopyFailed': 'คัดลอกไม่สำเร็จ โปรดลองอีกครั้ง',
         'settings.title': 'พื้นที่ทำงานที่ดีขึ้น',
         'settings.desc': 'รูปลักษณ์และการย่อของต้นไม้พื้นที่ทำงาน',
         'settings.expand': 'ขยาย',
@@ -2537,6 +2589,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': 'Oturum grubunu yeniden adlandır',
         'menu.moveToGroup': 'Gruba taşı…',
         'menu.moveOutGroup': 'Gruptan çıkar',
+        'menu.sessionId': 'Oturum kimliğini kopyala',
+        'toast.sessionIdCopied': 'Oturum kimliği kopyalandı',
+        'toast.sessionIdCopyFailed': 'Kopyalama başarısız oldu. Lütfen tekrar deneyin.',
         'settings.title': 'Daha iyi çalışma alanları',
         'settings.desc': 'Çalışma alanı ağacının görünümü ve daraltma tercihleri',
         'settings.expand': 'Genişlet',
@@ -2690,6 +2745,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': 'Đổi tên nhóm phiên',
         'menu.moveToGroup': 'Chuyển vào nhóm…',
         'menu.moveOutGroup': 'Đưa ra khỏi nhóm',
+        'menu.sessionId': 'Sao chép ID phiên',
+        'toast.sessionIdCopied': 'Đã sao chép ID phiên',
+        'toast.sessionIdCopyFailed': 'Sao chép thất bại. Hãy thử lại.',
         'settings.title': 'Không gian làm việc tốt hơn',
         'settings.desc': 'Giao diện và cách thu gọn của cây không gian làm việc',
         'settings.expand': 'Mở rộng',
@@ -2843,6 +2901,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': '重新命名對話分組',
         'menu.moveToGroup': '移動到分組…',
         'menu.moveOutGroup': '移出分組',
+        'menu.sessionId': '複製 Session ID',
+        'toast.sessionIdCopied': 'Session ID 已複製',
+        'toast.sessionIdCopyFailed': '複製失敗，請重試',
         'settings.title': '更好嘅工作區',
         'settings.desc': '工作區樹嘅外觀同收起偏好',
         'settings.expand': '展開',
@@ -2996,6 +3057,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': '重新命名對話分組',
         'menu.moveToGroup': '移動到分組…',
         'menu.moveOutGroup': '移出分組',
+        'menu.sessionId': '複製 Session ID',
+        'toast.sessionIdCopied': 'Session ID 已複製',
+        'toast.sessionIdCopyFailed': '複製失敗，請重試',
         'settings.title': '更好嘅工作區',
         'settings.desc': '工作區樹嘅外觀同收起偏好',
         'settings.expand': '展開',
@@ -3149,6 +3213,9 @@ window.__ModuleLoader__.load({
         'menu.renameSgroup': '重新命名工作階段群組',
         'menu.moveToGroup': '移動到分組…',
         'menu.moveOutGroup': '移出分組',
+        'menu.sessionId': '複製 Session ID',
+        'toast.sessionIdCopied': 'Session ID 已複製',
+        'toast.sessionIdCopyFailed': '複製失敗，請重試',
         'settings.title': '更好的工作區',
         'settings.desc': '工作區樹的外觀與收合偏好',
         'settings.expand': '展開',
@@ -4257,17 +4324,30 @@ window.__ModuleLoader__.load({
       return workspaceSlashOf(legacySlash) ? 'disk-slash' : 'disk'
     }
 
-    // Issue #8 progressive listing (official collapsedSessionRows mirror):
-    // blank, running, running-subagent and pinned rows stay OUTSIDE the
-    // quota; idle rows beyond it hide behind one overflow row. limit 0 =
-    // unlimited (default — the plugin's folder-style full listing), and a
-    // lifted workspace renders everything again.
-    const limitSessionsForRender = (rows, limit, lifted) => {
+    // Issue #8 progressive listing. The official collapsedSessionRows mirror
+    // this quota used to track is GONE in dsh 0.2.1-alpha.5 — the shipped
+    // browser now folds per group behind a client-side watermark (base 5,
+    // auto-raise to 50 for attention rows, +5 per "Show more"). The quota
+    // stays a plugin-side opt-in (limit 0 = unlimited, the folder-style
+    // default), but its always-visible set follows the official attention
+    // semantics: blank, running, running-subagent and pinned rows stay
+    // OUTSIDE the quota unconditionally, and so — within the first 50
+    // non-blank rows, the official SESSION_WATERMARK_AUTO_MAX — do
+    // pending-interaction, completed and the current session, exactly the
+    // rows the shipped watermark refuses to fold away. Idle rows beyond the
+    // quota hide behind one overflow row; a lifted workspace renders
+    // everything again.
+    const SESSION_ATTENTION_WINDOW = 50
+    const limitSessionsForRender = (rows, limit, lifted, currentId) => {
       if (!rows || !limit || lifted) return { rows: rows || [], hidden: 0 }
       const keep = []
       const idle = []
+      let seen = 0
       for (const row of rows) {
-        if (row.blank || row.running || row.subagents > 0 || row.pinned) keep.push(row)
+        if (!row.blank) seen += 1
+        const attention = row.blank || row.running || row.subagents > 0 || row.pinned
+          || (seen <= SESSION_ATTENTION_WINDOW && (row.pending || row.completed || row.id === currentId))
+        if (attention) keep.push(row)
         else idle.push(row)
       }
       if (idle.length <= limit) return { rows, hidden: 0 }
@@ -6792,6 +6872,7 @@ window.__ModuleLoader__.load({
       // lifted fold resets when the sidebar unmounts.
       const [limitLifted, setLimitLifted] = React.useState({})
       const [ctx, setCtx] = React.useState(null) // context menu { kind, payload, x, y }
+      const [copyNotice, setCopyNotice] = React.useState(null) // { seq, ok } copy-session-id notice
       const [customize, setCustomize] = React.useState(null) // { kind, entryKey, name }
       const [errorText, setErrorText] = React.useState(null)
       const [drag, setDrag] = React.useState(null) // { kind: 'workspace'|'session', source, over } | null
@@ -6879,7 +6960,10 @@ window.__ModuleLoader__.load({
       // The fork notification belongs to the shipped browser's own overlay,
       // which is shadowed with it; without this the shortcut's async failure
       // would be silent. Dismissal rides the shipped channel so both surfaces
-      // agree on the notice's lifetime.
+      // agree on the notice's lifetime. dsh 0.2.1-alpha.5 retired the
+      // forkError state (a frame-level shortcutForkFailed toast replaced it),
+      // so on current hosts this mirror idles — the typeof defenses keep it
+      // alive for rc.2-era hosts that still report the field.
       React.useEffect(() => {
         if (forkError === null || forkError === undefined) return
         const timer = setTimeout(() => {
@@ -6887,6 +6971,14 @@ window.__ModuleLoader__.load({
         }, 6000)
         return () => clearTimeout(timer)
       }, [forkError ? forkError.seq : null])
+      // The copy notice normally self-dismisses (the official toast calls
+      // onDone; the fallback chip rides this cap). Keyed on seq so a second
+      // copy restarts the window.
+      React.useEffect(() => {
+        if (!copyNotice) return
+        const timer = setTimeout(() => setCopyNotice(null), 6000)
+        return () => clearTimeout(timer)
+      }, [copyNotice ? copyNotice.seq : null])
 
       React.useEffect(() => {
         if (!list || !list.byId || typeof renameSession !== 'function') return
@@ -7921,9 +8013,11 @@ window.__ModuleLoader__.load({
         const full = sessionsOf(workspace)
         if (full.length === 0 && !hasDeclared(sessFolders, workspace.workspaceId)) return []
         // Issue #8 progressive listing: quota the IDLE rows of this folder
-        // (blank/running/subagent/pinned stay visible); one overflow row
-        // hides the rest until clicked. Search always shows everything.
-        const limited = limitSessionsForRender(full, sessionLimit, limitLifted[workspace.workspaceId])
+        // (attention rows stay visible — see limitSessionsForRender); one
+        // overflow row hides the rest until clicked. Search always shows
+        // everything, and the current session is passed so it can never be
+        // folded away.
+        const limited = limitSessionsForRender(full, sessionLimit, limitLifted[workspace.workspaceId], currentId)
         const out = renderSessionNode(buildSessionTree(limited.rows, sessionSlash, sessFolders, workspace.workspaceId), workspace.workspaceId, depth)
         if (limited.hidden > 0) {
           out.push(E('button', {
@@ -8219,7 +8313,9 @@ window.__ModuleLoader__.load({
           // Official 0.1.7 mirror (Rows.tsx session menu + the shipped slot
           // entries): pin, rename, fork, archive — same order, same icons,
           // same archived-state behavior (pin hides; archive becomes
-          // unarchive). Copy rides the official dictionary, so upstream
+          // unarchive). dsh 0.2.1-alpha.5 adds a fifth official entry
+          // (Copy Session ID, order 450), mirrored below the archive row.
+          // Copy rides the official dictionary, so upstream
           // rewording AND future item additions land without a plugin
           // release; every verb is gated on its service method so older
           // hosts simply never offer what they cannot do.
@@ -8245,6 +8341,13 @@ window.__ModuleLoader__.load({
             archived
               ? { id: 'unarchive', label: official('menu.unarchiveSession', t('menu.archive')), icon: icon('IconUnarchiveOutlineRegular', 16) }
               : { id: 'archive', label: official('menu.archiveSession', t('menu.archive')), icon: icon('IconArchiveOutline20', 16) },
+            // Official order 450: clipboard write rides the host primitive,
+            // so the whole row hides where the primitives lack it.
+            ...(typeof ui.writeClipboard === 'function' ? [{
+              id: 'copy-id',
+              label: official('menu.sessionId', t('menu.sessionId')),
+              icon: icon('IconCopyOutlineRegular', 16),
+            }] : []),
             { type: 'separator', id: 'bw-sep' },
             ...sessionUngroupItems,
             ...sgroupItems,
@@ -8304,6 +8407,15 @@ window.__ModuleLoader__.load({
               return
             }
             fail(reason)
+          })
+        }
+        else if (kind === 'session' && id === 'copy-id' && typeof ui.writeClipboard === 'function') {
+          // Official mirror: copied → success notice, anything else → the
+          // failure notice (official sessionIdInjected wiring).
+          Promise.resolve(ui.writeClipboard(payload.id)).then((copied) => {
+            setCopyNotice((prev) => ({ seq: (prev ? prev.seq : 0) + 1, ok: copied === true }))
+          }, () => {
+            setCopyNotice((prev) => ({ seq: (prev ? prev.seq : 0) + 1, ok: false }))
           })
         }
         // Plain retitle back to the leaf: the row leaves its group and returns
@@ -8572,12 +8684,20 @@ window.__ModuleLoader__.load({
         },
       }
 
+      // Copy-session-id notice copy: the official 'workspace' dictionary is
+      // the source of truth, this plugin's aligned fallback covers older hosts.
+      const copyNoticeText = copyNotice
+        ? officialText(copyNotice.ok ? 'toast.sessionIdCopied' : 'toast.sessionIdCopyFailed',
+            undefined, t(copyNotice.ok ? 'toast.sessionIdCopied' : 'toast.sessionIdCopyFailed'))
+        : ''
+
       return E('div', { className: cls('bw-root', sessionCouldLeaveGroup && 'bw-root-drop-out'), ...rootDropEvents },
         StyleNode(),
         // The shipped fork notice rides the shipped browser's overlay, which is
         // shadowed with it: the shortcut's async failure would otherwise be
         // silent. Copy follows the shipped dictionary, the lifetime follows the
-        // shipped channel (the effect above dismisses it).
+        // shipped channel (the effect above dismisses it). Retired upstream in
+        // dsh 0.2.1-alpha.5 (frame-level toast now); kept for rc.2-era hosts.
         (forkError && typeof forkError === 'object')
           ? E('div', { className: 'bw-toast', role: 'status' },
               E('span', { className: 'bw-toast-text' }, forkError.reason === 'unavailable'
@@ -8592,6 +8712,28 @@ window.__ModuleLoader__.load({
               }, icon('IconCloseOutline16', 12)),
             )
           : null,
+        // Copy-session-id notice (the dsh 0.2.1-alpha.5 menu mirror): the
+        // official primitives Toast when this host ships it (body portal,
+        // official look), otherwise the same chip the fork notice uses.
+        (copyNotice && officialToast)
+          ? E(officialToast, {
+              key: 'bw-copy-' + copyNotice.seq,
+              text: copyNoticeText,
+              tone: copyNotice.ok ? 'success' : undefined,
+              onDone: () => setCopyNotice(null),
+            })
+          : (copyNotice && !officialToast)
+            ? E('div', { className: 'bw-toast', role: 'status' },
+                E('span', { className: 'bw-toast-text' }, copyNoticeText),
+                E('button', {
+                  type: 'button',
+                  className: 'bw-toast-close',
+                  'aria-label': t('close'),
+                  title: t('close'),
+                  onClick: () => setCopyNotice(null),
+                }, icon('IconCloseOutline16', 12)),
+              )
+            : null,
         E('div', { className: 'bw-header' },
           E('div', { className: 'bw-header-title' }, t('title')),
           // Group discoverability: an ICON entry point (v0.17.0 — it used to be

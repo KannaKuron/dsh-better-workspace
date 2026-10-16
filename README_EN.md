@@ -55,7 +55,7 @@ Session titles nest on `/` too (e.g. `test1/plugin maintenance`). Session groups
 <table>
 <tr>
 <td align="center" width="58%"><img src="docs/screenshots/5-context-menu.png" alt="Context menu"/></td>
-<td valign="top"><b>Context menu everywhere</b><br/>Actions live in the right-click menu: workspace rows — rename / delete / fork / archive / customize; folder rows — rename group (updates all descendant workspaces) / customize; session &amp; session-group rows — rename / fork / archive / customize.</td>
+<td valign="top"><b>Context menu everywhere</b><br/>Actions live in the right-click menu: workspace rows — rename / delete / fork / archive / customize; folder rows — rename group (updates all descendant workspaces) / customize; session &amp; session-group rows — rename / fork / archive / customize; session rows also get <b>Copy Session ID</b> (v0.30.0, mirroring dsh 0.2.1-alpha.5's fifth official menu entry — the clipboard write rides the host primitive, with a notice either way).</td>
 </tr>
 </table>
 

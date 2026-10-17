@@ -3,6 +3,15 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.30.1 — 2026-10-18
+
+**类型**:fix(侧栏自绘 UI 字号整体对齐官方规格;修复「工作区标题偏小」报告)。
+
+- **根因(官方源码实证,非字体大小设置不兼容)**:dsh 新版设置里的「字体大小」(ui-theme `FONT_SIZE_SPECS`)只发布 `--dsh-content-font-size` / `--dsh-code-font-size` / `--dsh-terminal-font-size` 三个变量,消费方仅限会话内容、markdown、代码块、终端等;**官方侧栏(ui-sidebar/ui-workspace)从不消费这些变量**——`SidebarRoot.module.css` 的 `.root` 固定 14px。本插件侧栏是 priority -1 接管的自绘 UI,字号全部硬编码,其中标题 `.bw-header-title` 写成 12px/font-weight:600——而官方 `.sectionLabel` 自 2026-08-22 创建(`d231c8777a`)起就**没有** font-size/weight(继承侧栏 14px/400/tertiary),0.1.7-rc.2 时代亦然。即:不是 dsh 改版导致,是初版手抄官方 CSS 时自创了小一号加粗的标题样式,并沿用至今。
+- **修复:17 处字号全部归档到官方档位**(官方体系只有 10/11/12/13/14/15…,无 x.5 半像素值):标题 →14px/400/tertiary/line-height 20px(`.sectionLabel` + `.sectionHeader` 规格);树行 `.bw-row` →14px/20px(`.projectRow`/`.title`);会话行 →14px/**primary**(官方 `.sessionRow` 与工作区行同为 label-primary,层级靠缩进不靠灰阶,hover 变色规则保留但已等值);分组头行 →14px/tertiary(保留分组标签的弱化色);`count` →12px(官方 `.meta`)、`time` →10px(官方 `.time`);输入框/下拉 →13px(官方 `searchInput`);空态 →13px/tertiary(官方 `.empty`/`.emptyAction`);右键菜单项/弹窗按钮/错误文案/预览标签/分组弹窗标签与分段钮 12.5px →13px(官方 `Menu.module.css` item 13px)。settings 卡(15/13px)、hint(11px)、swatch/rgb 标签(11px)本就在官方档位,不动。
+- **背景插件兼容**:diff 零新增实心背景/透明度变化(改动的行内 background 声明原样保留 transparent / 半透明 token);文字色仍全部走 `--dsw-alias-label-*` token + 字面 fallback,与壁纸类插件的背景层正交。
+- **冒烟**:59 项全绿。桌面/web 双端真机验证待做(装新版后侧栏「工作区」标题应与纯净 dsh 同大)。
+
 ## v0.30.0 — 2026-10-17
 
 **类型**:feat(会话菜单跟随 dsh 0.2.1-alpha.5 官方第五条目「复制 Session ID」;配额 keep 集对齐官方 attention 语义)。

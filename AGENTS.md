@@ -128,3 +128,14 @@
    - **跨端手动同步(0.9.5)**:web 端自定义若干外观 → 设置卡片点「发送本设备数据」→ 桌面端(装同版本插件)设置卡片点「从 Web 获取」(覆盖模式)→ 外观/分组/开关一致;合并模式下两端独有条目并集保留;宿主 ~/.dsh/settings.yaml 的 better-workspace 段可查;宿主 settings 不可用时卡片提示不支持、行为回纯本地;
    - 卸载/禁用本插件 → 回到官方浏览器,hero 流回退官方默认。
 3. 升级 dsh 后:对照 packages/client/ui-workspace/src/client/contract/slots.ts 复核 slot 契约与注入面是否漂移(重点:GlobalStandardProps、directoryFlow owner props、single 槽 priority 语义)。
+
+## 宿主机会项观察清单(2026-10-17,dsh 0.2.1-rc.1 记账)
+
+官方已放出但本插件尚未消费的能力,每次升级 / 发版时按「官方优先」纪律评估——**成熟即消费、自绘让位**:
+
+1. **实验性 Session 状态记录接口**(rc.1 release notes「实验性:Session 状态记录接口」):官方在实验轨道提供会话状态的结构化读取。观察其形状与稳定化进度;转正后评估 bw 的会话状态展示/配额判断是否可从镜像推断切到官方接口,消掉对 wire 快照字段的推断。
+2. **新扩展位**(alpha.3..5 已落地的座位,按需消费):
+   - `ui-model-selection` 模型标签座位(single/session/inline 三挂点,owner `ModelLabelOwner{provider,model,placement,selected}`,`ui-model-selection/src/client/slots.ts:36-41`)——如 bw 未来做工作区级模型徽标可挂,不必自绘;
+   - `ui-plugin-manager` `plugins.tab` 座位(`slot-contract.ts:124`,owner `PluginTabProps{install,openPackage}`)——插件管理页标签,家族插件可评估把「使用指南」放进去;
+   - 会话行 `sidebar.session.row.leading` 座位、toast 契约(`workspace.toast` keyed + content 工厂)、右栏 overflow:clip(PageUp 修复)——已在 v0.30.0 消费/核实。
+   - 用户消息渲染链 `projectUserText → UserTextRun/ReferenceChip`(ui-conversation)——家族五插件零使用,仅观察。

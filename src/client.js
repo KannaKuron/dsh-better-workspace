@@ -114,7 +114,7 @@ window.__ModuleLoader__.load({
       'settings.autoStyle': '新增项自动配色',
       'settings.autoStyle.hint': '开启后,新创建的会话会自动分到一个内置色,新工作区还会分到一个图标;颜色从固定的 13 个槽位按「洗牌 + 近期去重」抽取,连续新增不会撞色。每个槽位配了两色 —— 浅色主题用深色系、深色主题用亮色系 —— 每个色在**对应主题**背景下的对比度都 ≥4.5,达到 WCAG 正文级 AA;切换主题时同一个槽位会自动换成另一套色,不需要重新设置。只影响开启之后新建的项;你手动设置过外观的行永不被覆盖,关闭开关也不回收已分配的样式。默认关闭。',
       'settings.appearance': '默认外观',
-      'settings.appearance.hint': '没有单独自定义过的行使用这套外观;字体描边默认开启——背景画面下不描边文字常常看不清。字体颜色留空即跟随主题。',
+      'settings.appearance.hint': '没有单独自定义过的行使用这套外观;字体描边新安装默认关闭——干净主题下描边更像浮凸噪点,配背景图时再打开。字体颜色留空即跟随主题。',
       'settings.appearance.reset': '恢复默认外观',
       'custom.title': '自定义外观',
       'custom.color': '颜色',
@@ -272,7 +272,7 @@ window.__ModuleLoader__.load({
       'settings.autoStyle': 'Auto color & icon for new items',
       'settings.autoStyle.hint': "When on, every newly created session gets a built-in color and every new workspace also gets an icon. Colors come from 13 fixed slots drawn with shuffle + recent-dedup, so consecutive items never look alike. Every slot ships two colors — a darker one for the light theme, a lighter one for the dark theme — and each clears WCAG normal-text AA (contrast ≥4.5) on its own theme's background; switching themes repaints the same slot automatically, with nothing to redo. Only items created after you turn it on are touched; rows you styled by hand are never overwritten, and turning it off does not undo what was already assigned. Off by default.",
       'settings.appearance': 'Default appearance',
-      'settings.appearance.hint': 'Rows that were never customized use this appearance; the outline is on by default — text without it is often unreadable over a background image. Leave the color empty to follow the theme.',
+      'settings.appearance.hint': 'Rows that were never customized use this appearance; the outline ships off on fresh installs — on a clean theme it reads as embossed noise, so turn it on when a background image needs it. Leave the color empty to follow the theme.',
       'settings.appearance.reset': 'Reset to default',
       'custom.title': 'Customize',
       'custom.color': 'Color',
@@ -438,7 +438,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': 'ألوان وأيقونات تلقائية للعناصر الجديدة',
         'settings.autoStyle.hint': 'عند التفعيل يحصل كل جلسة جديدة على لون من لوحة مدمجة، ويحصل كل مساحة عمل جديدة أيضًا على أيقونة. تُسحب الألوان من 13 خانة ثابتة بترتيب عشوائي مع تجنّب التكرار القريب. لكل خانة لونان — أغمق للسمة الفاتحة وأفتح للسمة الداكنة — وكل لون يبلغ تباين ≥4.5 (معيار AA للنص العادي) على خلفية سمته؛ وعند تبديل السمة تُرسم الخانة نفسها تلقائيًا دون أي إعداد. يؤثر فقط على العناصر المنشأة بعد التفعيل، ولا يُستبدل أي سطر نسّقته يدويًا، والإيقاف لا يلغي ما تم تعيينه. معطّل افتراضيًا.',
         'settings.appearance': 'المظهر الافتراضي',
-        'settings.appearance.hint': 'تستخدم الأسطر غير المخصصة هذا المظهر؛ حدّ النص مفعّل افتراضياً — فبدونه يصعب قراءة النص فوق صورة خلفية. اترك اللون فارغاً لاتباع السمة.',
+        'settings.appearance.hint': 'تستخدم الأسطر غير المخصصة هذا المظهر؛ حدّ النص مغلق افتراضياً في التثبيتات الجديدة — على السمة النظيفة يبدو كضجيج محفور، فعّله عندما تحتاج إلى صورة خلفية. اترك اللون فارغاً لاتباع السمة.',
         'settings.appearance.reset': 'استعادة المظهر الافتراضي',
         'custom.title': 'تخصيص المظهر',
         'custom.color': 'اللون',
@@ -596,7 +596,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': 'Automatische Farbe & Symbol für neue Einträge',
         'settings.autoStyle.hint': 'Wenn aktiviert, erhält jede neu erstellte Sitzung eine Farbe aus einer festen Palette und jeder neue Arbeitsbereich zusätzlich ein Symbol. Die 13 festen Plätze werden gemischt mit Vermeidung der letzten Treffer gezogen. Jeder Platz hat zwei Farben — dunkler für das helle Thema, heller für das dunkle — und jede erreicht auf dem Hintergrund ihres eigenen Themas Kontrast ≥4.5 (AA für Fließtext); beim Themewechsel wird derselbe Platz automatisch neu eingefärbt. Nur danach erstellte Einträge werden erfasst; manuell gestaltete Zeilen werden nie überschrieben, und Ausschalten macht Zuweisungen nicht rückgängig. Standardmäßig aus.',
         'settings.appearance': 'Standardaussehen',
-        'settings.appearance.hint': 'Zeilen ohne eigene Anpassung nutzen dieses Aussehen; die Textkontur ist standardmäßig an – ohne sie ist Text über einem Hintergrundbild oft kaum lesbar. Bleibt die Farbe leer, folgt sie dem Thema.',
+        'settings.appearance.hint': 'Zeilen ohne eigene Anpassung nutzen dieses Aussehen; die Textkontur ist bei neuen Installationen standardmäßig aus – auf einem schlichten Thema wirkt sie wie geprägte Ränder, also einschalten, wenn ein Hintergrundbild sie braucht. Bleibt die Farbe leer, folgt sie dem Thema.',
         'settings.appearance.reset': 'Standard wiederherstellen',
         'custom.title': 'Aussehen anpassen',
         'custom.color': 'Farbe',
@@ -754,7 +754,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': 'Couleur et icône automatiques pour les nouveaux éléments',
         'settings.autoStyle.hint': 'Activé, chaque nouvelle session reçoit une couleur de la palette intégrée et chaque nouvel espace de travail aussi une icône. Les 13 emplacements fixes sont tirés par mélange avec évitement des derniers tirages. Chaque emplacement a deux couleurs — plus sombre pour le thème clair, plus claire pour le thème sombre — et chacune atteint un contraste ≥4,5 (AA pour le texte courant) sur le fond de son propre thème ; changer de thème recolore le même emplacement automatiquement. Seuls les éléments créés après l’activation sont traités ; les lignes personnalisées à la main ne sont jamais écrasées et désactiver n’annule pas les attributions. Désactivé par défaut.',
         'settings.appearance': 'Apparence par défaut',
-        'settings.appearance.hint': 'Les lignes sans personnalisation utilisent cette apparence; le contour du texte est activé par défaut — sans lui, le texte reste souvent illisible sur une image de fond. Laissez la couleur vide pour suivre le thème.',
+        'settings.appearance.hint': 'Les lignes sans personnalisation utilisent cette apparence; le contour du texte est désactivé par défaut sur les nouvelles installations — sur un thème épuré il fait plutôt bruit de relief, activez-le quand une image de fond le réclame. Laissez la couleur vide pour suivre le thème.',
         'settings.appearance.reset': 'Rétablir l\'apparence par défaut',
         'custom.title': 'Personnaliser l\'apparence',
         'custom.color': 'Couleur',
@@ -912,7 +912,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': 'नए आइटम के लिए स्वचालित रंग और आइकन',
         'settings.autoStyle.hint': 'चालू होने पर हर नए सत्र को अंतर्निहित पैलेट से एक रंग मिलता है और हर नए कार्यस्थान को एक आइकन भी। 13 स्थिर स्लॉट शफ़ल और हाल के दोहराव से बचाकर निकाले जाते हैं। हर स्लॉट में दो रंग हैं — हल्की थीम के लिए गहरा और गहरी थीम के लिए हल्का — और हर रंग अपनी थीम की पृष्ठभूमि पर ≥4.5 कंट्रास्ट (सामान्य पाठ के लिए AA) रखता है; थीम बदलने पर वही स्लॉट अपने आप रंग बदल लेता है। केवल चालू करने के बाद बने आइटम प्रभावित होते हैं; हाथ से सजाई गई पंक्तियाँ कभी नहीं बदली जातीं और बंद करने पर पहले दिए रंग हटते नहीं। डिफ़ॉल्ट रूप से बंद।',
         'settings.appearance': 'डिफ़ॉल्ट रूप',
-        'settings.appearance.hint': 'जिन पंक्तियों को अलग से अनुकूलित नहीं किया गया वे यह रूप इस्तेमाल करती हैं; पाठ की रूपरेखा डिफ़ॉल्ट रूप से चालू है — पृष्ठभूमि छवि पर बिना रूपरेखा वाला पाठ अक्सर पढ़ा नहीं जाता। रंग खाली छोड़ने पर वह थीम का अनुसरण करता है।',
+        'settings.appearance.hint': 'जिन पंक्तियों को अलग से अनुकूलित नहीं किया गया वे यह रूप इस्तेमाल करती हैं; पाठ की रूपरेखा नए इंस्टॉलेशन में डिफ़ॉल्ट रूप से बंद है — साफ़ थीम पर यह उभरा हुआ शोर जैसी लगती है, पृष्ठभूमि छवि की ज़रूरत होने पर इसे चालू करें। रंग खाली छोड़ने पर वह थीम का अनुसरण करता है।',
         'settings.appearance.reset': 'डिफ़ॉल्ट रूप पर लौटें',
         'custom.title': 'रूप अनुकूलित करें',
         'custom.color': 'रंग',
@@ -1070,7 +1070,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': 'Warna & ikon otomatis untuk item baru',
         'settings.autoStyle.hint': 'Saat aktif, setiap sesi baru mendapat warna dari palet bawaan dan setiap ruang kerja baru juga mendapat ikon. Tiga belas slot tetap diambil dengan cara diacak sambil menghindari pengambilan terakhir. Setiap slot punya dua warna — lebih gelap untuk tema terang dan lebih terang untuk tema gelap — dan setiap warna mencapai kontras ≥4,5 (AA untuk teks biasa) pada latar temanya sendiri; mengganti tema otomatis mewarnai ulang slot yang sama. Hanya item yang dibuat setelah diaktifkan yang diproses; baris yang Anda atur sendiri tidak pernah ditimpa, dan menonaktifkannya tidak membatalkan yang sudah diberikan. Nonaktif secara bawaan.',
         'settings.appearance': 'Tampilan bawaan',
-        'settings.appearance.hint': 'Baris yang belum disesuaikan memakai tampilan ini; garis luar teks aktif secara bawaan — tanpa itu teks sering tak terbaca di atas gambar latar. Biarkan warna kosong agar mengikuti tema.',
+        'settings.appearance.hint': 'Baris yang belum disesuaikan memakai tampilan ini; garis luar teks mati secara bawaan pada pemasangan baru — pada tema bersih terasa seperti derau timbul, nyalakan saat gambar latar membutuhkannya. Biarkan warna kosong agar mengikuti tema.',
         'settings.appearance.reset': 'Kembalikan tampilan bawaan',
         'custom.title': 'Sesuaikan tampilan',
         'custom.color': 'Warna',
@@ -1228,7 +1228,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': 'Colore e icona automatici per i nuovi elementi',
         'settings.autoStyle.hint': 'Se attivo, ogni nuova sessione riceve un colore dalla palette integrata e ogni nuovo spazio di lavoro anche un’icona. I 13 slot fissi vengono estratti con mescolamento ed evitando gli ultimi estratti. Ogni slot ha due colori — più scuro per il tema chiaro, più chiaro per il tema scuro — e ognuno raggiunge un contrasto ≥4,5 (AA per il testo normale) sullo sfondo del proprio tema; cambiando tema lo stesso slot viene ricolorato automaticamente. Sono interessati solo gli elementi creati dopo l’attivazione; le righe personalizzate a mano non vengono mai sovrascritte e disattivare non annulla quanto assegnato. Disattivo per impostazione predefinita.',
         'settings.appearance': 'Aspetto predefinito',
-        'settings.appearance.hint': 'Le righe mai personalizzate usano questo aspetto; il contorno del testo è attivo per impostazione predefinita — senza di esso il testo è spesso illeggibile sopra un\'immagine di sfondo. Lascia il colore vuoto per seguire il tema.',
+        'settings.appearance.hint': 'Le righe mai personalizzate usano questo aspetto; il contorno del testo è disattivato per impostazione predefinita sulle nuove installazioni — su un tema pulito sembra rumore in rilievo, attivalo quando un\'immagine di sfondo lo richiede. Lascia il colore vuoto per seguire il tema.',
         'settings.appearance.reset': 'Ripristina l\'aspetto predefinito',
         'custom.title': 'Personalizza aspetto',
         'custom.color': 'Colore',
@@ -1386,7 +1386,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': '新規項目の色とアイコンを自動割り当て',
         'settings.autoStyle.hint': 'オンにすると、新しく作られたセッションには内蔵パレットから色が、新しいワークスペースにはさらにアイコンが割り当てられます。13 の固定スロットをシャッフルと直近の重複回避で抽選します。各スロットは 2 色(ライトテーマ用の濃い色とダークテーマ用の明るい色)を持ち、どちらも自分のテーマの背景でコントラスト 4.5 以上(本文の AA)を満たします。テーマを切り替えると、同じスロットが自動的に塗り替えられます。オンにした後に作成された項目だけが対象で、手動で設定した行は上書きされず、オフにしても割り当て済みの色は元に戻りません。既定はオフです。',
         'settings.appearance': '既定の外観',
-        'settings.appearance.hint': '個別にカスタマイズしていない行に適用される外観です;文字の縁取りは既定でオンです——背景画像の上では縁取りのない文字が読みにくいためです。色を空にするとテーマに従います。',
+        'settings.appearance.hint': '個別にカスタマイズしていない行に適用される外観です;文字の縁取りは新規インストールでは既定でオフです——クリーンなテーマでは浮き彫りのノイズに見えるため、背景画像が必要なときにオンにしてください。色を空にするとテーマに従います。',
         'settings.appearance.reset': '既定の外観に戻す',
         'custom.title': '外観をカスタマイズ',
         'custom.color': '色',
@@ -1544,7 +1544,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': '새 항목 자동 색상 및 아이콘',
         'settings.autoStyle.hint': '켜면 새로 만든 세션에 내장 팔레트의 색이, 새 워크스페이스에는 아이콘까지 자동으로 지정됩니다. 13개의 고정 슬롯을 섞기와 최근 중복 회피로 뽑습니다. 슬롯마다 두 가지 색(밝은 테마용 진한 색, 어두운 테마용 밝은 색)이 있고, 각각 자기 테마 배경에서 대비 4.5 이상(본문 AA)을 만족합니다. 테마를 바꾸면 같은 슬롯이 자동으로 다시 칠해집니다. 켠 뒤에 만든 항목에만 적용되며, 직접 꾸민 행은 절대 덮어쓰지 않고, 끄더라도 이미 지정된 색은 되돌리지 않습니다. 기본값은 꺼짐입니다.',
         'settings.appearance': '기본 모양',
-        'settings.appearance.hint': '따로 지정하지 않은 행에 적용되는 모양입니다; 글자 외곽선은 기본으로 켜져 있습니다——배경 이미지 위에서는 외곽선 없는 글자가 잘 보이지 않기 때문입니다. 색을 비우면 테마를 따릅니다.',
+        'settings.appearance.hint': '따로 지정하지 않은 행에 적용되는 모양입니다; 글자 외곽선은 새 설치에서 기본으로 꺼져 있습니다——깔끔한 테마에서는 엠보싱 잡음처럼 보이므로 배경 이미지가 필요할 때 켜세요. 색을 비우면 테마를 따릅니다.',
         'settings.appearance.reset': '기본 모양으로 되돌리기',
         'custom.title': '모양 사용자 지정',
         'custom.color': '색',
@@ -1702,7 +1702,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': 'Automatische kleur en pictogram voor nieuwe items',
         'settings.autoStyle.hint': 'Als dit aanstaat krijgt elke nieuwe sessie een kleur uit het ingebouwde palet en elke nieuwe werkruimte ook een pictogram. De dertien vaste sleuven worden geschud en de laatst gebruikte worden vermeden. Elke sleuf heeft twee kleuren — donkerder voor het lichte thema, lichter voor het donkere — en elk haalt op de achtergrond van zijn eigen thema contrast ≥4,5 (AA voor normale tekst); bij een themawissel wordt dezelfde sleuf automatisch opnieuw gekleurd. Alleen items die daarna worden gemaakt worden aangepast; rijen die u zelf hebt opgemaakt worden nooit overschreven en uitzetten draait eerdere toewijzingen niet terug. Standaard uit.',
         'settings.appearance': 'Standaarduiterlijk',
-        'settings.appearance.hint': 'Regels zonder eigen aanpassing gebruiken dit uiterlijk; de tekstomtrek staat standaard aan — zonder omtrek is tekst op een achtergrondafbeelding vaak slecht leesbaar. Laat de kleur leeg om het thema te volgen.',
+        'settings.appearance.hint': 'Regels zonder eigen aanpassing gebruiken dit uiterlijk; de tekstomtrek staat bij nieuwe installaties standaard uit — op een strak thema oogt het als reliërruis, zet het aan zodra een achtergrondafbeelding het nodig heeft. Laat de kleur leeg om het thema te volgen.',
         'settings.appearance.reset': 'Standaarduiterlijk herstellen',
         'custom.title': 'Uiterlijk aanpassen',
         'custom.color': 'Kleur',
@@ -1860,7 +1860,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': 'Automatyczny kolor i ikona dla nowych elementów',
         'settings.autoStyle.hint': 'Po włączeniu każda nowa sesja otrzymuje kolor z wbudowanej palety, a każda nowa przestrzeń robocza także ikonę. Trzynaście stałych slotów losuje się tasowaniem z unikaniem ostatnich trafień. Każdy slot ma dwa kolory — ciemniejszy dla jasnego motywu, jaśniejszy dla ciemnego — i każdy osiąga na tle swojego motywu kontrast ≥4,5 (AA dla zwykłego tekstu); zmiana motywu automatycznie przemalowuje ten sam slot. Dotyczy tylko elementów utworzonych po włączeniu; ręcznie ostylowane wiersze nigdy nie są nadpisywane, a wyłączenie nie cofa przypisań. Domyślnie wyłączone.',
         'settings.appearance': 'Domyślny wygląd',
-        'settings.appearance.hint': 'Wiersze bez własnych ustawień używają tego wyglądu; obrys tekstu jest domyślnie włączony — bez niego tekst na obrazie tła bywa nieczytelny. Puste pole koloru oznacza podążanie za motywem.',
+        'settings.appearance.hint': 'Wiersze bez własnych ustawień używają tego wyglądu; obrys tekstu jest domyślnie wyłączony w nowych instalacjach — na czystym motywie wygląda jak wytłoczony szum, włącz go, gdy potrzebuje go obraz tła. Puste pole koloru oznacza podążanie za motywem.',
         'settings.appearance.reset': 'Przywróć domyślny wygląd',
         'custom.title': 'Dostosuj wygląd',
         'custom.color': 'Kolor',
@@ -2018,7 +2018,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': 'Cor e ícone automáticos para novos itens',
         'settings.autoStyle.hint': 'Quando ligado, cada nova sessão recebe uma cor da paleta embutida e cada novo espaço de trabalho também um ícone. Os 13 slots fixos são sorteados com embaralhamento e evitando as últimas escolhas. Cada slot tem duas cores — mais escura para o tema claro, mais clara para o tema escuro — e cada uma atinge no fundo do seu próprio tema contraste ≥4,5 (AA para texto normal); trocar de tema recolore o mesmo slot automaticamente. Só os itens criados depois de ligar são afetados; linhas que você estilizou à mão nunca são sobrescritas e desligar não desfaz o que já foi atribuído. Desligado por padrão.',
         'settings.appearance': 'Aparência padrão',
-        'settings.appearance.hint': 'Linhas sem personalização usam esta aparência; o contorno do texto vem ativado por padrão — sem ele, o texto costuma ficar ilegível sobre uma imagem de fundo. Deixe a cor vazia para seguir o tema.',
+        'settings.appearance.hint': 'Linhas sem personalização usam esta aparência; o contorno do texto vem desativado por padrão nas novas instalações — num tema limpo parece ruído em relevo, ative-o quando uma imagem de fundo precisar dele. Deixe a cor vazia para seguir o tema.',
         'settings.appearance.reset': 'Restaurar aparência padrão',
         'custom.title': 'Personalizar aparência',
         'custom.color': 'Cor',
@@ -2176,7 +2176,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': 'Автоцвет и значок для новых элементов',
         'settings.autoStyle.hint': 'Когда включено, каждый новый сеанс получает цвет из встроенной палитры, а новая рабочая область — ещё и значок. Тринадцать фиксированных слотов вытягиваются перемешиванием с избеганием недавних. У каждого слота два цвета — темнее для светлой темы, светлее для тёмной, — и каждый даёт на фоне своей темы контраст ≥4,5 (AA для обычного текста); при смене темы тот же слот перекрашивается автоматически. Затрагиваются только элементы, созданные после включения; строки, оформленные вручную, никогда не перезаписываются, а выключение не отменяет уже назначенное. По умолчанию выключено.',
         'settings.appearance': 'Оформление по умолчанию',
-        'settings.appearance.hint': 'Строки без своей настройки используют это оформление; обводка текста включена по умолчанию — без неё текст на фоновом изображении часто нечитаем. Пустой цвет означает следование теме.',
+        'settings.appearance.hint': 'Строки без своей настройки используют это оформление; обводка текста по умолчанию выключена в новых установках — на чистой теме она выглядит как тиснёный шум, включайте её, когда нужно фоновое изображение. Пустой цвет означает следование теме.',
         'settings.appearance.reset': 'Вернуть оформление по умолчанию',
         'custom.title': 'Настроить оформление',
         'custom.color': 'Цвет',
@@ -2334,7 +2334,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': 'Automatisk färg och ikon för nya objekt',
         'settings.autoStyle.hint': 'När den är på får varje ny session en färg från den inbyggda paletten och varje ny arbetsyta även en ikon. De tretton fasta platserna dras med blandning och undvikande av de senaste. Varje plats har två färger — mörkare för ljust tema, ljusare för mörkt — och båda når mot sin egen temas bakgrund kontrast ≥4,5 (AA för normal text); vid temabyte färgas samma plats om automatiskt. Endast objekt som skapas efter att du slagit på påverkas; rader du stilt själv skrivs aldrig över och att stänga av ångrar inte det som tilldelats. Av som standard.',
         'settings.appearance': 'Standardutseende',
-        'settings.appearance.hint': 'Rader utan egen anpassning använder detta utseende; textkonturen är på som standard — utan den är texten ofta oläslig ovanpå en bakgrundsbild. Lämna färgen tom för att följa temat.',
+        'settings.appearance.hint': 'Rader utan egen anpassning använder detta utseende; textkonturen är av som standard vid nya installationer — på ett rent tema ser den ut som präglad brus, slå på den när en bakgrundsbild behöver den. Lämna färgen tom för att följa temat.',
         'settings.appearance.reset': 'Återställ standardutseende',
         'custom.title': 'Anpassa utseende',
         'custom.color': 'Färg',
@@ -2492,7 +2492,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': 'สีและไอคอนอัตโนมัติสำหรับรายการใหม่',
         'settings.autoStyle.hint': 'เมื่อเปิด ทุกเซสชันที่สร้างใหม่จะได้สีจากชุดสีในตัว และพื้นที่ทำงานใหม่จะได้ไอคอนด้วย สล็อตคงที่ 13 ช่องจะถูกสุ่มแบบสลับพร้อมหลีกเลี่ยงสีที่เพิ่งใช้ แต่ละช่องมีสองสี — สีเข้มสำหรับธีมสว่างและสีอ่อนสำหรับธีมมืด — และทุกสีมีคอนทราสต์ ≥4.5 (AA สำหรับข้อความทั่วไป) บนพื้นของธีมนั้น เมื่อสลับธีมช่องเดิมจะถูกระบายสีใหม่ให้อัตโนมัติ มีผลเฉพาะรายการที่สร้างหลังเปิดใช้ แถวที่คุณตั้งค่าเองจะไม่ถูกเขียนทับ และการปิดจะไม่เรียกคืนสิ่งที่แจกไปแล้ว ค่าเริ่มต้นคือปิด',
         'settings.appearance': 'รูปลักษณ์เริ่มต้น',
-        'settings.appearance.hint': 'แถวที่ยังไม่ได้กำหนดเองจะใช้รูปลักษณ์นี้ เส้นขอบตัวอักษรเปิดไว้เป็นค่าเริ่มต้น — บนภาพพื้นหลัง ตัวอักษรที่ไม่มีเส้นขอบมักอ่านยาก เว้นสีว่างไว้เพื่อตามธีม',
+        'settings.appearance.hint': 'แถวที่ยังไม่ได้กำหนดเองจะใช้รูปลักษณ์นี้ เส้นขอบตัวอักษรปิดไว้เป็นค่าเริ่มต้นสำหรับการติดตั้งใหม่ — บนธีมสะอาดมันดูเหมือนจุดนูน จึงเปิดเมื่อภาพพื้นหลังต้องการ เว้นสีว่างไว้เพื่อตามธีม',
         'settings.appearance.reset': 'คืนค่ารูปลักษณ์เริ่มต้น',
         'custom.title': 'ปรับแต่งรูปลักษณ์',
         'custom.color': 'สี',
@@ -2650,7 +2650,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': 'Yeni öğeler için otomatik renk ve simge',
         'settings.autoStyle.hint': 'Açıkken yeni oluşturulan her oturuma yerleşik paletten bir renk, her yeni çalışma alanına ayrıca bir simge atanır. On üç sabit yuva karıştırma ve son kullanılanları atlama yöntemiyle çekilir. Her yuvanın iki rengi vardır — açık tema için daha koyu, koyu tema için daha açık — ve her biri kendi temasının zemininde ≥4,5 kontrast (normal metin için AA) sağlar; tema değiştiğinde aynı yuva otomatik olarak yeniden renklendirilir. Yalnızca açtıktan sonra oluşturulan öğeler etkilenir; elle biçimlendirdiğiniz satırlar hiçbir zaman üzerine yazılmaz ve kapatmak verilmiş stilleri geri almaz. Varsayılan olarak kapalı.',
         'settings.appearance': 'Varsayılan görünüm',
-        'settings.appearance.hint': 'Özel olarak uyarlanmamış satırlar bu görünümü kullanır; metin konturu varsayılan olarak açıktır — arka plan görseli üzerinde kontursuz metin çoğu zaman okunmaz. Rengi boş bırakırsanız temayı izler.',
+        'settings.appearance.hint': 'Özel olarak uyarlanmamış satırlar bu görünümü kullanır; metin konturu yeni kurulumlarda varsayılan olarak kapalıdır — sade bir temada kabartma gürültüsü gibi durur, arka plan görseli gerektirdiğinde açın. Rengi boş bırakırsanız temayı izler.',
         'settings.appearance.reset': 'Varsayılan görünüme dön',
         'custom.title': 'Görünümü özelleştir',
         'custom.color': 'Renk',
@@ -2808,7 +2808,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': 'Tự động tô màu và biểu tượng cho mục mới',
         'settings.autoStyle.hint': 'Khi bật, mỗi phiên mới nhận một màu từ bảng màu tích hợp và mỗi không gian làm việc mới còn nhận thêm biểu tượng. Mười ba ô cố định được rút theo cách xáo trộn và tránh các màu vừa dùng. Mỗi ô có hai màu — đậm hơn cho giao diện sáng và nhạt hơn cho giao diện tối — và mỗi màu đạt độ tương phản ≥4,5 (AA cho chữ thường) trên nền của giao diện tương ứng; khi đổi giao diện, chính ô đó được tô lại tự động. Chỉ những mục tạo sau khi bật mới bị ảnh hưởng; hàng bạn tự tô màu không bao giờ bị ghi đè, và tắt đi không thu hồi những gì đã gán. Mặc định tắt.',
         'settings.appearance': 'Giao diện mặc định',
-        'settings.appearance.hint': 'Những hàng chưa tùy chỉnh riêng dùng giao diện này; viền chữ mặc định bật — trên ảnh nền, chữ không viền thường khó đọc. Để trống màu để theo chủ đề.',
+        'settings.appearance.hint': 'Những hàng chưa tùy chỉnh riêng dùng giao diện này; viền chữ mặc định tắt trên bản cài mới — trên chủ đề sạch nó giống chấm nổi, hãy bật khi ảnh nền cần. Để trống màu để theo chủ đề.',
         'settings.appearance.reset': 'Khôi phục giao diện mặc định',
         'custom.title': 'Tùy chỉnh giao diện',
         'custom.color': 'Màu',
@@ -2966,7 +2966,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': '新增項目自動配色',
         'settings.autoStyle.hint': '開啟後,新開嘅會話會自動分到一個內置色,新工作區仲會分到一個圖示;顏色由 13 個固定槽位以「洗牌 + 近期去重」抽出,連續新增唔會撞色。每個槽位有兩隻色 —— 淺色主題用深色系、深色主題用亮色系 —— 兩隻喺各自主題嘅背景上對比度都 ≥4.5,達到 WCAG 正文級 AA;換主題會自動為同一個槽位換色,唔使重新設定。只影響開啟之後新開嘅項;你手動設定過外觀嘅行永不被覆蓋,熄咗開關亦唔會回收已分配嘅樣式。預設關閉。',
         'settings.appearance': '預設外觀',
-        'settings.appearance.hint': '未單獨自訂過嘅行會用呢套外觀;字體描邊預設開啟——有背景圖嗰陣唔描邊嘅字經常睇唔清。字體顏色留空就會跟主題。',
+        'settings.appearance.hint': '未單獨自訂過嘅行會用呢套外觀;字體描邊新安裝預設關閉——乾淨主題下描邊似浮凸噪點,配背景圖時先開。字體顏色留空就會跟主題。',
         'settings.appearance.reset': '還原預設外觀',
         'custom.title': '自訂外觀',
         'custom.color': '顏色',
@@ -3124,7 +3124,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': '新增項目自動配色',
         'settings.autoStyle.hint': '開啟後,新開嘅會話會自動分到一個內置色,新工作區仲會分到一個圖示;顏色由 13 個固定槽位以「洗牌 + 近期去重」抽出,連續新增唔會撞色。每個槽位有兩隻色 —— 淺色主題用深色系、深色主題用亮色系 —— 兩隻喺各自主題嘅背景上對比度都 ≥4.5,達到 WCAG 正文級 AA;換主題會自動為同一個槽位換色,唔使重新設定。只影響開啟之後新開嘅項;你手動設定過外觀嘅行永不被覆蓋,熄咗開關亦唔會回收已分配嘅樣式。預設關閉。',
         'settings.appearance': '預設外觀',
-        'settings.appearance.hint': '未單獨自訂過嘅行會用呢套外觀;字體描邊預設開啟——有背景圖嗰陣唔描邊嘅字經常睇唔清。字體顏色留空就會跟主題。',
+        'settings.appearance.hint': '未單獨自訂過嘅行會用呢套外觀;字體描邊新安裝預設關閉——乾淨主題下描邊似浮凸噪點,配背景圖時先開。字體顏色留空就會跟主題。',
         'settings.appearance.reset': '還原預設外觀',
         'custom.title': '自訂外觀',
         'custom.color': '顏色',
@@ -3282,7 +3282,7 @@ window.__ModuleLoader__.load({
         'settings.autoStyle': '新增項目自動配色與圖示',
         'settings.autoStyle.hint': '開啟後,新建立的工作階段會自動分到一個內建色,新工作區還會分到一個圖示;顏色從 13 個固定槽位以「洗牌 + 近期去重」抽出,連續新增不會撞色。每個槽位各有兩色 —— 淺色主題用深色系、深色主題用亮色系 —— 兩色在各自主題背景下對比度都 ≥4.5,達到 WCAG 正文級 AA;切換主題時同一個槽位會自動換色,不需重新設定。只影響開啟之後新建的項目;你手動設定過外觀的列永遠不會被覆蓋,關閉開關也不會回收已分配的樣式。預設關閉。',
         'settings.appearance': '預設外觀',
-        'settings.appearance.hint': '未個別自訂過的列會使用這套外觀;字型外框預設開啟——在背景圖片上沒有外框的文字常常看不清楚。字型顏色留空即跟隨佈景主題。',
+        'settings.appearance.hint': '未個別自訂過的列會使用這套外觀;字型外框新安裝預設關閉——乾淨佈景主題下外框像浮凸雜訊,需要背景圖片時再開啟。字型顏色留空即跟隨佈景主題。',
         'settings.appearance.reset': '還原預設外觀',
         'custom.title': '自訂外觀',
         'custom.color': '顏色',
@@ -4405,7 +4405,15 @@ window.__ModuleLoader__.load({
       .split('/').map((s) => s.trim()).filter((s) => s !== '').join('/')
 
     const createViewStore = () => storeKit.defineStore({
-      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true, sessionLimit: 0 }, styling: {}, groupBy: 'workspace-tree', orderBy: 'manual', archivedFilter: 'default', workspaceGroupMode: 'disk', sessionTitleSlash: true, workspaceTitleSlash: false, ungroupedOpen: true, folders: { ws: {}, sess: {} } }),
+      // prefs.appearance bakes the shipped default (v0.31.0: stroke OFF) so a
+      // fresh install — which never hydrates — starts outline-free, while a
+      // hydrated snapshot without an appearance record keeps the legacy ON
+      // default through readAppearance (see DEFAULT_APPEARANCE for the full
+      // workspaceSlashOf-style three-population story). The record is a
+      // LITERAL, not a spread of DEFAULT_APPEARANCE: init() is eval-harness
+      // friendly (no cross-section reference), and the smoke suite asserts the
+      // two stay in lockstep field by field.
+      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true, sessionLimit: 0, appearance: { color: '', glow: 0, weight: 0, shadow: false, stroke: false, strokeWidth: 1, strokeColor: '#808080' } }, styling: {}, groupBy: 'workspace-tree', orderBy: 'manual', archivedFilter: 'default', workspaceGroupMode: 'disk', sessionTitleSlash: true, workspaceTitleSlash: false, ungroupedOpen: true, folders: { ws: {}, sess: {} } }),
       // NOTE: hydration REPLACES the state with the persisted whole value —
       // init defaults never merge. Every action must tolerate a missing key
       // (states persisted by older plugin versions lack sessionGroups), and
@@ -5173,7 +5181,14 @@ window.__ModuleLoader__.load({
     // The outline color defaults to a plain gray: it reads on light and dark
     // backgrounds alike without shouting like pure black/white. "auto" derives
     // the contrasting pole from the font color instead.
-    const DEFAULT_APPEARANCE = { color: '', glow: 0, weight: 0, shadow: false, stroke: true, strokeWidth: 1, strokeColor: '#808080' }
+    // Since v0.31.0 the outline SHIPS OFF: on a clean theme it reads as
+    // embossed noise, and only a background image ever needed it. The legacy
+    // ON default survives for existing installs through readAppearance (the
+    // workspaceSlashOf pattern: hydration runs only when a snapshot exists,
+    // so a missing appearance record means "this browser predates the flip"
+    // and keeps the outline it was built with). Fresh installs never hydrate;
+    // createViewStore's init bakes this default into prefs.appearance.
+    const DEFAULT_APPEARANCE = { color: '', glow: 0, weight: 0, shadow: false, stroke: false, strokeWidth: 1, strokeColor: '#808080' }
     const APPEARANCE_FIELDS = ['color', 'glow', 'weight', 'shadow', 'stroke', 'strokeWidth', 'strokeColor']
     const clampStrokeWidth = (raw) => {
       const n = Number(raw)
@@ -5182,7 +5197,10 @@ window.__ModuleLoader__.load({
     }
     // Persisted values arrive from older plugin versions and from the other
     // surface: every read tolerates missing keys and falls back to the default
-    // (hydration replaces state wholesale — the 0.9.x hard rule).
+    // (hydration replaces state wholesale — the 0.9.x hard rule). For stroke
+    // the fallback is the LEGACY ON, not DEFAULT_APPEARANCE.stroke: a missing
+    // key means a snapshot from before v0.31.0, and those builds shipped the
+    // outline enabled — an upgrade must not silently restyle an existing tree.
     const readAppearance = (raw) => {
       const src = raw && typeof raw === 'object' ? raw : {}
       return {
@@ -5196,8 +5214,9 @@ window.__ModuleLoader__.load({
       }
     }
     // A row's own entry overrides the default appearance FIELD BY FIELD, so a
-    // row customized before this version (no stroke key) still inherits the new
-    // default outline instead of losing it.
+    // row customized before this version (no stroke key) still inherits the
+    // effective base — the legacy ON on upgraded installs, the shipped OFF on
+    // fresh ones — instead of being reset to a different era's look.
     const mergeAppearance = (base, entry) => {
       if (!entry || typeof entry !== 'object') return readAppearance(base)
       const merged = { ...base }

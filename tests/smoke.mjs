@@ -462,7 +462,7 @@ test('manual cross-device sync: host scope bind, dual writes, pull modes', () =>
  * never picked by hand: it is the pole that contrasts with the label color, so
  * it survives a theme or background-plugin light/dark flip.
  */
-test('appearance: outline on (gray default), pick or auto, field-by-field merge (0.10.0)', () => {
+test('appearance: stroke ships OFF (v0.31.0, legacy ON preserved), gray color default, field-by-field merge (0.10.0)', () => {
   const text = read('src/client.js')
   const start = text.indexOf('const colorToRgb =')
   const end = text.indexOf('function FolderRow(')
@@ -470,26 +470,34 @@ test('appearance: outline on (gray default), pick or auto, field-by-field merge 
   const loaded = new Function(text.slice(start, end) +
     '\nreturn { DEFAULT_APPEARANCE, readAppearance, mergeAppearance, contrastStrokeColor, parseCssColor, strokeStyleOf }')()
   const { DEFAULT_APPEARANCE, readAppearance, mergeAppearance, contrastStrokeColor, parseCssColor, strokeStyleOf } = loaded
-  // The outline ships ON — text over a background image is unreadable without it.
-  assert.equal(DEFAULT_APPEARANCE.stroke, true)
+  // The outline ships OFF for fresh installs (v0.31.0): on a clean theme the
+  // rim reads as embossed noise, and only a background image ever needed it.
+  assert.equal(DEFAULT_APPEARANCE.stroke, false)
   assert.equal(DEFAULT_APPEARANCE.strokeWidth, 1)
   assert.equal(DEFAULT_APPEARANCE.color, '')
   assert.equal(DEFAULT_APPEARANCE.strokeColor, '#808080', 'the outline defaults to gray')
   // Hydration replaces state wholesale: every read tolerates missing keys.
-  assert.deepEqual(readAppearance(undefined), DEFAULT_APPEARANCE)
-  assert.equal(readAppearance({}).stroke, true, 'a missing stroke key keeps the default outline')
+  // Upgrade semantics follow workspaceSlashOf: a hydrated snapshot WITHOUT an
+  // appearance record predates the flip and keeps the legacy ON outline; the
+  // shipped OFF reaches users only through init's baked record (asserted at
+  // the end of this test) or through an explicit value.
+  assert.deepEqual(readAppearance(undefined), { color: '', glow: 0, weight: 0, shadow: false, stroke: true, strokeWidth: 1, strokeColor: '#808080' }, 'missing keys fall back, stroke to the LEGACY on')
+  assert.equal(readAppearance({}).stroke, true, 'a missing stroke key keeps the legacy outline')
   assert.equal(readAppearance({}).strokeColor, '#808080', 'a missing color key keeps the gray default')
+  assert.equal(readAppearance({ stroke: true }).stroke, true, 'an explicit on survives')
   assert.equal(readAppearance({ stroke: false }).stroke, false, 'an explicit off survives')
   assert.equal(readAppearance({ strokeWidth: 99 }).strokeWidth, 2, 'width clamps to the slider range')
   assert.equal(readAppearance({ strokeWidth: 0 }).strokeWidth, 1, 'a zero width falls back to the default')
   // Row entries override the default FIELD BY FIELD: entries written before the
-  // outline existed still inherit it.
-  const merged = mergeAppearance(DEFAULT_APPEARANCE, { color: '#f85149', glow: 6 })
+  // outline existed still inherit the effective base of their install.
+  const merged = mergeAppearance(readAppearance(undefined), { color: '#f85149', glow: 6 })
   assert.equal(merged.color, '#f85149')
   assert.equal(merged.glow, 6)
-  assert.equal(merged.stroke, true, 'older entries inherit the default outline')
+  assert.equal(merged.stroke, true, 'older entries inherit the legacy outline')
   assert.equal(merged.strokeWidth, 1)
+  assert.equal(mergeAppearance(DEFAULT_APPEARANCE, { color: '#f85149' }).stroke, false, 'fresh installs inherit OFF')
   assert.equal(mergeAppearance(DEFAULT_APPEARANCE, { stroke: false }).stroke, false, 'a row can turn it off')
+  assert.equal(mergeAppearance(DEFAULT_APPEARANCE, { stroke: true }).stroke, true, 'a row can turn it on')
   // The pole follows the LABEL color (WCAG contrast against both poles).
   assert.equal(contrastStrokeColor([255, 255, 255]), '#000000')
   assert.equal(contrastStrokeColor([0, 0, 0]), '#ffffff')
@@ -523,6 +531,16 @@ test('appearance: outline on (gray default), pick or auto, field-by-field merge 
   assert.match(text, /host\.appearance && typeof host\.appearance === 'object'/, 'pull paths must carry appearance')
   assert.match(text, /scopeSet\('appearance'/, 'the push path must carry appearance')
   assert.match(text, /--bw-stroke-color/, 'the sampled variable is what unattributed rows read')
+  // Fresh installs never hydrate: createViewStore's init bakes the shipped
+  // default (stroke OFF) into prefs.appearance, and the baked literal must
+  // stay in lockstep with DEFAULT_APPEARANCE.
+  const initPrefs = /prefs: \{ compactChains: true, sessionLimit: 0, appearance: \{([^}]*)\}/.exec(text)
+  assert.ok(initPrefs, 'init must bake an appearance record for fresh installs')
+  const baked = {}
+  for (const pair of initPrefs[1].matchAll(/(\w+): ('[^']*'|[^,}]+)/g)) baked[pair[1]] = String(pair[2]).replace(/^'|'$/g, '')
+  assert.equal(baked.stroke, String(DEFAULT_APPEARANCE.stroke), 'init appearance must match DEFAULT_APPEARANCE.stroke')
+  assert.equal(baked.strokeWidth, String(DEFAULT_APPEARANCE.strokeWidth), 'init appearance must match DEFAULT_APPEARANCE.strokeWidth')
+  assert.equal(baked.strokeColor, DEFAULT_APPEARANCE.strokeColor, 'init appearance must match DEFAULT_APPEARANCE.strokeColor')
 })
 
 /**
@@ -773,7 +791,8 @@ test('view options: group/order menu + the two slash toggles (0.13.0)', () => {
   // v0.21.0: grouping strategy, collapsible Ungrouped, listing quota.
   assert.match(text, /setWorkspaceGroupMode: \(d, value\)/)
   assert.match(text, /setUngroupedOpen: \(d, value\)/)
-  assert.match(text, /prefs: \{ compactChains: true, sessionLimit: 0 \}/)
+  // v0.31.0: init bakes prefs.appearance (stroke ships OFF) for fresh installs.
+  assert.match(text, /prefs: \{ compactChains: true, sessionLimit: 0, appearance: \{ color: '', glow: 0, weight: 0, shadow: false, stroke: false, strokeWidth: 1, strokeColor: '#808080' \} \}/)
   assert.match(text, /useStore\(s => s\.ungroupedOpen\) !== false/)
   for (const action of ['setGroupBy', 'setOrderBy', 'setSessionTitleSlash', 'setWorkspaceTitleSlash']) {
     assert.ok(text.includes(action + ': (d, value)'), 'store action ' + action)

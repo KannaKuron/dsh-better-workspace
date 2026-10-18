@@ -356,7 +356,15 @@ test('title cache: persisted key, batch learning, debounced save, bounded evicti
   assert.match(text, /typeof title !== 'string' \|\| title === ''\) continue/)
   assert.match(text, /titleCacheRef\.rememberAllTitles\(list\)/)
   // Rows render through the remembered fallback.
-  assert.match(text, /sessionTitleOf\(summary, t, rememberedTitleOf\(id\)\)/)
+  // Rows render through the grafting wrapper (v0.30.2): display wins while
+  // the wire title stays group-less; the fallback stays sessionTitleOf.
+  assert.match(text, /const rowTitleOf = \(id, summary, graftedOn\) => \{/)
+  assert.match(text, /return sessionTitleOf\(summary, t, rememberedTitleOf\(id\)\)/)
+  assert.match(text, /title: rowTitleOf\(id, summary, prefsMap\.graftTitlePrefix !== false\)/)
+  assert.match(text, /leaf: rowTitleOf\(id, summary, prefsMap\.graftTitlePrefix !== false\)/)
+  assert.match(text, /rowTitleOf\(dialog\.sessionId, summary, prefsMap\.graftTitlePrefix !== false\)/)
+  // Manual renames forget the grafted display (authoritative rename).
+  assert.match(text, /forgetDisplay\(String\(sessionId\)\)/)
   // Drive the real block with a mocked localStorage.
   const start = text.indexOf('const TITLE_CACHE_LIMIT =')
   const end = text.indexOf('/* ======================= host settings sync')
@@ -368,7 +376,7 @@ test('title cache: persisted key, batch learning, debounced save, bounded evicti
   }
   const scope = new Function('localStorage', 'setTimeout', 'clearTimeout',
     text.slice(start, end)
-    + '\nreturn { titleCache, loadTitleCache, rememberAllTitles, TITLE_CACHE_LIMIT, TITLE_CACHE_KEEP }')
+    + '\nreturn { titleCache, loadTitleCache, rememberAllTitles, graftTitleDisplay, TITLE_CACHE_LIMIT, TITLE_CACHE_KEEP }')
   const api = scope(fakeLocalStorage, setTimeout, clearTimeout)
   // Hydration: existing persisted state replaces the empty seed.
   saved.set('dsh.betterWorkspace.titles.v1', JSON.stringify({ byId: { old: { title: 'a/b', at: 1 } } }))
@@ -394,6 +402,27 @@ test('title cache: persisted key, batch learning, debounced save, bounded evicti
   assert.ok(saved.has('dsh.betterWorkspace.titles.v1'), 'debounced save persisted')
   const persisted = JSON.parse(saved.get('dsh.betterWorkspace.titles.v1'))
   assert.ok(persisted && typeof persisted.byId === 'object')
+  // v0.30.2 grafting: a fresh group-less title after a grouped one learns a
+  // display entry; a grouped title stands verbatim and clears any display.
+  assert.equal(typeof api.graftTitleDisplay, 'function')
+  assert.equal(api.graftTitleDisplay('A/old', 'fresh'), 'A/fresh')
+  assert.equal(api.graftTitleDisplay('A/B/old', 'fresh'), 'A/B/fresh')
+  assert.equal(api.graftTitleDisplay('plain', 'fresh'), undefined, 'no prefix: nothing to keep')
+  assert.equal(api.graftTitleDisplay(undefined, 'fresh'), undefined)
+  assert.equal(api.graftTitleDisplay('A/old', ''), undefined, 'blank next never grafts')
+  assert.equal(api.graftTitleDisplay('A/old', 'X/new'), undefined, 'a grouped next stands verbatim')
+  assert.equal(api.graftTitleDisplay('A/', 'fresh'), undefined, 'empty leaf: no prefix to keep')
+  const list2 = { byId: { g1: { title: 'A/one' }, g2: { title: 'X/two' } } }
+  api.rememberAllTitles(list2)
+  assert.equal(api.titleCache.byId.g1.display, undefined, 'first learn has no previous display')
+  const list3 = { byId: { g1: { title: 'leafonly' } } }
+  api.rememberAllTitles(list3)
+  assert.equal(api.titleCache.byId.g1.title, 'leafonly')
+  assert.equal(api.titleCache.byId.g1.display, 'A/leafonly', 'grafted display learned')
+  const list4 = { byId: { g1: { title: 'Other/renamed' } } }
+  api.rememberAllTitles(list4)
+  assert.equal(api.titleCache.byId.g1.title, 'Other/renamed')
+  assert.equal(api.titleCache.byId.g1.display, undefined, 'grouped rename clears the display')
 })
 
 
@@ -1879,3 +1908,27 @@ test('customize dialog honors the Modal height contract (v0.27.1, issue #10)', (
   assert.equal((text.match(/bw-custom-scroll/g) || []).length, 2,
     'bw-custom-scroll must appear exactly 2 times (css ×1 + contentClassName ×1)')
 })
+
+
+test('v0.30.2: rowTitleOf grafts the remembered display while the wire stays group-less', () => {
+  const text = read('src/client.js')
+  const start = text.indexOf('const remembered = (titleCacheRef')
+  const end = text.indexOf('// Learn real titles from every snapshot')
+  assert.ok(start !== -1 && end !== -1 && start < end, 'rowTitleOf block not found')
+  const { rowTitleOf } = new Function('sessionTitleOf', 'titleCacheRef', 't',
+    text.slice(start, end) + '\nreturn { rowTitleOf }')(
+    (summary, t, remembered) => 'fallback:' + (summary && summary.title),
+    { getSnapshot: () => ({ byId: { s1: { title: 'A/prev', display: 'A/prev' } }, rememberAllTitles() {} }) },
+    (k) => k)
+  assert.equal(rowTitleOf('s1', { title: 'bare' }, true), 'A/prev',
+    'group-less wire + remembered display: the grafted title wins')
+  assert.equal(rowTitleOf('s1', { title: 'A/kept' }, true), 'fallback:A/kept',
+    'a grouped wire title always stands (the display is not consulted)')
+  assert.equal(rowTitleOf('s1', { title: 'X/newgroup/leaf' }, true), 'fallback:X/newgroup/leaf',
+    'a deliberately regrouped wire title stands verbatim')
+  assert.equal(rowTitleOf('s1', { title: 'bare' }, false), 'fallback:bare',
+    'grafting off: plain fallback even with a display present')
+  assert.equal(rowTitleOf('s1', undefined, true), 'fallback:undefined',
+    'a blank summary never consults the display')
+})
+

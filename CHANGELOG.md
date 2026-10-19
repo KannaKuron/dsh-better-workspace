@@ -3,6 +3,16 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.32.0 — 2026-10-19
+
+**类型**:feat / 工作区右键菜单新增「修改工作区默认预设」。
+
+- **变化**:工作区行右键菜单在「自定义外观」之下多一项**「修改工作区默认预设」**:列出官方预设清单,改写**该工作区常驻新会话(blank)所用的 agent 预设**——工作区默认预设本质是该工作区待命 blank 会话的 `agentPreset` 投影,读写走宿主 `remote.agentPresets` 的 list / select 通道(与官方侧栏 hero 芯片同一通道);当前默认行标注「(全局默认)」。选定与当前一致的预设时直接关窗,不发多余请求。
+- **边界语义**:工作区**没有待命新会话**时只显示「跟随全局默认预设」提示,**不替用户建会话**(改默认 ≠ 需要常驻);非 blank 会话拒绝 `agent-preset` / `locked` 预设,与官方 select 通道的 refusal 行为一致,拒绝原因行内呈现。
+- **降级**:宿主未暴露 `agentPresets`(list + select 双方法)时整项菜单隐藏(特性探测,不硬编码宿主版本);`ui.Menu` 不可用时同款降级为原生 select(与 group-move 的 MenuPicker 降级同一纪律)。成功提示复用既有 toast 管线(officialToast / bw-toast 双形态)。
+- **实现**:`WorkspacePresetDialog`(预选当前、error/refusal 行内)+ `presetFace`(list 镜像 readRoster 的 invocation-unavailable 容错,select 折叠 refusal);词典 21 门 × 9 键(`menu.workspacePreset`、`wsPreset.*`)。
+- **冒烟**:60 项全绿(原生 select 降级计数 1→2,注释标明 group-move v0.16 起 / workspace-preset v0.32 起)。
+
 ## v0.31.0 — 2026-10-18
 
 **类型**:feat / 行为变更(**新安装的字体描边默认关闭**;存量安装不受影响)。

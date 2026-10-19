@@ -6937,9 +6937,14 @@ window.__ModuleLoader__.load({
         sidebarFlowEntry,
         shippedBrowserFace, scheduleSeatReader,
         officialT,
-        presetFace,
+        presetFaceOf,
         t,
       } = props
+      // v0.32.2: resolve the stable getter ONCE per render (see
+      // browserInjected for why this is a function and not a value prop).
+      // Every consumer below keeps reading this local, so a late-arriving
+      // agent-preset service is picked up by the next render's menu build.
+      const presetFace = typeof presetFaceOf === 'function' ? presetFaceOf() : null
 
       if (typeof useWorkspaces !== 'function' || typeof useSessions !== 'function') {
         console.error('[dsh-better-workspace] standard snapshot hooks missing; browser renders nothing')
@@ -9360,70 +9365,98 @@ window.__ModuleLoader__.load({
       let officialT = null
       try { officialT = ctx.locale.bind('workspace') } catch { officialT = null }
 
-      // v0.32.0: the agent-preset face — {list, select} over the same remote
-      // channels the official hero preset chip uses. v0.32.1 probe fix: the
-      // official bundles reach it as the PROPERTY CHAIN ctx.remote.agentPresets
-      // (their inject list declares it as the 'remote.agentPresets' fiber
-      // service) — the client side has NO catalogued 'remote' service, so the
-      // explicit ctx.get('remote') v0.32.0 shipped threw, the catch swallowed
-      // it, and the menu row silently hid. Property chain first, explicit get
-      // as the fallback, and a shape dump on failure so any future regression
-      // is diagnosable straight from the console.
+      // v0.32.2: the agent-preset face — {list, select} over the same remote
+      // channels the official hero preset chip uses. Root cause of the hidden
+      // menu row, straight from the dsh 0.2.1 source (cordis 4.0.5): 'remote'
+      // is a fiber service provided by the api-gateway bundle, and
+      // 'remote.agentPresets' is a NAMESPACE service installed by api-remotes
+      // ($mount) on its own child fiber. `ctx.remote` resolves through the
+      // property chain only along the reading fiber's ancestry — v0.32.1
+      // probed it from a fiber outside that subtree, the chain threw, and the
+      // row hid; v0.32.0's strict ctx.get ran before the gateway went ACTIVE
+      // and read undefined. The fix keeps NO hard inject (the settingsScope
+      // lesson: a service the host lacks would pend this bundle forever):
+      // probe synchronously for the common case, then WAIT with a soft
+      // ctx.inject child fiber that fires once the two services go ACTIVE —
+      // or pends harmlessly forever on hosts without them. The face reaches
+      // the sidebar as a stable GETTER prop (see browserInjected) because the
+      // slot renderer caches the inject result per entry and would otherwise
+      // bake in a null until the entry re-registers.
       let presetFace = null
-      try {
-        let remote = null
-        try { remote = ctx.remote } catch { remote = null }
-        if (!remote || !remote.agentPresets) {
+      const presetFaceReady = (candidate) => candidate
+        && typeof candidate.list === 'function' && typeof candidate.select === 'function'
+      const buildPresetFace = (agentPresets) => ({
+        // readRoster mirror: a gateway hiccup
+        // ('gateway/invocation-unavailable') maps to an EMPTY roster,
+        // exactly like the official selector does; every other failure
+        // surfaces with its message.
+        list: async () => {
           try {
-            const viaGet = ctx.get('remote')
-            if (viaGet && (!remote || !remote.agentPresets)) remote = viaGet
-          } catch { /* keep the property-chain result */ }
-        }
-        const agentPresets = remote && remote.agentPresets
-        if (!agentPresets) {
-          console.warn('[dsh-better-workspace] agent-preset probe: remote.agentPresets unavailable', {
-            remoteType: typeof remote,
-            remoteKeys: remote ? Object.keys(remote).slice(0, 40) : null,
-          })
-        }
-        if (agentPresets && typeof agentPresets.list === 'function' && typeof agentPresets.select === 'function') {
-          presetFace = {
-            // readRoster mirror: a gateway hiccup
-            // ('gateway/invocation-unavailable') maps to an EMPTY roster,
-            // exactly like the official selector does; every other failure
-            // surfaces with its message.
-            list: async () => {
-              try {
-                const result = await agentPresets.list()
-                if (result && result.ok) return { ok: true, presets: (result.value && result.value.presets) || [] }
-                const code = result && result.error ? result.error.code : undefined
-                if (code === 'gateway/invocation-unavailable') return { ok: true, presets: [] }
-                return { ok: false, error: result && result.error ? result.error.message : 'preset roster read failed' }
-              } catch (error) {
-                return { ok: false, error: error instanceof Error ? error.message : String(error) }
-              }
-            },
-            // seat-store apply() mirror: a refusal carries the host's reason
-            // (error.details.reason when present); the outer call can throw,
-            // so a throw folds into the same {ok:false} shape.
-            select: async (sessionId, presetId) => {
-              try {
-                const result = await agentPresets.select(sessionId, presetId)
-                if (result && result.ok) return { ok: true }
-                const details = result && result.error ? result.error.details : undefined
-                const reason = details && typeof details.reason === 'string'
-                  ? details.reason
-                  : (result && result.error ? result.error.message : 'preset select failed')
-                return { ok: false, refusal: reason }
-              } catch (error) {
-                return { ok: false, refusal: error instanceof Error ? error.message : String(error) }
-              }
-            },
+            const result = await agentPresets.list()
+            if (result && result.ok) return { ok: true, presets: (result.value && result.value.presets) || [] }
+            const code = result && result.error ? result.error.code : undefined
+            if (code === 'gateway/invocation-unavailable') return { ok: true, presets: [] }
+            return { ok: false, error: result && result.error ? result.error.message : 'preset roster read failed' }
+          } catch (error) {
+            return { ok: false, error: error instanceof Error ? error.message : String(error) }
           }
+        },
+        // seat-store apply() mirror: a refusal carries the host's reason
+        // (error.details.reason when present); the outer call can throw,
+        // so a throw folds into the same {ok:false} shape.
+        select: async (sessionId, presetId) => {
+          try {
+            const result = await agentPresets.select(sessionId, presetId)
+            if (result && result.ok) return { ok: true }
+            const details = result && result.error ? result.error.details : undefined
+            const reason = details && typeof details.reason === 'string'
+              ? details.reason
+              : (result && result.error ? result.error.message : 'preset select failed')
+            return { ok: false, refusal: reason }
+          } catch (error) {
+            return { ok: false, refusal: error instanceof Error ? error.message : String(error) }
+          }
+        },
+      })
+      try {
+        let agentPresets = null
+        try {
+          const remote = ctx.remote
+          agentPresets = remote && remote.agentPresets
+        } catch { /* the property chain needs the service on this fiber's path */ }
+        if (!presetFaceReady(agentPresets)) {
+          try {
+            const remote = ctx.get('remote')
+            agentPresets = remote && remote.agentPresets
+          } catch { /* strict get yields nothing while the provider pends */ }
         }
+        if (presetFaceReady(agentPresets)) presetFace = buildPresetFace(agentPresets)
       } catch (presetFaceError) {
         console.warn('[dsh-better-workspace] agent-preset face unavailable', presetFaceError)
         presetFace = null
+      }
+      if (!presetFace && ctx && typeof ctx.inject === 'function') {
+        // Late arrival: a soft child fiber that fires when the 'remote' +
+        // 'remote.agentPresets' services go ACTIVE (the official
+        // ui-agent-preset declares exactly these two). On hosts that never
+        // mount them the fiber just pends — no effect, no error. The
+        // namespace reads by its strict service name off the child fiber,
+        // where the inject mechanism has cached it.
+        try {
+          ctx.inject(['remote', 'remote.agentPresets'], (fctx) => {
+            try {
+              const agentPresets = fctx && fctx['remote.agentPresets']
+              if (presetFaceReady(agentPresets)) {
+                presetFace = buildPresetFace(agentPresets)
+                console.info('[dsh-better-workspace] agent-preset face ready (late arrival)')
+              }
+            } catch (lateError) {
+              console.warn('[dsh-better-workspace] agent-preset late face failed', lateError)
+            }
+          })
+        } catch (injectError) {
+          console.warn('[dsh-better-workspace] agent-preset soft inject failed', injectError)
+        }
       }
 
       if (ctx.locale && typeof ctx.locale.register === 'function') {
@@ -9479,10 +9512,15 @@ window.__ModuleLoader__.load({
         // Official 'workspace' dictionary translate (menu copy follows upstream);
         // null when the bind failed — the menu then uses the aligned bw copy.
         officialT,
-        // v0.32.0: {list, select} over the agent-preset remotes — the same
-        // two channels the official hero chip uses; null when the host lacks
-        // the service, which simply hides the workspace-preset menu row.
-        presetFace,
+        // v0.32.2: the agent-preset face rides a stable GETTER, not a value.
+        // The slot renderer caches the inject result per StoredEntry
+        // (ui-renderer scoped-slots rootInjectCache), so a value prop would
+        // bake in whatever presetFace was at first render — null whenever the
+        // remote services arrived after this face was cached, permanently
+        // hiding the workspace-preset menu row. The getter reads the apply
+        // closure live, so every render and every menu build re-asks; hosts
+        // without the service keep returning null, which simply hides the row.
+        presetFaceOf: () => presetFace,
         // The shipped sidebar's OWN face (dsh 0.1.7-rc.2): the shortcut request
         // channel and the catalog of effective keybindings. Both belong to the
         // entry this seat shadows, so they are read off the ledger and consumed
@@ -9719,6 +9757,12 @@ window.__ModuleLoader__.load({
 
     return {
       name: 'dsh-better-workspace',
+      // v0.32.2: the list stays at the five era-guaranteed services (the
+      // settingsScope lesson — a hard inject of anything a host may lack
+      // pends this whole bundle forever). 'remote' + 'remote.agentPresets'
+      // are acquired SOFTLY inside apply: a synchronous probe plus a
+      // ctx.inject child fiber that waits for their ACTIVE transition
+      // (see the agent-preset face block above).
       inject: ['slots', 'sessions', 'workspaces', 'locale', 'uiWorkspace'],
       apply,
     }

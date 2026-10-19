@@ -3,6 +3,14 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.32.2 — 2026-10-20
+
+**类型**:fix / v0.32.1 后「修改工作区默认预设」在真机上仍不出现(完整根因复盘)。
+
+- **完整根因**(对照 dsh 0.2.1-rc.2 / cordis 4.0.5 源码逐行实证):`ctx.remote` 不是普通属性——cordis 把服务实例包成 traceable Proxy,`ctx.remote` 走**属性链**沿读方 fiber 的祖先链找服务缓存,`ctx.remote.agentPresets` 再经 tracker.associate 转成对 **独立 cordis 服务 `remote.agentPresets`**(api-remotes $mount 装的命名空间子 fiber)的读取。本插件 fiber 由 ModuleLoader 挂载,不在 api-gateway / api-remotes 的子树里,属性链**必然抛**「cannot get property」——v0.32.1 的探测因此失败,face 为 null,菜单项隐藏。v0.32.0 的 `ctx.get('remote')` 则是 strict 语义:探测时机早于 gateway ACTIVE,读到 undefined。**v0.32.1 补的 `dsh.client.inject`(`@deepseek-ai/dsh-api-remotes`)只决定 bundle 到达顺序,是必要非充分**——真正缺的是插件 fiber 自己对这两个服务的 **服务级注入**,而硬注入又受 settingsScope 纪律约束(宿主缺服务时整个插件永久 pending)。
+- **修复**:①同步探测保留(属性链 + strict get 兜底,覆盖服务已就绪的常见时序);②失败后**软注入等待**——`ctx.inject(['remote', 'remote.agentPresets'], 回调)` 起子 fiber,两服务 ACTIVE 才回调,从子 fiber 按严格服务名取 namespace 重建 face;宿主没有这两服务时子 fiber 永久 pending、零副作用(settingsScope 教训的合规等价物);③**face 改为稳定 getter prop**(`presetFaceOf: () => presetFace`)——slot 渲染器对每个注册条目把 inject 结果**缓存固化**(ui-renderer `rootInjectCache` WeakMap),值 prop 会把晚到前的 null 永久烤进 props,getter 让每次渲染 / 每次菜单构建实时读闭包,晚到赋值后第一次右键即生效;组件解构处按渲染解析一次,三处消费点(菜单项构建 / select 对话框 / loadRoster)零改动。组件三件套 inject 名单**保持五包不变**,插件尾部代码零硬注入。
+- **冒烟**:60 项全绿(inject 五包正则恢复断言;探测段与 getter 无既有断言锁定)。
+
 ## v0.32.1 — 2026-10-19
 
 **类型**:fix / v0.32.0「修改工作区默认预设」在真机上不出现。

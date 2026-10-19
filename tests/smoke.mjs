@@ -1273,9 +1273,10 @@ test('group dialog dropdowns: primitives Menu, native control only as the Menu-l
   // The group dialog routes BOTH dropdowns through it.
   assert.match(text, /menuReady\s*\?\s*E\(MenuPicker, \{/, 'the target list uses the picker')
   assert.match(text, /\(menuReady && hintList\.length > 0\)\s*\?\s*E\(MenuPicker, \{/, 'the group-path suggestions use the picker')
-  // Native controls survive ONLY as the fallback: one select, and the datalist
-  // is gone for good (its popup could not be styled at all).
-  assert.equal((text.match(/E\('select', \{/g) || []).length, 1, 'one native select left, as the fallback')
+  // Native controls survive ONLY as the fallback: one select per dialog that
+  // hosts a picker (group-move since v0.16, workspace-preset since v0.32),
+  // and the datalist is gone for good (its popup could not be styled at all).
+  assert.equal((text.match(/E\('select', \{/g) || []).length, 2, 'native selects left, as the fallbacks only')
   assert.doesNotMatch(text, /E\('datalist'/, 'the datalist is gone')
   assert.doesNotMatch(text, /list: 'bw-group-paths'/, 'no field is wired to a native suggestion list')
 })

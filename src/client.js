@@ -86,6 +86,15 @@ window.__ModuleLoader__.load({
       'menu.moveToGroup': '移动到分组…',
       'menu.moveOutGroup': '移出分组',
       'menu.sessionId': '复制 Session ID',
+      'menu.workspacePreset': '修改工作区默认预设…',
+      'wsPreset.title': '修改工作区默认预设',
+      'wsPreset.current': '当前默认预设',
+      'wsPreset.currentUnknown': '当前预设未知',
+      'wsPreset.noBlank': '该工作区暂无待命的新会话，当前跟随全局默认预设',
+      'wsPreset.empty': '没有可用的预设',
+      'wsPreset.loadFailed': '预设列表读取失败',
+      'wsPreset.done': '已更新工作区默认预设',
+      'wsPreset.globalDefault': '全局默认',
       'toast.sessionIdCopied': 'Session ID 已复制',
       'toast.sessionIdCopyFailed': '复制失败，请重试',
       'settings.title': '更好的工作区',
@@ -244,6 +253,15 @@ window.__ModuleLoader__.load({
       'menu.moveToGroup': 'Move to group…',
       'menu.moveOutGroup': 'Move out of group',
       'menu.sessionId': 'Copy Session ID',
+      'menu.workspacePreset': 'Workspace default preset…',
+      'wsPreset.title': 'Change workspace default preset',
+      'wsPreset.current': 'Current default preset',
+      'wsPreset.currentUnknown': 'Current preset unknown',
+      'wsPreset.noBlank': 'No standing draft in this workspace; it follows the global default preset',
+      'wsPreset.empty': 'No presets available',
+      'wsPreset.loadFailed': 'Failed to load the preset list',
+      'wsPreset.done': 'Workspace default preset updated',
+      'wsPreset.globalDefault': 'global default',
       'toast.sessionIdCopied': 'Session ID copied',
       'toast.sessionIdCopyFailed': 'Copy failed. Try again.',
       'settings.title': 'Better Workspaces',
@@ -410,6 +428,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': 'نقل إلى مجموعة…',
         'menu.moveOutGroup': 'إخراج من المجموعة',
         'menu.sessionId': 'نسخ معرّف الجلسة',
+        'menu.workspacePreset': 'الإعداد المسبق الافتراضي لمساحة العمل…',
+        'wsPreset.title': 'تغيير الإعداد المسبق الافتراضي لمساحة العمل',
+        'wsPreset.current': 'الإعداد المسبق الافتراضي الحالي',
+        'wsPreset.currentUnknown': 'الإعداد المسبق الحالي غير معروف',
+        'wsPreset.noBlank': 'لا توجد جلسة جديدة بانتظار في مساحة العمل هذه؛ تتبع الإعداد الافتراضي العام',
+        'wsPreset.empty': 'لا توجد إعدادات مسبقة متاحة',
+        'wsPreset.loadFailed': 'فشل تحميل قائمة الإعدادات المسبقة',
+        'wsPreset.done': 'تم تحديث الإعداد المسبق الافتراضي لمساحة العمل',
+        'wsPreset.globalDefault': 'الافتراضي العام',
         'toast.sessionIdCopied': 'تم نسخ معرّف الجلسة',
         'toast.sessionIdCopyFailed': 'فشل النسخ، حاول مجددًا',
         'settings.title': 'مساحات عمل أفضل',
@@ -568,6 +595,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': 'In Gruppe verschieben…',
         'menu.moveOutGroup': 'Aus der Gruppe entfernen',
         'menu.sessionId': 'Session-ID kopieren',
+        'menu.workspacePreset': 'Workspace-Standardpreset…',
+        'wsPreset.title': 'Workspace-Standardpreset ändern',
+        'wsPreset.current': 'Aktueller Standardpreset',
+        'wsPreset.currentUnknown': 'Aktueller Preset unbekannt',
+        'wsPreset.noBlank': 'Kein wartender Sitzungsentwurf in diesem Workspace; es gilt der globale Standard',
+        'wsPreset.empty': 'Keine Presets verfügbar',
+        'wsPreset.loadFailed': 'Preset-Liste konnte nicht geladen werden',
+        'wsPreset.done': 'Workspace-Standardpreset aktualisiert',
+        'wsPreset.globalDefault': 'Globaler Standard',
         'toast.sessionIdCopied': 'Session-ID kopiert',
         'toast.sessionIdCopyFailed': 'Kopieren fehlgeschlagen. Bitte erneut versuchen.',
         'settings.title': 'Bessere Arbeitsbereiche',
@@ -726,6 +762,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': 'Déplacer vers le groupe…',
         'menu.moveOutGroup': 'Retirer du groupe',
         'menu.sessionId': 'Copier l’ID de session',
+        'menu.workspacePreset': 'Préréglage par défaut du workspace…',
+        'wsPreset.title': 'Modifier le préréglage par défaut du workspace',
+        'wsPreset.current': 'Préréglage par défaut actuel',
+        'wsPreset.currentUnknown': 'Préréglage actuel inconnu',
+        'wsPreset.noBlank': 'Aucune nouvelle session en attente : ce workspace suit le préréglage global par défaut',
+        'wsPreset.empty': 'Aucun préréglage disponible',
+        'wsPreset.loadFailed': 'Échec du chargement de la liste des préréglages',
+        'wsPreset.done': 'Préréglage par défaut du workspace mis à jour',
+        'wsPreset.globalDefault': 'global par défaut',
         'toast.sessionIdCopied': 'ID de session copié',
         'toast.sessionIdCopyFailed': 'Échec de la copie. Veuillez réessayer.',
         'settings.title': 'Espaces de travail améliorés',
@@ -884,6 +929,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': 'समूह में ले जाएँ…',
         'menu.moveOutGroup': 'समूह से बाहर निकालें',
         'menu.sessionId': 'सेशन आईडी कॉपी करें',
+        'menu.workspacePreset': 'वर्कस्पेस डिफ़ॉल्ट प्रीसेट…',
+        'wsPreset.title': 'वर्कस्पेस डिफ़ॉल्ट प्रीसेट बदलें',
+        'wsPreset.current': 'वर्तमान डिफ़ॉल्ट प्रीसेट',
+        'wsPreset.currentUnknown': 'वर्तमान प्रीसेट अज्ञात',
+        'wsPreset.noBlank': 'इस वर्कस्पेस में कोई प्रतीक्षारत नया सेशन नहीं है; यह वैश्विक डिफ़ॉल्ट का पालन करता है',
+        'wsPreset.empty': 'कोई प्रीसेट उपलब्ध नहीं',
+        'wsPreset.loadFailed': 'प्रीसेट सूची लोड करने में विफल',
+        'wsPreset.done': 'वर्कस्पेस डिफ़ॉल्ट प्रीसेट अपडेट हुआ',
+        'wsPreset.globalDefault': 'वैश्विक डिफ़ॉल्ट',
         'toast.sessionIdCopied': 'सेशन आईडी कॉपी हो गई',
         'toast.sessionIdCopyFailed': 'कॉपी विफल रहा, कृपया पुनः प्रयास करें',
         'settings.title': 'बेहतर कार्यस्थान',
@@ -1042,6 +1096,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': 'Pindahkan ke grup…',
         'menu.moveOutGroup': 'Keluarkan dari grup',
         'menu.sessionId': 'Salin ID Sesi',
+        'menu.workspacePreset': 'Preset bawaan ruang kerja…',
+        'wsPreset.title': 'Ubah preset bawaan ruang kerja',
+        'wsPreset.current': 'Preset bawaan saat ini',
+        'wsPreset.currentUnknown': 'Preset saat ini tidak diketahui',
+        'wsPreset.noBlank': 'Tidak ada sesi baru yang menunggu di ruang kerja ini; mengikuti bawaan global',
+        'wsPreset.empty': 'Tidak ada preset yang tersedia',
+        'wsPreset.loadFailed': 'Gagal memuat daftar preset',
+        'wsPreset.done': 'Preset bawaan ruang kerja diperbarui',
+        'wsPreset.globalDefault': 'bawaan global',
         'toast.sessionIdCopied': 'ID Sesi disalin',
         'toast.sessionIdCopyFailed': 'Gagal menyalin, silakan coba lagi',
         'settings.title': 'Ruang kerja yang lebih baik',
@@ -1200,6 +1263,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': 'Sposta nel gruppo…',
         'menu.moveOutGroup': 'Rimuovi dal gruppo',
         'menu.sessionId': 'Copia ID sessione',
+        'menu.workspacePreset': 'Preset predefinito dello workspace…',
+        'wsPreset.title': 'Modifica il preset predefinito dello workspace',
+        'wsPreset.current': 'Preset predefinito attuale',
+        'wsPreset.currentUnknown': 'Preset attuale sconosciuto',
+        'wsPreset.noBlank': 'Nessuna nuova sessione in attesa in questo workspace; vale il predefinito globale',
+        'wsPreset.empty': 'Nessun preset disponibile',
+        'wsPreset.loadFailed': 'Impossibile caricare la lista dei preset',
+        'wsPreset.done': 'Preset predefinito dello workspace aggiornato',
+        'wsPreset.globalDefault': 'predefinito globale',
         'toast.sessionIdCopied': 'ID sessione copiato',
         'toast.sessionIdCopyFailed': 'Copia non riuscita. Riprova.',
         'settings.title': 'Aree di lavoro migliori',
@@ -1358,6 +1430,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': 'グループに移動…',
         'menu.moveOutGroup': 'グループから出す',
         'menu.sessionId': 'セッション ID をコピー',
+        'menu.workspacePreset': 'ワークスペース既定プリセット…',
+        'wsPreset.title': 'ワークスペース既定プリセットを変更',
+        'wsPreset.current': '現在の既定プリセット',
+        'wsPreset.currentUnknown': '現在のプリセットは不明',
+        'wsPreset.noBlank': 'このワークスペースには待機中の新規セッションがなく、グローバル既定に従います',
+        'wsPreset.empty': '利用可能なプリセットがありません',
+        'wsPreset.loadFailed': 'プリセット一覧の読み込みに失敗しました',
+        'wsPreset.done': 'ワークスペース既定プリセットを更新しました',
+        'wsPreset.globalDefault': 'グローバル既定',
         'toast.sessionIdCopied': 'セッション ID をコピーしました',
         'toast.sessionIdCopyFailed': 'コピーに失敗しました。もう一度お試しください',
         'settings.title': 'より良いワークスペース',
@@ -1516,6 +1597,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': '그룹으로 이동…',
         'menu.moveOutGroup': '그룹에서 제거',
         'menu.sessionId': '세션 ID 복사',
+        'menu.workspacePreset': '작업 공간 기본 프리셋…',
+        'wsPreset.title': '작업 공간 기본 프리셋 변경',
+        'wsPreset.current': '현재 기본 프리셋',
+        'wsPreset.currentUnknown': '현재 프리셋을 알 수 없음',
+        'wsPreset.noBlank': '이 작업 공간에는 대기 중인 새 세션이 없으며 전역 기본값을 따릅니다',
+        'wsPreset.empty': '사용 가능한 프리셋이 없습니다',
+        'wsPreset.loadFailed': '프리셋 목록을 불러오지 못했습니다',
+        'wsPreset.done': '작업 공간 기본 프리셋이 업데이트되었습니다',
+        'wsPreset.globalDefault': '전역 기본값',
         'toast.sessionIdCopied': '세션 ID가 복사되었습니다',
         'toast.sessionIdCopyFailed': '복사에 실패했습니다. 다시 시도해 주세요',
         'settings.title': '더 나은 워크스페이스',
@@ -1674,6 +1764,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': 'Naar groep verplaatsen…',
         'menu.moveOutGroup': 'Uit groep halen',
         'menu.sessionId': 'Sessie-ID kopiëren',
+        'menu.workspacePreset': 'Standaardpreset van workspace…',
+        'wsPreset.title': 'Standaardpreset van workspace wijzigen',
+        'wsPreset.current': 'Huidige standaardpreset',
+        'wsPreset.currentUnknown': 'Huidige preset onbekend',
+        'wsPreset.noBlank': 'Geen wachtende nieuwe sessie in deze workspace; de globale standaard geldt',
+        'wsPreset.empty': 'Geen presets beschikbaar',
+        'wsPreset.loadFailed': 'Laden van de presetlijst is mislukt',
+        'wsPreset.done': 'Standaardpreset van workspace bijgewerkt',
+        'wsPreset.globalDefault': 'globale standaard',
         'toast.sessionIdCopied': 'Sessie-ID gekopieerd',
         'toast.sessionIdCopyFailed': 'Kopiëren mislukt. Probeer het opnieuw.',
         'settings.title': 'Betere werkruimten',
@@ -1832,6 +1931,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': 'Przenieś do grupy…',
         'menu.moveOutGroup': 'Przenieś poza grupę',
         'menu.sessionId': 'Kopiuj ID sesji',
+        'menu.workspacePreset': 'Domyślny preset obszaru roboczego…',
+        'wsPreset.title': 'Zmień domyślny preset obszaru roboczego',
+        'wsPreset.current': 'Aktualny domyślny preset',
+        'wsPreset.currentUnknown': 'Aktualny preset nieznany',
+        'wsPreset.noBlank': 'Brak oczekującej nowej sesji w tym obszarze; obowiązuje globalne ustawienie domyślne',
+        'wsPreset.empty': 'Brak dostępnych presetów',
+        'wsPreset.loadFailed': 'Nie udało się wczytać listy presetów',
+        'wsPreset.done': 'Zaktualizowano domyślny preset obszaru roboczego',
+        'wsPreset.globalDefault': 'globalne ustawienie domyślne',
         'toast.sessionIdCopied': 'Skopiowano ID sesji',
         'toast.sessionIdCopyFailed': 'Kopiowanie nie powiodło się. Spróbuj ponownie.',
         'settings.title': 'Lepsze obszary robocze',
@@ -1990,6 +2098,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': 'Mover para o grupo…',
         'menu.moveOutGroup': 'Remover do grupo',
         'menu.sessionId': 'Copiar ID da sessão',
+        'menu.workspacePreset': 'Preset padrão do workspace…',
+        'wsPreset.title': 'Alterar o preset padrão do workspace',
+        'wsPreset.current': 'Preset padrão atual',
+        'wsPreset.currentUnknown': 'Preset atual desconhecido',
+        'wsPreset.noBlank': 'Nenhuma nova sessão em espera neste workspace; vale o padrão global',
+        'wsPreset.empty': 'Nenhum preset disponível',
+        'wsPreset.loadFailed': 'Falha ao carregar a lista de presets',
+        'wsPreset.done': 'Preset padrão do workspace atualizado',
+        'wsPreset.globalDefault': 'padrão global',
         'toast.sessionIdCopied': 'ID da sessão copiado',
         'toast.sessionIdCopyFailed': 'Falha ao copiar. Tente novamente.',
         'settings.title': 'Espaços de trabalho melhores',
@@ -2148,6 +2265,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': 'Переместить в группу…',
         'menu.moveOutGroup': 'Убрать из группы',
         'menu.sessionId': 'Копировать ID сессии',
+        'menu.workspacePreset': 'Пресет воркспейса по умолчанию…',
+        'wsPreset.title': 'Изменить пресет воркспейса по умолчанию',
+        'wsPreset.current': 'Текущий пресет по умолчанию',
+        'wsPreset.currentUnknown': 'Текущий пресет неизвестен',
+        'wsPreset.noBlank': 'В этом воркспейсе нет ожидающей новой сессии; действует глобальный пресет по умолчанию',
+        'wsPreset.empty': 'Нет доступных пресетов',
+        'wsPreset.loadFailed': 'Не удалось загрузить список пресетов',
+        'wsPreset.done': 'Пресет воркспейса по умолчанию обновлён',
+        'wsPreset.globalDefault': 'глобальный по умолчанию',
         'toast.sessionIdCopied': 'ID сессии скопирован',
         'toast.sessionIdCopyFailed': 'Не удалось скопировать. Попробуйте снова.',
         'settings.title': 'Улучшенные рабочие области',
@@ -2306,6 +2432,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': 'Flytta till grupp…',
         'menu.moveOutGroup': 'Flytta ut ur gruppen',
         'menu.sessionId': 'Kopiera sessions-ID',
+        'menu.workspacePreset': 'Standardförinställning för arbetsyta…',
+        'wsPreset.title': 'Ändra standardförinställning för arbetsyta',
+        'wsPreset.current': 'Aktuell standardförinställning',
+        'wsPreset.currentUnknown': 'Aktuell förinställning okänd',
+        'wsPreset.noBlank': 'Ingen väntande ny session i denna arbetsyta; den globala standarden gäller',
+        'wsPreset.empty': 'Inga förinställningar tillgängliga',
+        'wsPreset.loadFailed': 'Kunde inte läsa in förinställningslistan',
+        'wsPreset.done': 'Standardförinställning för arbetsyta uppdaterad',
+        'wsPreset.globalDefault': 'global standard',
         'toast.sessionIdCopied': 'Sessions-ID kopierat',
         'toast.sessionIdCopyFailed': 'Kopieringen misslyckades. Försök igen.',
         'settings.title': 'Bättre arbetsytor',
@@ -2464,6 +2599,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': 'ย้ายไปยังกลุ่ม…',
         'menu.moveOutGroup': 'ย้ายออกจากกลุ่ม',
         'menu.sessionId': 'คัดลอก ID เซสชัน',
+        'menu.workspacePreset': 'พรีเซ็ตเริ่มต้นของพื้นที่ทำงาน…',
+        'wsPreset.title': 'เปลี่ยนพรีเซ็ตเริ่มต้นของพื้นที่ทำงาน',
+        'wsPreset.current': 'พรีเซ็ตเริ่มต้นปัจจุบัน',
+        'wsPreset.currentUnknown': 'ไม่ทราบพรีเซ็ตปัจจุบัน',
+        'wsPreset.noBlank': 'ไม่มีเซสชันใหม่ที่รออยู่ในพื้นที่ทำงานนี้; ใช้ค่าเริ่มต้นส่วนกลาง',
+        'wsPreset.empty': 'ไม่มีพรีเซ็ตที่ใช้ได้',
+        'wsPreset.loadFailed': 'โหลดรายการพรีเซ็ตไม่สำเร็จ',
+        'wsPreset.done': 'อัปเดตพรีเซ็ตเริ่มต้นของพื้นที่ทำงานแล้ว',
+        'wsPreset.globalDefault': 'ค่าเริ่มต้นส่วนกลาง',
         'toast.sessionIdCopied': 'คัดลอก ID เซสชันแล้ว',
         'toast.sessionIdCopyFailed': 'คัดลอกไม่สำเร็จ โปรดลองอีกครั้ง',
         'settings.title': 'พื้นที่ทำงานที่ดีขึ้น',
@@ -2622,6 +2766,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': 'Gruba taşı…',
         'menu.moveOutGroup': 'Gruptan çıkar',
         'menu.sessionId': 'Oturum kimliğini kopyala',
+        'menu.workspacePreset': 'Çalışma alanı varsayılan ön ayarı…',
+        'wsPreset.title': 'Çalışma alanı varsayılan ön ayarını değiştir',
+        'wsPreset.current': 'Geçerli varsayılan ön ayar',
+        'wsPreset.currentUnknown': 'Geçerli ön ayar bilinmiyor',
+        'wsPreset.noBlank': 'Bu çalışma alanında bekleyen yeni oturum yok; genel varsayılan izlenir',
+        'wsPreset.empty': 'Kullanılabilir ön ayar yok',
+        'wsPreset.loadFailed': 'Ön ayar listesi yüklenemedi',
+        'wsPreset.done': 'Çalışma alanı varsayılan ön ayarı güncellendi',
+        'wsPreset.globalDefault': 'genel varsayılan',
         'toast.sessionIdCopied': 'Oturum kimliği kopyalandı',
         'toast.sessionIdCopyFailed': 'Kopyalama başarısız oldu. Lütfen tekrar deneyin.',
         'settings.title': 'Daha iyi çalışma alanları',
@@ -2780,6 +2933,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': 'Chuyển vào nhóm…',
         'menu.moveOutGroup': 'Đưa ra khỏi nhóm',
         'menu.sessionId': 'Sao chép ID phiên',
+        'menu.workspacePreset': 'Preset mặc định của không gian làm việc…',
+        'wsPreset.title': 'Thay đổi preset mặc định của không gian làm việc',
+        'wsPreset.current': 'Preset mặc định hiện tại',
+        'wsPreset.currentUnknown': 'Không rõ preset hiện tại',
+        'wsPreset.noBlank': 'Không gian làm việc này chưa có phiên mới đang chờ; đang theo mặc định toàn cục',
+        'wsPreset.empty': 'Không có preset khả dụng',
+        'wsPreset.loadFailed': 'Không tải được danh sách preset',
+        'wsPreset.done': 'Đã cập nhật preset mặc định của không gian làm việc',
+        'wsPreset.globalDefault': 'mặc định toàn cục',
         'toast.sessionIdCopied': 'Đã sao chép ID phiên',
         'toast.sessionIdCopyFailed': 'Sao chép thất bại. Hãy thử lại.',
         'settings.title': 'Không gian làm việc tốt hơn',
@@ -2938,6 +3100,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': '移動到分組…',
         'menu.moveOutGroup': '移出分組',
         'menu.sessionId': '複製 Session ID',
+        'menu.workspacePreset': '修改工作區預設…',
+        'wsPreset.title': '修改工作區預設',
+        'wsPreset.current': '目前預設',
+        'wsPreset.currentUnknown': '目前預設未知',
+        'wsPreset.noBlank': '此工作區暫無待命的新會話，目前跟隨全域預設',
+        'wsPreset.empty': '沒有可用的預設',
+        'wsPreset.loadFailed': '預設清單讀取失敗',
+        'wsPreset.done': '已更新工作區預設',
+        'wsPreset.globalDefault': '全域預設',
         'toast.sessionIdCopied': 'Session ID 已複製',
         'toast.sessionIdCopyFailed': '複製失敗，請重試',
         'settings.title': '更好嘅工作區',
@@ -3096,6 +3267,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': '移動到分組…',
         'menu.moveOutGroup': '移出分組',
         'menu.sessionId': '複製 Session ID',
+        'menu.workspacePreset': '修改工作區預設…',
+        'wsPreset.title': '修改工作區預設',
+        'wsPreset.current': '目前預設',
+        'wsPreset.currentUnknown': '目前預設未知',
+        'wsPreset.noBlank': '此工作區暫無待命的新會話，目前跟隨全域預設',
+        'wsPreset.empty': '沒有可用的預設',
+        'wsPreset.loadFailed': '預設清單讀取失敗',
+        'wsPreset.done': '已更新工作區預設',
+        'wsPreset.globalDefault': '全域預設',
         'toast.sessionIdCopied': 'Session ID 已複製',
         'toast.sessionIdCopyFailed': '複製失敗，請重試',
         'settings.title': '更好嘅工作區',
@@ -3254,6 +3434,15 @@ window.__ModuleLoader__.load({
         'menu.moveToGroup': '移動到分組…',
         'menu.moveOutGroup': '移出分組',
         'menu.sessionId': '複製 Session ID',
+        'menu.workspacePreset': '修改工作區預設…',
+        'wsPreset.title': '修改工作區預設',
+        'wsPreset.current': '目前預設',
+        'wsPreset.currentUnknown': '目前預設未知',
+        'wsPreset.noBlank': '此工作區暫無待命的新會話，目前跟隨全域預設',
+        'wsPreset.empty': '沒有可用的預設',
+        'wsPreset.loadFailed': '預設清單讀取失敗',
+        'wsPreset.done': '已更新工作區預設',
+        'wsPreset.globalDefault': '全域預設',
         'toast.sessionIdCopied': 'Session ID 已複製',
         'toast.sessionIdCopyFailed': '複製失敗，請重試',
         'settings.title': '更好的工作區',
@@ -5052,6 +5241,115 @@ window.__ModuleLoader__.load({
     }
 
     /**
+     * "Change workspace default preset" (v0.32.0): a workspace's default
+     * preset IS the agentPreset projection of its standing BLANK session, so
+     * this dialog reads the preset roster (the same remote channel the
+     * official hero chip reads) and swaps that blank's composition. Without a
+     * blank the workspace follows the GLOBAL default — say so instead of
+     * promising an edit; a host refusal surfaces inline with its own reason.
+     * applyPreset is null exactly when no blank exists (or the face is
+     * absent); the roster is a feature-probed plugin-side read.
+     */
+    function WorkspacePresetDialog({ applyPreset, loadRoster, current, onApplied, onClose, t }) {
+      const hasBlank = typeof applyPreset === 'function'
+      const menuReady = typeof ui.Menu === 'function'
+      const [status, setStatus] = React.useState('loading') // loading | ready | error
+      const [rows, setRows] = React.useState([])
+      const [picked, setPicked] = React.useState('')
+      const [errorText, setErrorText] = React.useState('')
+      const [busy, setBusy] = React.useState(false)
+      React.useEffect(() => {
+        if (typeof loadRoster !== 'function') { setStatus('error'); setErrorText(t('wsPreset.loadFailed')); return undefined }
+        let alive = true
+        Promise.resolve().then(loadRoster).then((roster) => {
+          if (!alive) return
+          if (!roster || !roster.ok) {
+            setStatus('error')
+            setErrorText(roster && roster.error ? String(roster.error) : t('wsPreset.loadFailed'))
+            return
+          }
+          // Selector discipline (official preset picker): broken rows drop.
+          const list = (Array.isArray(roster.presets) ? roster.presets : [])
+            .filter((row) => row && row.id && row.broken !== true)
+          setRows(list)
+          // Pre-pick the workspace's CURRENT preset, like the official chip
+          // shows the live selection; unknown (projection not loaded yet)
+          // leaves confirm disabled until the user picks one.
+          if (current && list.some((row) => row.id === current)) setPicked(current)
+          setStatus('ready')
+        }, (reason) => {
+          if (!alive) return
+          setStatus('error')
+          setErrorText(reason instanceof Error ? reason.message : String(reason || t('wsPreset.loadFailed')))
+        })
+        return () => { alive = false }
+      }, [])
+      const nameOf = (id) => {
+        for (const row of rows) { if (row.id === id) return row.name || row.id }
+        return id
+      }
+      const options = rows.map((row) => ({
+        value: row.id,
+        label: (row.name || row.id) + (row.isDefault ? ' (' + t('wsPreset.globalDefault') + ')' : ''),
+      }))
+      const commit = () => {
+        if (busy || !picked) { onClose(); return }
+        // Picking the CURRENT preset is a no-op: no host round-trip, just close.
+        if (picked === current) { onClose(); return }
+        setBusy(true)
+        setErrorText('')
+        Promise.resolve().then(() => applyPreset(picked)).then((result) => {
+          if (result && result.ok) { onApplied(); onClose(); return }
+          setBusy(false)
+          setErrorText(result && result.refusal ? String(result.refusal) : t('wsPreset.loadFailed'))
+        }, (reason) => {
+          setBusy(false)
+          setErrorText(reason instanceof Error ? reason.message : String(reason || t('wsPreset.loadFailed')))
+        })
+      }
+      const currentLine = !hasBlank ? t('wsPreset.noBlank')
+        : current ? t('wsPreset.current') + ': ' + nameOf(current)
+          : t('wsPreset.currentUnknown')
+      return E(ui.Modal, {
+        open: true,
+        onClose,
+        closeLabel: t('close'),
+        title: t('wsPreset.title'),
+        footer: E('div', { className: 'bw-modal-actions' },
+          hasBlank ? E(BTN, { variant: 'outline', onClick: onClose, disabled: busy }, t('cancel')) : null,
+          hasBlank
+            ? E(BTN, { variant: 'primary', onClick: commit, disabled: busy || !picked || picked === current }, t('confirm'))
+            : E(BTN, { variant: 'primary', onClick: onClose }, t('close')),
+        ),
+      },
+        E('div', { className: 'bw-modal-body' },
+          status === 'error' ? E('div', { className: 'bw-error-text', role: 'alert' }, errorText) : null,
+          status === 'ready' && hasBlank ? (
+            rows.length === 0
+              ? E('div', { className: 'bw-hint' }, t('wsPreset.empty'))
+              : E('div', { className: 'bw-field' },
+                menuReady
+                  ? E(MenuPicker, { options, value: picked, onPick: setPicked, t })
+                  : E('select', {
+                    className: 'bw-input',
+                    value: picked,
+                    onChange: (e) => setPicked(e.target.value),
+                  }, rows.map((row) => {
+                    const option = options.find((item) => item.value === row.id)
+                    return E('option', { key: row.id, value: row.id }, option ? option.label : row.id)
+                  })),
+              )
+          ) : null,
+          E('div', { className: 'bw-hint' }, currentLine),
+          status === 'ready' && hasBlank && errorText !== ''
+            ? E('div', { className: 'bw-error-text', role: 'alert' }, errorText)
+            : null,
+        ),
+        StyleNode(),
+      )
+    }
+
+    /**
      * Render crash insurance: dsh boots all-or-nothing (one failed entry
      * fails the whole web boot) and React unmounts the root on an uncaught
      * render error — so our registrations render behind this boundary and a
@@ -6639,6 +6937,7 @@ window.__ModuleLoader__.load({
         sidebarFlowEntry,
         shippedBrowserFace, scheduleSeatReader,
         officialT,
+        presetFace,
         t,
       } = props
 
@@ -8424,6 +8723,11 @@ window.__ModuleLoader__.load({
           { type: 'separator', id: 'bw-sep' },
           ...wsGroupItems,
           customizeEntry,
+          // v0.32.0: the workspace default preset. Rides the official
+          // agent-preset roster + blank-composition channels (the hero
+          // chip's remotes); hidden entirely where the host lacks them —
+          // older hosts simply never offer what they cannot do.
+          ...(presetFace ? [{ id: 'ws-preset', label: t('menu.workspacePreset'), icon: icon('IconAgentPresetOutlineRegular', 16) }] : []),
         ]
         if (ctx.kind === 'session') {
           // Official 0.1.7 mirror (Rows.tsx session menu + the shipped slot
@@ -8505,6 +8809,30 @@ window.__ModuleLoader__.load({
         else if (kind === 'sgroup' && id === 'delete-sgroup') setDialog({ kind: 'sgroup-delete', target: payload })
         else if (kind === 'workspace' && id === 'rename') setDialog({ kind: 'ws-rename', workspace: payload })
         else if (kind === 'workspace' && id === 'delete') setDialog({ kind: 'ws-delete', workspace: payload })
+        else if (kind === 'workspace' && id === 'ws-preset' && presetFace) {
+          // Freeze the target NOW (the dialog outlives the menu ctx): the
+          // blank lookup mirrors the official createInWorkspace rule — a
+          // standing blank IS the workspace default (its preset projection
+          // is what the hero chip shows); none → the workspace follows the
+          // GLOBAL default and the dialog says so instead of promising an
+          // edit. No session is ever created for the edit.
+          const raw = (storedItems || []).find((item) => item.workspaceId === payload.workspaceId)
+          const blankIds = raw && Array.isArray(raw.sessionIds) ? raw.sessionIds : []
+          const blankId = raw && raw.path
+            ? (list.ids || []).find((sid) => {
+              const summary = list.byId[sid]
+              return summary && summary.blank === true && summary.cwd === raw.path
+                && blankIds.indexOf(sid) !== -1 && !archivedSet.has(sid)
+            })
+            : undefined
+          const blankSummary = blankId !== undefined ? list.byId[blankId] : undefined
+          const projection = blankSummary ? blankSummary.projectionValues : undefined
+          setDialog({
+            kind: 'ws-preset',
+            applyPreset: blankId !== undefined ? (presetId) => presetFace.select(blankId, presetId) : null,
+            current: projection && typeof projection.agentPreset === 'string' ? projection.agentPreset : undefined,
+          })
+        }
         else if (kind === 'sgroup' && id === 'rename-sgroup') setDialog({ kind: 'sgroup-rename', target: payload })
         else if (kind === 'session' && id === 'rename') setDialog({ kind: 'sess-rename', session: payload })
         else if (kind === 'session' && id === 'fork') forkSession(payload.id)
@@ -8726,6 +9054,17 @@ window.__ModuleLoader__.load({
             ),
           )
         }
+        if (dialog.kind === 'ws-preset') return E(WorkspacePresetDialog, {
+          key: 'ws-preset',
+          applyPreset: dialog.applyPreset,
+          loadRoster: presetFace ? presetFace.list : null,
+          current: dialog.current,
+          // Success closes with the same notice pipeline as copy-session-id
+          // (see copyNoticeText); refusal errors stay inline in the dialog.
+          onApplied: () => setCopyNotice((prev) => ({ seq: (prev ? prev.seq : 0) + 1, ok: true, text: t('wsPreset.done') })),
+          onClose: () => setDialog(null),
+          t,
+        })
         return null
       })()
 
@@ -8802,9 +9141,14 @@ window.__ModuleLoader__.load({
 
       // Copy-session-id notice copy: the official 'workspace' dictionary is
       // the source of truth, this plugin's aligned fallback covers older hosts.
+      // Copy-session-id notice copy: the official 'workspace' dictionary is
+      // the source of truth, this plugin's aligned fallback covers older
+      // hosts. An explicit `text` override (v0.32.0 workspace-preset done
+      // notice) reuses the same toast pipeline with its own copy.
       const copyNoticeText = copyNotice
-        ? officialText(copyNotice.ok ? 'toast.sessionIdCopied' : 'toast.sessionIdCopyFailed',
-            undefined, t(copyNotice.ok ? 'toast.sessionIdCopied' : 'toast.sessionIdCopyFailed'))
+        ? (typeof copyNotice.text === 'string' ? copyNotice.text
+          : officialText(copyNotice.ok ? 'toast.sessionIdCopied' : 'toast.sessionIdCopyFailed',
+              undefined, t(copyNotice.ok ? 'toast.sessionIdCopied' : 'toast.sessionIdCopyFailed')))
         : ''
 
       return E('div', { className: cls('bw-root', sessionCouldLeaveGroup && 'bw-root-drop-out'), ...rootDropEvents },
@@ -9016,6 +9360,54 @@ window.__ModuleLoader__.load({
       let officialT = null
       try { officialT = ctx.locale.bind('workspace') } catch { officialT = null }
 
+      // v0.32.0: the agent-preset face — {list, select} over the same remote
+      // channels the official hero preset chip uses. Probed defensively: the
+      // 'remote' service may be missing on older hosts, and a missing or
+      // reshaped surface simply hides the menu row (presetFace === null).
+      let presetFace = null
+      try {
+        const remote = ctx.get('remote')
+        const agentPresets = remote && remote.agentPresets
+        if (agentPresets && typeof agentPresets.list === 'function' && typeof agentPresets.select === 'function') {
+          presetFace = {
+            // readRoster mirror: a gateway hiccup
+            // ('gateway/invocation-unavailable') maps to an EMPTY roster,
+            // exactly like the official selector does; every other failure
+            // surfaces with its message.
+            list: async () => {
+              try {
+                const result = await agentPresets.list()
+                if (result && result.ok) return { ok: true, presets: (result.value && result.value.presets) || [] }
+                const code = result && result.error ? result.error.code : undefined
+                if (code === 'gateway/invocation-unavailable') return { ok: true, presets: [] }
+                return { ok: false, error: result && result.error ? result.error.message : 'preset roster read failed' }
+              } catch (error) {
+                return { ok: false, error: error instanceof Error ? error.message : String(error) }
+              }
+            },
+            // seat-store apply() mirror: a refusal carries the host's reason
+            // (error.details.reason when present); the outer call can throw,
+            // so a throw folds into the same {ok:false} shape.
+            select: async (sessionId, presetId) => {
+              try {
+                const result = await agentPresets.select(sessionId, presetId)
+                if (result && result.ok) return { ok: true }
+                const details = result && result.error ? result.error.details : undefined
+                const reason = details && typeof details.reason === 'string'
+                  ? details.reason
+                  : (result && result.error ? result.error.message : 'preset select failed')
+                return { ok: false, refusal: reason }
+              } catch (error) {
+                return { ok: false, refusal: error instanceof Error ? error.message : String(error) }
+              }
+            },
+          }
+        }
+      } catch (presetFaceError) {
+        console.warn('[dsh-better-workspace] agent-preset face unavailable', presetFaceError)
+        presetFace = null
+      }
+
       if (ctx.locale && typeof ctx.locale.register === 'function') {
         ctx.effect(() => {
           try {
@@ -9069,6 +9461,10 @@ window.__ModuleLoader__.load({
         // Official 'workspace' dictionary translate (menu copy follows upstream);
         // null when the bind failed — the menu then uses the aligned bw copy.
         officialT,
+        // v0.32.0: {list, select} over the agent-preset remotes — the same
+        // two channels the official hero chip uses; null when the host lacks
+        // the service, which simply hides the workspace-preset menu row.
+        presetFace,
         // The shipped sidebar's OWN face (dsh 0.1.7-rc.2): the shortcut request
         // channel and the catalog of effective keybindings. Both belong to the
         // entry this seat shadows, so they are read off the ledger and consumed

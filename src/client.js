@@ -9361,13 +9361,31 @@ window.__ModuleLoader__.load({
       try { officialT = ctx.locale.bind('workspace') } catch { officialT = null }
 
       // v0.32.0: the agent-preset face — {list, select} over the same remote
-      // channels the official hero preset chip uses. Probed defensively: the
-      // 'remote' service may be missing on older hosts, and a missing or
-      // reshaped surface simply hides the menu row (presetFace === null).
+      // channels the official hero preset chip uses. v0.32.1 probe fix: the
+      // official bundles reach it as the PROPERTY CHAIN ctx.remote.agentPresets
+      // (their inject list declares it as the 'remote.agentPresets' fiber
+      // service) — the client side has NO catalogued 'remote' service, so the
+      // explicit ctx.get('remote') v0.32.0 shipped threw, the catch swallowed
+      // it, and the menu row silently hid. Property chain first, explicit get
+      // as the fallback, and a shape dump on failure so any future regression
+      // is diagnosable straight from the console.
       let presetFace = null
       try {
-        const remote = ctx.get('remote')
+        let remote = null
+        try { remote = ctx.remote } catch { remote = null }
+        if (!remote || !remote.agentPresets) {
+          try {
+            const viaGet = ctx.get('remote')
+            if (viaGet && (!remote || !remote.agentPresets)) remote = viaGet
+          } catch { /* keep the property-chain result */ }
+        }
         const agentPresets = remote && remote.agentPresets
+        if (!agentPresets) {
+          console.warn('[dsh-better-workspace] agent-preset probe: remote.agentPresets unavailable', {
+            remoteType: typeof remote,
+            remoteKeys: remote ? Object.keys(remote).slice(0, 40) : null,
+          })
+        }
         if (agentPresets && typeof agentPresets.list === 'function' && typeof agentPresets.select === 'function') {
           presetFace = {
             // readRoster mirror: a gateway hiccup

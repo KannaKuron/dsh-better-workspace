@@ -3,6 +3,14 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.32.1 — 2026-10-19
+
+**类型**:fix / v0.32.0「修改工作区默认预设」在真机上不出现。
+
+- **根因**:插件 `dsh.client.inject` 漏声明 `@deepseek-ai/dsh-api-remotes`——remote 通道由该包在客户端侧注册(宿主源码 `packages/api/remotes/src/client/index.ts:178`),不声明它宿主就不把 `remote.agentPresets` 装配给本插件;右键菜单按特性探测降级,拿不到 face 即整项隐藏。其余菜单项(重命名 / 删除 / 移动到分组)均为纯本地操作、不走 remote,故只有这一项消失。v0.32.0 的探测用的 `ctx.get('remote')` 在客户端侧本就无此 catalogued 服务,是官方组件不用的取法,雪上加霜。
+- **修复**:inject 补上 `@deepseek-ai/dsh-api-remotes`(照官方 ui-agent-preset 的声明形式);探测改为官方同款 `ctx.remote.agentPresets` 属性链优先、`ctx.get('remote')` 仅作兜底;探测失败时输出带形状的诊断 warn(`[dsh-better-workspace] agent-preset probe: remote.agentPresets unavailable`),后续回归可直接从 console 定位。
+- **冒烟**:60 项全绿(探测改动无既有断言锁定)。
+
 ## v0.32.0 — 2026-10-19
 
 **类型**:feat / 工作区右键菜单新增「修改工作区默认预设」。

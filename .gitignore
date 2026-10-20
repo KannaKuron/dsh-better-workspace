@@ -4,3 +4,4 @@ node_modules/
 .npmrc
 .env
 .DS_Store
+.dsh-ops-update-*.lock

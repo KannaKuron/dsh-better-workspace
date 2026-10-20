@@ -90,7 +90,11 @@ window.__ModuleLoader__.load({
       'wsPreset.title': '修改工作区默认预设',
       'wsPreset.current': '当前默认预设',
       'wsPreset.currentUnknown': '当前预设未知',
-      'wsPreset.noBlank': '该工作区暂无待命的新会话，当前跟随全局默认预设',
+      'presetStandardName': '标准模式',
+      'presetPtcName': 'PTC 模式',
+      'presetMinimalName': '极简模式',
+      'presetCordisName': '创造模式',
+      'wsPreset.createHint': '该工作区暂无待命的新会话，确认后将预备一个使用所选预设的新会话作为工作区默认',
       'wsPreset.empty': '没有可用的预设',
       'wsPreset.loadFailed': '预设列表读取失败',
       'wsPreset.done': '已更新工作区默认预设',
@@ -257,7 +261,11 @@ window.__ModuleLoader__.load({
       'wsPreset.title': 'Change workspace default preset',
       'wsPreset.current': 'Current default preset',
       'wsPreset.currentUnknown': 'Current preset unknown',
-      'wsPreset.noBlank': 'No standing draft in this workspace; it follows the global default preset',
+      'presetStandardName': 'Standard mode',
+      'presetPtcName': 'PTC mode',
+      'presetMinimalName': 'Minimal mode',
+      'presetCordisName': 'Creator mode',
+      'wsPreset.createHint': 'No standing draft in this workspace; confirming prepares a new draft with the picked preset as the workspace default',
       'wsPreset.empty': 'No presets available',
       'wsPreset.loadFailed': 'Failed to load the preset list',
       'wsPreset.done': 'Workspace default preset updated',
@@ -432,7 +440,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': 'تغيير الإعداد المسبق الافتراضي لمساحة العمل',
         'wsPreset.current': 'الإعداد المسبق الافتراضي الحالي',
         'wsPreset.currentUnknown': 'الإعداد المسبق الحالي غير معروف',
-        'wsPreset.noBlank': 'لا توجد جلسة جديدة بانتظار في مساحة العمل هذه؛ تتبع الإعداد الافتراضي العام',
+        'presetStandardName': 'الوضع القياسي',
+        'presetPtcName': 'وضع PTC',
+        'presetMinimalName': 'الوضع البسيط',
+        'presetCordisName': 'وضع المبدع',
+        'wsPreset.createHint': 'لا توجد جلسة جديدة بانتظار في مساحة العمل هذه؛ عند التأكيد سيُجهَّز جلسة جديدة بالإعداد المسبق المختار كافتراضي لمساحة العمل',
         'wsPreset.empty': 'لا توجد إعدادات مسبقة متاحة',
         'wsPreset.loadFailed': 'فشل تحميل قائمة الإعدادات المسبقة',
         'wsPreset.done': 'تم تحديث الإعداد المسبق الافتراضي لمساحة العمل',
@@ -599,7 +611,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': 'Workspace-Standardpreset ändern',
         'wsPreset.current': 'Aktueller Standardpreset',
         'wsPreset.currentUnknown': 'Aktueller Preset unbekannt',
-        'wsPreset.noBlank': 'Kein wartender Sitzungsentwurf in diesem Workspace; es gilt der globale Standard',
+        'presetStandardName': 'Standardmodus',
+        'presetPtcName': 'PTC-Modus',
+        'presetMinimalName': 'Minimalmodus',
+        'presetCordisName': 'Kreativmodus',
+        'wsPreset.createHint': 'Kein wartender Sitzungsentwurf in diesem Workspace; nach dem Bestätigen wird ein neuer Entwurf mit dem gewählten Preset als Workspace-Standard vorbereitet',
         'wsPreset.empty': 'Keine Presets verfügbar',
         'wsPreset.loadFailed': 'Preset-Liste konnte nicht geladen werden',
         'wsPreset.done': 'Workspace-Standardpreset aktualisiert',
@@ -766,7 +782,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': 'Modifier le préréglage par défaut du workspace',
         'wsPreset.current': 'Préréglage par défaut actuel',
         'wsPreset.currentUnknown': 'Préréglage actuel inconnu',
-        'wsPreset.noBlank': 'Aucune nouvelle session en attente : ce workspace suit le préréglage global par défaut',
+        'presetStandardName': 'Mode standard',
+        'presetPtcName': 'Mode PTC',
+        'presetMinimalName': 'Mode minimal',
+        'presetCordisName': 'Mode créateur',
+        'wsPreset.createHint': 'Aucune nouvelle session en attente dans ce workspace ; la confirmation prépare une nouvelle session avec le préréglage choisi comme valeur par défaut',
         'wsPreset.empty': 'Aucun préréglage disponible',
         'wsPreset.loadFailed': 'Échec du chargement de la liste des préréglages',
         'wsPreset.done': 'Préréglage par défaut du workspace mis à jour',
@@ -933,7 +953,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': 'वर्कस्पेस डिफ़ॉल्ट प्रीसेट बदलें',
         'wsPreset.current': 'वर्तमान डिफ़ॉल्ट प्रीसेट',
         'wsPreset.currentUnknown': 'वर्तमान प्रीसेट अज्ञात',
-        'wsPreset.noBlank': 'इस वर्कस्पेस में कोई प्रतीक्षारत नया सेशन नहीं है; यह वैश्विक डिफ़ॉल्ट का पालन करता है',
+        'presetStandardName': 'मानक मोड',
+        'presetPtcName': 'PTC मोड',
+        'presetMinimalName': 'मिनिमल मोड',
+        'presetCordisName': 'क्रिएटर मोड',
+        'wsPreset.createHint': 'इस वर्कस्पेस में कोई प्रतीक्षारत नया सेशन नहीं है; पुष्टि करने पर चयनित प्रीसेट के साथ एक नया सेशन वर्कस्पेस डिफ़ॉल्ट के रूप में तैयार किया जाएगा',
         'wsPreset.empty': 'कोई प्रीसेट उपलब्ध नहीं',
         'wsPreset.loadFailed': 'प्रीसेट सूची लोड करने में विफल',
         'wsPreset.done': 'वर्कस्पेस डिफ़ॉल्ट प्रीसेट अपडेट हुआ',
@@ -1100,7 +1124,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': 'Ubah preset bawaan ruang kerja',
         'wsPreset.current': 'Preset bawaan saat ini',
         'wsPreset.currentUnknown': 'Preset saat ini tidak diketahui',
-        'wsPreset.noBlank': 'Tidak ada sesi baru yang menunggu di ruang kerja ini; mengikuti bawaan global',
+        'presetStandardName': 'Mode standar',
+        'presetPtcName': 'Mode PTC',
+        'presetMinimalName': 'Mode minimal',
+        'presetCordisName': 'Mode kreator',
+        'wsPreset.createHint': 'Tidak ada sesi baru yang menunggu di ruang kerja ini; setelah dikonfirmasi, sesi baru dengan prasetel pilihan akan disiapkan sebagai bawaan ruang kerja',
         'wsPreset.empty': 'Tidak ada preset yang tersedia',
         'wsPreset.loadFailed': 'Gagal memuat daftar preset',
         'wsPreset.done': 'Preset bawaan ruang kerja diperbarui',
@@ -1267,7 +1295,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': 'Modifica il preset predefinito dello workspace',
         'wsPreset.current': 'Preset predefinito attuale',
         'wsPreset.currentUnknown': 'Preset attuale sconosciuto',
-        'wsPreset.noBlank': 'Nessuna nuova sessione in attesa in questo workspace; vale il predefinito globale',
+        'presetStandardName': 'Modalità standard',
+        'presetPtcName': 'Modalità PTC',
+        'presetMinimalName': 'Modalità minimale',
+        'presetCordisName': 'Modalità creatore',
+        'wsPreset.createHint': 'Nessuna nuova sessione in attesa in questo workspace; confermando verrà preparata una nuova sessione con il preset scelto come predefinito del workspace',
         'wsPreset.empty': 'Nessun preset disponibile',
         'wsPreset.loadFailed': 'Impossibile caricare la lista dei preset',
         'wsPreset.done': 'Preset predefinito dello workspace aggiornato',
@@ -1434,7 +1466,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': 'ワークスペース既定プリセットを変更',
         'wsPreset.current': '現在の既定プリセット',
         'wsPreset.currentUnknown': '現在のプリセットは不明',
-        'wsPreset.noBlank': 'このワークスペースには待機中の新規セッションがなく、グローバル既定に従います',
+        'presetStandardName': '標準モード',
+        'presetPtcName': 'PTC モード',
+        'presetMinimalName': 'ミニマルモード',
+        'presetCordisName': 'クリエイターモード',
+        'wsPreset.createHint': 'このワークスペースには待機中の新規セッションがありません。確定すると、選択したプリセットで新しいセッションをワークスペースの既定として用意します',
         'wsPreset.empty': '利用可能なプリセットがありません',
         'wsPreset.loadFailed': 'プリセット一覧の読み込みに失敗しました',
         'wsPreset.done': 'ワークスペース既定プリセットを更新しました',
@@ -1601,7 +1637,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': '작업 공간 기본 프리셋 변경',
         'wsPreset.current': '현재 기본 프리셋',
         'wsPreset.currentUnknown': '현재 프리셋을 알 수 없음',
-        'wsPreset.noBlank': '이 작업 공간에는 대기 중인 새 세션이 없으며 전역 기본값을 따릅니다',
+        'presetStandardName': '표준 모드',
+        'presetPtcName': 'PTC 모드',
+        'presetMinimalName': '미니멀 모드',
+        'presetCordisName': '크리에이터 모드',
+        'wsPreset.createHint': '이 작업 공간에는 대기 중인 새 세션이 없습니다. 확인하면 선택한 프리셋으로 새 세션을 준비해 작업 공간 기본값으로 사용합니다',
         'wsPreset.empty': '사용 가능한 프리셋이 없습니다',
         'wsPreset.loadFailed': '프리셋 목록을 불러오지 못했습니다',
         'wsPreset.done': '작업 공간 기본 프리셋이 업데이트되었습니다',
@@ -1768,7 +1808,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': 'Standaardpreset van workspace wijzigen',
         'wsPreset.current': 'Huidige standaardpreset',
         'wsPreset.currentUnknown': 'Huidige preset onbekend',
-        'wsPreset.noBlank': 'Geen wachtende nieuwe sessie in deze workspace; de globale standaard geldt',
+        'presetStandardName': 'Standaardmodus',
+        'presetPtcName': 'PTC-modus',
+        'presetMinimalName': 'Minimale modus',
+        'presetCordisName': 'Creatormodus',
+        'wsPreset.createHint': 'Geen wachtende nieuwe sessie in deze workspace; bij bevestigen wordt een nieuwe sessie met de gekozen preset als workspace-standaard voorbereid',
         'wsPreset.empty': 'Geen presets beschikbaar',
         'wsPreset.loadFailed': 'Laden van de presetlijst is mislukt',
         'wsPreset.done': 'Standaardpreset van workspace bijgewerkt',
@@ -1935,7 +1979,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': 'Zmień domyślny preset obszaru roboczego',
         'wsPreset.current': 'Aktualny domyślny preset',
         'wsPreset.currentUnknown': 'Aktualny preset nieznany',
-        'wsPreset.noBlank': 'Brak oczekującej nowej sesji w tym obszarze; obowiązuje globalne ustawienie domyślne',
+        'presetStandardName': 'Tryb standardowy',
+        'presetPtcName': 'Tryb PTC',
+        'presetMinimalName': 'Tryb minimalny',
+        'presetCordisName': 'Tryb twórcy',
+        'wsPreset.createHint': 'Brak oczekującej nowej sesji w tym obszarze roboczym; po potwierdzeniu zostanie przygotowana nowa sesja z wybranym ustawieniem jako domyślnym obszaru roboczego',
         'wsPreset.empty': 'Brak dostępnych presetów',
         'wsPreset.loadFailed': 'Nie udało się wczytać listy presetów',
         'wsPreset.done': 'Zaktualizowano domyślny preset obszaru roboczego',
@@ -2102,7 +2150,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': 'Alterar o preset padrão do workspace',
         'wsPreset.current': 'Preset padrão atual',
         'wsPreset.currentUnknown': 'Preset atual desconhecido',
-        'wsPreset.noBlank': 'Nenhuma nova sessão em espera neste workspace; vale o padrão global',
+        'presetStandardName': 'Modo padrão',
+        'presetPtcName': 'Modo PTC',
+        'presetMinimalName': 'Modo mínimo',
+        'presetCordisName': 'Modo criador',
+        'wsPreset.createHint': 'Nenhuma nova sessão em espera neste workspace; ao confirmar, uma nova sessão com o predefinido escolhido será preparada como padrão do workspace',
         'wsPreset.empty': 'Nenhum preset disponível',
         'wsPreset.loadFailed': 'Falha ao carregar a lista de presets',
         'wsPreset.done': 'Preset padrão do workspace atualizado',
@@ -2269,7 +2321,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': 'Изменить пресет воркспейса по умолчанию',
         'wsPreset.current': 'Текущий пресет по умолчанию',
         'wsPreset.currentUnknown': 'Текущий пресет неизвестен',
-        'wsPreset.noBlank': 'В этом воркспейсе нет ожидающей новой сессии; действует глобальный пресет по умолчанию',
+        'presetStandardName': 'Стандартный режим',
+        'presetPtcName': 'Режим PTC',
+        'presetMinimalName': 'Минимальный режим',
+        'presetCordisName': 'Режим создателя',
+        'wsPreset.createHint': 'В этом воркспейсе нет ожидающей новой сессии; после подтверждения будет подготовлена новая сессия с выбранным пресетом в качестве дефолта воркспейса',
         'wsPreset.empty': 'Нет доступных пресетов',
         'wsPreset.loadFailed': 'Не удалось загрузить список пресетов',
         'wsPreset.done': 'Пресет воркспейса по умолчанию обновлён',
@@ -2436,7 +2492,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': 'Ändra standardförinställning för arbetsyta',
         'wsPreset.current': 'Aktuell standardförinställning',
         'wsPreset.currentUnknown': 'Aktuell förinställning okänd',
-        'wsPreset.noBlank': 'Ingen väntande ny session i denna arbetsyta; den globala standarden gäller',
+        'presetStandardName': 'Standardläge',
+        'presetPtcName': 'PTC-läge',
+        'presetMinimalName': 'Minimalt läge',
+        'presetCordisName': 'Skaparläge',
+        'wsPreset.createHint': 'Ingen väntande ny session i denna arbetsyta; vid bekräftelse förbereds en ny session med den valda förinställningen som arbetsytans standard',
         'wsPreset.empty': 'Inga förinställningar tillgängliga',
         'wsPreset.loadFailed': 'Kunde inte läsa in förinställningslistan',
         'wsPreset.done': 'Standardförinställning för arbetsyta uppdaterad',
@@ -2603,7 +2663,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': 'เปลี่ยนพรีเซ็ตเริ่มต้นของพื้นที่ทำงาน',
         'wsPreset.current': 'พรีเซ็ตเริ่มต้นปัจจุบัน',
         'wsPreset.currentUnknown': 'ไม่ทราบพรีเซ็ตปัจจุบัน',
-        'wsPreset.noBlank': 'ไม่มีเซสชันใหม่ที่รออยู่ในพื้นที่ทำงานนี้; ใช้ค่าเริ่มต้นส่วนกลาง',
+        'presetStandardName': 'โหมดมาตรฐาน',
+        'presetPtcName': 'โหมด PTC',
+        'presetMinimalName': 'โหมดมินิมอล',
+        'presetCordisName': 'โหมดครีเอเตอร์',
+        'wsPreset.createHint': 'ยังไม่มีเซสชันใหม่ที่รออยู่ในพื้นที่ทำงานนี้; เมื่อยืนยันจะเตรียมเซสชันใหม่ที่ใช้พรีเซ็ตที่เลือกเป็นค่าเริ่มต้นของพื้นที่ทำงาน',
         'wsPreset.empty': 'ไม่มีพรีเซ็ตที่ใช้ได้',
         'wsPreset.loadFailed': 'โหลดรายการพรีเซ็ตไม่สำเร็จ',
         'wsPreset.done': 'อัปเดตพรีเซ็ตเริ่มต้นของพื้นที่ทำงานแล้ว',
@@ -2770,7 +2834,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': 'Çalışma alanı varsayılan ön ayarını değiştir',
         'wsPreset.current': 'Geçerli varsayılan ön ayar',
         'wsPreset.currentUnknown': 'Geçerli ön ayar bilinmiyor',
-        'wsPreset.noBlank': 'Bu çalışma alanında bekleyen yeni oturum yok; genel varsayılan izlenir',
+        'presetStandardName': 'Standart mod',
+        'presetPtcName': 'PTC modu',
+        'presetMinimalName': 'Minimal mod',
+        'presetCordisName': 'Oluşturucu modu',
+        'wsPreset.createHint': 'Bu çalışma alanında bekleyen yeni oturum yok; onaylayınca seçilen ön ayarla yeni bir oturum çalışma alanı varsayılanı olarak hazırlanır',
         'wsPreset.empty': 'Kullanılabilir ön ayar yok',
         'wsPreset.loadFailed': 'Ön ayar listesi yüklenemedi',
         'wsPreset.done': 'Çalışma alanı varsayılan ön ayarı güncellendi',
@@ -2937,7 +3005,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': 'Thay đổi preset mặc định của không gian làm việc',
         'wsPreset.current': 'Preset mặc định hiện tại',
         'wsPreset.currentUnknown': 'Không rõ preset hiện tại',
-        'wsPreset.noBlank': 'Không gian làm việc này chưa có phiên mới đang chờ; đang theo mặc định toàn cục',
+        'presetStandardName': 'Chế độ chuẩn',
+        'presetPtcName': 'Chế độ PTC',
+        'presetMinimalName': 'Chế độ tối giản',
+        'presetCordisName': 'Chế độ người sáng tạo',
+        'wsPreset.createHint': 'Không gian làm việc này chưa có phiên mới đang chờ; xác nhận sẽ chuẩn bị một phiên mới dùng cấu hình đã chọn làm mặc định của không gian làm việc',
         'wsPreset.empty': 'Không có preset khả dụng',
         'wsPreset.loadFailed': 'Không tải được danh sách preset',
         'wsPreset.done': 'Đã cập nhật preset mặc định của không gian làm việc',
@@ -3104,7 +3176,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': '修改工作區預設',
         'wsPreset.current': '目前預設',
         'wsPreset.currentUnknown': '目前預設未知',
-        'wsPreset.noBlank': '此工作區暫無待命的新會話，目前跟隨全域預設',
+        'presetStandardName': '標準模式',
+        'presetPtcName': 'PTC 模式',
+        'presetMinimalName': '極簡模式',
+        'presetCordisName': '創造模式',
+        'wsPreset.createHint': '該工作區暫無待命的新對話，確認後將預備一個使用所選預設的新對話作為工作區預設',
         'wsPreset.empty': '沒有可用的預設',
         'wsPreset.loadFailed': '預設清單讀取失敗',
         'wsPreset.done': '已更新工作區預設',
@@ -3271,7 +3347,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': '修改工作區預設',
         'wsPreset.current': '目前預設',
         'wsPreset.currentUnknown': '目前預設未知',
-        'wsPreset.noBlank': '此工作區暫無待命的新會話，目前跟隨全域預設',
+        'presetStandardName': '標準模式',
+        'presetPtcName': 'PTC 模式',
+        'presetMinimalName': '極簡模式',
+        'presetCordisName': '創造模式',
+        'wsPreset.createHint': '該工作區暫無待命的新對話，確認後將預備一個使用所選預設的新對話作為工作區預設',
         'wsPreset.empty': '沒有可用的預設',
         'wsPreset.loadFailed': '預設清單讀取失敗',
         'wsPreset.done': '已更新工作區預設',
@@ -3438,7 +3518,11 @@ window.__ModuleLoader__.load({
         'wsPreset.title': '修改工作區預設',
         'wsPreset.current': '目前預設',
         'wsPreset.currentUnknown': '目前預設未知',
-        'wsPreset.noBlank': '此工作區暫無待命的新會話，目前跟隨全域預設',
+        'presetStandardName': '標準模式',
+        'presetPtcName': 'PTC 模式',
+        'presetMinimalName': '極簡模式',
+        'presetCordisName': '創造模式',
+        'wsPreset.createHint': '此工作區暫無待命的新工作階段，確認後將準備一個使用所選預設的新工作階段作為工作區預設',
         'wsPreset.empty': '沒有可用的預設',
         'wsPreset.loadFailed': '預設清單讀取失敗',
         'wsPreset.done': '已更新工作區預設',
@@ -5250,8 +5334,25 @@ window.__ModuleLoader__.load({
      * applyPreset is null exactly when no blank exists (or the face is
      * absent); the roster is a feature-probed plugin-side read.
      */
-    function WorkspacePresetDialog({ applyPreset, loadRoster, current, onApplied, onClose, t }) {
-      const hasBlank = typeof applyPreset === 'function'
+    /* BUILT-IN preset id → this plugin's dictionary key. Mirrors the official
+     * display fold (agent-preset-registry display.ts isBuiltInPreset: built-ins
+     * publish NO name) because that registry package is not on the client boot
+     * graph and cannot be required here. Custom presets keep their authored
+     * name; the id itself is the last-resort fallback. Host-follow: delete this
+     * fold and require the official one once it ships on the boot graph. */
+    const BUILT_IN_PRESET_LABEL_KEYS = {
+      standard: 'presetStandardName',
+      ptc: 'presetPtcName',
+      minimal: 'presetMinimalName',
+      cordis: 'presetCordisName',
+    }
+    const presetDisplayLabel = (row, t) => {
+      if (row && row.name === undefined && BUILT_IN_PRESET_LABEL_KEYS[row.id] !== undefined) return t(BUILT_IN_PRESET_LABEL_KEYS[row.id])
+      return (row && row.name) || (row && row.id) || ''
+    }
+
+    function WorkspacePresetDialog({ applyPreset, hasBlank, loadRoster, current, onApplied, onClose, t }) {
+      const editable = typeof applyPreset === 'function' && hasBlank !== false
       const menuReady = typeof ui.Menu === 'function'
       const [status, setStatus] = React.useState('loading') // loading | ready | error
       const [rows, setRows] = React.useState([])
@@ -5285,12 +5386,12 @@ window.__ModuleLoader__.load({
         return () => { alive = false }
       }, [])
       const nameOf = (id) => {
-        for (const row of rows) { if (row.id === id) return row.name || row.id }
+        for (const row of rows) { if (row.id === id) return presetDisplayLabel(row, t) }
         return id
       }
       const options = rows.map((row) => ({
         value: row.id,
-        label: (row.name || row.id) + (row.isDefault ? ' (' + t('wsPreset.globalDefault') + ')' : ''),
+        label: presetDisplayLabel(row, t) + (row.isDefault ? ' (' + t('wsPreset.globalDefault') + ')' : ''),
       }))
       const commit = () => {
         if (busy || !picked) { onClose(); return }
@@ -5307,7 +5408,9 @@ window.__ModuleLoader__.load({
           setErrorText(reason instanceof Error ? reason.message : String(reason || t('wsPreset.loadFailed')))
         })
       }
-      const currentLine = !hasBlank ? t('wsPreset.noBlank')
+      // No standing draft → the confirm PREPARES one with the picked preset
+      // (see the ws-preset menu branch); the hint line spells that out.
+      const currentLine = !editable ? t('wsPreset.createHint')
         : current ? t('wsPreset.current') + ': ' + nameOf(current)
           : t('wsPreset.currentUnknown')
       return E(ui.Modal, {
@@ -5316,15 +5419,13 @@ window.__ModuleLoader__.load({
         closeLabel: t('close'),
         title: t('wsPreset.title'),
         footer: E('div', { className: 'bw-modal-actions' },
-          hasBlank ? E(BTN, { variant: 'outline', onClick: onClose, disabled: busy }, t('cancel')) : null,
-          hasBlank
-            ? E(BTN, { variant: 'primary', onClick: commit, disabled: busy || !picked || picked === current }, t('confirm'))
-            : E(BTN, { variant: 'primary', onClick: onClose }, t('close')),
+          E(BTN, { variant: 'outline', onClick: onClose, disabled: busy }, t('cancel')),
+          E(BTN, { variant: 'primary', onClick: commit, disabled: busy || !picked || picked === current }, t('confirm')),
         ),
       },
         E('div', { className: 'bw-modal-body' },
           status === 'error' ? E('div', { className: 'bw-error-text', role: 'alert' }, errorText) : null,
-          status === 'ready' && hasBlank ? (
+          status === 'ready' ? (
             rows.length === 0
               ? E('div', { className: 'bw-hint' }, t('wsPreset.empty'))
               : E('div', { className: 'bw-field' },
@@ -5341,7 +5442,7 @@ window.__ModuleLoader__.load({
               )
           ) : null,
           E('div', { className: 'bw-hint' }, currentLine),
-          status === 'ready' && hasBlank && errorText !== ''
+          status === 'ready' && errorText !== ''
             ? E('div', { className: 'bw-error-text', role: 'alert' }, errorText)
             : null,
         ),
@@ -8818,9 +8919,13 @@ window.__ModuleLoader__.load({
           // Freeze the target NOW (the dialog outlives the menu ctx): the
           // blank lookup mirrors the official createInWorkspace rule — a
           // standing blank IS the workspace default (its preset projection
-          // is what the hero chip shows); none → the workspace follows the
-          // GLOBAL default and the dialog says so instead of promising an
-          // edit. No session is ever created for the edit.
+          // is what the hero chip shows). With NO standing blank the edit
+          // still applies: ClientSessions.create prepares one WITH the
+          // picked preset (the same channel as the official new-session
+          // button), which makes it the workspace default. Creating a
+          // session here is deliberate, not a side effect — the host has
+          // no other per-workspace default store (agent-preset-registry
+          // selectedDefault is GLOBAL; the standing blank IS the carrier).
           const raw = (storedItems || []).find((item) => item.workspaceId === payload.workspaceId)
           const blankIds = raw && Array.isArray(raw.sessionIds) ? raw.sessionIds : []
           const blankId = raw && raw.path
@@ -8834,7 +8939,15 @@ window.__ModuleLoader__.load({
           const projection = blankSummary ? blankSummary.projectionValues : undefined
           setDialog({
             kind: 'ws-preset',
-            applyPreset: blankId !== undefined ? (presetId) => presetFace.select(blankId, presetId) : null,
+            hasBlank: blankId !== undefined,
+            applyPreset: blankId !== undefined
+              ? (presetId) => presetFace.select(blankId, presetId)
+              // Reuse declined / no draft to reuse: create WITH the preset.
+              // Shape matches select's { ok } contract; a SessionCreateError
+              // lands in the dialog as an inline refusal line.
+              : (presetId) => Promise.resolve()
+                .then(() => sessions.create({ cwd: raw.path, agentPreset: presetId }))
+                .then(() => ({ ok: true }), (reason) => ({ ok: false, refusal: reason instanceof Error ? reason.message : String(reason || 'session create failed') })),
             current: projection && typeof projection.agentPreset === 'string' ? projection.agentPreset : undefined,
           })
         }

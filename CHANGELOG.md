@@ -3,6 +3,15 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.33.0 — 2026-10-20
+
+**类型**:feat / 行为变更(工作区默认预设对话框两处体验修正,来自 0.32.2 真机验收反馈)。
+
+- **无待命新会话的工作区也能改默认预设**:此前对话框在此场景只显示「跟随全局默认」灰字、不给改——按用户反馈推翻。宿主侧「工作区默认预设」的唯一载体就是该工作区待命新会话(blank)的 agentPreset 投影(agent-preset-registry 的 `selectedDefault` 是**全局**单值,没有工作区级存储),所以无待命会话时确认将经 `ClientSessions.create({ cwd, agentPreset })` **预备一个带所选预设的新会话**作为工作区默认——与官方「新会话」按钮同一通道,创建即待命、不跑任务。创建失败(SessionCreateError)以行内拒绝形式呈现,不发多余请求。
+- **内置预设显示官方本地化名**:下拉里 standard / ptc / minimal / cordis 不再显示英文 id,按官方 display 折叠(`agent-preset-registry/src/display.ts`:`isBuiltInPreset` = 内置预设不发布 name)显示 **标准模式 / PTC 模式 / 极简模式 / 创造模式**(zh 摘自官方 ui-agent-preset 词典,21 门全套自译补齐);自定义预设显示原名不变。该 registry 包不在 client boot 图上 require 不到,按「逐文件对照移植」纪律落地,官方一旦开放入口即切换。
+- **实现**:`presetDisplayLabel` 折叠 + 词典 21 门 × 5 新键(`presetStandardName` / `presetPtcName` / `presetMinimalName` / `presetCordisName` / `wsPreset.createHint`),死键 `wsPreset.noBlank` 删除;对话框选择器在无待命会话时照常渲染,说明行 (`createHint`) 讲清「确认后预备新会话」语义;取消按钮恢复(此前该场景只有关闭)。
+- **冒烟**:60 项全绿(词典键集一致性断言覆盖 5 新键)。
+
 ## v0.32.2 — 2026-10-20
 
 **类型**:fix / v0.32.1 后「修改工作区默认预设」在真机上仍不出现(完整根因复盘)。

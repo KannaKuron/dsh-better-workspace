@@ -8,6 +8,8 @@
 - 行底明暗跟随背景插件的界面明暗(body[data-ds-dark-theme]):暗色界面灰雾(label-tertiary 派生)、亮色界面白雾,不再恒为白色
 - 暗色界面行底改固定黑雾(hover 12% / 选中 18%):背景插件暗色下把全部 label token 覆写为亮墨,任何文字色派生雾都会泛白
 - 按官方 folderActive 语义扩展:子树含当前会话的祖先文件夹/工作区行,folder 图标着蓝(路径前缀 + 子工作区递归判定)
+- 暗色黑雾口径下 rail 按钮悬停同步 12%(与行悬停一致)
+- **弹窗透明适配(dsh-any-background 兼容)**:该插件以 `[aria-labelledby]` 有无区分「设置面板(吃透明/磨砂滑杆)」与「确认对话框(刻意钉实心)」,而官方 Modal 组件只输出 `aria-label`、从不给 `aria-labelledby`(h2 无 id)——所有 Modal 弹窗因此被划入确认桶钉成不透明。现在为插件自有弹窗(以 `.bw-modal-body`/`.bw-modal-actions` 识别,宿主确认框不受影响)补 `aria-labelledby` 指向标题 h2,恢复设置面板待遇;官方 Modal 按 ARIA 规范补 labelledby 后此补丁即可删除
 
 **类型**:feat / 侧栏行渲染全面对齐官方(17 项审计 + 两个新设置 + 官方 seat 接入),来自 0.33.0 真机验收反馈(spinner 挤缩进触发全面比对)。
 

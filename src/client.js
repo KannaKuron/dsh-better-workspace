@@ -4612,9 +4612,9 @@ window.__ModuleLoader__.load({
       '.bw-gn-icon{flex:none;display:grid;place-items:center;width:16px;height:16px;color:var(--dsw-alias-label-secondary,#b8b8b8)}',
       '.bw-gn-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-gn-input{width:100%;box-sizing:border-box}',
-      '.bw-row:hover,.bw-row.menu-open{background:var(--dsw-alias-interactive-bg-hover,var(--dsw-specific-sidebar-nav-item-hover,rgba(127,127,127,.12)))}',
+      '.bw-row:hover,.bw-row.menu-open{background:color-mix(in srgb,var(--dsw-alias-label-primary,#fff) 12%,transparent)}',
       '',
-      '.bw-row-current{background:var(--dsw-alias-interactive-bg-hover,var(--dsw-specific-sidebar-nav-item-hover,rgba(127,127,127,.12)))}',
+      '.bw-row-current{background:color-mix(in srgb,var(--dsw-alias-label-primary,#fff) 20%,transparent)}',
       '',
       '.bw-row-icon{flex:none;width:16px;height:20px;display:inline-flex;align-items:center;justify-content:center;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
       '.bw-chevron{flex:none;display:inline-flex;align-items:center;justify-content:center;color:var(--dsw-alias-label-caption,#adb2b8)}',
@@ -4742,7 +4742,7 @@ window.__ModuleLoader__.load({
       '.bw-plugin-body .bw-hint{font-size:12px;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
       '.bw-rail{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 0}',
       '.bw-rail-btn{width:36px;height:36px;border:none;background:transparent;border-radius:var(--dsw-radius-sm,8px);display:grid;place-items:center;color:var(--dsw-alias-label-secondary,#b8b8b8);cursor:pointer;padding:0}',
-      '.bw-rail-btn:hover{background:var(--dsw-alias-interactive-bg-hover,var(--dsw-specific-sidebar-nav-item-hover,rgba(127,127,127,.12)));color:var(--dsw-alias-label-primary,#e6e6e6)}',
+      '.bw-rail-btn:hover{background:color-mix(in srgb,var(--dsw-alias-label-primary,#fff) 12%,transparent);color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-modal-body{display:flex;flex-direction:column;gap:10px;min-width:300px;max-width:380px;box-sizing:border-box}',
       // issue #10: Modal 高度契约 — 卡片按 Modal 的 padding box 限高,超高内容滚 contentClassName 区
       // (官方 RiskConfirmation 同款范式;.dialog 为 overflow:hidden,不限高则上下被裁)
@@ -5864,7 +5864,7 @@ window.__ModuleLoader__.load({
       }
     }
 
-    function FolderRow({ node, depth, expanded, onToggle, onContextMenu, dropInto, dragEvents, custStyle, iconMode, pulse, t }) {
+    function FolderRow({ node, depth, expanded, onToggle, onContextMenu, dropInto, dragEvents, custStyle, iconMode, pulse, active, t }) {
       const total = countWorkspaces(node)
       const iconEl = iconOf(iconMode, expanded)
       // Hidden status dots breathe on the icon; with the icon hidden (mode
@@ -5885,7 +5885,7 @@ window.__ModuleLoader__.load({
         // until hover, swapping in for the folder glyph; the arrow spins
         // open with the row.
         E('span', { className: cls('bw-chevron', expanded && 'bw-chevron-open') }, E('span', { className: 'bw-arrow' }, icon('IconTriangleRightFill14', 14))),
-        E('span', { className: cls('bw-row-icon', 'bw-folder-cell') }, iconChild),
+        E('span', { className: cls('bw-row-icon', 'bw-folder-cell', active && !pulse && 'bw-folder-active') }, iconChild),
         // A row that already carries a custom label glow breathes in sync.
         E('span', { className: cls('bw-row-label', pulse && custStyle && custStyle.textShadow && 'bw-pulse-text') }, node.name),
         total > 0 ? E('span', { className: 'bw-row-count' }, String(total)) : null,
@@ -5911,7 +5911,7 @@ window.__ModuleLoader__.load({
         // open with the row; a subtree holding the current session tints
         // the folder glyph blue (folderActive), not the whole row.
         E('span', { className: cls('bw-chevron', sessionsOpen && 'bw-chevron-open') }, E('span', { className: 'bw-arrow' }, icon('IconTriangleRightFill14', 14))),
-        E('span', { className: cls('bw-row-icon', 'bw-folder-cell', currentInside && 'bw-folder-active') }, iconChild),
+        E('span', { className: cls('bw-row-icon', 'bw-folder-cell', currentInside && !pulse && 'bw-folder-active') }, iconChild),
         E('span', { className: cls('bw-row-label', pulse && custStyle && custStyle.textShadow && 'bw-pulse-text'), title: workspace.title || workspace.leaf }, workspace.leaf),
         count > 0 ? E('span', { className: 'bw-row-count' }, String(count)) : null,
         E('span', { className: 'bw-row-actions', onClick: (e) => e.stopPropagation() },
@@ -9073,7 +9073,7 @@ window.__ModuleLoader__.load({
           depth,
           count,
           sessionsOpen: searching ? true : sessionsOpenOf(workspace.workspaceId),
-          currentInside: !!(currentId && (workspace.sessionIds || []).includes(currentId)),
+          currentInside: wsHasCurrent(workspace),
           onToggle: () => { if (!searching) actions.setSessionsExpanded(workspace.workspaceId, !sessionsOpenOf(workspace.workspaceId)) },
           // Starting a session force-expands the workspace row: the user must
           // SEE the new session appear, even if the row was collapsed.
@@ -9110,6 +9110,26 @@ window.__ModuleLoader__.load({
         return rows
       }
 
+      // Official folderActive semantics (Rows.tsx ProjectRow): a folder or
+      // workspace whose SUBTREE holds the current session tints its folder
+      // glyph blue, regardless of expansion. The plugin tree is path-folded,
+      // so ancestor folders match by disk-path prefix, and disk-nested
+      // workspace chains are walked through the sub levels.
+      const pathHoldsCurrent = (ancestor, child) => !!ancestor && !!child
+        && (child === ancestor || child.startsWith(ancestor.endsWith('/') ? ancestor : ancestor + '/'))
+      const subHasCurrent = (level) => {
+        if (!level || !currentId) return false
+        for (const w of level.workspaces || []) if (wsHasCurrent(w)) return true
+        for (const f of level.folders || []) {
+          if (f.kind === 'ws') { if (wsHasCurrent(f.workspace)) return true } else if (subHasCurrent(f)) return true
+        }
+        return false
+      }
+      const wsHasCurrent = (w) => !!currentId && !!w
+        && ((w.sessionIds || []).includes(currentId) || subHasCurrent(w.sub))
+      const currentWsPath = currentId
+        ? ((items || []).find((w) => (w.sessionIds || []).includes(currentId)) || {}).path
+        : undefined
       const renderLevelRows = (level, depth) => {
         const rows = []
         for (const folder of level.folders) rows.push(...renderPlainFolder(folder, depth))
@@ -9138,6 +9158,7 @@ window.__ModuleLoader__.load({
           custStyle: rowStyleOf('folder:' + idPath),
           iconMode: (styleEntry('folder:' + idPath) || {}).icon || 'solid',
           pulse: expanded ? null : folderPulseOf(node),
+          active: pathHoldsCurrent(currentWsPath, node.path),
           t,
         })]
         if (expanded) {

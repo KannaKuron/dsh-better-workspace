@@ -139,3 +139,4 @@
    - `ui-plugin-manager` `plugins.tab` 座位(`slot-contract.ts:124`,owner `PluginTabProps{install,openPackage}`)——插件管理页标签,家族插件可评估把「使用指南」放进去;
    - 会话行 `sidebar.session.row.leading` 座位、toast 契约(`workspace.toast` keyed + content 工厂)、右栏 overflow:clip(PageUp 修复)——已在 v0.30.0 消费/核实。
    - 用户消息渲染链 `projectUserText → UserTextRun/ReferenceChip`(ui-conversation)——家族五插件零使用,仅观察。
+3. **ui-workspace 行组件不可 require**(2026-10-21,v0.34.0 记账):`./client` 入口只导出 apply/inject,ProjectRow/SessionNodeItem/useTitleMarquee/官方 HoverCard 包法都拿不到——v0.34.0 的侧栏行样式对齐(16px 状态槽/34-32px 行高/folderActive/marquee/悬停卡/drop 斜纹)按「逐文件对照移植」纪律自绘(`Rows.module.css` + `Rows.tsx` 逐行实证)。**官方入口一旦 re-export 行组件或 marquee hook 即删移植版整体切换**;ui-primitives 的 Menu/HoverCard/StateDot 已入口导出并采用,无欠账。

@@ -3,6 +3,24 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.34.0 — 2026-10-21
+
+**类型**:feat / 侧栏行渲染全面对齐官方(17 项审计 + 两个新设置 + 官方 seat 接入),来自 0.33.0 真机验收反馈(spinner 挤缩进触发全面比对)。
+
+- **spinner 不再挤缩进(主诉)**:官方每行行首是**恒定 16px 状态槽**(`Rows.module.css .slot{width:16px;height:20px}`),转圈(StateDot ongoing 14px)与状态点(10px)都在槽内居中,标题起点恒定;本插件旧实现 `.bw-row-icon` 宽度随内容漂移(6/10px),运行转圈把标题往右顶。现在状态槽固定,StateDot 去掉硬编码 `size:10`(官方 ongoing 默认 14、其余 10,全局同相位由官方 syncSpinner 保持)。
+- **行高与密度**:官方 workspace 行 34px / 会话行 32px 固定行高;新增设置**「行密度」**(紧凑 28/26 · 标准 34/32 · 宽松 40/38,默认=官方)。缩进统一为 `padding 0 8px + 行内缩进 depth*12px`(官方 WorkspaceBrowser 同款变量)。
+- **选中与活动链着色**:选中会话行改**中性灰**(官方无蓝底选中);活动链祖先行(当前会话所在工作区/文件夹)**只有 folder 图标着蓝**(`--dsw-alias-state-business-primary`,官方 folderActive 语义:子树含当前)。
+- **chevron 交互对齐**:展开箭头默认隐藏、悬停/菜单打开时显示并与 folder 图标互换位置(官方 hover 语义);箭头三角 `rotate(90deg)` 150ms 过渡,`prefers-reduced-motion` 直跳。
+- **会话数角标默认隐藏**:官方行上无 count 徽标;新增设置**「显示会话数」**(默认关,开了才渲染)。
+- **官方 HoverCard 悬停卡**(ui-primitives 入口导出直接消费):工作区行显示标题+路径;会话行显示标题+相对时间(`ui.relativeTime`)+状态行(StateDot+文字)+归档行,**接入 `sidebar.session.row.hover` 官方座位**(日历标记等宿主装饰照常出现);800ms 延迟、菜单/拖拽时禁用、非空标题支持复制。工作区无 `createdAt`(插件数据没有),不显示创建时间行。
+- **标题 marquee**:超长标题悬停时按官方 `0.03px/ms` 匀速滚动到末尾停留(`MIN_TITLE_REVEAL_PX=8`、`prefers-reduced-motion` 直跳),两端 12px 渐隐 mask(`data-scrolled`/`data-clipped` 三态)。
+- **双击标题重命名**:会话行 title `onDoubleClick`(blank 行不响应),打开既有的重命名对话框——官方同语义。
+- **行内 "…" 菜单 + menuOpen 钉住**:会话行操作钮换官方 16px iconButton+Ellipsis 图标,点击开官方 `ui.Menu`(portal+closeOnPointerLeave);菜单打开期间行保持 hover 态(time/pin 隐、操作钮显,官方 menuOpen 语义)。
+- **官方菜单/装饰 seat 接入**:`sidebar.workspaces.session.menu.item`(官方 pin/rename/fork/archive/copy-id 五条目由宿主渲染)与 `sidebar.workspaces.session.row.action`(官方归档/钉住快捷钮)——**宿主 seat 有条目时插件自绘镜像整体退位**,宿主缺 seat 时按旧镜像兜底;插件自有条目(移出/移动分组/自定义外观)仍追加在镜像项之后。右键上下文菜单的 session 分支收敛为 `pickSessionAction` 单一分发器(行内菜单与右键共用一套动词表)。
+- **细节对齐**:drop 拖放指示改官方三层渐变斜纹(55°/125° 5x7px 平铺+2px 实线,12px 高);pin 指示改 caption 灰 16x20 槽(原品牌蓝);归档行标题用 caption 色(不再整体 opacity);time 10px/16px tertiary;blank 会话行不再渲染 time/pin/操作钮(官方空态行)。
+- **词典**:21 门 × 7 新键(`settings.density` / `.compact` / `.comfortable` / `.roomy` / `.hint` + `settings.showCount` / `.hint`)。
+- **冒烟**:60 项全绿(move-out 分发断言跟随新结构;hover 卡 archived 行改 `officialText` 无值不渲染,去掉无词典对应的 `t('row.archived')` fallback——该键属官方 workspace 词典,插件侧直接透传)。
+
 ## v0.33.0 — 2026-10-20
 
 **类型**:feat / 行为变更(工作区默认预设对话框两处体验修正,来自 0.32.2 真机验收反馈)。

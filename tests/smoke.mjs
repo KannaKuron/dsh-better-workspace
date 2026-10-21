@@ -1464,7 +1464,10 @@ test('session drag out of a group: cross-group drops move the row, the workspace
   // ...and the same move is reachable from the context menu, for users who
   // would rather not drag at all.
   assert.match(text, /\{ id: 'move-out', label: t\('menu\.moveOutGroup'\)/)
-  assert.match(text, /else if \(kind === 'session' && id === 'move-out'\)/)
+  // v0.34.0: every session verb routes through the shared dispatcher;
+  // the context-menu branch just hands off (an unknown id falls through).
+  assert.match(text, /else if \(kind === 'session'\) \{/)
+  assert.match(text, /if \(!pickSessionAction\(payload, id\)\) return/)
   // Outside every group is still a way out: the tree container itself accepts
   // the drop (row handlers stopPropagation, so only unclaimed drops reach it)
   // and marks itself while such a drag is in flight.

@@ -113,6 +113,13 @@ window.__ModuleLoader__.load({
       'settings.compactChains.hint': '单层链合并为一行,出现多个子级时自动展开为树状;拖拽工作区期间单链临时展开回文件夹树,可放入任意一级;展开状态与自定义外观保存在当前浏览器。',
       'settings.statusPulse': '状态呼吸灯',
       'settings.statusPulse.hint': '被折叠藏起的状态灯(完成绿 / 运行蓝 / 待交互琥珀)沿层级向外冒泡:工作区与分组行以图标呼吸发光(颜色随状态,自定义过发光的标题一起呼吸),会话分组行显示呼吸状态灯;默认开启,可在此关闭。',
+      'settings.density': '行密度',
+      'settings.density.compact': '紧凑',
+      'settings.density.comfortable': '舒适(默认)',
+      'settings.density.roomy': '宽松',
+      'settings.density.hint': '行高跟随官方侧栏:舒适 = 官方默认行高;紧凑更省纵向空间,宽松有更大的点击范围。改动立即生效,保存在当前浏览器。',
+      'settings.showCount': '会话数角标',
+      'settings.showCount.hint': '官方侧栏已移除工作区行尾的会话计数;开启后在本插件行尾恢复显示(悬停时让位给操作按钮)。默认关闭。',
       'settings.workspaceGroup': "工作区分组",
       'settings.workspaceGroup.hint': "磁盘目录 = 只按官方文件夹(磁盘目录)嵌套;磁盘 + 名称 = 在磁盘层之上再按标题里的 / 分组;仅名称 = 只按标题里的 / 分组,完全不理会磁盘目录的嵌套关系。旧版本的开关状态会自动迁移。",
       'settings.sessionLimit': "展开时显示会话数",
@@ -284,6 +291,13 @@ window.__ModuleLoader__.load({
       'settings.compactChains.hint': 'Single-child chains merge into one row; levels with multiple children expand as a tree. Chains re-expand into folder rows while you drag a workspace, so it can drop into any level. State and custom styling persist in this browser.',
       'settings.statusPulse': 'Status breathing light',
       'settings.statusPulse.hint': 'Status dots hidden by collapse (done green / running blue / pending amber) bubble outward: workspace and folder rows breathe on their icon in the status color (custom-glow labels breathe along), session-group rows show a breathing dot; on by default, turn it off here.',
+      'settings.density': 'Row density',
+      'settings.density.compact': 'Compact',
+      'settings.density.comfortable': 'Comfortable (default)',
+      'settings.density.roomy': 'Roomy',
+      'settings.density.hint': 'Row heights follow the shipped sidebar: Comfortable is the official default; Compact saves vertical space, Roomy adds larger hit targets. Applies immediately, stored in this browser.',
+      'settings.showCount': 'Session count badge',
+      'settings.showCount.hint': 'The shipped sidebar retired the per-workspace session count; turn this on to restore it at the row tail (it yields to the row actions on hover). Off by default.',
       'settings.workspaceGroup': "Workspace grouping",
       'settings.workspaceGroup.hint': "Disk folders: nest only by the official folders (disk directories). Disk + names: layer slash-name groups on top of the disk tree. Names only: group purely by slashes in titles and ignore disk nesting entirely. A previous version's switch state migrates automatically.",
       'settings.sessionLimit': "Sessions shown when expanded",
@@ -463,6 +477,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': 'تُدمج المستويات ذات الفرع الواحد في سطر واحد، وتتوسع الشجرة تلقائياً عند وجود أكثر من فرع؛ أثناء سحب مساحة عمل تُفكّ السلاسل مؤقتاً إلى مجلدات ليصبح الإفلات ممكناً في أي مستوى؛ تُحفظ حالة التوسيع والمظهر المخصص في هذا المتصفح.',
         'settings.statusPulse': 'مؤشر حالة نابض',
         'settings.statusPulse.hint': 'مؤشرات الحالة التي يخفيها الطيّ (مكتمل أخضر / قيد التشغيل أزرق / بانتظار تفاعل كهرماني) تتصاعد عبر المستويات: تصدر أسطر مساحات العمل والمجلدات وميضاً نابضاً للأيقونة بلون الحالة (وتنبض معها العناوين ذات التوهج المخصص)، وتعرض أسطر مجموعات الجلسات نقطة حالة نابضة؛ مفعّل افتراضياً ويمكن إيقافه هنا.',
+        'settings.density': 'كثافة الصفوف',
+        'settings.density.compact': 'مضغوط',
+        'settings.density.comfortable': 'مريح (افتراضي)',
+        'settings.density.roomy': 'واسع',
+        'settings.density.hint': 'ارتفاعات الصفوف تتبع الشريط الجانبي الرسمي: «مريح» هو الافتراضي الرسمي؛ «مضغوط» يوفر المساحة العمودية، «واسع» يمنح أهداف لمس أكبر. يسري فوراً ويُحفظ في هذا المتصفح.',
+        'settings.showCount': 'شارة عدد الجلسات',
+        'settings.showCount.hint': 'أزال الشريط الجانبي الرسمي عدّاد الجلسات لكل مساحة عمل؛ فعّله لإعادته في نهاية الصف (يتنازل لأزرار الصف عند التحويم). معطّل افتراضياً.',
         'settings.workspaceGroup': "تجميع مساحات العمل",
         'settings.workspaceGroup.hint': "مجلدات القرص: التداخل حسب المجلدات الرسمية (أدلة القرص) فقط. القرص + الأسماء: إضافة مجموعات الأسماء بشرطة مائلة فوق شجرة القرص. الأسماء فقط: التجميع بحسب الشرطة المائلة في العناوين وتجاهل تداخل القرص تماماً. تُنقل حالة مفتاح الإصدار السابق تلقائياً.",
         'settings.sessionLimit': "عدد الجلسات عند التوسيع",
@@ -634,6 +655,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': 'Ebenen mit genau einem Kind werden zu einer Zeile zusammengefasst; bei mehreren Kindern klappt der Baum auf; beim Ziehen eines Arbeitsbereichs klappen die Ketten vorübergehend zum Ordnerbaum auf, sodass jede Ebene als Ziel dient; Klappzustand und eigenes Aussehen bleiben in diesem Browser gespeichert.',
         'settings.statusPulse': 'Status-Pulslicht',
         'settings.statusPulse.hint': 'Vom Einklappen verdeckte Statuspunkte (fertig grün / läuft blau / wartet amber) steigen die Hierarchie hinauf: Arbeitsbereich- und Ordnerzeilen lassen ihr Symbol in der Statusfarbe pulsieren (eigens gefärbte Titel pulsieren mit), Sitzungsgruppen zeigen einen pulsierenden Statuspunkt; standardmäßig an, hier abschaltbar.',
+        'settings.density': 'Zeilendichte',
+        'settings.density.compact': 'Kompakt',
+        'settings.density.comfortable': 'Komfortabel (Standard)',
+        'settings.density.roomy': 'Großzügig',
+        'settings.density.hint': 'Die Zeilenhöhen folgen der offiziellen Seitenleiste: Komfortabel ist der offizielle Standard; Kompakt spart vertikalen Platz, Großzügig bietet größere Trefferflächen. Wirkt sofort, wird in diesem Browser gespeichert.',
+        'settings.showCount': 'Sitzungszähler',
+        'settings.showCount.hint': 'Die offizielle Seitenleiste hat den Sitzungszähler entfernt; schalte ihn hier wieder ein (er weicht beim Hover den Zeilenaktionen). Standardmäßig aus.',
         'settings.workspaceGroup': "Arbeitsbereich-Gruppierung",
         'settings.workspaceGroup.hint': "Ordner: verschachtelt nur nach den offiziellen Ordnern (Festplattenpfade). Ordner + Namen: schichtet Namensgruppen über den Ordnerbaum. Nur Namen: gruppiert rein nach Schrägstrichen im Titel und ignoriert die Festplatten-Verschachtelung. Ein früherer Schalterzustand wandert automatisch mit.",
         'settings.sessionLimit': "Sitzungen beim Aufklappen",
@@ -805,6 +833,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': 'Les niveaux à un seul enfant se fusionnent en une ligne; dès qu\'il y a plusieurs enfants, l\'arborescence se déploie; pendant le glisser-déposer d\'un espace de travail, les chaînes se déploient temporairement en dossiers pour permettre le dépôt à n\'importe quel niveau; l\'état déplié et l\'apparence personnalisée sont conservés dans ce navigateur.',
         'settings.statusPulse': 'Voyant d\'état pulsant',
         'settings.statusPulse.hint': 'Les voyants masqués par le repli (terminé vert / en cours bleu / en attente ambre) remontent la hiérarchie: les lignes d\'espace de travail et de dossier font pulser leur icône dans la couleur d\'état (les titres à lueur personnalisée pulsent aussi), les lignes de groupe de sessions affichent un voyant pulsant; activé par défaut, désactivable ici.',
+        'settings.density': 'Densité des lignes',
+        'settings.density.compact': 'Compact',
+        'settings.density.comfortable': 'Confortable (par défaut)',
+        'settings.density.roomy': 'Spacieux',
+        'settings.density.hint': 'Les hauteurs de lignes suivent la barre latérale officielle : Confortable est la valeur officielle ; Compact gagne de la place verticale, Spacieux offre de plus grandes cibles. Effectif immédiatement, enregistré dans ce navigateur.',
+        'settings.showCount': 'Compteur de sessions',
+        'settings.showCount.hint': 'La barre officielle a retiré le compteur de sessions ; réactivez-le ici (il s\'efface devant les actions au survol). Désactivé par défaut.',
         'settings.workspaceGroup': "Regroupement des espaces",
         'settings.workspaceGroup.hint': "Dossiers disque : imbrique uniquement selon les dossiers officiels (répertoires disque). Disque + noms : ajoute les groupes de noms par barre oblique au-dessus de l’arborescence disque. Noms seuls : regroupe uniquement par barre oblique dans les titres et ignore l’imbrication disque. L’état de l’ancien interrupteur migre automatiquement.",
         'settings.sessionLimit': "Sessions affichées à l’ouverture",
@@ -976,6 +1011,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': 'जिन स्तरों पर केवल एक संतान होती है वे एक पंक्ति में मिल जाते हैं; कई संतानें होने पर वृक्ष खुल जाता है; कार्यस्थान खींचते समय श्रृंखलाएँ अस्थायी रूप से फ़ोल्डरों में खुल जाती हैं ताकि किसी भी स्तर पर छोड़ा जा सके; खुलने की स्थिति और अनुकूलित रूप इसी ब्राउज़र में सहेजे जाते हैं।',
         'settings.statusPulse': 'स्थिति की साँस लेती बत्ती',
         'settings.statusPulse.hint': 'समेटने से छिपी स्थिति बत्तियाँ (पूर्ण हरी / चल रहा नीली / प्रतीक्षारत अंबर) पदानुक्रम में ऊपर उठती हैं: कार्यस्थान और फ़ोल्डर पंक्तियों का चिह्न स्थिति के रंग में साँस लेता है (अनुकूलित चमक वाले शीर्षक भी साथ साँस लेते हैं), सत्र समूह पंक्तियों पर साँस लेता स्थिति बिंदु दिखता है; डिफ़ॉल्ट रूप से चालू, यहाँ बंद किया जा सकता है।',
+        'settings.density': 'पंक्ति घनत्व',
+        'settings.density.compact': 'संकुचित',
+        'settings.density.comfortable': 'आरामदायक (डिफ़ॉल्ट)',
+        'settings.density.roomy': 'विस्तृत',
+        'settings.density.hint': 'पंक्ति ऊँचाइयाँ आधिकारिक साइडबार के अनुसार: आरामदायक आधिकारिक डिफ़ॉल्ट है; संकुचित ऊर्ध्वाधर जगह बचाता है, विस्तृत बड़े क्लिक क्षेत्र देता है। तुरंत लागू, इस ब्राउज़र में सहेजा जाता है।',
+        'settings.showCount': 'सेशन गिनती बैज',
+        'settings.showCount.hint': 'आधिकारिक साइडबार ने सेशन गिनती हटा दी; इसे पंक्ति के अंत में वापस लाने के लिए चालू करें (होवर पर पंक्ति क्रियाओं को जगह देता है)। डिफ़ॉल्ट रूप से बंद।',
         'settings.workspaceGroup': "वर्कस्पेस समूहीकरण",
         'settings.workspaceGroup.hint': "डिस्क फ़ोल्डर: केवल आधिकारिक फ़ोल्डर (डिस्क निर्देशिका) से नेस्ट। डिस्क + नाम: डिस्क ट्री के ऊपर स्लैश नाम समूह जोड़ता है। केवल नाम: केवल शीर्षक के स्लैश से समूहित करता है, डिस्क नेस्टिंग की अनदेखी करता है। पुराने स्विच की स्थिति स्वतः माइग्रेट होती है।",
         'settings.sessionLimit': "विस्तार पर दिखने वाले सेशन",
@@ -1147,6 +1189,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': 'Tingkat yang hanya punya satu anak digabung jadi satu baris; bila anaknya banyak, pohon terbentang; saat menyeret ruang kerja, rantai sementara terbentang kembali jadi folder sehingga bisa dijatuhkan di tingkat mana pun; status terbentang dan tampilan khusus disimpan di browser ini.',
         'settings.statusPulse': 'Lampu status bernapas',
         'settings.statusPulse.hint': 'Lampu status yang tersembunyi karena pelipatan (selesai hijau / berjalan biru / menunggu kuning) menggelembung ke tingkat atas: baris ruang kerja dan folder membuat ikonnya bernapas dalam warna status (judul dengan pendar khusus ikut bernapas), baris grup sesi menampilkan titik status yang bernapas; aktif secara bawaan, bisa dimatikan di sini.',
+        'settings.density': 'Kepadatan baris',
+        'settings.density.compact': 'Ringkas',
+        'settings.density.comfortable': 'Nyaman (bawaan)',
+        'settings.density.roomy': 'Lega',
+        'settings.density.hint': 'Tinggi baris mengikuti bilah samping resmi: Nyaman adalah bawaan resmi; Ringkas menghemat ruang vertikal, Lega memberi area klik lebih besar. Berlaku langsung, disimpan di peramban ini.',
+        'settings.showCount': 'Lencana jumlah sesi',
+        'settings.showCount.hint': 'Bilah samping resmi menghapus hitungan sesi; aktifkan untuk menampilkannya lagi di ujung baris (memberi tempat untuk tombol baris saat hover). Mati secara bawaan.',
         'settings.workspaceGroup': "Pengelompokan ruang kerja",
         'settings.workspaceGroup.hint': "Folder disk: bersarang hanya mengikuti folder resmi (direktori disk). Disk + nama: menambahkan grup nama garis miring di atas pohon disk. Hanya nama: mengelompokkan murni dari garis miring pada judul dan mengabaikan struktur disk. Status sakelar versi lama bermigrasi otomatis.",
         'settings.sessionLimit': "Sesi saat dibuka",
@@ -1318,6 +1367,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': 'I livelli con un solo figlio si fondono in una riga; con più figli l\'albero si espande; durante il trascinamento di un\'area di lavoro le catene si riespandono temporaneamente in cartelle, così puoi rilasciare su qualsiasi livello; stato di espansione e aspetto personalizzato restano in questo browser.',
         'settings.statusPulse': 'Spia di stato pulsante',
         'settings.statusPulse.hint': 'Le spie nascoste dalla compressione (completato verde / in esecuzione blu / in attesa ambra) risalgono la gerarchia: le righe di aree di lavoro e cartelle fanno pulsare l\'icona nel colore di stato (anche i titoli con bagliore personalizzato pulsano), le righe dei gruppi di sessioni mostrano una spia pulsante; attiva per impostazione predefinita, disattivabile qui.',
+        'settings.density': 'Densità delle righe',
+        'settings.density.compact': 'Compatto',
+        'settings.density.comfortable': 'Comodo (predefinito)',
+        'settings.density.roomy': 'Ampio',
+        'settings.density.hint': 'Le altezze delle righe seguono la barra laterale ufficiale: Comodo è il predefinito ufficiale; Compatto risparmia spazio verticale, Ampio offre aree di clic maggiori. Immediato, salvato in questo browser.',
+        'settings.showCount': 'Conteggio sessioni',
+        'settings.showCount.hint': 'La barra ufficiale ha rimosso il conteggio sessioni; attivalo per ripristinarlo in coda alla riga (cede ai pulsanti della riga al passaggio del mouse). Disattivato per impostazione predefinita.',
         'settings.workspaceGroup': "Raggruppamento aree di lavoro",
         'settings.workspaceGroup.hint': "Cartelle disco: annida solo secondo le cartelle ufficiali (directory disco). Disco + nomi: aggiunge gruppi di nomi per barra obliqua sopra l’albero disco. Solo nomi: raggruppa solo per barra obliqua nei titoli ignorando l’annidamento disco. Lo stato del vecchio interruttore migra automaticamente.",
         'settings.sessionLimit': "Sessioni mostrate all’apertura",
@@ -1489,6 +1545,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': '子が 1 つだけの階層は 1 行にまとまり,複数の子がある階層はツリーとして展開されます;ワークスペースのドラッグ中は一時的にフォルダーツリーへ戻り,どの階層にもドロップできます;展開状態とカスタム外観はこのブラウザーに保存されます。',
         'settings.statusPulse': 'ステータス表示灯',
         'settings.statusPulse.hint': '折りたたみで隠れたステータス表示(完了は緑 / 実行中は青 / 操作待ちは琥珀)が上位の階層へ伝わります:ワークスペースとフォルダーの行はアイコンがステータス色で明滅し(グローを設定したタイトルも連動),セッショングループの行には明滅するステータスドットが出ます;既定はオンで,ここでオフにできます。',
+        'settings.density': '行の密度',
+        'settings.density.compact': 'コンパクト',
+        'settings.density.comfortable': '標準(既定)',
+        'settings.density.roomy': 'ゆったり',
+        'settings.density.hint': '行の高さは公式サイドバーに従います:標準(既定)が公式の既定値。コンパクトは縦幅を節約、ゆったりはクリック領域を広く。変更は即時反映され、このブラウザーに保存されます。',
+        'settings.showCount': 'セッション数バッジ',
+        'settings.showCount.hint': '公式サイドバーはワークスペース行のセッション数を廃止しました。オンにすると行末に再表示します(ホバー時は操作ボタンに譲ります)。既定はオフ。',
         'settings.workspaceGroup': "ワークスペースのグループ化",
         'settings.workspaceGroup.hint': "フォルダー:公式フォルダー(ディスク ディレクトリ)のみで階層化。フォルダー + 名前:ディスク ツリーに加えてタイトルのスラッシュでもグループ化。名前のみ:タイトルのスラッシュだけでグループ化し、ディスクの階層は無視。旧バージョンのスイッチ状態は自動的に引き継がれます。",
         'settings.sessionLimit': "展開時に表示するセッション数",
@@ -1660,6 +1723,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': '자식이 하나뿐인 단계는 한 줄로 합쳐지고, 자식이 여러 개면 트리로 펼쳐집니다; 워크스페이스를 끌어 놓는 동안에는 체인이 잠시 폴더 트리로 펼쳐져 어느 단계에나 놓을 수 있습니다; 펼침 상태와 사용자 지정 모양은 이 브라우저에 저장됩니다.',
         'settings.statusPulse': '상태 표시등',
         'settings.statusPulse.hint': '접혀서 가려진 상태 표시(완료는 초록 / 실행은 파랑 / 대기는 호박색)가 상위 단계로 번집니다: 워크스페이스와 폴더 행은 아이콘이 상태 색으로 깜빡이고(글로우를 지정한 제목도 함께 깜빡임), 세션 그룹 행에는 깜빡이는 상태 점이 표시됩니다; 기본값은 켜짐이며 여기서 끌 수 있습니다.',
+        'settings.density': '행 밀도',
+        'settings.density.compact': '컴팩트',
+        'settings.density.comfortable': '편안함(기본값)',
+        'settings.density.roomy': '여유',
+        'settings.density.hint': '행 높이는 공식 사이드바를 따릅니다: 편안함이 공식 기본값이며, 컴팩트는 세로 공간을 아끼고 여유는 더 큰 클릭 영역을 줍니다. 즉시 적용되며 이 브라우저에 저장됩니다.',
+        'settings.showCount': '세션 수 배지',
+        'settings.showCount.hint': '공식 사이드바는 워크스페이스 행의 세션 수를 제거했습니다. 켜면 행 끝에 다시 표시합니다(호버 시 작업 버튼에 양보). 기본값은 꺼짐입니다.',
         'settings.workspaceGroup': "작업 공간 그룹화",
         'settings.workspaceGroup.hint': "디스크 폴더: 공식 폴더(디스크 디렉터리)로만 중첩합니다. 디스크 + 이름: 디스크 트리 위에 슬래시 이름 그룹을 얹습니다. 이름만: 제목의 슬래시로만 그룹화하고 디스크 중첩은 무시합니다. 이전 버전 스위치 상태는 자동으로 이전됩니다.",
         'settings.sessionLimit': "펼칠 때 표시할 세션",
@@ -1831,6 +1901,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': 'Niveaus met één kind worden tot één regel samengevoegd; bij meerdere kinderen klapt de boom open; tijdens het slepen van een werkruimte klappen de ketens tijdelijk terug naar mappen, zodat je op elk niveau kunt neerzetten; de uitgeklapte staat en het eigen uiterlijk blijven in deze browser bewaard.',
         'settings.statusPulse': 'Pulserend statuslampje',
         'settings.statusPulse.hint': 'Statuslampjes die door het inklappen verborgen zijn (voltooid groen / actief blauw / wachtend amber) borrelen door de hiërarchie omhoog: werkruimte- en mapregels laten hun pictogram in de statuskleur pulseren (titels met eigen gloed pulseren mee), sessiegroepregels tonen een pulserend statusstipje; standaard aan, hier uit te zetten.',
+        'settings.density': 'Rijdichtheid',
+        'settings.density.compact': 'Compact',
+        'settings.density.comfortable': 'Comfortabel (standaard)',
+        'settings.density.roomy': 'Ruim',
+        'settings.density.hint': 'Rijhoogtes volgen de officiële zijbalk: Comfortabel is de officiële standaard; Compact bespaart verticale ruimte, Ruim geeft grotere klikgebieden. Direct actief, opgeslagen in deze browser.',
+        'settings.showCount': 'Sessieteller',
+        'settings.showCount.hint': 'De officiële zijbalk heeft de sessieteller verwijderd; zet hem hier weer aan (hij wijkt bij hover voor de rijacties). Standaard uit.',
         'settings.workspaceGroup': "Werkruimtegroepering",
         'settings.workspaceGroup.hint': "Schijfmappen: nest alleen volgens de officiële mappen (schijfdirectories). Schijf + namen: stapelt naamgroepen bovenop de schijfboom. Alleen namen: groept puur op schuine strepen in titels en negeert schijfnesting. De oude schakelaarstand migreert automatisch.",
         'settings.sessionLimit': "Sessies bij uitklappen",
@@ -2002,6 +2079,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': 'Poziomy z jednym dzieckiem scalają się w jeden wiersz; przy większej liczbie dzieci drzewo się rozwija; podczas przeciągania obszaru roboczego łańcuchy tymczasowo rozwijają się do folderów, więc upuszczenie działa na każdym poziomie; stan rozwinięcia i własny wygląd są zapisywane w tej przeglądarce.',
         'settings.statusPulse': 'Pulsująca lampka stanu',
         'settings.statusPulse.hint': 'Lampki ukryte przez zwinięcie (ukończono zielona / trwa niebieska / czeka bursztynowa) bąbelkują w górę hierarchii: wiersze obszarów roboczych i folderów pulsują ikoną w kolorze stanu (tytuły z własną poświatą pulsują razem), wiersze grup sesji pokazują pulsującą kropkę stanu; domyślnie włączone, tutaj można wyłączyć.',
+        'settings.density': 'Gęstość wierszy',
+        'settings.density.compact': 'Zwięzły',
+        'settings.density.comfortable': 'Wygodny (domyślny)',
+        'settings.density.roomy': 'Przestronny',
+        'settings.density.hint': 'Wysokości wierszy są zgodne z oficjalnym panelem: Wygodny to oficjalny domyślny; Zwięzły oszczędza miejsce w pionie, Przestronny daje większe pola klikania. Działa natychmiast, zapis w tej przeglądarce.',
+        'settings.showCount': 'Licznik sesji',
+        'settings.showCount.hint': 'Oficjalny panel usunął licznik sesji; włącz, aby przywrócić go na końcu wiersza (ustępuje przyciskom wiersza po najechaniu). Domyślnie wyłączone.',
         'settings.workspaceGroup': "Grupowanie obszarów roboczych",
         'settings.workspaceGroup.hint': "Foldery dysku: zagnieżdżanie wyłącznie według oficjalnych folderów (katalogów dysku). Dysk + nazwy: dokłada grupy nazw nad drzewem dysku. Tylko nazwy: grupuje wyłącznie po ukośnikach w tytułach, ignorując zagnieżdżanie dyskowe. Stan starego przełącznika migruje automatycznie.",
         'settings.sessionLimit': "Sesje po rozwinięciu",
@@ -2173,6 +2257,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': 'Níveis com um único filho viram uma linha; com vários filhos a árvore se expande; ao arrastar um espaço de trabalho, as cadeias voltam temporariamente a pastas, permitindo soltar em qualquer nível; o estado de expansão e o estilo personalizado ficam neste navegador.',
         'settings.statusPulse': 'Luz de status pulsante',
         'settings.statusPulse.hint': 'As luzes escondidas pelo recolhimento (concluído verde / em execução azul / aguardando âmbar) sobem pela hierarquia: linhas de espaço de trabalho e pasta pulsam o ícone na cor do status (títulos com brilho personalizado pulsam junto), linhas de grupo de sessões mostram um ponto pulsante; ativado por padrão, pode ser desligado aqui.',
+        'settings.density': 'Densidade das linhas',
+        'settings.density.compact': 'Compacto',
+        'settings.density.comfortable': 'Confortável (padrão)',
+        'settings.density.roomy': 'Espaçoso',
+        'settings.density.hint': 'As alturas das linhas seguem a barra lateral oficial: Confortável é o padrão oficial; Compacto economiza espaço vertical, Espaçoso dá áreas de clique maiores. Aplica na hora, salvo neste navegador.',
+        'settings.showCount': 'Contador de sessões',
+        'settings.showCount.hint': 'A barra oficial removeu a contagem de sessões; ative para restaurá-la no fim da linha (cede aos botões da linha ao passar o mouse). Desativado por padrão.',
         'settings.workspaceGroup': "Agrupamento de espaços",
         'settings.workspaceGroup.hint': "Pastas do disco: aninhar apenas pelas pastas oficiais (diretórios de disco). Disco + nomes: acrescenta grupos de nomes sobre a árvore de disco. Apenas nomes: agrupa só pela barra nos títulos, ignorando o aninhamento de disco. O estado do interruptor antigo migra automaticamente.",
         'settings.sessionLimit': "Sessões ao expandir",
@@ -2344,6 +2435,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': 'Уровни с единственным потомком сливаются в одну строку; при нескольких потомках дерево разворачивается; во время перетаскивания рабочей области цепочки временно разворачиваются в папки, чтобы можно было положить элемент на любой уровень; состояние сворачивания и оформление хранятся в этом браузере.',
         'settings.statusPulse': 'Пульсирующий индикатор состояния',
         'settings.statusPulse.hint': 'Индикаторы, скрытые сворачиванием (завершено — зелёный / выполняется — синий / ожидает — янтарный), всплывают вверх по иерархии: строки рабочих областей и папок пульсируют значком в цвете состояния (заголовки со своим свечением пульсируют вместе с ними), строки групп сессий показывают пульсирующую точку; включено по умолчанию, здесь можно отключить.',
+        'settings.density': 'Плотность строк',
+        'settings.density.compact': 'Компактно',
+        'settings.density.comfortable': 'Обычно (по умолчанию)',
+        'settings.density.roomy': 'Просторно',
+        'settings.density.hint': 'Высоты строк соответствуют официальной боковой панели: «Обычно» — официальный стандарт; «Компактно» экономит место по вертикали, «Просторно» увеличивает зоны нажатия. Применяется сразу, хранится в этом браузере.',
+        'settings.showCount': 'Счётчик сессий',
+        'settings.showCount.hint': 'Официальная панель убрала счётчик сессий; включите, чтобы вернуть его в конец строки (уступает кнопкам строки при наведении). По умолчанию выключено.',
         'settings.workspaceGroup': "Группировка рабочих областей",
         'settings.workspaceGroup.hint': "Папки диска: вложенность только по официальным папкам (каталогам диска). Диск + имена: добавляет группы имён поверх дерева диска. Только имена: группирует лишь по косой черте в названиях, игнорируя вложенность диска. Состояние старого переключателя переносится автоматически.",
         'settings.sessionLimit': "Сессий при разворачивании",
@@ -2515,6 +2613,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': 'Nivåer med ett enda barn slås ihop till en rad; med flera barn fälls trädet ut; medan du drar en arbetsyta fälls kedjorna tillfälligt ut till mappar så att du kan släppa på vilken nivå som helst; utfällt läge och eget utseende sparas i den här webbläsaren.',
         'settings.statusPulse': 'Pulserande statuslampa',
         'settings.statusPulse.hint': 'Statuslampor som döljs av ihopfällningen (klart grön / körs blå / väntar bärnsten) bubblar uppåt i hierarkin: rader för arbetsytor och mappar pulserar ikonen i statusfärgen (titlar med egen glöd pulserar med), sessionsgrupper visar en pulserande prick; på som standard, stängs av här.',
+        'settings.density': 'Radtäthet',
+        'settings.density.compact': 'Kompakt',
+        'settings.density.comfortable': 'Bekväm (standard)',
+        'settings.density.roomy': 'Rymlig',
+        'settings.density.hint': 'Radhöjder följer det officiella sidofältet: Bekväm är officiell standard; Kompakt sparar vertikalt utrymme, Rymlig ger större klickytor. Verkar direkt, sparas i webbläsaren.',
+        'settings.showCount': 'Sessionsräknare',
+        'settings.showCount.hint': 'Det officiella sidofältet tog bort sessionsräknaren; slå på den för att återställa den i radens slut (den väjer för radknapparna vid hover). Av som standard.',
         'settings.workspaceGroup': "Arbetsytegruppering",
         'settings.workspaceGroup.hint': "Skivmappar: kapslar bara enligt de officiella mapparna (skivkataloger). Skiva + namn: lägger namngrupper ovanpå skivträdet. Endast namn: grupperar rent efter snedstreck i titlar och ignorerar skivkapsling. Den gamla reglagestatusen migreras automatiskt.",
         'settings.sessionLimit': "Sessioner vid utfällning",
@@ -2686,6 +2791,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': 'ระดับที่มีลูกเพียงหนึ่งจะถูกรวมเป็นบรรทัดเดียว เมื่อมีลูกหลายตัวต้นไม้จะขยายออก ขณะลากพื้นที่ทำงาน สายจะขยายกลับเป็นโฟลเดอร์ชั่วคราวเพื่อให้วางได้ทุกระดับ สถานะการขยายและรูปลักษณ์ที่กำหนดเองจะถูกเก็บไว้ในเบราว์เซอร์นี้',
         'settings.statusPulse': 'ไฟสถานะหายใจ',
         'settings.statusPulse.hint': 'ไฟสถานะที่ถูกย่อซ่อนไว้ (เสร็จแล้วสีเขียว / กำลังทำงานสีน้ำเงิน / รอตอบสนองสีเหลืองอำพัน) จะลอยขึ้นตามลำดับชั้น: แถวพื้นที่ทำงานและโฟลเดอร์จะให้ไอคอนหายใจเป็นสีตามสถานะ (ชื่อที่มีการเรืองแสงกำหนดเองก็หายใจตาม) แถวกลุ่มเซสชันจะแสดงจุดสถานะที่หายใจ เปิดไว้เป็นค่าเริ่มต้น ปิดได้ที่นี่',
+        'settings.density': 'ความหนาแน่นของแถว',
+        'settings.density.compact': 'กระชับ',
+        'settings.density.comfortable': 'ปกติ (ค่าเริ่มต้น)',
+        'settings.density.roomy': 'กว้าง',
+        'settings.density.hint': 'ความสูงของแถวเป็นไปตามแถบข้างทางการ: ปกติคือค่าเริ่มต้นทางการ; กระชับประหยัดพื้นที่แนวตั้ง กว้างให้พื้นที่คลิกใหญ่ขึ้น ใช้ได้ทันทีและบันทึกในเบราว์เซอร์นี้',
+        'settings.showCount': 'ป้ายจำนวนเซสชัน',
+        'settings.showCount.hint': 'แถบข้างทางการได้ลบตัวนับเซสชันออก; เปิดเพื่อแสดงอีกครั้งที่ท้ายแถว (เว้นให้ปุ่มการทำงานของแถวเมื่อชี้เมาส์) ปิดอยู่เป็นค่าเริ่มต้น',
         'settings.workspaceGroup': "การจัดกลุ่มพื้นที่ทำงาน",
         'settings.workspaceGroup.hint': "โฟลเดอร์ดิสก์: ซ้อนตามโฟลเดอร์ทางการ (ไดเรกทอรีดิสก์) เท่านั้น ดิสก์ + ชื่อ: เพิ่มกลุ่มชื่อแบบเส้นทับทับต้นไม้ดิสก์ เฉพาะชื่อ: จัดกลุ่มจากเครื่องหมายทับในชื่อเท่านั้นโดยไม่สนการซ้อนดิสก์ สถานะสวิตช์เวอร์ชันเก่าจะย้ายมาโดยอัตโนมัติ",
         'settings.sessionLimit': "จำนวนเซสชันเมื่อกาง",
@@ -2857,6 +2969,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': 'Tek çocuklu düzeyler tek satırda birleşir; birden çok çocuk olduğunda ağaç açılır; bir çalışma alanını sürüklerken zincirler geçici olarak klasörlere açılır, böylece her düzeye bırakabilirsiniz; açılma durumu ve özel görünüm bu tarayıcıda saklanır.',
         'settings.statusPulse': 'Nefes alan durum ışığı',
         'settings.statusPulse.hint': 'Daraltmayla gizlenen durum ışıkları (tamamlandı yeşil / çalışıyor mavi / bekliyor amber) hiyerarşide yukarı taşar: çalışma alanı ve klasör satırlarının simgesi durum renginde nefes alır (özel ışıması olan başlıklar da birlikte nefes alır), oturum grubu satırları nefes alan bir durum noktası gösterir; varsayılan olarak açık, buradan kapatılabilir.',
+        'settings.density': 'Satır yoğunluğu',
+        'settings.density.compact': 'Sıkı',
+        'settings.density.comfortable': 'Rahat (varsayılan)',
+        'settings.density.roomy': 'Geniş',
+        'settings.density.hint': 'Satır yükseklikleri resmi kenar çubuğunu izler: Rahat resmi varsayılan; Sıkı dikey alan tasarrufu sağlar, Geniş daha büyük tıklama alanı verir. Anında uygulanır, bu tarayıcıda saklanır.',
+        'settings.showCount': 'Oturum sayacı',
+        'settings.showCount.hint': 'Resmi kenar çubuğu oturum sayacını kaldırdı; satır sonunda geri getirmek için açın (üzerine gelince satır düğmelerine yer verir). Varsayılan olarak kapalı.',
         'settings.workspaceGroup': "Çalışma alanı gruplaması",
         'settings.workspaceGroup.hint': "Disk klasörleri: yalnızca resmî klasörlere (disk dizinleri) göre iç içe. Disk + adlar: disk ağacının üzerine ad grupları ekler. Yalnız adlar: yalnızca başlıklardaki bölü işaretiyle gruplar, disk iç içeliğini yok sayar. Eski anahtar durumu otomatik taşınır.",
         'settings.sessionLimit': "Açıldığında gösterilecek oturum",
@@ -3028,6 +3147,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': 'Các tầng chỉ có một nhánh con được gộp thành một dòng; khi có nhiều nhánh con, cây tự mở ra; khi kéo không gian làm việc, chuỗi tạm mở lại thành thư mục để có thể thả vào bất kỳ tầng nào; trạng thái mở và giao diện tùy chỉnh được lưu trong trình duyệt này.',
         'settings.statusPulse': 'Đèn trạng thái nhấp nháy',
         'settings.statusPulse.hint': 'Những đèn trạng thái bị thu gọn che đi (xong màu xanh lá / đang chạy màu xanh dương / đang chờ màu hổ phách) sẽ nổi dần lên các tầng trên: hàng không gian làm việc và thư mục cho biểu tượng nhấp nháy theo màu trạng thái (tiêu đề có đặt phát sáng cũng nhấp nháy theo), hàng nhóm phiên hiện một chấm trạng thái nhấp nháy; mặc định bật, có thể tắt tại đây.',
+        'settings.density': 'Mật độ hàng',
+        'settings.density.compact': 'Gọn',
+        'settings.density.comfortable': 'Thoải mái (mặc định)',
+        'settings.density.roomy': 'Rộng',
+        'settings.density.hint': 'Chiều cao hàng theo thanh bên chính thức: Thoải mái là mặc định chính thức; Gọn tiết kiệm không gian dọc, Rộng cho vùng nhấp lớn hơn. Áp dụng ngay, lưu trong trình duyệt này.',
+        'settings.showCount': 'Nhãn số phiên',
+        'settings.showCount.hint': 'Thanh bên chính thức đã bỏ bộ đếm phiên; bật để hiện lại ở cuối hàng (nhường chỗ cho các nút hàng khi rê chuột). Mặc định tắt.',
         'settings.workspaceGroup': "Nhóm không gian làm việc",
         'settings.workspaceGroup.hint': "Thư mục đĩa: lồng theo thư mục chính thức (thư mục đĩa) mà thôi. Đĩa + tên: thêm nhóm tên lên trên cây đĩa. Chỉ tên: nhóm chỉ theo dấu gạch chéo trong tiêu đề, bỏ qua lồng đĩa. Trạng thái công tắc bản cũ tự động chuyển đổi.",
         'settings.sessionLimit': "Số phiên khi mở rộng",
@@ -3199,6 +3325,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': '單層鏈會合併成一行,出現多個子級就會自動展開成樹狀;拖拽工作區期間單鏈會臨時展開返做文件夾樹,可以放入任何一級;展開狀態同自訂外觀會喺呢個瀏覽器保存。',
         'settings.statusPulse': '狀態呼吸燈',
         'settings.statusPulse.hint': '被摺疊遮住嘅狀態燈(完成綠 / 運行藍 / 待互動琥珀)會沿住層級向外冒泡:工作區同分組行會以圖示呼吸發光(顏色跟狀態,自訂過發光嘅標題一齊呼吸),對話分組行就會顯示呼吸狀態燈;預設開啟,可以喺度閂咗佢。',
+        'settings.density': '行密度',
+        'settings.density.compact': '緊湊',
+        'settings.density.comfortable': '舒適(預設)',
+        'settings.density.roomy': '寬鬆',
+        'settings.density.hint': '行高跟隨官方側欄:舒適 = 官方預設行高;緊湊更省縱向空間,寬鬆有更大的點擊範圍。變更立即生效,儲存在當前瀏覽器。',
+        'settings.showCount': '對話數角標',
+        'settings.showCount.hint': '官方側欄已移除工作區行尾的對話計數;開啟後在本插件行尾恢復顯示(懸停時讓位給操作按鈕)。預設關閉。',
         'settings.workspaceGroup': "工作區分組",
         'settings.workspaceGroup.hint': "磁碟目錄 = 只按官方資料夾(磁碟目錄)巢狀;磁碟 + 名稱 = 在磁碟層之上再按標題裏的 / 分組;僅名稱 = 只按標題裏的 / 分組,完全不理會磁碟目錄的巢狀關係。舊版本的開關狀態會自動遷移。",
         'settings.sessionLimit': "展開時顯示會話數",
@@ -3370,6 +3503,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': '單層鏈會合併成一行,出現多個子級就會自動展開成樹狀;拖拽工作區期間單鏈會臨時展開返做文件夾樹,可以放入任何一級;展開狀態同自訂外觀會喺呢個瀏覽器保存。',
         'settings.statusPulse': '狀態呼吸燈',
         'settings.statusPulse.hint': '被摺疊遮住嘅狀態燈(完成綠 / 運行藍 / 待互動琥珀)會沿住層級向外冒泡:工作區同分組行會以圖示呼吸發光(顏色跟狀態,自訂過發光嘅標題一齊呼吸),對話分組行就會顯示呼吸狀態燈;預設開啟,可以喺度閂咗佢。',
+        'settings.density': '行密度',
+        'settings.density.compact': '緊湊',
+        'settings.density.comfortable': '舒適(預設)',
+        'settings.density.roomy': '寬鬆',
+        'settings.density.hint': '行高跟隨官方側欄:舒適 = 官方預設行高;緊湊慳位,寬鬆有更大嘅點擊範圍。改動即時生效,儲存喺當前瀏覽器。',
+        'settings.showCount': '對話數角標',
+        'settings.showCount.hint': '官方側欄已移除工作區行尾嘅對話計數;開啟後喺本插件行尾恢復顯示(懸停時讓位畀操作按鈕)。預設關閉。',
         'settings.workspaceGroup': "工作區分組",
         'settings.workspaceGroup.hint': "磁碟目錄 = 只按官方資料夾(磁碟目錄)巢狀;磁碟 + 名稱 = 在磁碟層之上再按標題裏的 / 分組;僅名稱 = 只按標題裏的 / 分組,完全不理會磁碟目錄的巢狀關係。舊版本的開關狀態會自動遷移。",
         'settings.sessionLimit': "展開時顯示會話數",
@@ -3541,6 +3681,13 @@ window.__ModuleLoader__.load({
         'settings.compactChains.hint': '單層鏈會合併成一行,出現多個子層級時自動展開為樹狀;拖曳工作區期間單鏈會暫時展開回資料夾樹,可放入任一層級;展開狀態與自訂外觀會保存在本瀏覽器。',
         'settings.statusPulse': '狀態呼吸燈',
         'settings.statusPulse.hint': '被收合藏起的狀態燈(完成綠 / 執行藍 / 待互動琥珀)會沿著層級向外冒出:工作區與群組列以圖示呼吸發光(顏色隨狀態,自訂過發光的標題一起呼吸),工作階段群組列則顯示呼吸狀態燈;預設開啟,可在此關閉。',
+        'settings.density': '列密度',
+        'settings.density.compact': '緊湊',
+        'settings.density.comfortable': '舒適 (預設)',
+        'settings.density.roomy': '寬鬆',
+        'settings.density.hint': '列高跟隨官方側邊欄:舒適 = 官方預設列高;緊湊更省垂直空間,寬鬆有較大的點擊範圍。變更立即生效,儲存在目前瀏覽器。',
+        'settings.showCount': '工作階段數標記',
+        'settings.showCount.hint': '官方側邊欄已移除工作區列尾的工作階段計數;開啟後在本外掛列尾恢復顯示 (暫留時讓位給動作按鈕)。預設關閉。',
         'settings.workspaceGroup': "工作區分組",
         'settings.workspaceGroup.hint': "磁碟資料夾 = 只按官方資料夾(磁碟目錄)巢狀;磁碟 + 名稱 = 在磁碟層之上再按標題裏的 / 分組;僅名稱 = 只按標題裏的 / 分組,完全不理會磁碟目錄的巢狀關係。舊版本的開關狀態會自動遷移。",
         'settings.sessionLimit': "展開時顯示會話數",
@@ -4015,9 +4162,14 @@ window.__ModuleLoader__.load({
      * React discipline — the occupant mounts once per row and keeps its own
      * state across our re-renders).
      */
-    function ShippedSeatOccupant({ seat, ownerProps, t }) {
+    function ShippedSeatOccupant({ seat, ownerProps, t, useMenuOpenState }) {
       const bound = React.useMemo(() => bindOccupantFace(seat.face), [seat])
-      return E(seat.component, Object.assign({}, ownerProps, bound, t ? { t } : null))
+      return E(seat.component, Object.assign({}, ownerProps, bound, t ? { t } : null,
+        // The menu.item slot's hookContext factory (ui-slots) hands its
+        // occupants the menu open-state pair through a useMenuOpenState
+        // hook; the slot renderer would inject it, our in-row menu
+        // reproduces the same shape here.
+        typeof useMenuOpenState === 'function' ? { useMenuOpenState } : null))
     }
 
     /**
@@ -4388,6 +4540,12 @@ window.__ModuleLoader__.load({
       '.bw-header-title{flex:1;font-size:14px;font-weight:400;line-height:20px;color:var(--dsw-alias-label-tertiary,#9a9a9a);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
       '.bw-icon-btn{flex:none;width:24px;height:24px;border:none;background:transparent;border-radius:var(--dsw-radius-sm,6px);display:grid;place-items:center;color:var(--dsw-alias-label-secondary,#b8b8b8);cursor:pointer;padding:0}',
       '.bw-icon-btn:hover{background:var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.15));color:var(--dsw-alias-label-primary,#e6e6e6)}',
+      // Official row iconButton (Rows.module.css): a bare 16px tertiary
+      // square — the shipped strip buttons ride this, not the 24px
+      // toolbox button above.
+      '.bw-row-btn{flex:none;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border:none;border-radius:var(--dsw-radius-xs,4px);padding:0;background:transparent;color:var(--dsw-alias-label-tertiary,#9a9a9a);cursor:pointer}',
+      '.bw-row-btn:hover{color:var(--dsw-alias-label-primary,#e6e6e6)}',
+      '.bw-row-btn:focus-visible{outline:var(--dsw-focus-ring-width,2px) solid var(--dsw-focus-ring-color,var(--dsw-alias-state-business-primary,#5b8def));outline-offset:-2px}',
       // Focus ring parity with the shipped icon buttons (dsh 0.1.7-rc.2
       // focus.css + WorkspaceBrowser.module.css): the host publishes the ring
       // width/colour as tokens and keeps offsets inside controls that clip an
@@ -4411,10 +4569,12 @@ window.__ModuleLoader__.load({
       // as the chevron-only button beside an input.
       '.bw-menu-block{display:block;width:100%}',
       '.bw-menu-inline{display:inline-block;width:auto;flex:none}',
-      '.bw-tree{flex:1;overflow-y:auto;overflow-x:hidden;padding:2px 6px 12px;min-height:0}',
-      '.bw-row{display:flex;align-items:center;gap:6px;min-height:28px;padding:0 6px;border-radius:var(--dsw-radius-sm,6px);cursor:pointer;user-select:none;font-size:14px;line-height:20px;color:var(--dsw-alias-label-primary,#e6e6e6);position:relative}',
-      '.bw-drop-before::after{content:"";position:absolute;left:8px;right:8px;top:-1px;height:2px;border-radius:1px;background:var(--dsw-alias-brand-primary,#5b8def);pointer-events:none}',
-      '.bw-drop-after::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;border-radius:1px;background:var(--dsw-alias-brand-primary,#5b8def);pointer-events:none}',
+      '.bw-tree{--bw-row-h:34px;--bw-session-h:32px;flex:1;overflow-y:auto;overflow-x:hidden;padding:2px 6px 12px;min-height:0}',
+      '.bw-tree[data-bw-density="compact"]{--bw-row-h:28px;--bw-session-h:26px}',
+      '.bw-tree[data-bw-density="roomy"]{--bw-row-h:40px;--bw-session-h:38px}',
+      '.bw-row{display:flex;align-items:center;gap:6px;height:var(--bw-row-h,34px);padding:0 8px;padding-inline-start:calc(8px + var(--bw-indent,0px));border-radius:var(--dsw-radius-md,8px);cursor:pointer;user-select:none;font-size:14px;line-height:20px;color:var(--dsw-alias-label-primary,#e6e6e6);position:relative}',
+      '.bw-drop-before::before{content:"";position:absolute;z-index:1;left:0;right:4px;top:-7px;height:12px;pointer-events:none;background:linear-gradient(55deg,transparent 0,var(--dsw-alias-state-business-primary,#5b8def) 50%,transparent 100%) 0 0/5px 7px no-repeat,linear-gradient(125deg,transparent 0,var(--dsw-alias-state-business-primary,#5b8def) 50%,transparent 100%) 0 5px/5px 7px no-repeat,linear-gradient(var(--dsw-alias-state-business-primary,#5b8def),var(--dsw-alias-state-business-primary,#5b8def)) 4px 5px/calc(100% - 4px) 2px no-repeat}',
+      '.bw-drop-after::after{content:"";position:absolute;z-index:1;left:0;right:4px;bottom:-7px;height:12px;pointer-events:none;background:linear-gradient(55deg,transparent 0,var(--dsw-alias-state-business-primary,#5b8def) 50%,transparent 100%) 0 0/5px 7px no-repeat,linear-gradient(125deg,transparent 0,var(--dsw-alias-state-business-primary,#5b8def) 50%,transparent 100%) 0 5px/5px 7px no-repeat,linear-gradient(var(--dsw-alias-state-business-primary,#5b8def),var(--dsw-alias-state-business-primary,#5b8def)) 4px 5px/calc(100% - 4px) 2px no-repeat}',
       '.bw-drop-into{outline:1.5px dashed var(--dsw-alias-brand-primary,#5b8def);outline-offset:-1.5px}',
       // Grouping drop lands on the header button / a group row: solid brand
       // rim + a tinted wash so "this drop joins a group" reads stronger than
@@ -4452,13 +4612,19 @@ window.__ModuleLoader__.load({
       '.bw-gn-icon{flex:none;display:grid;place-items:center;width:16px;height:16px;color:var(--dsw-alias-label-secondary,#b8b8b8)}',
       '.bw-gn-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-gn-input{width:100%;box-sizing:border-box}',
-      '.bw-row:hover{background:var(--dsw-specific-sidebar-nav-item-hover,var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12)))}',
-      '.bw-row:hover{background:color-mix(in srgb,var(--dsw-specific-sidebar-nav-item-hover,rgba(127,127,127,.14)) 50%,transparent)}',
-      '.bw-row-current{background:var(--dsw-specific-sidebar-nav-item-active,rgba(91,141,239,.15))}',
-      '.bw-row-current{background:color-mix(in srgb,var(--dsw-specific-sidebar-nav-item-active,rgba(91,141,239,.16)) 40%,transparent)}',
-      '.bw-row-icon{flex:none;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
-      '.bw-chevron{flex:none;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary,#9a9a9a);transition:transform .15s ease}',
-      '.bw-chevron-open{transform:rotate(90deg)}',
+      '.bw-row:hover,.bw-row.menu-open{background:var(--dsw-specific-sidebar-nav-item-hover,var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12)))}',
+      '',
+      '.bw-row-current{background:var(--dsw-specific-sidebar-nav-item-hover,var(--dsw-alias-interactive-bg-hover,rgba(127,127,127,.12)))}',
+      '',
+      '.bw-row-icon{flex:none;width:16px;height:20px;display:inline-flex;align-items:center;justify-content:center;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
+      '.bw-chevron{flex:none;display:inline-flex;align-items:center;justify-content:center;color:var(--dsw-alias-label-caption,#adb2b8)}',
+      '.bw-chevron-open .bw-arrow{transform:rotate(90deg)}',
+      '.bw-container-row .bw-chevron{display:none}',
+      '.bw-container-row:hover .bw-chevron,.bw-container-row.menu-open .bw-chevron{display:inline-flex}',
+      '.bw-container-row:hover .bw-folder-cell,.bw-container-row.menu-open .bw-folder-cell{display:none}',
+      '.bw-arrow{flex:none;display:inline-flex;transition:transform 150ms var(--ds-ease-in-out,ease-in-out)}',
+      '@media (prefers-reduced-motion:reduce){.bw-arrow{transition:none}}',
+      '.bw-folder-active{color:var(--dsw-alias-state-business-primary,#5b8def)}',
       // Hero picker rows (v0.22.0): hierarchy rides the row itself — an
       // indentation gutter, a folder chevron or workspace glyph, and the
       // trailing check. The row mirrors the primitives menu cell (same hover
@@ -4477,23 +4643,28 @@ window.__ModuleLoader__.load({
       // padding covers the widest rim (2px at the top of the slider). margin
       // cancels it, so text still starts and truncates where it did.
       '.bw-row-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:3px;margin:-3px}',
-      '.bw-row-count{flex:none;font-size:12px;color:var(--dsw-alias-label-quaternary,#8a8a8a)}',
-      '.bw-row-time{flex:none;font-size:10px;color:var(--dsw-alias-label-quaternary,#8a8a8a)}',
+      '.bw-session-row .bw-row-label{padding:0;margin:0 6px 0 4px}',
+      '.bw-session-row .bw-row-label[data-scrolled]{mask-image:linear-gradient(to right,transparent,#000 12px);-webkit-mask-image:linear-gradient(to right,transparent,#000 12px)}',
+      '.bw-session-row .bw-row-label[data-clipped]{mask-image:linear-gradient(to left,transparent,#000 12px);-webkit-mask-image:linear-gradient(to left,transparent,#000 12px)}',
+      '.bw-session-row .bw-row-label[data-scrolled][data-clipped]{mask-image:linear-gradient(to right,transparent,#000 12px,#000 calc(100% - 12px),transparent);-webkit-mask-image:linear-gradient(to right,transparent,#000 12px,#000 calc(100% - 12px),transparent)}',
+      '.bw-row-count{flex:none;display:none;font-size:12px;color:var(--dsw-alias-label-quaternary,#8a8a8a)}',
+      '.bw-tree[data-bw-count] .bw-row-count{display:inline}',
+      '.bw-row-time{flex:none;font-size:10px;line-height:16px;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
       // The outline is inherited from the row: the 10-12px meta column (session
       // count / relative time) opts out — stroked meta text outshines the title
       // it is supposed to support.
       '.bw-row-count,.bw-row-time{-webkit-text-stroke-width:0}',
       '.bw-schedule-badge{flex:none;display:inline-flex;align-items:center;color:var(--dsw-alias-label-tertiary,#9a9a9a);margin:0 6px}',
-      '.bw-row-actions{flex:none;display:none;align-items:center;gap:2px}',
-      '.bw-row:hover .bw-row-actions{display:flex}',
-      '.bw-row:hover .bw-row-time,.bw-row:hover .bw-row-count,.bw-row:hover .bw-schedule-badge{display:none}',
-      '.bw-row-archived{opacity:.55}',
-      '.bw-pin-indicator{flex:none;display:inline-flex;align-items:center;color:var(--dsw-alias-brand-primary,#5b8def);margin:0 4px}',
+      '.bw-row-actions{flex:none;display:none;align-items:center;gap:15px}',
+      '.bw-row:hover .bw-row-actions,.bw-row.menu-open .bw-row-actions{display:flex}',
+      '.bw-row:hover .bw-row-time,.bw-row:hover .bw-row-count,.bw-row:hover .bw-schedule-badge,.bw-row:hover .bw-pin-indicator,.bw-row.menu-open .bw-row-time,.bw-row.menu-open .bw-row-count,.bw-row.menu-open .bw-schedule-badge,.bw-row.menu-open .bw-pin-indicator{display:none}',
+      '.bw-row-archived .bw-row-label{color:var(--dsw-alias-label-caption,#8a8a8a)}',
+      '.bw-pin-indicator{flex:none;display:inline-flex;align-items:center;justify-content:center;width:16px;height:20px;color:var(--dsw-alias-label-caption,#adb2b8);margin:0 0 0 6px}',
       '.bw-overflow-row{display:block;width:100%;text-align:left;border:0;background:transparent;color:var(--dsw-alias-label-tertiary,#9a9a9a);font-size:12px;cursor:pointer;padding:4px 6px;font-family:inherit}',
       '.bw-overflow-row:hover{color:var(--dsw-alias-label-secondary,#b8b8b8)}',
       '.bw-dot{flex:none;width:6px;height:6px;border-radius:50%;background:transparent}',
-      '.bw-session-row{font-size:14px;line-height:20px;color:var(--dsw-alias-label-primary,#e6e6e6);min-height:26px}',
-      '.bw-sgroup-row{font-size:14px;line-height:20px;color:var(--dsw-alias-label-tertiary,#9a9a9a);min-height:24px}',
+      '.bw-session-row{font-size:14px;line-height:20px;color:var(--dsw-alias-label-primary,#e6e6e6);height:var(--bw-session-h,32px)}',
+      '.bw-sgroup-row{font-size:14px;line-height:20px;color:var(--dsw-alias-label-tertiary,#9a9a9a);height:var(--bw-session-h,32px)}',
       '.bw-sgroup-row:hover{color:var(--dsw-alias-label-secondary,#b8b8b8)}',
       '.bw-session-row:hover{color:var(--dsw-alias-label-primary,#e6e6e6)}',
       '.bw-empty{padding:28px 12px;text-align:center;font-size:13px;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
@@ -4505,6 +4676,14 @@ window.__ModuleLoader__.load({
       // Row toast for the shipped fork shortcut's async failure (the shipped
       // notice rides the shadowed overlay). Token chain kept transparent-safe
       // like every other self-drawn surface.
+      // Session/workspace hover-card body (official Rows.module.css palette:
+// fixed colors, independent of theme aliases).
+      '.bw-hover-card{display:flex;flex-direction:column;gap:8px}',
+      '.bw-hover-title{font-size:14px;line-height:20px;color:#FFFFFF;overflow-wrap:break-word}',
+      '.bw-hover-path{font-size:12px;line-height:16px;color:#CFD3D6;word-break:break-all}',
+      '.bw-hover-time{font-size:12px;line-height:16px;color:#CFD3D6}',
+      '.bw-hover-status{display:flex;align-items:center;gap:8px;font-size:12px;line-height:20px;color:#ADB2B8}',
+      '.bw-hover-archived svg{flex-shrink:0;margin:0 -4px}',
       '.bw-toast{position:absolute;left:10px;right:10px;bottom:12px;z-index:30;display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.3));border-radius:var(--dsw-radius-md,8px);background:var(--dsw-alias-toast-bg,var(--dsw-specific-menu,rgba(28,28,32,.92)));color:var(--dsw-alias-toast-label,var(--dsw-alias-label-primary,#e6e6e6));font-size:12px;box-shadow:0 8px 24px rgba(0,0,0,.35)}',
       '.bw-toast-text{flex:1;min-width:0}',
       '.bw-toast-close{flex:none;width:20px;height:20px;border:none;background:transparent;color:inherit;border-radius:var(--dsw-radius-xs,4px);display:grid;place-items:center;cursor:pointer;padding:0;opacity:.75}',
@@ -5694,44 +5873,58 @@ window.__ModuleLoader__.load({
         ? E(PulseGlow, { state: pulse }, iconEl || (typeof ui.StateDot === 'function' ? E(ui.StateDot, { state: pulse, size: 10 }) : null))
         : iconEl
       return E('div', {
-        className: cls('bw-row', dropInto && 'bw-drop-into', dropInto && 'bw-drop-into-strong'),
-        style: { paddingLeft: 4 + depth * 12, ...(custStyle || {}), ...(pulse ? { '--bw-pulse-color': PULSE_COLORS[pulse] || PULSE_COLORS.ongoing } : null) },
+        className: cls('bw-row', 'bw-container-row', dropInto && 'bw-drop-into', dropInto && 'bw-drop-into-strong'),
+        style: { '--bw-indent': (depth * 12) + 'px', ...(custStyle || {}), ...(pulse ? { '--bw-pulse-color': PULSE_COLORS[pulse] || PULSE_COLORS.ongoing } : null) },
         onClick: onToggle,
         onContextMenu: onContextMenu,
         role: 'treeitem',
         'aria-expanded': expanded,
         ...(dragEvents || {}),
       },
-        E('span', { className: cls('bw-chevron', expanded && 'bw-chevron-open') }, icon('IconTriangleRightFill14', 14)),
-        E('span', { className: 'bw-row-icon' }, iconChild),
+        // Official projectRow duality (Rows.module.css): the chevron hides
+        // until hover, swapping in for the folder glyph; the arrow spins
+        // open with the row.
+        E('span', { className: cls('bw-chevron', expanded && 'bw-chevron-open') }, E('span', { className: 'bw-arrow' }, icon('IconTriangleRightFill14', 14))),
+        E('span', { className: cls('bw-row-icon', 'bw-folder-cell') }, iconChild),
         // A row that already carries a custom label glow breathes in sync.
         E('span', { className: cls('bw-row-label', pulse && custStyle && custStyle.textShadow && 'bw-pulse-text') }, node.name),
         total > 0 ? E('span', { className: 'bw-row-count' }, String(total)) : null,
       )
     }
 
-    function WorkspaceRow({ workspace, depth, count, sessionsOpen, onToggle, onStart, onContextMenu, currentInside, dropHalf, dropInto, dragEvents, custStyle, iconMode, pulse, newSessionLabel, newSessionAria, t }) {
+    function WorkspaceRow({ workspace, depth, count, sessionsOpen, onToggle, onStart, onMenu, onContextMenu, currentInside, menuOpen, dropHalf, dropInto, dragEvents, custStyle, iconMode, pulse, newSessionLabel, newSessionAria, menuAria, hoverBody, t }) {
       const iconEl = iconOf(iconMode, sessionsOpen)
       const iconChild = pulse
         ? E(PulseGlow, { state: pulse }, iconEl || (typeof ui.StateDot === 'function' ? E(ui.StateDot, { state: pulse, size: 10 }) : null))
         : iconEl
-      return E('div', {
-        className: cls('bw-row', currentInside && 'bw-row-current', dropHalf === 'before' && 'bw-drop-before', dropHalf === 'after' && 'bw-drop-after', dropInto && 'bw-drop-into', dropInto && 'bw-drop-into-strong'),
-        style: { paddingLeft: 6 + depth * 12, ...(custStyle || {}), ...(pulse ? { '--bw-pulse-color': PULSE_COLORS[pulse] || PULSE_COLORS.ongoing } : null) },
+      let row = E('div', {
+        className: cls('bw-row', 'bw-container-row', currentInside && 'bw-row-current', menuOpen && 'menu-open', dropHalf === 'before' && 'bw-drop-before', dropHalf === 'after' && 'bw-drop-after', dropInto && 'bw-drop-into', dropInto && 'bw-drop-into-strong'),
+        style: { '--bw-indent': (depth * 12) + 'px', ...(custStyle || {}), ...(pulse ? { '--bw-pulse-color': PULSE_COLORS[pulse] || PULSE_COLORS.ongoing } : null) },
         onClick: onToggle,
         onContextMenu: onContextMenu,
         role: 'treeitem',
         'aria-expanded': sessionsOpen,
         ...(dragEvents || {}),
       },
-        E('span', { className: cls('bw-chevron', sessionsOpen && 'bw-chevron-open') }, icon('IconTriangleRightFill14', 14)),
-        E('span', { className: 'bw-row-icon' }, iconChild),
+        // Official projectRow duality (Rows.module.css): the chevron hides
+        // until hover, swapping in for the folder glyph; the arrow spins
+        // open with the row; a subtree holding the current session tints
+        // the folder glyph blue (folderActive), not the whole row.
+        E('span', { className: cls('bw-chevron', sessionsOpen && 'bw-chevron-open') }, E('span', { className: 'bw-arrow' }, icon('IconTriangleRightFill14', 14))),
+        E('span', { className: cls('bw-row-icon', 'bw-folder-cell', currentInside && 'bw-folder-active') }, iconChild),
         E('span', { className: cls('bw-row-label', pulse && custStyle && custStyle.textShadow && 'bw-pulse-text'), title: workspace.title || workspace.leaf }, workspace.leaf),
         count > 0 ? E('span', { className: 'bw-row-count' }, String(count)) : null,
         E('span', { className: 'bw-row-actions', onClick: (e) => e.stopPropagation() },
           E('button', {
             type: 'button',
-            className: 'bw-icon-btn',
+            className: 'bw-row-btn',
+            'aria-label': menuAria || '...',
+            title: menuAria || undefined,
+            onClick: (e) => { e.stopPropagation(); if (onMenu) onMenu(e) },
+          }, icon('IconEllipsisOutline16', 15)),
+          E('button', {
+            type: 'button',
+            className: 'bw-row-btn',
             'aria-label': newSessionLabel || t('session.new'),
             'aria-keyshortcuts': newSessionAria,
             title: newSessionLabel || t('session.new'),
@@ -5739,6 +5932,13 @@ window.__ModuleLoader__.load({
           }, icon('IconPlusOutline16')),
         ),
       )
+      // Official workspace hover card (Rows.tsx WorkspaceHoverContent): the
+      // full label plus the abbreviated path. Workspace rows carry no
+      // createdAt here, so the created line is absent.
+      if (typeof ui.HoverCard === 'function' && typeof hoverBody === 'function') {
+        row = E(ui.HoverCard, { key: 'hover', anchor: row, content: hoverBody(workspace), openDelayMs: 800, grouped: true })
+      }
+      return row
     }
 
     // Official status priority: pending interaction > running > running
@@ -5777,6 +5977,60 @@ window.__ModuleLoader__.load({
     const relayStateOf = (row) => {
       const s = sessionStateOf(row)
       return s === 'ongoing' ? null : s
+    }
+
+    // Official title marquee (Rows.tsx useTitleMarquee): on hover an
+    // overflowing title scrolls at the shipped constant speed so the hidden
+    // tail becomes readable; scroll progress is exposed through data
+    // attributes that drive the CSS edge-fade masks. Reduced motion jumps
+    // straight to the end; leaving the row resets instantly.
+    const MIN_TITLE_REVEAL_PX = 8
+    const TITLE_MARQUEE_PX_PER_MS = 0.03
+    const marqueePlace = (title, left, range) => {
+      if (!title) return
+      if (typeof title.scrollTo === 'function') title.scrollTo({ left, behavior: 'instant' })
+      else title.scrollLeft = left
+      if (left > 0) title.dataset.scrolled = ''
+      else delete title.dataset.scrolled
+      if (left < range) title.dataset.clipped = ''
+      else delete title.dataset.clipped
+    }
+    function useTitleMarquee() {
+      const titleRef = React.useRef(null)
+      const frameRef = React.useRef(0)
+      React.useEffect(() => () => {
+        if (frameRef.current) cancelAnimationFrame(frameRef.current)
+        frameRef.current = 0
+      }, [])
+      const onPointerEnter = () => {
+        const title = titleRef.current
+        if (!title) return
+        const range = title.scrollWidth - title.clientWidth
+        if (!(range > MIN_TITLE_REVEAL_PX)) return
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          marqueePlace(title, range, range)
+          return
+        }
+        let position = 0
+        let previous = performance.now()
+        const step = (timestamp) => {
+          position = Math.min(position + (timestamp - previous) * TITLE_MARQUEE_PX_PER_MS, range)
+          previous = timestamp
+          marqueePlace(titleRef.current, position, range)
+          if (position < range) frameRef.current = requestAnimationFrame(step)
+        }
+        frameRef.current = requestAnimationFrame(step)
+      }
+      const onPointerLeave = () => {
+        if (frameRef.current) cancelAnimationFrame(frameRef.current)
+        frameRef.current = 0
+        const title = titleRef.current
+        if (!title) return
+        marqueePlace(title, 0, 0)
+        delete title.dataset.scrolled
+        delete title.dataset.clipped
+      }
+      return { titleRef, onPointerEnter, onPointerLeave }
     }
 
     function SessionRow({ node, depth, current, onOpen, onContextMenu, now, dropHalf, dragEvents, custStyle, breathing, sessionActions, scheduleSeat, t }) {
@@ -5819,23 +6073,65 @@ window.__ModuleLoader__.load({
       }
       const archivedTitle = official('row.archived')
       const pinnedTitle = official('row.pinned')
-      const strip = !node.blank && sessionActions && (sessionActions.trigger || sessionActions.quick)
+      // In-row "..." menu (official Rows.tsx): the ellipsis button anchors a
+      // primitives Menu whose entries are the SAME shared list the
+      // right-click menu builds (sessionActions.menuItems) and whose trailing
+      // children are the shipped menu.item seat occupants; picks dispatch
+      // through the SAME handler (sessionActions.pick), so the two surfaces
+      // cannot drift. Hosts without the primitives Menu keep the old
+      // open-context-menu trigger button.
+      const inlineMenu = !node.blank && sessionActions && typeof ui.Menu === 'function'
+        && typeof sessionActions.menuItems === 'function' && typeof sessionActions.pick === 'function'
+      const [menuOpen, setMenuOpen] = React.useState(false)
+      const menuOpenPair = React.useMemo(() => [menuOpen, setMenuOpen], [menuOpen])
+      const menuSeatChildren = inlineMenu && Array.isArray(sessionActions.menuSeat)
+        ? sessionActions.menuSeat.map((seat, index) => E(ShippedSeatOccupant, {
+          key: 'menu-seat-' + index,
+          seat,
+          ownerProps: { sessionId: node.id, displayTitle: node.leaf || node.title },
+          t: seat.t,
+          // The menu.item hook-context factory (ui-slots) hands occupants
+          // the open-state pair; reproduced here for the in-row menu.
+          useMenuOpenState: () => menuOpenPair,
+        }))
+        : null
+      // The shipped row.action seat renders the OFFICIAL pin/archive quick
+      // buttons; our own fallback buttons step aside so the row never shows
+      // two sets (same rule as the schedule mark's leading cell).
+      const quickSeatUsed = Array.isArray(sessionActions.rowActionSeat) && sessionActions.rowActionSeat.length > 0
+      const strip = !node.blank && sessionActions && (inlineMenu || sessionActions.trigger || (sessionActions.quick && !quickSeatUsed))
         ? E('span', { className: 'bw-row-actions', onClick: (e) => e.stopPropagation() },
-            sessionActions.trigger ? E('button', {
+            inlineMenu ? E(ui.Menu, {
+              open: menuOpen,
+              onClose: () => setMenuOpen(false),
+              portal: true,
+              closeOnPointerLeave: true,
+              dense: true,
+              anchor: E('button', {
+                type: 'button',
+                className: 'bw-row-btn',
+                'aria-label': official('actions.session.aria', { name: node.leaf || node.title }) || '...',
+                title: sessionActions.triggerTitle,
+                onClick: () => setMenuOpen((open) => !open),
+              }, icon('IconEllipsisOutline16', 15)),
+              items: sessionActions.menuItems(node),
+              onSelect: (id) => { setMenuOpen(false); sessionActions.pick(node, id) },
+            }, menuSeatChildren)
+            : sessionActions.trigger ? E('button', {
               type: 'button',
               className: 'bw-icon-btn',
               'aria-label': official('actions.session.aria', { name: node.leaf || node.title }) || '...',
               title: sessionActions.triggerTitle,
               onClick: (e) => sessionActions.openMenu(node, e),
             }, icon('IconEllipsisOutline16', 15)) : null,
-            sessionActions.quick && sessionActions.pin && !node.archived ? E('button', {
+            !quickSeatUsed && sessionActions.quick && sessionActions.pin && !node.archived ? E('button', {
               type: 'button',
               className: 'bw-icon-btn',
               'aria-label': official(node.pinned ? 'menu.unpinSession' : 'menu.pinSession') || '',
               title: official(node.pinned ? 'actions.unpin' : 'actions.pin') || undefined,
               onClick: (e) => { e.stopPropagation(); sessionActions.pin(node.id, !node.pinned) },
             }, icon(node.pinned ? 'IconPinFillRegular' : 'IconPinOutlineRegular', 14)) : null,
-            sessionActions.quick && sessionActions.archive ? E('button', {
+            !quickSeatUsed && sessionActions.quick && sessionActions.archive ? E('button', {
               type: 'button',
               className: 'bw-icon-btn',
               'aria-label': official(node.archived ? 'menu.unarchiveSession' : 'menu.archiveSession') || '',
@@ -5844,11 +6140,18 @@ window.__ModuleLoader__.load({
             }, icon(node.archived ? 'IconUnarchiveOutlineRegular' : 'IconArchiveOutline20', 14)) : null,
           )
         : null
-      return E('div', {
+      const marquee = useTitleMarquee()
+      const title = node.leaf || node.title
+      // Official HoverCard (Rows.tsx 693-703): the row is its own anchor; the
+      // card yields while the row menu is open. Title copy rides the official
+      // copy/copyLabels; a blank row copies nothing (official rule).
+      const hoverCard = typeof ui.HoverCard === 'function' && sessionActions && typeof sessionActions.hoverBody === 'function'
+      let row = E('div', {
         className: cls('bw-row', 'bw-session-row', current && 'bw-row-current',
           node.archived && 'bw-row-archived',
+          menuOpen && 'menu-open',
           dropHalf === 'before' && 'bw-drop-before', dropHalf === 'after' && 'bw-drop-after'),
-        style: { paddingLeft: 8 + depth * 12, ...(custStyle || {}) },
+        style: { '--bw-indent': (depth * 12) + 'px', ...(custStyle || {}) },
         onClick: () => {
           if (node.archived) {
             // Official semantics (guardedOpen): an archived row is not
@@ -5858,6 +6161,14 @@ window.__ModuleLoader__.load({
           }
           onOpen(node.id)
         },
+        onDoubleClick: node.blank ? undefined : (e) => {
+          // Official rename affordance (Rows.tsx title onDoubleClick): the
+          // double click never reaches the row's open handler.
+          e.stopPropagation()
+          if (sessionActions && typeof sessionActions.rename === 'function') sessionActions.rename(node)
+        },
+        onPointerEnter: marquee.onPointerEnter,
+        onPointerLeave: marquee.onPointerLeave,
         onContextMenu: onContextMenu,
         role: 'treeitem',
         'aria-description': node.archived ? archivedTitle || undefined : undefined,
@@ -5867,21 +6178,41 @@ window.__ModuleLoader__.load({
           status && typeof ui.StateDot === 'function'
             ? (state === 'ongoing' && breathing
               // Running breathes blue ON the session row only (never relays);
-              // the settings toggle covers this breathing too.
-              ? E(PulseGlow, { state: 'ongoing' }, E(ui.StateDot, { state: status.state, size: 10 }))
-              : E(ui.StateDot, { state: status.state, size: 10 }))
+              // the settings toggle covers this breathing too. The dot takes
+              // its official size (14px spinner / 10px lamp), inside the
+              // fixed 16px leading cell.
+              ? E(PulseGlow, { state: 'ongoing' }, E(ui.StateDot, { state: status.state }))
+              : E(ui.StateDot, { state: status.state }))
             : (markNode || E('span', { className: 'bw-dot' })),
         ),
-        E('span', { className: 'bw-row-label' }, node.leaf || node.title),
+        E('span', { className: 'bw-row-label', ref: marquee.titleRef }, title),
         // Legacy projection mark (see markNode): only ever renders where the
         // shipped seat does not exist, so the row never shows two marks.
         node.hasActiveSchedule && !markNode
           ? E('span', { className: 'bw-schedule-badge', role: 'img', 'aria-label': t('schedule.active'), title: t('schedule.active') }, icon('IconAlarmClockOutline16', 14))
           : null,
-        E('span', { className: 'bw-row-time' }, timeLabel(node.updatedAt, now, t)),
-        node.pinned ? E('span', { className: 'bw-pin-indicator', role: 'img', 'aria-label': pinnedTitle || undefined, title: pinnedTitle || undefined }, icon('IconPinFillRegular', 13)) : null,
+        // Official blank rows carry no time, no pin, no actions (a standing
+        // "new session" placeholder, not a session).
+        !node.blank ? E('span', { className: 'bw-row-time' }, timeLabel(node.updatedAt, now, t)) : null,
+        !node.blank && node.pinned ? E('span', { className: 'bw-pin-indicator', role: 'img', 'aria-label': pinnedTitle || undefined, title: pinnedTitle || undefined }, icon('IconPinFillRegular', 13)) : null,
         strip,
       )
+      if (hoverCard) {
+        const copyText = node.blank || title === '' ? undefined : title
+        const copyLabel = official('copy')
+        const copiedLabel = official('hover.copied')
+        row = E(ui.HoverCard, Object.assign({
+          key: 'hover',
+          anchor: row,
+          content: sessionActions.hoverBody(node, status, state),
+          openDelayMs: 800,
+          grouped: true,
+          disabled: menuOpen,
+          // copyText present REQUIRES both labels (primitives HoverCard
+          // contract): copy only renders where the official copy survives.
+        }, copyText && copyLabel && copiedLabel ? { copyText, copyLabel, copiedLabel } : {}))
+      }
+      return row
     }
 
     /**
@@ -5892,14 +6223,16 @@ window.__ModuleLoader__.load({
     function SessionGroupRow({ name, depth, expanded, count, onToggle, onContextMenu, dropInto, dragEvents, custStyle, pulse, t }) {
       return E('div', {
         className: cls('bw-row', 'bw-sgroup-row', dropInto && 'bw-drop-into', dropInto && 'bw-drop-into-strong'),
-        style: { paddingLeft: 10 + depth * 12, ...(custStyle || {}) },
+        style: { '--bw-indent': (depth * 12) + 'px', ...(custStyle || {}) },
         onClick: onToggle,
         onContextMenu: onContextMenu,
         role: 'treeitem',
         'aria-expanded': expanded,
         ...(dragEvents || {}),
       },
-        E('span', { className: cls('bw-chevron', expanded && 'bw-chevron-open') }, icon('IconTriangleRightFill14', 14)),
+        // Session groups are a plugin concept: their chevron stays visible
+        // (only the official container rows hide it until hover).
+        E('span', { className: cls('bw-chevron', expanded && 'bw-chevron-open') }, E('span', { className: 'bw-arrow' }, icon('IconTriangleRightFill14', 14))),
         // Session groups have no icon slot: a collapsed group with hidden
         // status relays through a breathing official StateDot instead.
         pulse ? E(PulseGlow, { state: pulse }, typeof ui.StateDot === 'function' ? E(ui.StateDot, { state: pulse, size: 10 }) : null) : null,
@@ -6496,6 +6829,12 @@ window.__ModuleLoader__.load({
       // Progressive listing quota (v0.21.0, issue #8): 0 = unlimited.
       const rawLimit = Math.floor(Number(prefs.sessionLimit))
       const sessionLimit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 500) : 0
+      // Row density (v0.34.0): Comfortable rides the shipped sidebar row
+      // heights (the default); Compact/Roomy drive the --bw-row-h dials.
+      const densityRaw = String(prefs.density || 'comfortable')
+      const density = densityRaw === 'compact' || densityRaw === 'roomy' ? densityRaw : 'comfortable'
+      // Session count badge: the shipped sidebar retired it; default OFF.
+      const showCount = prefs.showCount === true
       // Grouping strategy (v0.21.0, issue #7): rides the view store top-level
       // key next to groupBy/orderBy and stays browser-local, like every other
       // view option. The legacy workspaceTitleSlash boolean is consulted only
@@ -6677,6 +7016,32 @@ window.__ModuleLoader__.load({
           }, E('span', { className: 'bw-switch-thumb' })),
         ),
         E('div', { className: 'bw-hint' }, t('settings.statusPulse.hint')),
+        E('div', { className: 'bw-setting-row' },
+          E('div', { className: 'bw-setting-label' }, t('settings.density')),
+          E('div', { className: 'bw-seg' },
+            ['compact', 'comfortable', 'roomy'].map((mode) =>
+              E('button', {
+                type: 'button',
+                key: mode,
+                className: cls('bw-seg-btn', density === mode && 'bw-seg-btn-active'),
+                onClick: () => { setPref('density', mode) },
+              }, t('settings.density.' + mode)),
+            ),
+          ),
+        ),
+        E('div', { className: 'bw-hint' }, t('settings.density.hint')),
+        E('div', { className: 'bw-setting-row' },
+          E('div', { className: 'bw-setting-label' }, t('settings.showCount')),
+          E('button', {
+            type: 'button',
+            role: 'switch',
+            'aria-checked': showCount,
+            'aria-label': t('settings.showCount'),
+            className: cls('bw-switch', showCount && 'bw-switch-on'),
+            onClick: () => { setPref('showCount', !showCount) },
+          }, E('span', { className: 'bw-switch-thumb' })),
+        ),
+        E('div', { className: 'bw-hint' }, t('settings.showCount.hint')),
         E('div', { className: 'bw-setting-row' },
           E('div', { className: 'bw-setting-label' }, t('settings.autoStyle')),
           E('button', {
@@ -7036,7 +7401,7 @@ window.__ModuleLoader__.load({
         useDirectoryFlow,
         pickDirectory, listDirectory, createDirectory,
         sidebarFlowEntry,
-        shippedBrowserFace, scheduleSeatReader,
+        shippedBrowserFace, scheduleSeatReader, seatEntriesReader,
         officialT,
         presetFaceOf,
         t,
@@ -7107,6 +7472,10 @@ window.__ModuleLoader__.load({
       // Progressive listing (v0.21.0, issue #8): 0 means unlimited (default).
       const rawLimit = Math.floor(Number(prefsMap.sessionLimit))
       const sessionLimit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 500) : 0
+      // Tree density + count badge (v0.34.0), read fresh every render.
+      const densityRaw = String(prefsMap.density || 'comfortable')
+      const density = densityRaw === 'compact' || densityRaw === 'roomy' ? densityRaw : 'comfortable'
+      const showCount = prefsMap.showCount === true
       // Dual-write wrappers: every preference mutation lands in the local
       // store (immediate echo + scope-less fallback) AND the host settings
       // store (durable cross-device copy for the manual pull on the other
@@ -7250,6 +7619,15 @@ window.__ModuleLoader__.load({
       // The shipped schedule mark's seat occupant (see scheduleSeatOf); absent
       // whenever the Schedule overlay is off, which is the shipped default.
       const scheduleSeat = typeof scheduleSeatReader === 'function' ? scheduleSeatReader() : null
+      // The shipped session-row seats (official Rows.tsx): menu.item
+      // occupants become the in-row menu's trailing children, row.action
+      // occupants become the official pin/archive quick buttons (our own
+      // fallback buttons step aside), session.row.hover decorates the hover
+      // card. All read off the ledger like the schedule mark.
+      const seatEntriesOf = typeof seatEntriesReader === 'function' ? seatEntriesReader : null
+      const rowMenuSeat = seatEntriesOf ? seatEntriesOf('sidebar.workspaces.session.menu.item') : []
+      const rowActionSeat = seatEntriesOf ? seatEntriesOf('sidebar.workspaces.session.row.action') : []
+      const hoverSeat = seatEntriesOf ? seatEntriesOf('sidebar.session.row.hover') : []
       /** Effective catalog row of one shipped command (current keybinding, label). */
       const shortcutRowOf = (id) => {
         const rows = Array.isArray(shortcutRows) ? shortcutRows : EMPTY_LIST
@@ -7799,6 +8177,41 @@ window.__ModuleLoader__.load({
         const value = typeof officialT === 'function' ? officialT(key, params) : null
         return typeof value === 'string' && value !== '' && value !== key ? value : fallback
       }
+
+      // Official hover-card bodies (Rows.tsx WorkspaceHoverContent /
+      // SessionHoverContent): the palette is FIXED in the shipped card
+      // (#FFFFFF title, #CFD3D6 meta, #ADB2B8 status), and the copy rides
+      // the official 'workspace' dictionary; a missing key degrades to the
+      // aligned bw time label.
+      const workspaceHoverBody = (workspace) => E('div', { className: 'bw-hover-card' },
+        E('div', { className: 'bw-hover-title' }, workspace.title || workspace.leaf),
+        workspace.path ? E('div', { className: 'bw-hover-path' }, workspace.path) : null,
+      )
+      const sessionHoverTime = (node) => {
+        if (typeof ui.relativeTime !== 'function') return timeLabel(node.updatedAt, now, t)
+        const r = ui.relativeTime(node.updatedAt, now)
+        if (!r) return ''
+        if (r.unit === 'now') return officialText('time.now', undefined, t('time.now'))
+        const inner = officialText('time.' + r.unit, { n: r.n }, timeLabel(node.updatedAt, now, t))
+        const ago = officialText('time.ago', { t: inner }, null)
+        return ago || inner
+      }
+      const sessionHoverBody = (node, status) => E('div', { className: 'bw-hover-card' },
+        E('div', { className: 'bw-hover-title' }, node.leaf || node.title),
+        !node.blank ? E('div', { className: 'bw-hover-time' }, sessionHoverTime(node)) : null,
+        // The shipped session.hover decorations render inside the card,
+        // like the official renderSlot('sidebar.session.row.hover').
+        ...(Array.isArray(hoverSeat) ? hoverSeat.map((seat, index) => E(QuietBoundary, { key: 'hover-seat-' + index }, E(ShippedSeatOccupant, {
+          seat,
+          ownerProps: { sessionId: node.id },
+          t: seat.t,
+        }))) : []),
+        status && typeof ui.StateDot === 'function' ? E('div', { className: 'bw-hover-status' },
+          E(ui.StateDot, { state: status.state }), E('span', null, status.title)) : null,
+        node.archived && officialText('row.archived', undefined, '')
+          ? E('div', { className: 'bw-hover-status' }, icon('IconArchiveOutline20', 14), E('span', null, officialText('row.archived', undefined, '')))
+          : null,
+      )
       const pinAvailable = typeof pinSession === 'function' && typeof unpinSession === 'function'
       const unarchiveAvailable = typeof unarchiveSession === 'function'
       const sessionActions = {
@@ -7835,6 +8248,24 @@ window.__ModuleLoader__.load({
           }
           : undefined,
         openMenu: (node, e) => openCtx('session', node, e),
+        // In-row "..." menu (official Rows.tsx): the SAME shared entry list
+        // (sessionMenuEntriesFor) and the SAME pick dispatch the right-click
+        // menu uses, so the two surfaces cannot drift. menuSeat carries the
+        // shipped menu.item occupants (rendered as Menu children);
+        // rowActionSeat the official quick buttons (our own buttons step
+        // aside while it has entries). An id the shared dispatcher does not
+        // own (bw extensions: move-group / customize) falls back to the
+        // ctx surface's handler through a transient payload.
+        menuItems: (node) => (typeof sessionMenuEntriesFor === 'function' ? sessionMenuEntriesFor(node) : []),
+        menuSeat: rowMenuSeat,
+        rowActionSeat,
+        pick: (node, id) => {
+          if (typeof pickSessionAction === 'function' && pickSessionAction(node, id)) return
+          setCtx({ kind: 'session', payload: node, x: 0, y: 0 })
+          if (typeof handleCtxPick === 'function') handleCtxPick(id)
+        },
+        rename: (node) => setDialog({ kind: 'sess-rename', session: node }),
+        hoverBody: (node, status) => sessionHoverBody(node, status),
         explainArchived: () => {
           const text = officialText('toast.archivedNotOpenable', undefined, '') || officialText('row.archived', undefined, '')
           if (text) setErrorText(text)
@@ -8648,6 +9079,14 @@ window.__ModuleLoader__.load({
           // SEE the new session appear, even if the row was collapsed.
           onStart: () => { actions.setSessionsExpanded(workspace.workspaceId, true); startSession(workspace.workspaceId) },
           onContextMenu: (e) => openCtx('workspace', workspace, e),
+          // Official Rows.tsx: the ellipsis button anchors the row's own
+          // menu; the ctx surface stays the right-click path. While the
+          // menu is open the row pins (hover fill + visible actions),
+          // matching the official menuOpen state.
+          onMenu: (e) => openCtx('workspace', workspace, e),
+          menuOpen: !!(ctx && ctx.kind === 'workspace' && ctx.payload && ctx.payload.workspaceId === workspace.workspaceId),
+          menuAria: officialText('actions.workspace.aria', { name: workspace.title || workspace.leaf }) || undefined,
+          hoverBody: workspaceHoverBody,
           dropHalf: wsDropHalf(workspace.workspaceId),
           dropInto: wsRootDropActive(workspace.workspaceId),
           dragEvents: workspaceDragEvents(workspace),
@@ -8728,12 +9167,12 @@ window.__ModuleLoader__.load({
           rows.push(E('div', {
             key: 'ungrouped-label',
             className: 'bw-row bw-sgroup-row',
-            style: { paddingLeft: 8 },
+            style: { '--bw-indent': '0px' },
             onClick: () => { if (!searching && actions && typeof actions.setUngroupedOpen === 'function') actions.setUngroupedOpen(!open) },
             role: 'treeitem',
             'aria-expanded': open,
           },
-            E('span', { className: cls('bw-chevron', open && 'bw-chevron-open') }, icon('IconTriangleRightFill14', 14)),
+            E('span', { className: cls('bw-chevron', open && 'bw-chevron-open') }, E('span', { className: 'bw-arrow' }, icon('IconTriangleRightFill14', 14))),
             E('span', { className: 'bw-row-label' }, t('group.ungrouped')),
             E('span', { className: 'bw-row-count' }, String(ungrouped.length)),
           ))
@@ -8789,6 +9228,102 @@ window.__ModuleLoader__.load({
       // provide is the bw-only surface: name-group / session-group rename
       // and Customize appearance, appended after a separator.
       const ot = typeof officialT === 'function' ? officialT : null
+      // Shared session-menu builder + dispatcher: the right-click menu AND
+      // the row's own "..." menu render the SAME entry list (official
+      // mirror + bw extensions + trailing customize) and dispatch through
+      // the SAME handler, so the two surfaces cannot drift. menuEntries
+      // feeds it the ctx payload; sessionActions feeds it the row node.
+      const sessionMenuEntriesFor = (payload) => {
+        const customizeEntry = { id: 'customize', label: t('custom.title'), icon: icon('IconPersonalizationOutline16', 16) }
+        const groupItem = { id: 'move-group', label: t('menu.moveToGroup'), icon: icon('IconFolderOpenOutline16', 16) }
+        const ungroupItem = { id: 'move-out', label: t('menu.moveOutGroup'), icon: icon('IconRightUpOutline16', 16) }
+        const sgroupItems = sessionSlash ? [groupItem] : []
+        const sessionUngroupItems = sessionSlash && payload && groupPrefixOf(String(payload.title || '')) !== '' ? [ungroupItem] : []
+        const official = (key, fallback) => {
+          const value = typeof ot === 'function' ? ot(key) : null
+          return typeof value === 'string' && value !== '' && value !== key ? value : fallback
+        }
+        const archived = !!(payload.archived || (archivedSet && archivedSet.has(payload.id)))
+        const pinned = !!(payload.pinned || (pinnedSet && pinnedSet.has(payload.id)))
+        // Official 0.1.7 mirror (Rows.tsx session menu + the shipped slot
+        // entries): pin, rename, fork, archive — same order, same icons,
+        // same archived-state behavior (pin hides; archive becomes
+        // unarchive). Copy Session ID (order 450) rides the official
+        // dictionary, so upstream rewording AND future item additions land
+        // without a plugin release; every verb is gated on its service
+        // method so older hosts simply never offer what they cannot do.
+        return [
+          ...(pinAvailable && !archived ? [{
+            id: pinned ? 'unpin' : 'pin',
+            label: official(pinned ? 'menu.unpinSession' : 'menu.pinSession', t('menu.archive')),
+            icon: icon(pinned ? 'IconPinFillRegular' : 'IconPinOutlineRegular', 16),
+          }] : []),
+          { id: 'rename', label: official('rename', t('menu.rename')), icon: icon('IconEditOutline16', 16) },
+          { id: 'fork', label: official('menu.fork', t('menu.fork')), icon: icon('IconBranchOutline16', 16) },
+          // Official semantics: archive hides the row through the
+          // registry-global archive set and never touches the session log
+          // — deliberately NOT styled destructive. An archived row gets
+          // the restore entry instead.
+          archived
+            ? { id: 'unarchive', label: official('menu.unarchiveSession', t('menu.archive')), icon: icon('IconUnarchiveOutlineRegular', 16) }
+            : { id: 'archive', label: official('menu.archiveSession', t('menu.archive')), icon: icon('IconArchiveOutline20', 16) },
+          ...(typeof ui.writeClipboard === 'function' ? [{
+            id: 'copy-id',
+            label: official('menu.sessionId', t('menu.sessionId')),
+            icon: icon('IconCopyOutlineRegular', 16),
+          }] : []),
+          { type: 'separator', id: 'bw-sep' },
+          ...sessionUngroupItems,
+          ...sgroupItems,
+          customizeEntry,
+        ]
+      }
+      const pickSessionAction = (payload, id) => {
+        if (id === 'rename') { setDialog({ kind: 'sess-rename', session: payload }); return true }
+        if (id === 'fork') { forkSession(payload.id); return true }
+        if ((id === 'pin' || id === 'unpin') && pinAvailable) {
+          Promise.resolve().then(() => (id === 'pin' ? pinSession : unpinSession)(payload.id)).catch((reason) => {
+            fail(officialText(id === 'pin' ? 'toast.pinFailed' : 'toast.unpinFailed', undefined, reason instanceof Error ? reason.message : String(reason || 'pin failed')))
+          })
+          return true
+        }
+        if (id === 'unarchive' && unarchiveAvailable) {
+          Promise.resolve().then(() => unarchiveSession(payload.id)).catch((reason) => { console.warn('session unarchive rejected:', reason) })
+          return true
+        }
+        if (id === 'archive' && typeof archiveSession === 'function') {
+          Promise.resolve().then(() => archiveSession(payload.id)).catch((reason) => {
+            // Official refusal flow: running work refuses the plain archive
+            // (WorkspaceArchiveError / workspace/session-active) and the
+            // confirmation offers to stop it first. Anything else reports
+            // through the error modal.
+            if (reason && reason.name === 'WorkspaceArchiveError') {
+              setDialog({ kind: 'sess-archive-confirm', sessionId: payload.id })
+              return
+            }
+            fail(reason)
+          })
+          return true
+        }
+        if (id === 'copy-id' && typeof ui.writeClipboard === 'function') {
+          // Official mirror: copied → success notice, anything else → the
+          // failure notice (official sessionIdInjected wiring).
+          Promise.resolve(ui.writeClipboard(payload.id)).then((copied) => {
+            setCopyNotice((prev) => ({ seq: (prev ? prev.seq : 0) + 1, ok: copied === true }))
+          }, () => {
+            setCopyNotice((prev) => ({ seq: (prev ? prev.seq : 0) + 1, ok: false }))
+          })
+          return true
+        }
+        // Plain retitle back to the leaf: the row leaves its group and
+        // returns to the top level of its workspace (v0.18.0).
+        if (id === 'move-out') {
+          const leaf = leafOf(String(payload.title || ''))
+          if (leaf !== payload.title) Promise.resolve().then(() => renameByUser(payload.id, leaf)).catch(fail)
+          return true
+        }
+        return false
+      }
       const menuEntries = () => {
         if (ctx === null) return []
         const customizeEntry = { id: 'customize', label: t('custom.title'), icon: icon('IconPersonalizationOutline16', 16) }
@@ -8802,14 +9337,8 @@ window.__ModuleLoader__.load({
         // probing it silently yielded a glyph-less row. IconFolderOpenOutline16
         // is present and reads as "move into a group" just as well.
         const groupItem = { id: 'move-group', label: t('menu.moveToGroup'), icon: icon('IconFolderOpenOutline16', 16) }
-        // "Leave the group" (v0.18.0) — the counterpart of move-group, offered
-        // only where a group actually exists to leave: a SESSION row whose own
-        // title carries a "/" prefix, with the session name layer on. A
-        // top-level row gets no entry (there is nothing to leave).
-        const ungroupItem = { id: 'move-out', label: t('menu.moveOutGroup'), icon: icon('IconRightUpOutline16', 16) }
         const wsGroupItems = workspaceSlash ? [groupItem] : []
         const sgroupItems = sessionSlash ? [groupItem] : []
-        const sessionUngroupItems = sessionSlash && ctx.kind === 'session' && ctx.payload && groupPrefixOf(String(ctx.payload.title || '')) !== '' ? [ungroupItem] : []
         // "Delete group" only makes sense for a DECLARED group that holds
         // nothing (v0.17.0): a group with members is a projection of their
         // titles, so removing the declaration would change nothing on screen
@@ -8836,49 +9365,10 @@ window.__ModuleLoader__.load({
           ...(presetFace ? [{ id: 'ws-preset', label: t('menu.workspacePreset'), icon: icon('IconAgentPresetOutlineRegular', 16) }] : []),
         ]
         if (ctx.kind === 'session') {
-          // Official 0.1.7 mirror (Rows.tsx session menu + the shipped slot
-          // entries): pin, rename, fork, archive — same order, same icons,
-          // same archived-state behavior (pin hides; archive becomes
-          // unarchive). dsh 0.2.1-alpha.5 adds a fifth official entry
-          // (Copy Session ID, order 450), mirrored below the archive row.
-          // Copy rides the official dictionary, so upstream
-          // rewording AND future item additions land without a plugin
-          // release; every verb is gated on its service method so older
-          // hosts simply never offer what they cannot do.
-          const payload = ctx.payload || {}
-          const archived = !!(payload.archived || (archivedSet && archivedSet.has(payload.id)))
-          const pinned = !!(payload.pinned || (pinnedSet && pinnedSet.has(payload.id)))
-          const official = (key, fallback) => {
-            const value = typeof ot === 'function' ? ot(key) : null
-            return typeof value === 'string' && value !== '' && value !== key ? value : fallback
-          }
-          return [
-            ...(pinAvailable && !archived ? [{
-              id: pinned ? 'unpin' : 'pin',
-              label: official(pinned ? 'menu.unpinSession' : 'menu.pinSession', t('menu.archive')),
-              icon: icon(pinned ? 'IconPinFillRegular' : 'IconPinOutlineRegular', 16),
-            }] : []),
-            { id: 'rename', label: official('rename', t('menu.rename')), icon: icon('IconEditOutline16', 16) },
-            { id: 'fork', label: official('menu.fork', t('menu.fork')), icon: icon('IconBranchOutline16', 16) },
-            // Official semantics: archive hides the row through the
-            // registry-global archive set and never touches the session log
-            // — deliberately NOT styled destructive. An archived row gets
-            // the restore entry instead.
-            archived
-              ? { id: 'unarchive', label: official('menu.unarchiveSession', t('menu.archive')), icon: icon('IconUnarchiveOutlineRegular', 16) }
-              : { id: 'archive', label: official('menu.archiveSession', t('menu.archive')), icon: icon('IconArchiveOutline20', 16) },
-            // Official order 450: clipboard write rides the host primitive,
-            // so the whole row hides where the primitives lack it.
-            ...(typeof ui.writeClipboard === 'function' ? [{
-              id: 'copy-id',
-              label: official('menu.sessionId', t('menu.sessionId')),
-              icon: icon('IconCopyOutlineRegular', 16),
-            }] : []),
-            { type: 'separator', id: 'bw-sep' },
-            ...sessionUngroupItems,
-            ...sgroupItems,
-            customizeEntry,
-          ]
+          // The shared builder owns the session list (see
+          // sessionMenuEntriesFor): the row's own "..." menu renders the
+          // exact same entries, so the two surfaces cannot drift.
+          return sessionMenuEntriesFor(ctx.payload || {})
         }
         return [
           { id: 'rename-sgroup', label: t('menu.renameSgroup'), icon: icon('IconEditOutline16', 16) },
@@ -8952,39 +9442,10 @@ window.__ModuleLoader__.load({
           })
         }
         else if (kind === 'sgroup' && id === 'rename-sgroup') setDialog({ kind: 'sgroup-rename', target: payload })
-        else if (kind === 'session' && id === 'rename') setDialog({ kind: 'sess-rename', session: payload })
-        else if (kind === 'session' && id === 'fork') forkSession(payload.id)
-        else if (kind === 'session' && (id === 'pin' || id === 'unpin') && pinAvailable) {
-          Promise.resolve().then(() => (id === 'pin' ? pinSession : unpinSession)(payload.id)).catch((reason) => {
-            fail(officialText(id === 'pin' ? 'toast.pinFailed' : 'toast.unpinFailed', undefined, reason instanceof Error ? reason.message : String(reason || 'pin failed')))
-          })
-        }
-        else if (kind === 'session' && id === 'unarchive' && unarchiveAvailable) {
-          Promise.resolve().then(() => unarchiveSession(payload.id)).catch((reason) => { console.warn('session unarchive rejected:', reason) })
-        }
-        else if (kind === 'session' && id === 'archive' && typeof archiveSession === 'function') {
-          Promise.resolve().then(() => archiveSession(payload.id)).catch((reason) => {
-            if (reason && reason.name === 'WorkspaceArchiveError') {
-              setDialog({ kind: 'sess-archive-confirm', sessionId: payload.id })
-              return
-            }
-            fail(reason)
-          })
-        }
-        else if (kind === 'session' && id === 'copy-id' && typeof ui.writeClipboard === 'function') {
-          // Official mirror: copied → success notice, anything else → the
-          // failure notice (official sessionIdInjected wiring).
-          Promise.resolve(ui.writeClipboard(payload.id)).then((copied) => {
-            setCopyNotice((prev) => ({ seq: (prev ? prev.seq : 0) + 1, ok: copied === true }))
-          }, () => {
-            setCopyNotice((prev) => ({ seq: (prev ? prev.seq : 0) + 1, ok: false }))
-          })
-        }
-        // Plain retitle back to the leaf: the row leaves its group and returns
-        // to the top level of its workspace (v0.18.0).
-        else if (kind === 'session' && id === 'move-out') {
-          const leaf = leafOf(String(payload.title || ''))
-          if (leaf !== payload.title) Promise.resolve().then(() => renameByUser(payload.id, leaf)).catch(fail)
+        else if (kind === 'session') {
+          // The shared dispatcher owns every session verb (see
+          // pickSessionAction); an unknown id falls through silently.
+          if (!pickSessionAction(payload, id)) return
         }
       }
 
@@ -9368,7 +9829,14 @@ window.__ModuleLoader__.load({
             disabled: flowBusy,
           }, icon('IconProjectAddOutline16')) : null,
         ),
-        E('div', { ref: treeRef, className: 'bw-tree', role: 'tree', 'aria-label': t('title') }, bodyRows),
+        E('div', {
+          ref: treeRef,
+          className: 'bw-tree',
+          role: 'tree',
+          'aria-label': t('title'),
+          'data-bw-density': density,
+          ...(showCount ? { 'data-bw-count': '' } : {}),
+        }, bodyRows),
         dialogElement,
         (ctx !== null && typeof ui.Menu === 'function') ? E(ui.Menu, {
           // Right-click opens the SAME menu surface the official ⋯ button
@@ -9652,6 +10120,25 @@ window.__ModuleLoader__.load({
             try { seatT = ctx.locale.bind(seat.locale) } catch (error) { seatT = null }
           }
           return { component: seat.component, face: seat.face, t: seatT }
+        },
+        // The shipped session-row seat occupants, read off the ledger in a
+        // LIST (same shape as scheduleSeatReader): one reader serves every
+        // seat name (menu.item / row.action / session.row.hover).
+        seatEntriesReader: (name) => {
+          try {
+            const entries = slots.entries(name)
+            if (!Array.isArray(entries)) return []
+            return entries.map((entry) => {
+              if (!entry || !entry.component || typeof entry.inject !== 'function') return null
+              let seatT = null
+              if (entry.locale && ctx.locale && typeof ctx.locale.bind === 'function') {
+                try { seatT = ctx.locale.bind(entry.locale) } catch (error) { seatT = null }
+              }
+              return { component: entry.component, face: entry.inject(), t: seatT }
+            }).filter(Boolean)
+          } catch (error) {
+            return []
+          }
         },
         startSession: (workspaceId) => { uiWorkspace.startSession(workspaceId) },
         open: (sessionId) => { uiWorkspace.openSession(sessionId) },

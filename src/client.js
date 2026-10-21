@@ -4749,7 +4749,7 @@ window.__ModuleLoader__.load({
       '.bw-plugin-body .bw-hint{font-size:12px;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
       '.bw-rail{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 0}',
       '.bw-rail-btn{width:36px;height:36px;border:none;background:transparent;border-radius:var(--dsw-radius-sm,8px);display:grid;place-items:center;color:var(--dsw-alias-label-secondary,#b8b8b8);cursor:pointer;padding:0}',
-      '.bw-rail-btn:hover{background:color-mix(in srgb,#000 20%,transparent);color:var(--dsw-alias-label-primary,#e6e6e6)}',
+      '.bw-rail-btn:hover{background:color-mix(in srgb,#000 12%,transparent);color:var(--dsw-alias-label-primary,#e6e6e6)}',
       'body:not([data-ds-dark-theme]) .bw-rail-btn:hover{background:color-mix(in srgb,#fff 12%,transparent)}',
       '.bw-modal-body{display:flex;flex-direction:column;gap:10px;min-width:300px;max-width:380px;box-sizing:border-box}',
       // issue #10: Modal 高度契约 — 卡片按 Modal 的 padding box 限高,超高内容滚 contentClassName 区

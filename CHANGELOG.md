@@ -3,6 +3,14 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.34.1 — 2026-10-21
+
+**类型**:fix / 0.34.0 真机验收反馈两处(新会话图标 + 展开/收起动画)。
+
+- **新会话按钮图标官方化**:工作区行悬停操作区的新会话钮从裸 `+`(IconPlus)改为官方 `IconNewChatOutlineRegular`(气泡+加号,与官方 Rows.tsx 新会话 Tooltip 按钮同图标)。
+- **展开/收起动画真机无效修复**:AnimatedRows 移植(官方同款 FLIP+淡入淡出+exit overlay,armed/sameRows/resetKey/reduced-motion 守卫逐项对照)在真机上不生效——根因是行的 `data-row-key` 只经外层 `React.cloneElement` 挂载,而 bodyRows 顶层全部是自定义组件元素(WorkspaceRow/SessionRow/FolderRow/SessionGroupRow),cloneElement 加的属性只是组件 prop、到不了 DOM,行定位与 exit 克隆全部落空。现在四个行组件的根元素经 `dataRowKey` prop 自写 `data-row-key`,原生 div 行仍走 cloneElement。
+- **真机验证**(playwright 驱动 web 端):树内 26 行全部携带 data-row-key;收起/展开各触发 **19 个同步动画**(exit 淡出 + FLIP,100ms 运行中、600ms 归零,视口外行按官方同款相交裁剪跳过)。
+
 ## v0.34.0 — 2026-10-21
 - 选中背景改用 `color-mix` 派生的半透明底(hover 12% / 选中 20%,自动适配明暗主题):官方 8% alpha 在背景插件透明侧栏下不可辨
 - 行底明暗跟随背景插件的界面明暗(body[data-ds-dark-theme]):暗色界面灰雾(label-tertiary 派生)、亮色界面白雾,不再恒为白色

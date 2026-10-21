@@ -4617,10 +4617,10 @@ window.__ModuleLoader__.load({
       // surfaces tint BLACK — every label token is rewritten toward bright ink
       // on dark wallpapers, so any label-derived mix still reads as white.
       // Light surfaces keep the white mix.
-      '.bw-row:hover,.bw-row.menu-open{background:color-mix(in srgb,#000 20%,transparent)}',
+      '.bw-row:hover,.bw-row.menu-open{background:color-mix(in srgb,#000 12%,transparent)}',
       'body:not([data-ds-dark-theme]) .bw-row:hover,body:not([data-ds-dark-theme]) .bw-row.menu-open{background:color-mix(in srgb,#fff 12%,transparent)}',
       '',
-      '.bw-row-current{background:color-mix(in srgb,#000 30%,transparent)}',
+      '.bw-row-current{background:color-mix(in srgb,#000 18%,transparent)}',
       'body:not([data-ds-dark-theme]) .bw-row-current{background:color-mix(in srgb,#fff 20%,transparent)}',
       '',
       '.bw-row-icon{flex:none;width:16px;height:20px;display:inline-flex;align-items:center;justify-content:center;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',

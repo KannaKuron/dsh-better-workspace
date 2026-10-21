@@ -3905,6 +3905,148 @@ window.__ModuleLoader__.load({
       return String(r.n) + (FALLBACK_UNITS[r.unit] || '')
     }
 
+    // Port of ui-workspace rows/AnimatedRows.tsx — the package entry exports
+    // only apply/inject, so the component cannot be required (same discipline
+    // as the row-style port). FLIP glide + entry/exit fades for keyed rows:
+    // armed by the first pointer/key input, skipped when membership, order,
+    // readiness or the reset key did not change. Deltas from upstream: the
+    // plugin tree rolls its own indent var (--bw-indent, not
+    // --dsh-workspace-indent), the exit overlay is viewport-FIXED because no
+    // positioned ancestor is guaranteed here (clone math subtracts the
+    // overlay rect either way), and the list div takes an attrs passthrough
+    // (data-bw-density / data-bw-count) plus innerRef (autoStyle samples it).
+    const ROW_FADE_MS = 100
+    const ROW_GLIDE_MS = 200
+    const sameRowKeys = (previous, next) => previous.length === next.length
+      && previous.every((key, index) => key === next[index])
+    const intersectsViewport = (rect, viewport) => rect.bottom > viewport.top && rect.top < viewport.bottom
+      && rect.right > viewport.left && rect.left < viewport.right
+    class AnimatedRows extends React.Component {
+      constructor(props) {
+        super(props)
+        this.armed = false
+        this.list = { current: null }
+        this.overlay = React.createRef()
+        this.movements = new Map()
+        this.exits = new Map()
+      }
+      getSnapshotBeforeUpdate(previous) {
+        const list = this.list.current
+        if (!this.armed || sameRowKeys(previous.rowKeys, this.props.rowKeys) || previous.resetKey !== this.props.resetKey
+          || !previous.ready || !this.props.ready || list === null
+          || typeof list.animate !== 'function'
+          || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return null
+        const viewport = list.getBoundingClientRect()
+        const positions = this.readPositions()
+        const nextKeys = new Set(this.props.rowKeys)
+        const removed = new Map()
+        for (const [key, row] of positions) {
+          if (nextKeys.has(key) || !intersectsViewport(row.rect, viewport)) continue
+          const clone = row.element.cloneNode(true)
+          clone.removeAttribute('data-row-key')
+          clone.inert = true
+          clone.style.setProperty('--bw-indent', getComputedStyle(row.element).getPropertyValue('--bw-indent'))
+          removed.set(key, Object.assign({}, row, { element: clone }))
+        }
+        return { positions, removed }
+      }
+      componentDidUpdate(previous, _state, snapshot) {
+        if (snapshot === null) {
+          if (!sameRowKeys(previous.rowKeys, this.props.rowKeys) || previous.resetKey !== this.props.resetKey
+            || previous.ready !== this.props.ready) this.clear()
+          return
+        }
+        this.cancelMovements()
+        const list = this.list.current
+        const overlay = this.overlay.current
+        const viewport = list.getBoundingClientRect()
+        const origin = overlay.getBoundingClientRect()
+        const positions = this.readPositions()
+        for (const [key, row] of positions) {
+          this.removeExit(key)
+          const previousRow = snapshot.positions.get(key)
+          if (!intersectsViewport(row.rect, viewport)
+            && (previousRow === undefined || !intersectsViewport(previousRow.rect, viewport))) continue
+          if (previousRow === undefined) {
+            this.move(row.element, [{ opacity: 0 }, { opacity: 1 }], ROW_FADE_MS)
+            continue
+          }
+          const dx = previousRow.rect.left - row.rect.left
+          const dy = previousRow.rect.top - row.rect.top
+          if (dx === 0 && dy === 0 && previousRow.opacity === 1) continue
+          this.move(row.element, [
+            { transform: 'translate(' + String(dx) + 'px, ' + String(dy) + 'px)', opacity: previousRow.opacity },
+            { transform: 'translate(0, 0)', opacity: 1 },
+          ], ROW_GLIDE_MS)
+        }
+        for (const [key, row] of snapshot.removed) {
+          const { element } = row
+          this.removeExit(key)
+          Object.assign(element.style, {
+            position: 'absolute', margin: '0', transform: 'none', boxSizing: 'border-box',
+            left: String(row.rect.left - origin.left) + 'px',
+            top: String(row.rect.top - origin.top) + 'px',
+            width: String(row.rect.width) + 'px', height: String(row.rect.height) + 'px',
+          })
+          overlay.append(element)
+          const animation = element.animate([{ opacity: row.opacity }, { opacity: 0 }], {
+            duration: ROW_FADE_MS, easing: 'ease-out', fill: 'forwards',
+          })
+          this.exits.set(key, { element, animation })
+          animation.onfinish = () => { this.removeExit(key) }
+        }
+      }
+      componentWillUnmount() { this.clear() }
+      readPositions() {
+        const list = this.list.current
+        const rows = list.querySelectorAll('[data-row-key]')
+        return new Map(Array.from(rows, (element) => [element.dataset.rowKey, {
+          element,
+          rect: element.getBoundingClientRect(),
+          opacity: this.movements.has(element) ? Number(getComputedStyle(element).opacity) : 1,
+        }]))
+      }
+      move(element, keyframes, duration) {
+        const animation = element.animate(keyframes, { duration, easing: 'ease-out' })
+        this.movements.set(element, animation)
+        animation.onfinish = () => { this.movements.delete(element); animation.cancel() }
+      }
+      cancelMovements() {
+        for (const animation of this.movements.values()) {
+          animation.onfinish = null
+          animation.cancel()
+        }
+        this.movements.clear()
+      }
+      removeExit(key) {
+        const exit = this.exits.get(key)
+        if (exit === undefined) return
+        exit.animation.onfinish = null
+        exit.animation.cancel()
+        exit.element.remove()
+        this.exits.delete(key)
+      }
+      clear() {
+        this.cancelMovements()
+        for (const key of Array.from(this.exits.keys())) this.removeExit(key)
+      }
+      render() {
+        const attrs = this.props.attrs || {}
+        return [
+          E('div', Object.assign({
+            key: 'list',
+            ref: (el) => { this.list.current = el; if (this.props.innerRef) this.props.innerRef.current = el },
+            className: this.props.className,
+            role: 'tree',
+            'aria-label': this.props.label,
+            onPointerDownCapture: () => { this.armed = true },
+            onKeyDownCapture: () => { this.armed = true },
+          }, attrs), this.props.children),
+          E('div', { key: 'exits', ref: this.overlay, className: 'bw-rows-exits', 'aria-hidden': 'true' }),
+        ]
+      }
+    }
+
     const pendingKindOf = (pending, id) => {
       if (!pending) return undefined
       const p = typeof pending.get === 'function' ? pending.get(id) : pending[id]
@@ -4570,6 +4712,7 @@ window.__ModuleLoader__.load({
       '.bw-menu-block{display:block;width:100%}',
       '.bw-menu-inline{display:inline-block;width:auto;flex:none}',
       '.bw-tree{--bw-row-h:34px;--bw-session-h:32px;flex:1;overflow-y:auto;overflow-x:hidden;padding:2px 6px 12px;min-height:0}',
+      '.bw-rows-exits{position:fixed;inset:0;contain:strict;overflow:clip;pointer-events:none}',
       '.bw-tree[data-bw-density="compact"]{--bw-row-h:28px;--bw-session-h:26px}',
       '.bw-tree[data-bw-density="roomy"]{--bw-row-h:40px;--bw-session-h:38px}',
       '.bw-row{display:flex;align-items:center;gap:6px;height:var(--bw-row-h,34px);padding:0 8px;padding-inline-start:calc(8px + var(--bw-indent,0px));border-radius:var(--dsw-radius-md,8px);cursor:pointer;user-select:none;font-size:14px;line-height:20px;color:var(--dsw-alias-label-primary,#e6e6e6);position:relative}',
@@ -5937,7 +6080,7 @@ window.__ModuleLoader__.load({
             'aria-keyshortcuts': newSessionAria,
             title: newSessionLabel || t('session.new'),
             onClick: (e) => { e.stopPropagation(); onStart() },
-          }, icon('IconPlusOutline16')),
+          }, icon('IconNewChatOutline16')),
         ),
       )
       // Official workspace hover card (Rows.tsx WorkspaceHoverContent): the
@@ -9274,6 +9417,17 @@ window.__ModuleLoader__.load({
             )]
           : [E('div', { key: 'empty', className: 'bw-empty' }, searching ? t('empty.search') : (phase === 'pending' ? '…' : t('empty')))]
       }
+      // Keyed-row handoff for AnimatedRows: every body row carries a stable
+      // data-row-key (the element's React key when present, array index
+      // otherwise) and the key list feeds the component's sameRows guard.
+      bodyRows = bodyRows.filter((el) => el !== null && el !== false && el !== undefined)
+      const bodyRowKeys = []
+      bodyRows = bodyRows.map((el, index) => {
+        if (!el || typeof el !== 'object') return el
+        const rowKey = el.key != null ? String(el.key) : 'row-' + index
+        bodyRowKeys.push(rowKey)
+        return React.cloneElement(el, { 'data-row-key': rowKey })
+      })
 
       /* ------------------------- context menu ------------------------ */
 
@@ -9886,13 +10040,17 @@ window.__ModuleLoader__.load({
             disabled: flowBusy,
           }, icon('IconProjectAddOutline16')) : null,
         ),
-        E('div', {
-          ref: treeRef,
+        E(AnimatedRows, {
           className: 'bw-tree',
-          role: 'tree',
-          'aria-label': t('title'),
-          'data-bw-density': density,
-          ...(showCount ? { 'data-bw-count': '' } : {}),
+          label: t('title'),
+          rowKeys: bodyRowKeys,
+          // Drag reorders rows itself; animating under it fights the gesture.
+          ready: drag === null,
+          // View-replacing switches (search, filter, density, count) settle
+          // instead of gliding — official resetKey semantics.
+          resetKey: JSON.stringify([density, showCount, searching, archivedOnly, normalizedQuery]),
+          innerRef: treeRef,
+          attrs: { 'data-bw-density': density, ...(showCount ? { 'data-bw-count': '' } : {}) },
         }, bodyRows),
         dialogElement,
         (ctx !== null && typeof ui.Menu === 'function') ? E(ui.Menu, {

@@ -4614,12 +4614,13 @@ window.__ModuleLoader__.load({
       '.bw-gn-input{width:100%;box-sizing:border-box}',
       // Row hover/selection follow the background plugin's interface scheme
       // (body[data-ds-dark-theme], flipped by dsh-any-background): dark
-      // surfaces tint gray via label-tertiary, light surfaces stay white —
-      // a label-primary mix always reads as pure white on dark wallpapers.
-      '.bw-row:hover,.bw-row.menu-open{background:color-mix(in srgb,var(--dsw-alias-label-tertiary,#98989d) 18%,transparent)}',
+      // surfaces tint BLACK — every label token is rewritten toward bright ink
+      // on dark wallpapers, so any label-derived mix still reads as white.
+      // Light surfaces keep the white mix.
+      '.bw-row:hover,.bw-row.menu-open{background:color-mix(in srgb,#000 20%,transparent)}',
       'body:not([data-ds-dark-theme]) .bw-row:hover,body:not([data-ds-dark-theme]) .bw-row.menu-open{background:color-mix(in srgb,#fff 12%,transparent)}',
       '',
-      '.bw-row-current{background:color-mix(in srgb,var(--dsw-alias-label-tertiary,#98989d) 28%,transparent)}',
+      '.bw-row-current{background:color-mix(in srgb,#000 30%,transparent)}',
       'body:not([data-ds-dark-theme]) .bw-row-current{background:color-mix(in srgb,#fff 20%,transparent)}',
       '',
       '.bw-row-icon{flex:none;width:16px;height:20px;display:inline-flex;align-items:center;justify-content:center;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
@@ -4748,7 +4749,7 @@ window.__ModuleLoader__.load({
       '.bw-plugin-body .bw-hint{font-size:12px;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
       '.bw-rail{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 0}',
       '.bw-rail-btn{width:36px;height:36px;border:none;background:transparent;border-radius:var(--dsw-radius-sm,8px);display:grid;place-items:center;color:var(--dsw-alias-label-secondary,#b8b8b8);cursor:pointer;padding:0}',
-      '.bw-rail-btn:hover{background:color-mix(in srgb,var(--dsw-alias-label-tertiary,#98989d) 18%,transparent);color:var(--dsw-alias-label-primary,#e6e6e6)}',
+      '.bw-rail-btn:hover{background:color-mix(in srgb,#000 20%,transparent);color:var(--dsw-alias-label-primary,#e6e6e6)}',
       'body:not([data-ds-dark-theme]) .bw-rail-btn:hover{background:color-mix(in srgb,#fff 12%,transparent)}',
       '.bw-modal-body{display:flex;flex-direction:column;gap:10px;min-width:300px;max-width:380px;box-sizing:border-box}',
       // issue #10: Modal 高度契约 — 卡片按 Modal 的 padding box 限高,超高内容滚 contentClassName 区

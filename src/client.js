@@ -7762,6 +7762,34 @@ window.__ModuleLoader__.load({
         }
       }, [])
 
+      // Modal surface handoff for dsh-any-background: that plugin sorts dialog
+      // surfaces by [aria-labelledby] (settings panels have it; confirm dialogs
+      // do not and are pinned OPAQUE by design, exemptDefaultRule). The official
+      // ui-primitives Modal never emits aria-labelledby (Modal.tsx: root gets
+      // aria-label only, the <h2> has no id), so every Modal-built dialog lands
+      // in the confirm bucket and stays solid no matter the sliders. Patch ONLY
+      // our own dialogs (recognizable by .bw-modal-body/.bw-modal-actions):
+      // point aria-labelledby at the header <h2>. Host confirm dialogs keep
+      // their intentional opaque treatment.
+      React.useEffect(() => {
+        if (typeof MutationObserver !== 'function' || !document.body) return undefined
+        let seq = 0
+        const sweep = () => {
+          const dialogs = document.querySelectorAll('[role="dialog"][aria-modal="true"][aria-label]:not([aria-labelledby])')
+          for (const dlg of dialogs) {
+            if (!dlg.querySelector('.bw-modal-body, .bw-modal-actions')) continue
+            const heading = dlg.querySelector('h2')
+            if (!heading) continue
+            if (!heading.id) { seq += 1; heading.id = 'bw-dialog-label-' + seq }
+            dlg.setAttribute('aria-labelledby', heading.id)
+          }
+        }
+        const observer = new MutationObserver(sweep)
+        observer.observe(document.body, { childList: true, subtree: true })
+        sweep()
+        return () => observer.disconnect()
+      }, [])
+
       const [query, setQuery] = React.useState('')
       const [searchOpen, setSearchOpen] = React.useState(false)
       const [flowBusy, setFlowBusy] = React.useState(false) // createWorkspace in flight after a pick

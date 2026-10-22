@@ -6226,58 +6226,28 @@ window.__ModuleLoader__.load({
       }
       const archivedTitle = official('row.archived')
       const pinnedTitle = official('row.pinned')
-      // In-row "..." menu (official Rows.tsx): the ellipsis button anchors a
-      // primitives Menu whose entries are the SAME shared list the
-      // right-click menu builds (sessionActions.menuItems) and whose trailing
-      // children are the shipped menu.item seat occupants; picks dispatch
-      // through the SAME handler (sessionActions.pick), so the two surfaces
-      // cannot drift. Hosts without the primitives Menu keep the old
-      // open-context-menu trigger button.
-      const inlineMenu = !node.blank && sessionActions && typeof ui.Menu === 'function'
-        && typeof sessionActions.menuItems === 'function' && typeof sessionActions.pick === 'function'
-      const [menuOpen, setMenuOpen] = React.useState(false)
-      const menuOpenPair = React.useMemo(() => [menuOpen, setMenuOpen], [menuOpen])
-      const menuSeatChildren = inlineMenu && Array.isArray(sessionActions.menuSeat)
-        ? sessionActions.menuSeat.map((seat, index) => E(ShippedSeatOccupant, {
-          key: 'menu-seat-' + index,
-          seat,
-          ownerProps: { sessionId: node.id, displayTitle: node.leaf || node.title },
-          t: seat.t,
-          // The menu.item hook-context factory (ui-slots) hands occupants
-          // the open-state pair; reproduced here for the in-row menu.
-          useMenuOpenState: () => menuOpenPair,
-        }))
-        : null
-      // The shipped row.action seat renders the OFFICIAL pin/archive quick
-      // buttons; our own fallback buttons step aside so the row never shows
-      // two sets (same rule as the schedule mark's leading cell).
+      // Row-trailing quick actions: the shipped row.action seat renders the
+      // OFFICIAL pin/archive buttons; our own fallback buttons render only
+      // where the seat has no entries, so the row never shows two sets. The
+      // in-row "..." menu (added v0.34.0) is RETIRED (issue #12): the context
+      // menu already carries every entry, and the menu.item occupants depend
+      // on slot-level inject hooks (useShortcuts on 0.2.1-rc.2) that an
+      // in-row reproduction cannot supply — one missing hook took the whole
+      // sidebar down. Each seat occupant sits in a QuietBoundary so a broken
+      // seat degrades to a missing button, never a blank panel.
       const quickSeatUsed = Array.isArray(sessionActions.rowActionSeat) && sessionActions.rowActionSeat.length > 0
-      const strip = !node.blank && sessionActions && (inlineMenu || sessionActions.trigger || (sessionActions.quick && !quickSeatUsed))
+      const strip = !node.blank && sessionActions && sessionActions.quick && (quickSeatUsed || sessionActions.pin || sessionActions.archive)
         ? E('span', { className: 'bw-row-actions', onClick: (e) => e.stopPropagation() },
-            inlineMenu ? E(ui.Menu, {
-              open: menuOpen,
-              onClose: () => setMenuOpen(false),
-              portal: true,
-              closeOnPointerLeave: true,
-              dense: true,
-              anchor: E('button', {
-                type: 'button',
-                className: 'bw-row-btn',
-                'aria-label': official('actions.session.aria', { name: node.leaf || node.title }) || '...',
-                title: sessionActions.triggerTitle,
-                onClick: () => setMenuOpen((open) => !open),
-              }, icon('IconEllipsisOutline16', 15)),
-              items: sessionActions.menuItems(node),
-              onSelect: (id) => { setMenuOpen(false); sessionActions.pick(node, id) },
-            }, menuSeatChildren)
-            : sessionActions.trigger ? E('button', {
-              type: 'button',
-              className: 'bw-icon-btn',
-              'aria-label': official('actions.session.aria', { name: node.leaf || node.title }) || '...',
-              title: sessionActions.triggerTitle,
-              onClick: (e) => sessionActions.openMenu(node, e),
-            }, icon('IconEllipsisOutline16', 15)) : null,
-            !quickSeatUsed && sessionActions.quick && sessionActions.pin && !node.archived ? E('button', {
+            quickSeatUsed
+              ? sessionActions.rowActionSeat.map((seat, index) => E(QuietBoundary, { key: 'row-action-seat-' + index },
+                E(ShippedSeatOccupant, {
+                  key: 'row-action-seat-' + index,
+                  seat,
+                  ownerProps: { sessionId: node.id, displayTitle: node.leaf || node.title },
+                  t: seat.t,
+                })))
+              : null,
+            !quickSeatUsed && sessionActions.pin && !node.archived ? E('button', {
               type: 'button',
               className: 'bw-icon-btn',
               'aria-label': official(node.pinned ? 'menu.unpinSession' : 'menu.pinSession') || '',
@@ -6302,7 +6272,6 @@ window.__ModuleLoader__.load({
       let row = E('div', {
         className: cls('bw-row', 'bw-session-row', current && 'bw-row-current',
           node.archived && 'bw-row-archived',
-          menuOpen && 'menu-open',
           dropHalf === 'before' && 'bw-drop-before', dropHalf === 'after' && 'bw-drop-after'),
         'data-row-key': dataRowKey,
         style: { '--bw-indent': (depth * 12) + 'px', ...(custStyle || {}) },
@@ -6361,7 +6330,6 @@ window.__ModuleLoader__.load({
           content: sessionActions.hoverBody(node, status, state),
           openDelayMs: 800,
           grouped: true,
-          disabled: menuOpen,
           // copyText present REQUIRES both labels (primitives HoverCard
           // contract): copy only renders where the official copy survives.
         }, copyText && copyLabel && copiedLabel ? { copyText, copyLabel, copiedLabel } : {}))
@@ -7246,7 +7214,14 @@ window.__ModuleLoader__.load({
     /* --------- settings → plug-ins card (accordion like official cards) --------- */
 
     function BetterWorkspacePluginCard(props) {
-      const { useStore, actions, t } = props
+      const { useStore: injectedUseStore, actions: injectedActions, localStore: localStoreProp, t } = props
+      // Issue #13: same private-store switch as the browser seat — the card
+      // keeps working no matter what a shadowing occupant does to the props.
+      const localStoreFace = typeof localStoreProp === 'function' ? localStoreProp() : null
+      const useStore = localStoreFace && typeof localStoreFace.useStore === 'function'
+        ? localStoreFace.useStore
+        : injectedUseStore
+      const actions = localStoreFace && localStoreFace.actions ? localStoreFace.actions : injectedActions
       // The bundle page (plugins.bundle.config, dsh 0.1.6-alpha.2+) renders
       // this card inline with view: 'page' — no accordion chrome there, the
       // settings body sits directly under a one-line title.
@@ -7549,7 +7524,8 @@ window.__ModuleLoader__.load({
       const {
         wide, expandSidebar,
         useSessions, useSessionPendingInteraction, useSessionStatus, useWorkspaces,
-        useStore, actions,
+        useStore: injectedUseStore, actions: injectedActions,
+        localStore: localStoreProp,
         startSession, open, renameSession, forkSession, renameWorkspace, deleteWorkspace,
         archiveSession, createWorkspace, pinSession, unpinSession, unarchiveSession,
         insertWorkspaceBefore, insertSessionBefore,
@@ -7561,6 +7537,17 @@ window.__ModuleLoader__.load({
         presetFaceOf,
         t,
       } = props
+      // Issue #13: local reads and writes go through OUR store instance, never
+      // the renderer-synthesized props — a shadowing occupant can swap those
+      // props for its own store (issue #13). Host projections (useSessions /
+      // useWorkspaces) stay on the injected props; only the plugin's OWN view
+      // state switches. Names keep their original spelling so the component
+      // body needs no other change.
+      const localStoreFace = typeof localStoreProp === 'function' ? localStoreProp() : null
+      const useStore = localStoreFace && typeof localStoreFace.useStore === 'function'
+        ? localStoreFace.useStore
+        : injectedUseStore
+      const actions = localStoreFace && localStoreFace.actions ? localStoreFace.actions : injectedActions
       // v0.32.2: resolve the stable getter ONCE per render (see
       // browserInjected for why this is a function and not a value prop).
       // Every consumer below keeps reading this local, so a late-arriving
@@ -7774,13 +7761,14 @@ window.__ModuleLoader__.load({
       // The shipped schedule mark's seat occupant (see scheduleSeatOf); absent
       // whenever the Schedule overlay is off, which is the shipped default.
       const scheduleSeat = typeof scheduleSeatReader === 'function' ? scheduleSeatReader() : null
-      // The shipped session-row seats (official Rows.tsx): menu.item
-      // occupants become the in-row menu's trailing children, row.action
-      // occupants become the official pin/archive quick buttons (our own
+      // The shipped session-row seats (official Rows.tsx): row.action
+      // occupants render the official pin/archive quick buttons (our own
       // fallback buttons step aside), session.row.hover decorates the hover
-      // card. All read off the ledger like the schedule mark.
+      // card. The menu.item seat is deliberately NOT read anymore: its
+      // occupants need slot-level inject hooks (useShortcuts on 0.2.1-rc.2)
+      // and the in-row menu they anchored was retired in issue #12. All read
+      // off the ledger like the schedule mark.
       const seatEntriesOf = typeof seatEntriesReader === 'function' ? seatEntriesReader : null
-      const rowMenuSeat = seatEntriesOf ? seatEntriesOf('sidebar.workspaces.session.menu.item') : []
       const rowActionSeat = seatEntriesOf ? seatEntriesOf('sidebar.workspaces.session.row.action') : []
       const hoverSeat = seatEntriesOf ? seatEntriesOf('sidebar.session.row.hover') : []
       /** Effective catalog row of one shipped command (current keybinding, label). */
@@ -8431,22 +8419,13 @@ window.__ModuleLoader__.load({
           }
           : undefined,
         openMenu: (node, e) => openCtx('session', node, e),
-        // In-row "..." menu (official Rows.tsx): the SAME shared entry list
-        // (sessionMenuEntriesFor) and the SAME pick dispatch the right-click
-        // menu uses, so the two surfaces cannot drift. menuSeat carries the
-        // shipped menu.item occupants (rendered as Menu children);
-        // rowActionSeat the official quick buttons (our own buttons step
-        // aside while it has entries). An id the shared dispatcher does not
-        // own (bw extensions: move-group / customize) falls back to the
-        // ctx surface's handler through a transient payload.
-        menuItems: (node) => (typeof sessionMenuEntriesFor === 'function' ? sessionMenuEntriesFor(node) : []),
-        menuSeat: rowMenuSeat,
+        // Row-trailing quick actions: the shipped row.action seat carries the
+        // official pin/archive buttons; our own buttons render only where the
+        // seat is empty. The in-row "..." menu is RETIRED (issue #12 — its
+        // menu.item occupants need slot-level inject hooks an in-row
+        // reproduction cannot supply); the context menu keeps every entry
+        // through sessionMenuEntriesFor + handleCtxPick.
         rowActionSeat,
-        pick: (node, id) => {
-          if (typeof pickSessionAction === 'function' && pickSessionAction(node, id)) return
-          setCtx({ kind: 'session', payload: node, x: 0, y: 0 })
-          if (typeof handleCtxPick === 'function') handleCtxPick(id)
-        },
         rename: (node) => setDialog({ kind: 'sess-rename', session: node }),
         hoverBody: (node, status) => sessionHoverBody(node, status),
         explainArchived: () => {
@@ -10321,6 +10300,10 @@ window.__ModuleLoader__.load({
         // closure live, so every render and every menu build re-asks; hosts
         // without the service keep returning null, which simply hides the row.
         presetFaceOf: () => presetFace,
+        // Issue #13: the PRIVATE store face — a stable getter like presetFaceOf
+        // (the slot renderer caches inject results; keep the same discipline
+        // even though this face never changes).
+        localStore: () => ({ useStore: useViewStore, actions: viewInstance.actions }),
         // The shipped sidebar's OWN face (dsh 0.1.7-rc.2): the shortcut request
         // channel and the catalog of effective keybindings. Both belong to the
         // entry this seat shadows, so they are read off the ledger and consumed
@@ -10435,6 +10418,22 @@ window.__ModuleLoader__.load({
       // One shared store handle: the browser and the settings page must see the
       // same persisted state (expansion, folder list, prefs, styling).
       const viewStore = createViewStore()
+      // Issue #13 hardening: our OWN store instance. The renderer synthesizes
+      // props.useStore/actions from the seat's store handle — and a third-party
+      // occupant wrapper (im-connect, issue #13) that shadows the workspace seat
+      // replaces those props with ITS channel store, silently severing every
+      // local read and write. The bundle therefore keeps one PRIVATE instance,
+      // handed to the components through the inject face: local state no longer
+      // depends on what the renderer (or anything shadowing it) put into props.
+      // Same persist key, so on a healthy host both instances hydrate the same
+      // snapshot; the renderer-side instance simply never writes again (no
+      // consumer dispatches it) and ours becomes the only live one.
+      const viewInstance = viewStore.create()
+      const useViewStore = typeof React.useSyncExternalStore === 'function'
+        ? (selector) => React.useSyncExternalStore(
+          viewInstance.subscribe,
+          () => { try { return selector(viewInstance.getSnapshot()) } catch (error) { return undefined } })
+        : null
 
       // Cold-restart title fallback (see the title-cache block). Hydration
       // reads localStorage synchronously here, before the first render, so a
@@ -10510,6 +10509,9 @@ window.__ModuleLoader__.load({
           key: 'dsh-better-workspace',
           locale: NS,
           store: viewStore,
+          // Issue #13: the settings card reads/writes through our PRIVATE store
+          // instance too (same rationale as the browser seat).
+          inject: () => ({ localStore: () => ({ useStore: useViewStore, actions: viewInstance.actions }) }),
         },
         BetterWorkspacePluginCard,
       ))

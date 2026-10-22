@@ -3,6 +3,15 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.35.0 — 2026-10-21
+
+**类型**:fix / issue #12(P0)与 issue #13(社区反馈)。
+
+- **fix #12(P0,行内「⋯」菜单退役)**:v0.34.0 引入的行内 ⋯ 菜单在 0.2.1-rc.2 上把整个侧边栏打空(Windows 11 实机报 `TypeError: useShortcuts is not a function at RenameSessionMenuItem`)。根因:行内 Menu 的 children 渲染官方 `sidebar.workspaces.session.menu.item` 座位条目,这些条目组件需要 slot 级 inject hooks(`menuOpenState` 之外还有 `shortcuts` → `useShortcuts`),而插件的行内复刻只能透传 `menuOpenState`——ui-renderer 的 slot hooks 机制(factory 型经 hookContext 产出)不经过条目 face,行内复刻在结构上就拿不到 `useShortcuts`。按用户决策直接移除行内 ⋯(右键菜单本就承载全部条目,功能无损失,还少一个崩溃面)。
+- **连带修复(0.34.0 实施漏洞)**:`row.action` 座位(官方置顶/归档快捷钮)此前只有「自绘退位」判断、没有渲染点——宿主条目存在时行尾按钮整个消失。现在座位条目真正渲染,且各包 QuietBoundary(单个座位崩只丢一个按钮,不再炸整栏);座位为空时插件自绘按钮兜底。
+- **fix #13(第三方占用者下设置失效)**:装 @michengai/dsh-im-connect 后「频道」页签里自定义外观/视图选项不生效不保存。根因比 issue 定位更深:im-connect 包裹工作区占用者时把 props 的 `useStore`/`actions` 换成它的频道 store,插件的本地读写(展开/分组/偏好/外观)全部断链。现在插件在 apply 里自建**私有 store 实例**(`viewStore.create()`),浏览器座位与设置卡都经 inject face 拿私有实例读写,本地状态不再依赖渲染器(或任何占用者)塞进 props 的 store;注入的实例仅剩宿主投影用途。持久化键不变(`dsh.betterWorkspace.view.v1`),健康宿主行为不变。
+- 冒烟 60 → **62**(issue #12/#13 各一组结构断言)。
+
 ## v0.34.1 — 2026-10-21
 
 **类型**:fix / 0.34.0 真机验收反馈两处(新会话图标 + 展开/收起动画)。

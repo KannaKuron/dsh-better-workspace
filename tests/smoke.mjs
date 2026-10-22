@@ -1955,3 +1955,47 @@ test('v0.30.2: rowTitleOf grafts the remembered display while the wire stays gro
     'a blank summary never consults the display')
 })
 
+test('issue #12: the in-row "..." menu is retired, row.action seat renders in a boundary', () => {
+  const text = read('src/client.js')
+  // The menu.item seat must never even be READ again: its occupants need
+  // slot-level inject hooks (useShortcuts on 0.2.1-rc.2) that an in-row
+  // reproduction cannot supply — one missing hook blanked the whole sidebar.
+  assert.ok(!text.includes("seatEntriesOf('sidebar.workspaces.session.menu.item')"),
+    'menu.item seat must not be read anymore')
+  assert.ok(!text.includes('sessionActions.menuItems'), 'menuItems field must be gone')
+  assert.ok(!text.includes('menuSeatChildren'), 'the in-row menu children must be gone')
+  // The retired surface must not come back through the trigger path either.
+  assert.ok(!text.includes('inlineMenu'), 'no inlineMenu reproduction may remain')
+  // row.action seat: the official pin/archive buttons RENDER (the v0.34.0
+  // regression was a step-aside with no render point), each inside a
+  // QuietBoundary so one broken seat degrades to a missing button.
+  assert.ok(text.includes('E(QuietBoundary, { key: \'row-action-seat-\' + index }'),
+    'row.action occupants must render inside a QuietBoundary')
+  assert.ok(text.includes('ownerProps: { sessionId: node.id, displayTitle: node.leaf || node.title },'),
+    'row.action occupants need the slot owner props')
+  // The fallback buttons step aside ONLY where the seat has entries.
+  assert.ok(text.includes('const quickSeatUsed = Array.isArray(sessionActions.rowActionSeat) && sessionActions.rowActionSeat.length > 0'),
+    'the seat/fallback switch must stay')
+})
+
+test('issue #13: local reads and writes ride the PRIVATE store instance', () => {
+  const text = read('src/client.js')
+  // The bundle creates its own instance once (defineStore returns a HANDLE;
+  // only .create() yields actions + a live snapshot source).
+  assert.ok(text.includes('const viewInstance = viewStore.create()'),
+    'the private instance must be created in apply')
+  assert.ok(text.includes('const useViewStore = typeof React.useSyncExternalStore === \'function\''),
+    'the private selector hook must exist')
+  // Both seats switch to it through the inject face, keeping the ORIGINAL
+  // prop names so a shadowing occupant cannot reach local state anymore.
+  // Both seats (BetterBrowser + BetterWorkspacePluginCard) switch the same
+  // way — rename the injected props, rebind to the private face.
+  assert.equal((text.match(/useStore: injectedUseStore, actions: injectedActions,/g) || []).length, 2,
+    'both seats must rename the injected props')
+  assert.equal((text.match(/const actions = localStoreFace && localStoreFace.actions \? localStoreFace\.actions : injectedActions/g) || []).length, 2,
+    'both seats must rebind actions to the private face')
+  // The face travels through BOTH inject faces as a stable getter.
+  assert.equal((text.match(/localStore: \(\) => \(\{ useStore: useViewStore, actions: viewInstance.actions \}\)/g) || []).length, 2,
+    'both inject faces must carry the private store getter')
+})
+

@@ -125,8 +125,6 @@ window.__ModuleLoader__.load({
       'settings.sessionLimit': "展开时显示会话数",
       'settings.sessionLimit.all': "全部",
       'settings.sessionLimit.hint': "展开工作区时先只显示最近的部分会话,其余收进「展开 {n} 个会话」一行,点击展开该组全部;置顶、进行中和等待你的会话始终显示。全部 = 不限量(默认)。",
-      'settings.sessionMenu': "会话右键菜单",
-      'settings.sessionMenu.hint': "开启时右键点击会话行即可打开操作菜单(包含官方的置顶、归档、停止并归档等);关闭后改为在行尾悬停显示官方样式的 ⋯ 按钮,点击打开同一个菜单。默认开启。",
       'settings.graft.title': "自动标题保留分组前缀",
       'settings.graft.hint': "「随对话更新的标题」实验功能会把会话改名成不带「/」分组的新名字,分组会因此丢失。开启后本插件视图保留原「/」前缀、只替换最后一段(如 A/xxx 自动变成 A/yyyy)。手动重命名不受影响。默认开启。",
       'settings.rowActions': "会话行悬停按钮",
@@ -303,8 +301,6 @@ window.__ModuleLoader__.load({
       'settings.sessionLimit': "Sessions shown when expanded",
       'settings.sessionLimit.all': "All",
       'settings.sessionLimit.hint': "An expanded workspace first shows only its most recent sessions, the rest behind one Show-more row; pinned, running and waiting-for-you sessions always stay visible. All = no limit (default).",
-      'settings.sessionMenu': "Session context menu",
-      'settings.sessionMenu.hint': "On: right-click a session row to open its action menu (including the official pin, archive, and stop-and-archive). Off: the row shows the official-style ⋯ button on hover instead, opening the same menu. On by default.",
       'settings.graft.title': "Auto titles keep the group prefix",
       'settings.graft.hint': "The 'titles that follow the conversation' experiment renames sessions to names without the '/' group, which dissolves the grouping. On, this view keeps the original '/' prefix and swaps only the last segment (A/xxx becomes A/yyyy). Manual renames are unaffected. On by default.",
       'settings.rowActions': "Session row hover buttons",
@@ -489,8 +485,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "عدد الجلسات عند التوسيع",
         'settings.sessionLimit.all': "الكل",
         'settings.sessionLimit.hint': "تعرض مساحة العمل الموسعة أحدث الجلسات أولاً، والبقية خلف سطر عرض المزيد؛ الجلسات المثبتة والجارية والمنتظرة لك تبقى مرئية دائماً. الكل = بلا حد (افتراضي).",
-        'settings.sessionMenu': "قائمة النقر الأيمن للجلسة",
-        'settings.sessionMenu.hint': "عند التفعيل: انقر بزر الفأرة الأيمن على سطر الجلسة لفتح قائمة الإجراءات (بما في ذلك التثبيت والأرشفة الرسمية). عند الإيقاف: يظهر زر ⋯ بأسلوب رسمي عند تمرير المؤشر يفتح القائمة نفسها. مفعّل افتراضياً.",
         'settings.graft.title': "عناوين تلقائية تحتفظ ببادئة المجموعة",
         'settings.graft.hint': "تجربة 'العناوين التي تتبع المحادثة' تعيد تسمية الجلسات بأسماء بدون مجموعة '/'، فيختفي التقسيم. عند التفعيل يحتفظ هذا العرض بالبادئة الأصلية ويستبدل المقطع الأخير فقط (A/xxx يصبح A/yyyy). إعادة التسمية اليدوية لا تتأثر. مفعّل افتراضيًا.",
         'settings.rowActions': "أزرار تمرير سطر الجلسة",
@@ -667,8 +661,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "Sitzungen beim Aufklappen",
         'settings.sessionLimit.all': "Alle",
         'settings.sessionLimit.hint': "Ein aufgeklappter Arbeitsbereich zeigt zuerst nur die neuesten Sitzungen, der Rest hinter einer Mehr-anzeigen-Zeile; angeheftete, laufende und auf Sie wartende Sitzungen bleiben immer sichtbar. Alle = unbegrenzt (Standard).",
-        'settings.sessionMenu': "Sitzungs-Kontextmenü",
-        'settings.sessionMenu.hint': "Ein: Rechtsklick auf eine Sitzungszeile öffnet das Aktionsmenü (inklusive offiziellem Anheften, Archivieren und Stoppen-und-Archivieren). Aus: beim Daraufzeigen erscheint stattdessen der offizielle ⋯-Knopf am Zeilenende und öffnet dasselbe Menü. Standardmäßig ein.",
         'settings.graft.title': "Automatische Titel behalten den Gruppenpräfix",
         'settings.graft.hint': "Das Experiment 'Titel, die der Unterhaltung folgen' benennt Sitzungen ohne '/'-Gruppe um, wodurch die Gruppierung verloren geht. Aktiv behält diese Ansicht den ursprünglichen Präfix und tauscht nur das letzte Segment (A/xxx wird A/yyyy). Manuelle Umbenennungen sind nicht betroffen. Standardmäßig aktiv.",
         'settings.rowActions': "Sitzungszeilen-Schnellknöpfe",
@@ -845,8 +837,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "Sessions affichées à l’ouverture",
         'settings.sessionLimit.all': "Tout",
         'settings.sessionLimit.hint': "Un espace ouvert montre d’abord ses sessions les plus récentes, le reste derrière une ligne afficher-plus ; les sessions épinglées, en cours et en attente restent toujours visibles. Tout = sans limite (par défaut).",
-        'settings.sessionMenu': "Menu contextuel des sessions",
-        'settings.sessionMenu.hint': "Activé : un clic droit sur une ligne de session ouvre son menu d’actions (épinglage, archivage et arrêt-avec-archivage officiels inclus). Désactivé : la ligne affiche plutôt le bouton ⋯ officiel au survol, ouvrant le même menu. Activé par défaut.",
         'settings.graft.title': "Les titres automatiques gardent le préfixe de groupe",
         'settings.graft.hint': "L'expérience 'titres qui suivent la conversation' renomme les sessions sans le groupe '/', ce qui dissout le groupement. Activé, cette vue conserve le préfixe d'origine et ne remplace que le dernier segment (A/xxx devient A/yyyy). Les renommages manuels ne sont pas affectés. Activé par défaut.",
         'settings.rowActions': "Boutons de survol des sessions",
@@ -1023,8 +1013,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "विस्तार पर दिखने वाले सेशन",
         'settings.sessionLimit.all': "सभी",
         'settings.sessionLimit.hint': "विस्तारित वर्कस्पेस पहले केवल हाल के सेशन दिखाता है, बाकी एक और-दिखाएँ पंक्ति के पीछे; पिन, चल रहे और आपकी प्रतीक्षा में सेशन सदा दिखते हैं। सभी = असीमित (डिफ़ॉल्ट)।",
-        'settings.sessionMenu': "सेशन संदर्भ मेनू",
-        'settings.sessionMenu.hint': "चालू: सेशन पंक्ति पर राइट-क्लिक करने से उसका क्रिया मेनू खुलता है (आधिकारिक पिन, आर्काइव और रोककर-आर्काइव सहित)। बंद: पंक्ति पर होवर करने पर आधिकारिक शैली का ⋯ बटन दिखता है, जो वही मेनू खोलता है। डिफ़ॉल्ट रूप से चालू।",
         'settings.graft.title': "स्वतः शीर्षक समूह उपसर्ग रखते हैं",
         'settings.graft.hint': "'बातचीत के अनुसार शीर्षक' प्रयोग सत्रों का नाम बिना '/' समूह के बदल देता है, जिससे समूहन टूट जाता है। चालू होने पर यह दृश्य मूल उपसर्ग रखता है और केवल अंतिम खंड बदलता है (A/xxx → A/yyyy)। मैन्युअल नाम बदलना प्रभावित नहीं होता। डिफ़ॉल्ट रूप से चालू।",
         'settings.rowActions': "सेशन पंक्ति होवर बटन",
@@ -1201,8 +1189,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "Sesi saat dibuka",
         'settings.sessionLimit.all': "Semua",
         'settings.sessionLimit.hint': "Ruang kerja yang dibuka pertama menampilkan sesi terbaru, sisanya di balik satu baris tampilkan-lebih; sesi pin, berjalan, dan menunggu Anda selalu terlihat. Semua = tanpa batas (bawaan).",
-        'settings.sessionMenu': "Menu klik kanan sesi",
-        'settings.sessionMenu.hint': "Aktif: klik kanan pada baris sesi untuk membuka menu aksinya (termasuk pin, arsip, dan henti-dan-arsip resmi). Nonaktif: baris menampilkan tombol ⋯ gaya resmi saat dihover, membuka menu yang sama. Aktif secara bawaan.",
         'settings.graft.title': "Judul otomatis mempertahankan awalan grup",
         'settings.graft.hint': "Eksperimen 'judul yang mengikuti percakapan' mengganti nama sesi tanpa grup '/', sehingga pengelompokan hilang. Saat aktif, tampilan ini mempertahankan awalan asli dan hanya mengganti segmen terakhir (A/xxx menjadi A/yyyy). Penggantian nama manual tidak terpengaruh. Aktif secara bawaan.",
         'settings.rowActions': "Tombol hover baris sesi",
@@ -1379,8 +1365,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "Sessioni mostrate all’apertura",
         'settings.sessionLimit.all': "Tutte",
         'settings.sessionLimit.hint': "Un’area aperta mostra prima le sessioni più recenti, il resto dietro una riga mostra-altro; sessioni fissate, in corso e in attesa restano sempre visibili. Tutte = senza limiti (predefinito).",
-        'settings.sessionMenu': "Menu contestuale sessione",
-        'settings.sessionMenu.hint': "Attivo: il clic destro su una riga di sessione apre il menu azioni (con pin, archiviazione e ferma-e-archivia ufficiali). Disattivo: la riga mostra il pulsante ⋯ ufficiale al passaggio, aprendo lo stesso menu. Attivo per impostazione predefinita.",
         'settings.graft.title': "I titoli automatici conservano il prefisso del gruppo",
         'settings.graft.hint': "L'esperimento 'titoli che seguono la conversazione' rinomina le sessioni senza il gruppo '/', sciogliendo il raggruppamento. Attivo, questa vista conserva il prefisso originale e sostituisce solo l'ultimo segmento (A/xxx diventa A/yyyy). Le rinomine manuali non sono influenzate. Attivo per impostazione predefinita.",
         'settings.rowActions': "Pulsanti al passaggio della sessione",
@@ -1557,8 +1541,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "展開時に表示するセッション数",
         'settings.sessionLimit.all': "すべて",
         'settings.sessionLimit.hint': "展開したワークスペースは最近のセッションを先に表示し、残りは「さらに表示」行の後ろに収まります。ピン留め・実行中・対応待ちのセッションは常に表示。すべて = 無制限(既定)。",
-        'settings.sessionMenu': "セッション右クリックメニュー",
-        'settings.sessionMenu.hint': "オン:セッション行を右クリックすると操作メニューを開きます(公式のピン留め・アーカイブ・停止してアーカイブを含む)。オフ:行にカーソルを合わせると公式スタイルの ⋯ ボタンが表示され、同じメニューを開きます。既定はオン。",
         'settings.graft.title': "自動タイトルはグループ接頭辞を保持",
         'settings.graft.hint': "「会話に合わせて更新されるタイトル」実験機能は「/」グループなしの名前にセッションを改名するため、グルーピングが失われます。オンにすると、このビューは元の「/」接頭辞を保持し最終セグメントだけを差し替えます(A/xxx → A/yyyy)。手動リネームには影響しません。デフォルトでオン。",
         'settings.rowActions': "セッション行のホバーボタン",
@@ -1735,8 +1717,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "펼칠 때 표시할 세션",
         'settings.sessionLimit.all': "전체",
         'settings.sessionLimit.hint': "펼친 작업 공간은 최근 세션을 먼저 보여주고 나머지는 더보기 행 뒤에 둡니다. 고정, 실행 중, 대기 중인 세션은 항상 표시됩니다. 전체 = 제한 없음(기본값).",
-        'settings.sessionMenu': "세션 우클릭 메뉴",
-        'settings.sessionMenu.hint': "켬: 세션 행을 우클릭하면 작업 메뉴가 열립니다(공식 고정, 보관, 중지 후 보관 포함). 끔: 행에 마우스를 올리면 공식 스타일의 ⋯ 버튼이 표시되어 같은 메뉴를 엽니다. 기본값은 켬.",
         'settings.graft.title': "자동 제목은 그룹 접두어를 유지",
         'settings.graft.hint': "'대화에 따라 업데이트되는 제목' 실험 기능이 '/' 그룹 없는 이름으로 세션 이름을 바꿔 그룹핑이 사라집니다. 켜면 이 뷰는 원래 '/' 접두어를 유지하고 마지막 세그먼트만 교체합니다(A/xxx → A/yyyy). 수동 이름 바꾸기는 영향을 받지 않습니다. 기본적으로 켬.",
         'settings.rowActions': "세션 행 호버 버튼",
@@ -1913,8 +1893,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "Sessies bij uitklappen",
         'settings.sessionLimit.all': "Alles",
         'settings.sessionLimit.hint': "Een uitgeklapte werkruimte toont eerst de nieuwste sessies, de rest achter een toon-meer rij; vastgemaakte, lopende en op u wachtende sessies blijven altijd zichtbaar. Alles = onbeperkt (standaard).",
-        'settings.sessionMenu': "Sessie-contextmenu",
-        'settings.sessionMenu.hint': "Aan: rechtermuisklik op een sessierij opent het actiemenu (inclusief officieel vastmaken, archiveren en stoppen-en-archiveren). Uit: bij aanwijzen verschijnt in plaats daarvan de officiële ⋯-knop aan het rij-einde, die hetzelfde menu opent. Standaard aan.",
         'settings.graft.title': "Automatische titels behouden het groepsprefix",
         'settings.graft.hint': "Het experiment 'titels die het gesprek volgen' hernoemt sessies naar namen zonder de '/'-groep, waardoor de groepering verloren gaat. Aan: deze weergave behoudt het oorspronkelijke prefix en vervangt alleen het laatste segment (A/xxx wordt A/yyyy). Handmatige hernoemingen zijn niet getroffen. Standaard aan.",
         'settings.rowActions': "Sessierij-snelknoppen",
@@ -2091,8 +2069,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "Sesje po rozwinięciu",
         'settings.sessionLimit.all': "Wszystkie",
         'settings.sessionLimit.hint': "Rozwinięty obszar pokazuje najpierw najnowsze sesje, reszta czeka za wierszem pokaż-więcej; przypięte, uruchomione i czekające sesje są zawsze widoczne. Wszystkie = bez limitu (domyślnie).",
-        'settings.sessionMenu': "Menu kontekstowe sesji",
-        'settings.sessionMenu.hint': "Włączone: kliknięcie prawym przyciskiem wiersza sesji otwiera jego menu akcji (w tym oficjalne przypinanie, archiwizację i zatrzymanie z archiwizacją). Wyłączone: przy najechaniu wiersz pokazuje oficjalny przycisk ⋯ otwierający to samo menu. Domyślnie włączone.",
         'settings.graft.title': "Automatyczne tytuły zachowują prefiks grupy",
         'settings.graft.hint': "Eksperyment 'tytuły podążające za rozmową' zmienia nazwy sesji na bez grupy '/', co rozbija grupowanie. Włączone: ten widok zachowuje oryginalny prefiks i zamienia tylko ostatni segment (A/xxx staje się A/yyyy). Ręczne zmiany nazwy nie są objęte. Domyślnie włączone.",
         'settings.rowActions': "Przyciski najechania wiersza sesji",
@@ -2269,8 +2245,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "Sessões ao expandir",
         'settings.sessionLimit.all': "Todas",
         'settings.sessionLimit.hint': "Um espaço expandido mostra primeiro as sessões mais recentes, o restante atrás de uma linha mostrar-mais; sessões fixadas, em execução e aguardando você permanecem visíveis. Todas = sem limite (predefinição).",
-        'settings.sessionMenu': "Menu de contexto da sessão",
-        'settings.sessionMenu.hint': "Ligado: clicar com o botão direito numa linha de sessão abre o menu de ações (incluindo fixar, arquivar e parar-e-arquivar oficiais). Desligado: a linha mostra o botão ⋯ oficial ao passar o cursor, abrindo o mesmo menu. Ligado por predefinição.",
         'settings.graft.title': "Títulos automáticos mantêm o prefixo do grupo",
         'settings.graft.hint': "O experimento 'títulos que acompanham a conversa' renomeia sessões sem o grupo '/', dissolvendo o agrupamento. Ativo: esta visão mantém o prefixo original e troca apenas o último segmento (A/xxx vira A/yyyy). Renomeações manuais não são afetadas. Ativo por padrão.",
         'settings.rowActions': "Botões de passagem da sessão",
@@ -2447,8 +2421,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "Сессий при разворачивании",
         'settings.sessionLimit.all': "Все",
         'settings.sessionLimit.hint': "Развёрнутая область сначала показывает последние сессии, остальные — за строкой «показать ещё»; закреплённые, идущие и ожидающие вас сессии видны всегда. Все = без ограничения (по умолчанию).",
-        'settings.sessionMenu': "Контекстное меню сессии",
-        'settings.sessionMenu.hint': "Вкл: правый клик по строке сессии открывает меню действий (включая официальные закрепление, архивацию и «остановить и архивировать»). Выкл: при наведении в строке появляется официальная кнопка ⋯, открывающая то же меню. Включено по умолчанию.",
         'settings.graft.title': "Автозаголовки сохраняют префикс группы",
         'settings.graft.hint': "Эксперимент «заголовки, следующие за беседой» переименовывает сессии в имена без группы «/», из-за чего группировка теряется. Включено: этот вид сохраняет исходный префикс «/» и заменяет только последний сегмент (A/xxx становится A/yyyy). Ручные переименования не затрагиваются. Включено по умолчанию.",
         'settings.rowActions': "Кнопки наведения строки сессии",
@@ -2625,8 +2597,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "Sessioner vid utfällning",
         'settings.sessionLimit.all': "Alla",
         'settings.sessionLimit.hint': "En utfälld arbetsyta visar först de senaste sessionerna, resten bakom en visa-mer-rad; fästa, pågående och väntande sessioner syns alltid. Alla = obegränsat (standard).",
-        'settings.sessionMenu': "Sessionens högerklicksmeny",
-        'settings.sessionMenu.hint': "På: högerklick på en sessionsrad öppnar dess åtgärdsmeny (inklusive officiell fästning, arkivering och stoppa-och-arkivera). Av: raden visar istället den officiella ⋯-knappen vid hovring, som öppnar samma meny. På som standard.",
         'settings.graft.title': "Automatiska titlar behåller gruppprefixet",
         'settings.graft.hint': "Experimentet 'titlar som följer samtalet' döper om sessioner till namn utan '/'-gruppen, vilket löser upp grupperingen. På: den här vyn behåller det ursprungliga prefixet och byter bara ut sista segmentet (A/xxx blir A/yyyy). Manuella namnbyten påverkas inte. På som standard.",
         'settings.rowActions': "Hovringsknappar för sessionsraden",
@@ -2803,8 +2773,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "จำนวนเซสชันเมื่อกาง",
         'settings.sessionLimit.all': "ทั้งหมด",
         'settings.sessionLimit.hint': "พื้นที่ที่กางจะแสดงเซสชันล่าสุดก่อน ส่วนที่เหลืออยู่หลังแถวแสดงเพิ่ม เซสชันที่ปักหมุด กำลังทำงาน และรอคุณจะแสดงตลอด ทั้งหมด = ไม่จำกัด (ค่าเริ่มต้น)",
-        'settings.sessionMenu': "เมนูคลิกขวาของเซสชัน",
-        'settings.sessionMenu.hint': "เปิด: คลิกขวาที่แถวเซสชันเพื่อเปิดเมนูการกระทำ (รวมปักหมุด, เก็บถาวร และหยุด-แล้ว-เก็บถาวรแบบทางการ) ปิด: เมื่อชี้ที่แถวจะแสดงปุ่ม ⋯ สไตล์ทางการเปิดเมนูเดียวกันแทน เปิดตามค่าเริ่มต้น",
         'settings.graft.title': "ชื่ออัตโนมัติคงคำนำหน้ากลุ่ม",
         'settings.graft.hint': "ฟีเจอร์ทดลอง 'ชื่อที่ตามการสนทนา' เปลี่ยนชื่อเซสชันเป็นชื่อที่ไม่มีกลุ่ม '/' ทำให้การจัดกลุ่มหายไป เมื่อเปิด มุมมองนี้จะคงคำนำหน้าเดิมและเปลี่ยนเฉพาะส่วนท้าย (A/xxx กลายเป็น A/yyyy) การเปลี่ยนชื่อด้วยมือไม่ได้รับผลกระทบ เปิดตามค่าเริ่มต้น",
         'settings.rowActions': "ปุ่มเมื่อชี้แถวเซสชัน",
@@ -2981,8 +2949,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "Açıldığında gösterilecek oturum",
         'settings.sessionLimit.all': "Tümü",
         'settings.sessionLimit.hint': "Açılan çalışma alanı önce en yeni oturumları gösterir, kalanı bir daha-göster satırının ardındadır; sabitlenmiş, çalışan ve sizi bekleyen oturumlar her zaman görünür. Tümü = sınırsız (varsayılan).",
-        'settings.sessionMenu': "Oturum sağ tık menüsü",
-        'settings.sessionMenu.hint': "Açık: oturum satırına sağ tıklayınca eylem menüsü açılır (resmî sabitleme, arşivleme ve durdurup-arşivleme dahil). Kapalı: satırın üzerine gelince resmî ⋯ düğmesi görünür ve aynı menüyü açar. Varsayılan açık.",
         'settings.graft.title': "Otomatik başlıklar grup önekini korur",
         'settings.graft.hint': "Deneme özelliği 'konuşmayı izleyen başlıklar' oturumları '/' grubu olmadan yeniden adlandırır, bu da gruplamayı çözer. Açıkken bu görünüm özgün öneki korur ve yalnızca son bölümü değiştirir (A/xxx, A/yyyy olur). Manuel yeniden adlandırmalar etkilenmez. Varsayılan olarak açık.",
         'settings.rowActions': "Oturum satırı düğmeleri",
@@ -3159,8 +3125,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "Số phiên khi mở rộng",
         'settings.sessionLimit.all': "Tất cả",
         'settings.sessionLimit.hint': "Không gian được mở rộng sẽ hiện các phiên gần đây trước, phần còn lại nằm sau một hàng xem-thêm; phiên ghim, đang chạy và đang chờ bạn luôn hiển thị. Tất cả = không giới hạn (mặc định).",
-        'settings.sessionMenu': "Menu chuột phải phiên",
-        'settings.sessionMenu.hint': "Bật: nhấp chuột phải vào dòng phiên để mở menu thao tác (bao gồm ghim, lưu trữ và dừng-rồi-lưu trữ chính thức). Tắt: dòng hiển thị nút ⋯ kiểu chính thức khi di chuột, mở cùng menu đó. Bật theo mặc định.",
         'settings.graft.title': "Tiêu đề tự động giữ tiền tố nhóm",
         'settings.graft.hint': "Thử nghiệm 'tiêu đề cập nhật theo hội thoại' đổi tên phiên thành tên không có nhóm '/', làm mất phân nhóm. Bật: khung nhìn này giữ tiền tố gốc và chỉ thay đoạn cuối (A/xxx thành A/yyyy). Đổi tên thủ công không bị ảnh hưởng. Bật theo mặc định.",
         'settings.rowActions': "Nút hover dòng phiên",
@@ -3337,8 +3301,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "展開時顯示會話數",
         'settings.sessionLimit.all': "全部",
         'settings.sessionLimit.hint': "展開工作區時先只顯示最近的部分會話,其餘收進「展開 {n} 個會話」一行,點擊展開該組全部;置頂、進行中和等待你的會話始終顯示。全部 = 不限量(預設)。",
-        'settings.sessionMenu': "會話右鍵選單",
-        'settings.sessionMenu.hint': "開啟時右鍵點擊會話行即可開啟操作選單(包含官方的置頂、封存、停止並封存等);關閉後改為在行尾懸停顯示官方樣式的 ⋯ 按鈕,點擊開啟同一個選單。預設開啟。",
         'settings.graft.title': "自動標題保留分組前綴",
         'settings.graft.hint': "「隨對話更新的標題」實驗功能會把會話改名成不帶「/」分組的新名字,分組會因此丟失。開啟後本插件視圖保留原「/」前綴、只替換最後一段(如 A/xxx 自動變成 A/yyyy)。手動重新命名不受影響。預設開啟。",
         'settings.rowActions': "會話行懸停按鈕",
@@ -3515,8 +3477,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "展開時顯示會話數",
         'settings.sessionLimit.all': "全部",
         'settings.sessionLimit.hint': "展開工作區時先只顯示最近的部分會話,其餘收進「展開 {n} 個會話」一行,點擊展開該組全部;置頂、進行中和等待你的會話始終顯示。全部 = 不限量(預設)。",
-        'settings.sessionMenu': "會話右鍵選單",
-        'settings.sessionMenu.hint': "開啟時右鍵點擊會話行即可開啟操作選單(包含官方的置頂、歸檔、停止並歸檔等);關閉後改為在行尾懸停顯示官方樣式的 ⋯ 按鈕,點擊開啟同一個選單。預設開啟。",
         'settings.graft.title': "自動標題保留分組前綴",
         'settings.graft.hint': "「隨對話更新的標題」實驗功能會把會話改名成不帶「/」分組的新名字,分組會因此丟失。開啟後本外掛檢視保留原「/」前綴、只替換最後一段(如 A/xxx 自動變成 A/yyyy)。手動重新命名不受影響。預設開啟。",
         'settings.rowActions': "會話行懸停按鈕",
@@ -3693,8 +3653,6 @@ window.__ModuleLoader__.load({
         'settings.sessionLimit': "展開時顯示會話數",
         'settings.sessionLimit.all': "全部",
         'settings.sessionLimit.hint': "展開工作區時先只顯示最近的部分會話,其餘收進「展開 {n} 個會話」一行,點擊展開該組全部;釘選、進行中和等待你的會話始終顯示。全部 = 不限量(預設)。",
-        'settings.sessionMenu': "會話右鍵選單",
-        'settings.sessionMenu.hint': "開啟時右鍵點擊會話列即可開啟動作選單(包含官方的釘選、封存、停止並封存等);關閉後改為在列尾懸停顯示官方樣式的 ⋯ 按鈕,點擊開啟同一個選單。預設開啟。",
         'settings.graft.title': "自動標題保留分組前綴",
         'settings.graft.hint': "「隨對話更新的標題」實驗功能會把會話改名成不帶「/」分組的新名字,分組會因此丟失。開啟後本插件檢視保留原「/」前綴、只替換最後一段(如 A/xxx 自動變成 A/yyyy)。手動重新命名不受影響。預設開啟。",
         'settings.rowActions': "會話列懸停按鈕",
@@ -6048,7 +6006,7 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function WorkspaceRow({ workspace, depth, count, sessionsOpen, onToggle, onStart, onMenu, onContextMenu, currentInside, menuOpen, dropHalf, dropInto, dragEvents, custStyle, iconMode, pulse, newSessionLabel, newSessionAria, menuAria, hoverBody, dataRowKey, t }) {
+    function WorkspaceRow({ workspace, depth, count, sessionsOpen, onToggle, onStart, onContextMenu, currentInside, menuOpen, dropHalf, dropInto, dragEvents, custStyle, iconMode, pulse, newSessionLabel, newSessionAria, hoverBody, dataRowKey, t }) {
       const iconEl = iconOf(iconMode, sessionsOpen)
       const iconChild = pulse
         ? E(PulseGlow, { state: pulse }, iconEl || (typeof ui.StateDot === 'function' ? E(ui.StateDot, { state: pulse, size: 10 }) : null))
@@ -6071,14 +6029,10 @@ window.__ModuleLoader__.load({
         E('span', { className: cls('bw-row-icon', 'bw-folder-cell', currentInside && !pulse && 'bw-folder-active') }, iconChild),
         E('span', { className: cls('bw-row-label', pulse && custStyle && custStyle.textShadow && 'bw-pulse-text'), title: workspace.title || workspace.leaf }, workspace.leaf),
         count > 0 ? E('span', { className: 'bw-row-count' }, String(count)) : null,
+        // The in-row ellipsis is retired (mirrors the session-row decision):
+        // the ctx surface is the right-click path; hover keeps only the
+        // new-session affordance.
         E('span', { className: 'bw-row-actions', onClick: (e) => e.stopPropagation() },
-          E('button', {
-            type: 'button',
-            className: 'bw-row-btn',
-            'aria-label': menuAria || '...',
-            title: menuAria || undefined,
-            onClick: (e) => { e.stopPropagation(); if (onMenu) onMenu(e) },
-          }, icon('IconEllipsisOutline16', 15)),
           E('button', {
             type: 'button',
             className: 'bw-row-btn',
@@ -6487,7 +6441,7 @@ window.__ModuleLoader__.load({
       'IconSkillOutline16', 'IconSparkle16', 'IconNewChatOutline16',
       'IconCheckOutline14', 'IconCheckOutline16', 'IconChevronDownOutline14', 'IconChevronLeftOutline14',
       'IconChevronRightOutline14', 'IconChevronUpOutline14', 'IconCloseOutline16', 'IconDarkOutline16',
-      'IconEditOutline16', 'IconEllipsisOutline16', 'IconFolderClose16', 'IconFolderOpen16',
+      'IconEditOutline16', 'IconFolderClose16', 'IconFolderOpen16',
       'IconFolderOpenOutline16', 'IconFullscreenOutline16', 'IconLightOutline16', 'IconLinkOutline14',
       'IconLoadingOutline16', 'IconPanelLeftOutline16', 'IconPaperclipOutline16', 'IconPersonalizationOutline16',
       'IconPlayOutline16', 'IconPauseOutline16', 'IconPlusOutline16', 'IconQuestionOutline14',
@@ -6946,7 +6900,6 @@ window.__ModuleLoader__.load({
       const localStyling = useStore ? (useStore(s => s.styling) || {}) : {}
       const compactChains = prefs.compactChains !== false
       const statusPulse = prefs.statusPulse !== false
-      const sessionMenu = prefs.sessionMenu !== false
       const rowActions = prefs.rowActions !== false
       // v0.30.2: auto titles keep the '/' group prefix — on unless opted out.
       const graftPrefix = prefs.graftTitlePrefix !== false
@@ -7093,18 +7046,6 @@ window.__ModuleLoader__.load({
         E('div', { className: 'bw-hint' }, t('settings.sessionLimit.hint')),
         ),
         fold('settings.group.interaction',
-        E('div', { className: 'bw-setting-row' },
-          E('div', { className: 'bw-setting-label' }, t('settings.sessionMenu')),
-          E('button', {
-            type: 'button',
-            role: 'switch',
-            'aria-checked': sessionMenu,
-            'aria-label': t('settings.sessionMenu'),
-            className: cls('bw-switch', sessionMenu && 'bw-switch-on'),
-            onClick: () => { setPref('sessionMenu', !sessionMenu) },
-          }, E('span', { className: 'bw-switch-thumb' })),
-        ),
-        E('div', { className: 'bw-hint' }, t('settings.sessionMenu.hint')),
         E('div', { className: 'bw-setting-row' },
           E('div', { className: 'bw-setting-label' }, t('settings.graft.title')),
           E('button', {
@@ -7629,10 +7570,9 @@ window.__ModuleLoader__.load({
       const shared = makeSharedWrites(actions, stylingMap)
       const compactChains = prefsMap.compactChains !== false
       const statusPulse = prefsMap.statusPulse !== false
-      // Session-action surface gates (v0.20.0): the right-click menu and the
-      // official-style hover strip can each be turned off; defaults follow
-      // the plugin's historical behavior (right-click on, quick buttons on).
-      const sessionMenuEnabled = prefsMap.sessionMenu !== false
+      // Session-action surface gate (v0.20.0): the hover quick buttons. The
+      // right-click ctx menu is always on since the in-row "..." triggers
+      // retired (session row v0.35.0, workspace row v0.35.1).
       const rowActionsEnabled = prefsMap.rowActions !== false
       // Auto color + icon for new items (v0.24.0). Default OFF: absent key =
       // off, so every existing snapshot keeps its behavior untouched.
@@ -8391,9 +8331,8 @@ window.__ModuleLoader__.load({
       const unarchiveAvailable = typeof unarchiveSession === 'function'
       const sessionActions = {
         ot: officialT,
-        // Right-click is the default trigger; turning the setting off moves
-        // the trigger to the official-style "..." hover button.
-        trigger: !sessionMenuEnabled,
+        // Right-click is the only ctx trigger: the in-row "..." affordances
+        // are retired (session row in v0.35.0, workspace row likewise).
         quick: rowActionsEnabled,
         pin: pinAvailable
           ? (id, pinning) => {
@@ -9245,13 +9184,11 @@ window.__ModuleLoader__.load({
           // SEE the new session appear, even if the row was collapsed.
           onStart: () => { actions.setSessionsExpanded(workspace.workspaceId, true); startSession(workspace.workspaceId) },
           onContextMenu: (e) => openCtx('workspace', workspace, e),
-          // Official Rows.tsx: the ellipsis button anchors the row's own
-          // menu; the ctx surface stays the right-click path. While the
-          // menu is open the row pins (hover fill + visible actions),
-          // matching the official menuOpen state.
-          onMenu: (e) => openCtx('workspace', workspace, e),
+          // The in-row ellipsis is retired; the ctx surface stays the
+          // right-click path. While the menu is open the row still pins
+          // (hover fill + visible actions), matching the official menuOpen
+          // state.
           menuOpen: !!(ctx && ctx.kind === 'workspace' && ctx.payload && ctx.payload.workspaceId === workspace.workspaceId),
-          menuAria: officialText('actions.workspace.aria', { name: workspace.title || workspace.leaf }) || undefined,
           hoverBody: workspaceHoverBody,
           dropHalf: wsDropHalf(workspace.workspaceId),
           dropInto: wsRootDropActive(workspace.workspaceId),
@@ -9564,8 +9501,8 @@ window.__ModuleLoader__.load({
         ]
         if (ctx.kind === 'session') {
           // The shared builder owns the session list (see
-          // sessionMenuEntriesFor): the row's own "..." menu renders the
-          // exact same entries, so the two surfaces cannot drift.
+          // sessionMenuEntriesFor): the ctx menu and any future surface share
+          // it, so the entries cannot drift.
           return sessionMenuEntriesFor(ctx.payload || {})
         }
         return [

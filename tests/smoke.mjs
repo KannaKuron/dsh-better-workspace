@@ -989,12 +989,16 @@ test('official mirror: pin/archive surface, archived filter, gates, status migra
   assert.match(text, /const pinnedPartition = \(rows\)/)
   assert.match(text, /pinnedSet\.has\(id\) && !archivedSet\.has\(id\)/)
   assert.match(text, /dragEvents: workspaceId && !session\.archived \? sessionDragEvents/)
-  // The two settings gates: right-click vs the official "..." trigger, and
-  // the hover quick buttons; both default ON (absent key = enabled).
-  assert.match(text, /sessionMenuEnabled = prefsMap\.sessionMenu !== false/)
+  // The settings gate: the hover quick buttons (absent key = enabled). The
+  // right-click menu is the only ctx trigger since the in-row "..."
+  // affordances retired — session row (v0.35.0) and workspace row (v0.35.1):
+  // no onMenu prop, no ellipsis icon, no sessionMenu setting anywhere.
   assert.match(text, /rowActionsEnabled = prefsMap\.rowActions !== false/)
-  assert.match(text, /trigger: !sessionMenuEnabled/)
   assert.match(text, /quick: rowActionsEnabled/)
+  assert.doesNotMatch(text, /sessionMenuEnabled/)
+  assert.doesNotMatch(text, /'settings\.sessionMenu/)
+  assert.doesNotMatch(text, /IconEllipsisOutline16/)
+  assert.doesNotMatch(text, /function WorkspaceRow\(\{ workspace, depth, count, sessionsOpen, onToggle, onStart, onMenu,/)
   // The view options menu rides the OFFICIAL dictionary for the filter
   // section and hides it entirely where the host lacks the keys.
   assert.match(text, /official\('filterBy\.label'\)/)

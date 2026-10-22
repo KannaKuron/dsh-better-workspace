@@ -4794,7 +4794,11 @@ window.__ModuleLoader__.load({
       // cancels it, so text still starts and truncates where it did.
       '.bw-row-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:3px;margin:-3px}',
       '.bw-session-row .bw-row-label{padding:0;margin:0 6px 0 4px}',
-      '.bw-session-row .bw-row-label[data-scrolled]{mask-image:linear-gradient(to right,transparent,#000 12px);-webkit-mask-image:linear-gradient(to right,transparent,#000 12px)}',
+      /* Marquee: Chromium keeps painting the ellipsis at the right edge of a
+         scrolling ellipsis element (engine behavior; official rows share it).
+         Switch to clip while scrolling — the fade masks carry both edges and
+         the full heading reads cleanly; the resting state keeps ellipsis. */
+      '.bw-session-row .bw-row-label[data-scrolled]{text-overflow:clip;mask-image:linear-gradient(to right,transparent,#000 12px);-webkit-mask-image:linear-gradient(to right,transparent,#000 12px)}',
       '.bw-session-row .bw-row-label[data-clipped]{mask-image:linear-gradient(to left,transparent,#000 12px);-webkit-mask-image:linear-gradient(to left,transparent,#000 12px)}',
       '.bw-session-row .bw-row-label[data-scrolled][data-clipped]{mask-image:linear-gradient(to right,transparent,#000 12px,#000 calc(100% - 12px),transparent);-webkit-mask-image:linear-gradient(to right,transparent,#000 12px,#000 calc(100% - 12px),transparent)}',
       '.bw-row-count{flex:none;display:none;font-size:12px;color:var(--dsw-alias-label-quaternary,#8a8a8a)}',

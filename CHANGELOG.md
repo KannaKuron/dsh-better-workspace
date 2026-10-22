@@ -11,6 +11,7 @@
 - **连带修复(0.34.0 实施漏洞)**:`row.action` 座位(官方置顶/归档快捷钮)此前只有「自绘退位」判断、没有渲染点——宿主条目存在时行尾按钮整个消失。现在座位条目真正渲染,且各包 QuietBoundary(单个座位崩只丢一个按钮,不再炸整栏);座位为空时插件自绘按钮兜底。
 - **fix #13(第三方占用者下设置失效)**:装 @michengai/dsh-im-connect 后「频道」页签里自定义外观/视图选项不生效不保存。根因比 issue 定位更深:im-connect 包裹工作区占用者时把 props 的 `useStore`/`actions` 换成它的频道 store,插件的本地读写(展开/分组/偏好/外观)全部断链。现在插件在 apply 里自建**私有 store 实例**(`viewStore.create()`),浏览器座位与设置卡都经 inject face 拿私有实例读写,本地状态不再依赖渲染器(或任何占用者)塞进 props 的 store;注入的实例仅剩宿主投影用途。持久化键不变(`dsh.betterWorkspace.view.v1`),健康宿主行为不变。
 - 冒烟 60 → **62**(issue #12/#13 各一组结构断言)。
+- **marquee 滚动省略号**(真机反馈):Chromium 对滚动中的 `text-overflow: ellipsis` 元素仍会在右缘持续绘制省略号——引擎行为,官方行同样如此(无头 Chrome 实证)。滚动开始(`data-scrolled`)后切 `text-overflow: clip`,省略号消失、左右由 12px 渐隐 mask 兜底;静止态 ellipsis 照旧。官方未做此切换,属插件侧视觉改进。
 
 ## v0.34.1 — 2026-10-21
 

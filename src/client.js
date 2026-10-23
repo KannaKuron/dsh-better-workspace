@@ -4570,6 +4570,15 @@ window.__ModuleLoader__.load({
         // order but the renderer re-sorted by name, which is why dragging a
         // group row looked like a no-op. Names absent from the stored list
         // (a just-created group) sort after the known ones by locale.
+        // v0.36.5: the SAME list may also carry "w:<workspaceId>" tokens,
+        // which interleave a BARE workspace row with the group rows of its
+        // level. Before this a level always rendered every folder first and
+        // every workspace after, so a top-level workspace could never be
+        // dropped "as the first row" — the probe showed the commit landing
+        // but the row staying at the bottom ("插到第一个永远失败").
+        // Tokens absent from the list (a new member, a workspace that just
+        // moved in) append in the default order: groups first, then
+        // workspaces in registry order.
         const orderOf = (parentKey) => {
           if (!folderOrder || typeof folderOrder !== 'object') return null
           const list = folderOrder[parentKey]
@@ -4577,18 +4586,51 @@ window.__ModuleLoader__.load({
         }
         const sortRec = (node, parentKey) => {
           const order = orderOf(parentKey)
-          if (order) {
+          const names = order
+            ? order.filter((token) => typeof token === 'string' && token !== '' && !token.startsWith('w:'))
+            : null
+          if (names && names.length) {
             const rank = new Map()
-            for (let i = 0; i < order.length; i += 1) rank.set(order[i], i)
+            for (let i = 0; i < names.length; i += 1) rank.set(names[i], i)
             node.folders.sort((a, b) => {
-              const ra = rank.has(a.name) ? rank.get(a.name) : order.length
-              const rb = rank.has(b.name) ? rank.get(b.name) : order.length
+              const ra = rank.has(a.name) ? rank.get(a.name) : names.length
+              const rb = rank.has(b.name) ? rank.get(b.name) : names.length
               if (ra !== rb) return ra - rb
               return a.name.localeCompare(b.name, 'zh')
             })
           } else {
             node.folders.sort((a, b) => a.name.localeCompare(b.name, 'zh'))
           }
+          // Level identity every workspace row carries into its drag payload:
+          // the mixed reorder is siblings-only, so the drop gate compares it
+          // with parentKeyOf(target group idPath).
+          for (const w of node.workspaces) w.levelKey = parentKey
+          // Mixed display sequence of THIS level: the persisted order first
+          // (groups and bare workspaces interleaved), then whatever the list
+          // does not mention, groups before workspaces.
+          const folderByName = new Map(node.folders.map((child) => [child.name, child]))
+          const wsById = new Map(node.workspaces.map((w) => [w.workspaceId, w]))
+          const seq = []
+          const seenFolders = new Set()
+          const seenWorkspaces = new Set()
+          for (const token of order || []) {
+            if (typeof token !== 'string' || token === '') continue
+            if (token.startsWith('w:')) {
+              const id = token.slice(2)
+              const entry = wsById.get(id)
+              if (!entry || seenWorkspaces.has(id)) continue
+              seq.push({ kind: 'ws', entry })
+              seenWorkspaces.add(id)
+            } else {
+              const child = folderByName.get(token)
+              if (!child || seenFolders.has(token)) continue
+              seq.push({ kind: 'folder', node: child })
+              seenFolders.add(token)
+            }
+          }
+          for (const child of node.folders) if (!seenFolders.has(child.name)) seq.push({ kind: 'folder', node: child })
+          for (const w of node.workspaces) if (!seenWorkspaces.has(w.workspaceId)) seq.push({ kind: 'ws', entry: w })
+          node.seq = seq
           for (const child of node.folders) sortRec(child, child.idPath)
         }
         sortRec(root, idPrefix)
@@ -8205,7 +8247,16 @@ window.__ModuleLoader__.load({
       const tree = React.useMemo(() => {
         const built = buildTree(items, workspaceGroupMode, wsFolders, folderOrderMap)
         if (!compactChains) return built
-        return { ...built, folders: built.folders.map((f) => materializeChain(compressTree(f))), workspaces: built.workspaces }
+        const folders = built.folders.map((f) => materializeChain(compressTree(f)))
+        // v0.36.5: keep the MIXED root sequence across chain compression —
+        // the compressed node stands in for the raw folder it came from, so
+        // a bare workspace stays interleaved where the user put it.
+        const byName = new Map()
+        for (let i = 0; i < built.folders.length; i += 1) byName.set(built.folders[i].name, folders[i])
+        const seq = Array.isArray(built.seq)
+          ? built.seq.map((item) => item.kind === 'folder' ? { kind: 'folder', node: byName.get(item.node.name) || item.node } : item)
+          : built.seq
+        return { ...built, folders, workspaces: built.workspaces, seq }
       }, [items, compactChains, workspaceGroupMode, wsFolders, folderOrderMap])
       // UNCOMPRESSED tree, for the new-group dialog only. compressTree merges a
       // single-child chain into one row that stands for BOTH a group and the
@@ -8738,6 +8789,20 @@ window.__ModuleLoader__.load({
       // null = the pointer sits in the half the open slot vacated: the caller
       // keeps its current drop target instead of re-deciding on geometry that
       // only exists because of that slot.
+      // v0.36.5 MIXED LEVEL SEQUENCE. buildTree attaches a `seq` to every
+      // level (group rows and BARE workspace rows interleaved by the
+      // persisted folderOrder, whose tokens may be a group name or
+      // "w:<workspaceId>"); chain-compressed nodes carry no seq and keep the
+      // historical folders-then-workspaces order. Both the renderer and the
+      // reorder commit read the SAME sequence, so what the user sees is what
+      // the drop edits.
+      const levelSeqOf = (level) => (level && Array.isArray(level.seq))
+        ? level.seq
+        : [
+          ...(((level && level.folders) || []).map((node) => ({ kind: 'folder', node }))),
+          ...(((level && level.workspaces) || []).map((entry) => ({ kind: 'ws', entry }))),
+        ]
+      const levelTokenOf = (item) => item.kind === 'ws' ? 'w:' + item.entry.workspaceId : item.node.name
       const rowHalf = (event) => {
         const box = originalBoxOf(event.currentTarget)
         const y = event.clientY
@@ -8763,6 +8828,11 @@ window.__ModuleLoader__.load({
         return 'into'
       }
       const dragMatches = (kind) => drag !== null && drag.kind === kind
+      // A refused hover must DROP the highlight it already owns: leaving a
+      // stale {over} in place drew the previous target's INTO frame on a row
+      // that no longer accepts anything (the user reads it as "it will land
+      // here" and the drop then goes elsewhere).
+      const clearOver = (targetKind, target) => setDrag((current) => (current && current.over && current.over.kind === targetKind && current.over.target === target) ? { ...current, over: null } : current)
       const canDragWorkspace = typeof insertWorkspaceBefore === 'function'
       // Session REORDER needs the host insertSessionBefore action; dragging a
       // session onto a sub-group row (a pure rename) stays available without it.
@@ -8774,8 +8844,11 @@ window.__ModuleLoader__.load({
 
       /* --------------------- workspace drag & drop -------------------- */
 
+      // v0.36.5: a workspace row answers the SAME slot for both drag kinds —
+      // a workspace slides between workspace rows, a whole group block slides
+      // beside one (mixed reorder), so the visual is one shared mechanism.
       const wsDropHalf = (workspaceId) => {
-        if (!dragMatches('workspace')) return null
+        if (!dragMatches('workspace') && !dragMatches('folder')) return null
         const over = drag.over
         return over && over.kind === 'workspace' && over.target === workspaceId ? over.half : null
       }
@@ -8786,7 +8859,11 @@ window.__ModuleLoader__.load({
       // v0.36.4: an edge band on a group row answers IMMEDIATELY with the
       // empty reorder slot (bw-slot-above/below) — the drop position is
       // visible the moment the pointer enters the band, no intent wait.
-      const wsFolderSlotOf = (folderIdPath) => (dragMatches('folder') && drag.over && drag.over.kind === 'folder' && drag.over.target === folderIdPath && (drag.over.zone === 'before' || drag.over.zone === 'after')) ? drag.over.zone : null
+      // v0.36.5: BOTH sources open the slot on a group row. A folder source
+      // reorders the group block; a WORKSPACE source interleaves one bare
+      // workspace row beside the group — the gesture "insert as the first
+      // row" that used to be impossible because every group rendered first.
+      const wsFolderSlotOf = (folderIdPath) => ((dragMatches('folder') || dragMatches('workspace')) && drag.over && drag.over.kind === 'folder' && drag.over.target === folderIdPath && (drag.over.zone === 'before' || drag.over.zone === 'after')) ? drag.over.zone : null
       const workspaceDragEvents = (workspace) => ({
         draggable: !searching && canDragWorkspace,
         onDragStart: (event) => {
@@ -8815,7 +8892,7 @@ window.__ModuleLoader__.load({
           if (wsDragArmTimer.current !== null) clearTimeout(wsDragArmTimer.current)
           wsDragArmTimer.current = setTimeout(() => {
             wsDragArmTimer.current = null
-            setDrag({ kind: 'workspace', source: { workspaceId: workspace.workspaceId, leaf: sourceLeaf, folderPath: sourceFolder, disk: diskParentMap.get(workspace.workspaceId) }, over: null })
+            setDrag({ kind: 'workspace', source: { workspaceId: workspace.workspaceId, leaf: sourceLeaf, folderPath: sourceFolder, disk: diskParentMap.get(workspace.workspaceId), levelKey: workspace.levelKey || '' }, over: null })
           }, 0)
         },
         onDragEnd: () => {
@@ -8837,6 +8914,22 @@ window.__ModuleLoader__.load({
             setDrag(current => (current && current.over && current.over.kind === 'ws-root' && current.over.target === workspace.workspaceId)
               ? current
               : (current ? { ...current, over: { kind: 'ws-root', target: workspace.workspaceId } } : current))
+            return
+          }
+          // v0.36.5 MIXED REORDER: a GROUP block can slide beside a bare
+          // workspace row of the same level (the mirror gesture of a
+          // workspace sliding beside a group row). Siblings only — a group
+          // that lives in another container has no position in this level.
+          if (dragMatches('folder')) {
+            if ((drag.source.levelKey || '') !== (workspace.levelKey || '')) { clearOver('workspace', workspace.workspaceId); return }
+            event.preventDefault()
+            event.stopPropagation()
+            try { event.dataTransfer.dropEffect = 'move' } catch { }
+            const half = rowHalf(event)
+            if (half === null) return
+            setDrag(current => (current && current.over && current.over.kind === 'workspace' && current.over.target === workspace.workspaceId && current.over.half === half)
+              ? current
+              : (current ? { ...current, over: { kind: 'workspace', target: workspace.workspaceId, half } } : current))
             return
           }
           if (!dragMatches('workspace')) return
@@ -8864,6 +8957,14 @@ window.__ModuleLoader__.load({
             event.preventDefault()
             event.stopPropagation()
             commitSessionMoveOut(workspace.workspaceId)
+            return
+          }
+          if (dragMatches('folder')) {
+            if ((drag.source.levelKey || '') !== (workspace.levelKey || '')) return
+            event.preventDefault()
+            event.stopPropagation()
+            const half = drag.over && drag.over.kind === 'workspace' && drag.over.target === workspace.workspaceId ? drag.over.half : rowHalf(event)
+            commitLevelReorder({ kind: 'folder', source: drag.source }, { kind: 'workspace', workspace }, half || 'before')
             return
           }
           if (!dragMatches('workspace')) return
@@ -8958,7 +9059,7 @@ window.__ModuleLoader__.load({
           if (wsDragArmTimer.current !== null) clearTimeout(wsDragArmTimer.current)
           wsDragArmTimer.current = setTimeout(() => {
             wsDragArmTimer.current = null
-            setDrag({ kind: 'folder', source: { idPath, path, memberIds: collectMemberIds(node) }, over: null })
+            setDrag({ kind: 'folder', source: { idPath, path, memberIds: collectMemberIds(node), levelKey: parentKeyOf(idPath) }, over: null })
           }, 0)
         },
         onDragEnd: () => {
@@ -8991,14 +9092,15 @@ window.__ModuleLoader__.load({
           const slotOpen = drag.over !== null && drag.over.kind === 'folder' && drag.over.target === idPath && (drag.over.zone === 'before' || drag.over.zone === 'after')
           const zone = slotOpen ? rowHalf(event) : rowZone(event)
           const isFolder = dragMatches('folder')
+          const isWorkspace = dragMatches('workspace')
           if (isFolder) {
             const targetPath = namePathOf(idPath)
             // Self / descendant: looping. Ancestor: the group already lives
             // inside, so neither a reorder nor a move-into can mean anything
             // there (its edge bands are not a way out — leaving a parent is
             // a title rename, not an order change).
-            if (drag.source.path === targetPath || targetPath.startsWith(drag.source.path + '/')) return
-            if (targetPath !== '' && drag.source.path.startsWith(targetPath + '/')) return
+            if (drag.source.path === targetPath || targetPath.startsWith(drag.source.path + '/')) { clearOver('folder', idPath); return }
+            if (targetPath !== '' && drag.source.path.startsWith(targetPath + '/')) { clearOver('folder', idPath); return }
             // Pointer in the half the open slot vacated: keep this row's slot
             // (re-deciding there would flicker the slot it just opened).
             if (zone === null) {
@@ -9012,14 +9114,36 @@ window.__ModuleLoader__.load({
             // Edge bands permute ONE level's sibling list; a cross-parent
             // band is refused. Move-into (the middle band) stays open across
             // parents: it is a batch rename, which does reach another group.
-            if (zone !== 'into' && parentKeyOf(idPath) !== parentKeyOf(drag.source.idPath)) return
-          } else if (!dragMatches('workspace')) {
+            if (zone !== 'into' && parentKeyOf(idPath) !== parentKeyOf(drag.source.idPath)) { clearOver('folder', idPath); return }
+          } else if (!isWorkspace) {
             return
+          } else {
+            // v0.36.6 LIFT: a bare workspace row slides beside a group of ANY
+            // level it can reach. Same level keeps the v0.36.5 mixed reorder.
+            // Another level is a LIFT: the workspace leaves its current group
+            // and joins the target group's level, inserted right there. That
+            // is the "insert as the FIRST row" gesture the user kept
+            // reporting: the hover used to be refused silently, so {over}
+            // kept the previous frame's INTO, and the drop became a
+            // move-into that left the row last inside the group. A lift may
+            // not cross a DISK boundary (a workspace's folder is a
+            // filesystem fact), so the target level must live in the same
+            // disk scope as the source. The middle band keeps its old
+            // meaning: move the workspace INTO this group.
+            if (zone === null) {
+              if (drag.over && drag.over.kind === 'folder' && drag.over.target === idPath && (drag.over.zone === 'before' || drag.over.zone === 'after')) {
+                event.preventDefault()
+                event.stopPropagation()
+                try { event.dataTransfer.dropEffect = 'move' } catch { }
+              }
+              return
+            }
+            if (zone !== 'into' && (drag.source.levelKey || '') !== parentKeyOf(idPath) && (ownerPrefixOf(idPath) || '') !== (drag.source.disk || '')) { clearOver('folder', idPath); return }
           }
           event.preventDefault()
           event.stopPropagation()
           try { event.dataTransfer.dropEffect = 'move' } catch { }
-          const reorder = isFolder && zone !== 'into'
+          const reorder = zone !== 'into'
           const nextOver = reorder
             ? { kind: 'folder', target: idPath, zone }
             : { kind: 'folder', target: idPath, zone: 'into' }
@@ -9039,7 +9163,17 @@ window.__ModuleLoader__.load({
           if (!dragMatches('workspace')) return
           event.preventDefault()
           event.stopPropagation()
-          commitWorkspaceMoveInto(idPath)
+          // The live {over} wins; the geometry is the fallback for a drop that
+          // lands before any hover frame recorded a band on this row.
+          const overZone = drag.over && drag.over.kind === 'folder' && drag.over.target === idPath && (drag.over.zone === 'before' || drag.over.zone === 'after') ? drag.over.zone : null
+          const geoZone = rowZone(event) || 'into'
+          const zone = overZone || geoZone
+          if (zone === 'before' || zone === 'after') {
+            // Same level = plain mixed reorder; another level (same disk
+            // scope) = lift the workspace out of its group into that level.
+            if ((drag.source.levelKey || '') === parentKeyOf(idPath)) commitLevelReorder({ kind: 'workspace', source: drag.source }, { kind: 'folder', target: idPath }, zone)
+            else commitWorkspaceLift(drag.source, idPath, zone)
+          } else commitWorkspaceMoveInto(idPath)
         },
       })
       const nextWorkspaceAfter = (folderPath, workspaceId) => {
@@ -9047,6 +9181,65 @@ window.__ModuleLoader__.load({
         if (!node) return undefined
         const index = node.workspaces.findIndex(w => w.workspaceId === workspaceId)
         return index === -1 ? undefined : (node.workspaces[index + 1] ? node.workspaces[index + 1].workspaceId : undefined)
+      }
+      // v0.36.5 MIXED LEVEL REORDER. One persisted list per level decides the
+      // display order of BOTH kinds: a group name token and a "w:<id>"
+      // workspace token. Writes the list only — the registry keeps its own
+      // (workspace-only) order, because "above that group" is a VIEW position
+      // the registry has no vocabulary for: a workspace title still decides
+      // which group it belongs to, the list only decides where the row sits.
+      const writeLevelOrder = (containerKey, sourceToken, targetToken, zone) => {
+        const container = folderContainerOf(containerKey)
+        if (!container) { console.warn('[bw] level reorder refused: container not found', containerKey); return false }
+        const tokens = levelSeqOf(container).map(levelTokenOf)
+        const at = tokens.indexOf(sourceToken)
+        if (at === -1) { console.warn('[bw] level reorder refused: source not in this level', sourceToken); return false }
+        tokens.splice(at, 1)
+        const targetAt = tokens.indexOf(targetToken)
+        if (targetAt === -1) { console.warn('[bw] level reorder refused: target not in this level', targetToken); return false }
+        tokens.splice(zone === 'after' ? targetAt + 1 : targetAt, 0, sourceToken)
+        if (typeof actions.setFolderOrder === 'function') actions.setFolderOrder(containerKey, tokens)
+        return true
+      }
+      // v0.36.6 LIFT writes: the source token does NOT exist in the target
+      // level yet (that is what a lift is), so writeLevelOrder's
+      // "source must already be here" precondition does not apply — the token
+      // is spliced straight in beside the target group.
+      const insertLevelToken = (containerKey, sourceToken, targetToken, zone) => {
+        const container = folderContainerOf(containerKey)
+        if (!container) { console.warn('[bw] workspace lift refused: target level not found', containerKey); return false }
+        const tokens = levelSeqOf(container).map(levelTokenOf).filter((token) => token !== sourceToken)
+        const targetAt = tokens.indexOf(targetToken)
+        if (targetAt === -1) { console.warn('[bw] workspace lift refused: target group not in this level', targetToken); return false }
+        tokens.splice(zone === 'after' ? targetAt + 1 : targetAt, 0, sourceToken)
+        if (typeof actions.setFolderOrder === 'function') actions.setFolderOrder(containerKey, tokens)
+        return true
+      }
+      // The level a lifted workspace LEFT keeps a stale "w:<id>" token
+      // otherwise (buildTree skips it harmlessly, but the list would grow
+      // forever and a later re-group could resurrect the old position).
+      const removeLevelToken = (containerKey, token) => {
+        const container = folderContainerOf(containerKey)
+        if (!container) return
+        const tokens = levelSeqOf(container).map(levelTokenOf)
+        if (!tokens.includes(token)) return
+        if (typeof actions.setFolderOrder === 'function') actions.setFolderOrder(containerKey, tokens.filter((entry) => entry !== token))
+      }
+      // Shared commit for both mixed directions — a workspace sliding beside a
+      // group row, and a group block sliding beside a workspace row. The
+      // target names the level it belongs to; the hover gate already refused
+      // cross-level targets and this re-checks it as belt and braces.
+      const commitLevelReorder = (sourceRef, targetRef, zone) => {
+        setDrag(null)
+        if (!canDragWorkspace) { console.warn('[bw] level reorder refused: workspace reorder unavailable on this host'); return }
+        const wsSource = sourceRef.kind === 'workspace'
+        const sourceToken = wsSource ? 'w:' + sourceRef.source.workspaceId : namePathOf(sourceRef.source.idPath).split('/').pop()
+        const folderTarget = targetRef.kind === 'folder'
+        const targetToken = folderTarget ? namePathOf(targetRef.target).split('/').pop() : 'w:' + targetRef.workspace.workspaceId
+        const containerKey = folderTarget ? parentKeyOf(targetRef.target) : (targetRef.workspace.levelKey || '')
+        const sourceLevelKey = sourceRef.source.levelKey || ''
+        if (sourceLevelKey !== containerKey) { console.warn('[bw] level reorder refused: cross-level target', sourceLevelKey, containerKey); return }
+        writeLevelOrder(containerKey, sourceToken, targetToken, zone)
       }
       const commitWorkspaceDrop = (targetWorkspace, half) => {
         const source = drag.source
@@ -9061,6 +9254,16 @@ window.__ModuleLoader__.load({
         // cross-level drop only re-groups the title (the registry append
         // lands it at the end of ITS disk level).
         const sameDisk = source.disk === diskParentMap.get(targetWorkspace.workspaceId)
+        // v0.36.6: a cross-LEVEL drop on a workspace row's half is a PLACEMENT,
+        // not a re-group. The user reported "the insert line shows but the row
+        // lands somewhere else": renaming into the target's group moved the row
+        // into that group's block at whatever position the group already had.
+        // Lifting to the target row's own level and anchoring at that row is
+        // what makes the drop land where the line was drawn.
+        if (workspaceSlash && (targetWorkspace.levelKey || '') !== (source.levelKey || '')) {
+          commitWorkspaceLift(source, targetWorkspace.levelKey || '', half === 'after' ? 'after' : 'before', targetWorkspace.workspaceId)
+          return
+        }
         const chain = sameFolder
           ? Promise.resolve()
           : Promise.resolve().then(() => {
@@ -9074,6 +9277,69 @@ window.__ModuleLoader__.load({
             : targetWorkspace.workspaceId)
         chain
           .then(() => (anchor !== undefined ? insertWorkspaceBefore(source.workspaceId, anchor) : insertWorkspaceBefore(source.workspaceId)))
+          // v0.36.5: once a level carries a MIXED list (it interleaves a bare
+          // workspace with its groups), the registry edit above no longer
+          // moves the row — rewrite the list too, keeping every other token.
+          .then(() => {
+            const levelKey = targetWorkspace.levelKey || ''
+            const container = folderContainerOf(levelKey)
+            const tokens = container ? levelSeqOf(container).map(levelTokenOf) : []
+            if (tokens.some((token) => token.startsWith('w:'))) {
+              writeLevelOrder(levelKey, 'w:' + source.workspaceId, 'w:' + targetWorkspace.workspaceId, half === 'after' ? 'after' : 'before')
+            }
+          })
+          .catch(fail)
+      }
+      // v0.36.6 LIFT. Dropping a bare workspace row on a group's EDGE band
+      // from a DIFFERENT level means: take the row out of its group, give it
+      // the target level's name prefix and place it right beside that group.
+      // The user's report was "I can never insert it as the first row" — the
+      // gesture existed visually but every path landed it inside the group
+      // (move-into) at the tail. The lift is a rename + a level token, never a
+      // disk move, so the caller has already checked the disk scope.
+      const commitWorkspaceLift = (source, targetIdPath, zone, anchorWorkspaceId) => {
+        setDrag(null)
+        if (!canDragWorkspace) { console.warn('[bw] workspace lift refused: workspace reorder unavailable on this host'); return }
+        const targetParentKey = parentKeyOf(targetIdPath)
+        if (!folderContainerOf(targetParentKey)) { console.warn('[bw] workspace lift refused: target level not found', targetParentKey); return }
+        const cutAt = targetParentKey.lastIndexOf('//')
+        const levelNamePath = cutAt === -1 ? targetParentKey : targetParentKey.slice(cutAt + 2)
+        const sourceKey = source.levelKey || ''
+        const targetNamePath = namePathOf(targetIdPath)
+        const targetNode = findTreeNode(rawTree, targetNamePath)
+        const targetMembers = targetNode ? collectMemberIds(targetNode) : []
+        const registryIds = (items || []).map((w) => w.workspaceId)
+        // after = insert before whatever follows the target block in the
+        // registry (undefined = append). before = before the block's head.
+        // A row-anchored lift (dropped on a workspace row's half) anchors at
+        // that row itself, not at the head/tail of its whole group block.
+        let anchor
+        if (anchorWorkspaceId) {
+          if (zone === 'before') {
+            anchor = anchorWorkspaceId
+          } else {
+            const rowAt = registryIds.indexOf(anchorWorkspaceId)
+            anchor = rowAt === -1 ? undefined : registryIds[rowAt + 1]
+          }
+        } else if (zone === 'before') {
+          anchor = targetMembers[0]
+        } else if (targetMembers.length) {
+          const tailAt = registryIds.indexOf(targetMembers[targetMembers.length - 1])
+          anchor = tailAt === -1 ? undefined : registryIds[tailAt + 1]
+        }
+        const newTitle = levelNamePath !== '' ? levelNamePath + '/' + source.leaf : source.leaf
+        const sameNameLevel = (source.folderPath || '') === levelNamePath
+        Promise.resolve()
+          .then(() => (sameNameLevel ? Promise.resolve() : renameWorkspace(source.workspaceId, newTitle)))
+          .then(() => insertWorkspaceBefore(source.workspaceId, anchor))
+          .then(() => {
+            // The level token is always a GROUP token: a workspace row dropped on
+            // from another level is painted beside the group that row lives in,
+            // so the token to place it next to is that group's name in the
+            // parent level's list (the row's own "w:" token lives one level in).
+            insertLevelToken(targetParentKey, 'w:' + source.workspaceId, targetNamePath.split('/').pop(), zone)
+            if (sourceKey !== targetParentKey) removeLevelToken(sourceKey, 'w:' + source.workspaceId)
+          })
           .catch(fail)
       }
       const commitWorkspaceMoveInto = (folderIdPath) => {
@@ -9163,17 +9429,12 @@ window.__ModuleLoader__.load({
         // drop is visible immediately, then sync the registry for the
         // workspace order other surfaces read.
         const orderParent = parentKeyOf(source.idPath)
-        const orderContainer = folderContainerOf(orderParent)
         const sourceName = namePathOf(source.idPath).split('/').pop()
         const targetName = namePathOf(targetIdPath).split('/').pop()
-        if (orderContainer) {
-          const names = (orderContainer.folders || []).map((n) => n.name).filter((n) => n !== sourceName)
-          const at = names.indexOf(targetName)
-          if (at !== -1) {
-            names.splice(zone === 'after' ? at + 1 : at, 0, sourceName)
-            if (typeof actions.setFolderOrder === 'function') actions.setFolderOrder(orderParent, names)
-          }
-        }
+        // v0.36.5: write the MIXED token list (group names + w:<id> tokens),
+        // not just the folder names — a level that already interleaves a bare
+        // workspace with its groups must keep those workspace positions.
+        writeLevelOrder(orderParent, sourceName, targetName, zone)
         Promise.resolve()
           .then(async () => {
             if (anchor === undefined) {
@@ -9621,8 +9882,11 @@ window.__ModuleLoader__.load({
         : undefined
       const renderLevelRows = (level, depth) => {
         const rows = []
-        for (const folder of level.folders) rows.push(...renderPlainFolder(folder, depth))
-        for (const workspace of level.workspaces) rows.push(...renderWorkspaceEntry({ workspace }, depth, wsPulseOf(workspace)))
+        for (const item of levelSeqOf(level)) {
+          rows.push(...(item.kind === 'ws'
+            ? renderWorkspaceEntry({ workspace: item.entry }, depth, wsPulseOf(item.entry))
+            : renderPlainFolder(item.node, depth)))
+        }
         return rows
       }
 
@@ -9652,8 +9916,11 @@ window.__ModuleLoader__.load({
           t,
         })]
         if (expanded) {
-          for (const child of node.folders) rows.push(...renderPlainFolder(child, depth + 1))
-          for (const workspace of node.workspaces) rows.push(...renderWorkspaceEntry({ workspace }, depth + 1, wsPulseOf(workspace)))
+          for (const item of levelSeqOf(node)) {
+            rows.push(...(item.kind === 'ws'
+              ? renderWorkspaceEntry({ workspace: item.entry }, depth + 1, wsPulseOf(item.entry))
+              : renderPlainFolder(item.node, depth + 1)))
+          }
         }
         return rows
       }
@@ -9708,8 +9975,11 @@ window.__ModuleLoader__.load({
         }
         bodyRows.push(...renderUngroupedBlock())
       } else {
-        for (const folder of tree.folders) bodyRows.push(...renderPlainFolder(folder, 0))
-        for (const workspace of tree.workspaces) bodyRows.push(...renderWorkspaceEntry({ workspace }, 0, wsPulseOf(workspace)))
+        for (const item of levelSeqOf(tree)) {
+          bodyRows.push(...(item.kind === 'ws'
+            ? renderWorkspaceEntry({ workspace: item.entry }, 0, wsPulseOf(item.entry))
+            : renderPlainFolder(item.node, 0)))
+        }
         bodyRows.push(...renderUngroupedBlock())
       }
       const isEmpty = bodyRows.length === 0

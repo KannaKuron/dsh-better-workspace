@@ -2033,8 +2033,8 @@ test('v0.36.0: folder rows drag as whole groups (members retitled under the targ
   // workspace drag uses (Chromium cancels a drag whose source moves).
   assert.match(text, /const folderDropEvents = \(idPath, path, node\) => \(\{\n        draggable: !searching,/,
     'folder rows carry draggable gated on search only')
-  assert.match(text, /setDrag\(\{ kind: 'folder', source: \{ idPath, path, memberIds: collectMemberIds\(node\) \}, over: null \}\)/,
-    'the drag source records the render idPath, the semantic name path and the member block')
+  assert.match(text, /setDrag\(\{ kind: 'folder', source: \{ idPath, path, memberIds: collectMemberIds\(node\), levelKey: parentKeyOf\(idPath\) \}, over: null \}\)/,
+    'the drag source records the render idPath, the semantic name path, the member block and its level key')
   // Batch move = the drag twin of submitFolderRename: every member title is
   // rewritten under the target prefix.
   assert.match(text, /const commitFolderMoveInto = \(source, targetIdPath\) => \{/,
@@ -2142,8 +2142,8 @@ test('v0.36.2: edge-band reorder needs no hover intent; refusals warn loudly', (
     'the 200ms intent timer is retired')
   assert.doesNotMatch(text, /armed: true/,
     'nothing arms a band any more')
-  assert.match(text, /const wsFolderSlotOf = \(folderIdPath\) => \(dragMatches\('folder'\) && drag\.over && drag\.over\.kind === 'folder' && drag\.over\.target === folderIdPath && \(drag\.over\.zone === 'before' \|\| drag\.over\.zone === 'after'\)\) \? drag\.over\.zone : null/,
-    'wsFolderSlotOf answers the band immediately')
+  assert.match(text, /const wsFolderSlotOf = \(folderIdPath\) => \(\(dragMatches\('folder'\) \|\| dragMatches\('workspace'\)\) && drag\.over && drag\.over\.kind === 'folder' && drag\.over\.target === folderIdPath && \(drag\.over\.zone === 'before' \|\| drag\.over\.zone === 'after'\)\) \? drag\.over\.zone : null/,
+    'wsFolderSlotOf answers the band immediately for both drag kinds')
   // Silent returns are gone: every refusal says why in the console.
   assert.match(text, /console\.warn\('\[bw\] folder reorder refused: cross-level target'\)/,
     'cross-level reorder refusal warns')
@@ -2165,9 +2165,9 @@ test('v0.36.3: an ancestor row is never a reorder target (leaving a parent is a 
   // a group to another LEVEL is a title rewrite — the rename gesture — not
   // an order change, so every ancestor refuses at hover (no preventDefault
   // means the platform shows its own 'no drop' cursor, which is the truth).
-  assert.match(text, /if \(drag\.source\.path === targetPath \|\| targetPath\.startsWith\(drag\.source\.path \+ '\/'\)\) return/,
+  assert.match(text, /if \(drag\.source\.path === targetPath \|\| targetPath\.startsWith\(drag\.source\.path \+ '\/'\)\) \{ clearOver\('folder', idPath\); return \}/,
     'self and descendant targets refuse first')
-  assert.match(text, /if \(targetPath !== '' && drag\.source\.path\.startsWith\(targetPath \+ '\/'\)\) return/,
+  assert.match(text, /if \(targetPath !== '' && drag\.source\.path\.startsWith\(targetPath \+ '\/'\)\) \{ clearOver\('folder', idPath\); return \}/,
     'every ancestor target refuses')
   assert.doesNotMatch(text, /const directParent = drag\.source\.path\.slice/,
     'the direct-parent carve-out is retired')
@@ -2195,7 +2195,7 @@ test('v0.36.4: group order is persisted per parent and drives the tree sort', ()
     'the workspace picker shares the same order')
   assert.match(text, /const orderOf = \(parentKey\) => \{/,
     'buildTree reads the order map per level')
-  assert.match(text, /const ra = rank\.has\(a\.name\) \? rank\.get\(a\.name\) : order\.length/,
+  assert.match(text, /const ra = rank\.has\(a\.name\) \? rank\.get\(a\.name\) : names\.length/,
     'known names rank by list position')
   assert.match(text, /sortRec\(child, child\.idPath\)/,
     'each child level sorts by its own idPath')
@@ -2205,8 +2205,8 @@ test('v0.36.4: group order is persisted per parent and drives the tree sort', ()
   // registry, so the drop is visible on the spot.
   assert.match(text, /const orderParent = parentKeyOf\(source\.idPath\)/,
     'the commit resolves the parent whose list it permutes')
-  assert.match(text, /actions\.setFolderOrder\(orderParent, names\)/,
-    'the commit persists the new sibling order')
+  assert.match(text, /writeLevelOrder\(orderParent, sourceName, targetName, zone\)/,
+    'the commit persists the new sibling order (mixed token list)')
   assert.match(text, /const folderContainerOf = \(key\) => \{/,
     'a level is resolvable by parent key')
   assert.match(text, /const parentKeyOf = \(folderIdPath\) => \{/,
@@ -2248,5 +2248,175 @@ test('v0.36.4: an open reorder slot splits the original row at its midpoint (no 
   // padded geometry is exactly what flickered.
   assert.match(text, /if \(zone === null\) \{\n              if \(drag\.over && drag\.over\.kind === 'folder' && drag\.over\.target === idPath && \(drag\.over\.zone === 'before' \|\| drag\.over\.zone === 'after'\)\) \{/,
     'a pointer in the vacated half keeps this row open slot')
+})
+
+test('v0.36.5: a level is ONE mixed sequence (bare workspaces interleave with group rows)', () => {
+  const text = read('src/client.js')
+  // THE bug behind "插到第一个永远失败": every level painted all group rows
+  // first and every bare workspace after, so a workspace dropped ABOVE a group
+  // committed its registry edit but still painted last. A level now carries one
+  // persisted sequence whose tokens are group names (the historical format) or
+  // "w:<workspaceId>" — the same list drives the render AND the reorder commit.
+  assert.match(text, /const wsById = new Map\(node\.workspaces\.map\(\(w\) => \[w\.workspaceId, w\]\)\)/,
+    'the level indexes its bare workspaces by id')
+  assert.match(text, /if \(token\.startsWith\('w:'\)\) \{/,
+    'a persisted token may name a bare workspace')
+  assert.match(text, /const id = token\.slice\(2\)/,
+    'the workspace token carries the workspaceId after the prefix')
+  assert.match(text, /seq\.push\(\{ kind: 'ws', entry \}\)/,
+    'a workspace token produces a workspace entry in the mixed sequence')
+  assert.match(text, /for \(const child of node\.folders\) if \(!seenFolders\.has\(child\.name\)\) seq\.push\(\{ kind: 'folder', node: child \}\)/,
+    'groups the list does not mention append after it')
+  assert.match(text, /for \(const w of node\.workspaces\) if \(!seenWorkspaces\.has\(w\.workspaceId\)\) seq\.push\(\{ kind: 'ws', entry: w \}\)/,
+    'workspaces the list does not mention append in registry order')
+  assert.match(text, /node\.seq = seq/,
+    'the mixed sequence rides the level node')
+  // The drag payload has to name the LEVEL it came from: the mixed reorder is
+  // siblings-only, so both drop gates compare that key.
+  assert.match(text, /for \(const w of node\.workspaces\) w\.levelKey = parentKey/,
+    'every workspace entry records the level it renders in')
+  // One token helper shared by renderer and commit: what the user sees and what
+  // the drop edits cannot drift apart.
+  assert.match(text, /const levelTokenOf = \(item\) => item\.kind === 'ws' \? 'w:' \+ item\.entry\.workspaceId : item\.node\.name/,
+    'a level item tokenizes as a group name or a w:<id> token')
+  assert.match(text, /const levelSeqOf = \(level\) => \(level && Array\.isArray\(level\.seq\)\)/,
+    'levels without a sequence fall back to groups-then-workspaces')
+  assert.equal((text.match(/for \(const item of levelSeqOf\(/g) || []).length, 3,
+    'every render path walks the mixed sequence (root level, group row, plain folder)')
+  // Chain compression rebuilds the folder nodes; the sequence must keep the
+  // compressed stand-ins in place or a bare workspace lands next to the wrong row.
+  assert.match(text, /const seq = Array\.isArray\(built\.seq\)/,
+    'chain compression repoints the sequence instead of dropping it')
+  assert.match(text, /return \{ \.\.\.built, folders, workspaces: built\.workspaces, seq \}/,
+    'the compressed tree carries the mixed sequence forward')
+})
+
+test('v0.36.5: a workspace row and a group row reorder into each other (mixed drag)', () => {
+  const text = read('src/client.js')
+  // A workspace row now answers the reorder slot for a GROUP source too — the
+  // mirror of a group row answering a workspace source. Same pending highlight,
+  // same slot padding: one mechanism, two drag kinds.
+  assert.match(text, /const wsDropHalf = \(workspaceId\) => \{\n        if \(!dragMatches\('workspace'\) && !dragMatches\('folder'\)\) return null/,
+    'a workspace row answers the slot for both drag kinds')
+  assert.match(text, /const wsFolderSlotOf = \(folderIdPath\) => \(\(dragMatches\('folder'\) \|\| dragMatches\('workspace'\)\)/,
+    'a group row opens its slot for both drag kinds')
+  // Both directions refuse cross-level targets at hover (no preventDefault means
+  // the platform shows its own "no drop" cursor, which is the truth).
+  // v0.36.6: the hover path now also CLEARS the stale highlight on refusal (an
+  // un-preventDefaulted hover used to leave over.zone pointing at whatever band
+  // the pointer passed through, so the drop read 'into' and landed at the end).
+  assert.equal((text.match(/if \(\(drag\.source\.levelKey \|\| ''\) !== \(workspace\.levelKey \|\| ''\)\) \{ clearOver\('workspace', workspace\.workspaceId\); return \}/g) || []).length, 1,
+    'the group-onto-workspace hover gate clears the stale highlight when it refuses')
+  assert.match(text, /if \(\(drag\.source\.levelKey \|\| ''\) !== \(workspace\.levelKey \|\| ''\)\) return/,
+    'the group-onto-workspace drop gate still refuses cross-level targets')
+  // v0.36.6: a workspace edge band on a group row accepts a same-DISK source so
+  // the workspace can be lifted out of its name group into the parent level —
+  // that lift (not INTO) is what makes "insert at the top" reachable.
+  assert.match(text, /if \(zone !== 'into' && \(drag\.source\.levelKey \|\| ''\) !== parentKeyOf\(idPath\) && \(ownerPrefixOf\(idPath\) \|\| ''\) !== \(drag\.source\.disk \|\| ''\)\) \{ clearOver\('folder', idPath\); return \}/,
+    'a workspace reaching a group edge band reorders in-level or lifts within the same disk level')
+  assert.match(text, /commitWorkspaceLift\(drag\.source, idPath, zone\)/,
+    'the cross-level edge-band drop commits the lift')
+  // The middle band keeps its old meaning; only the edge bands became reorder.
+  assert.match(text, /const reorder = zone !== 'into'/,
+    'the INTO band still means move-into, not reorder')
+  assert.match(text, /commitLevelReorder\(\{ kind: 'workspace', source: drag\.source \}, \{ kind: 'folder', target: idPath \}, zone\)/,
+    'a workspace dropped on a group edge band reorders the level')
+  assert.match(text, /commitLevelReorder\(\{ kind: 'folder', source: drag\.source \}, \{ kind: 'workspace', workspace \}, half \|\| 'before'\)/,
+    'a group dropped on a workspace half reorders the level')
+  // The shared commit: token per kind, the container decided by the TARGET, and
+  // the same-level re-check as belt and braces.
+  assert.match(text, /const commitLevelReorder = \(sourceRef, targetRef, zone\) => \{/,
+    'one commit serves both mixed directions')
+  assert.match(text, /const sourceToken = wsSource \? 'w:' \+ sourceRef\.source\.workspaceId : namePathOf\(sourceRef\.source\.idPath\)\.split\('\/'\)\.pop\(\)/,
+    'the source token is a workspace id or the group leaf name')
+  assert.match(text, /const containerKey = folderTarget \? parentKeyOf\(targetRef\.target\) : \(targetRef\.workspace\.levelKey \|\| ''\)/,
+    'the target names the level the list is written under')
+  assert.match(text, /if \(sourceLevelKey !== containerKey\) \{ console\.warn\('\[bw\] level reorder refused: cross-level target', sourceLevelKey, containerKey\); return \}/,
+    'the commit re-checks the level and says why it refused')
+  // The write itself: re-read the level's OWN tokens, move the one token,
+  // persist. Reading live tokens (not a stale index) is what keeps positions of
+  // every other row intact.
+  assert.match(text, /const tokens = levelSeqOf\(container\)\.map\(levelTokenOf\)/,
+    'the write starts from the level current token list')
+  assert.match(text, /tokens\.splice\(zone === 'after' \? targetAt \+ 1 : targetAt, 0, sourceToken\)/,
+    'the moved token lands before or after its target')
+  assert.match(text, /actions\.setFolderOrder\(containerKey, tokens\)/,
+    'the mixed list persists through the view store')
+  assert.match(text, /console\.warn\('\[bw\] level reorder refused: source not in this level', sourceToken\)/,
+    'a stale source token warns instead of silently dropping the drag')
+  // A group reorder writes the same mixed list (it used to write only names,
+  // which erased the workspace positions of that level).
+  assert.match(text, /writeLevelOrder\(orderParent, sourceName, targetName, zone\)/,
+    'the group reorder goes through the shared mixed write')
+  // A workspace->workspace drop still edits the registry, but once the level
+  // carries mixed tokens the registry alone no longer moves the row.
+  assert.match(text, /if \(tokens\.some\(\(token\) => token\.startsWith\('w:'\)\)\) \{/,
+    'a plain workspace reorder also refreshes the mixed list when the level has one')
+  assert.match(text, /writeLevelOrder\(levelKey, 'w:' \+ source\.workspaceId, 'w:' \+ targetWorkspace\.workspaceId, half === 'after' \? 'after' : 'before'\)/,
+    'the workspace reorder mirrors itself into the mixed list')
+})
+
+
+
+test('v0.36.6: a workspace lifts OUT of its group onto any same-disk level (insert-as-first)', () => {
+  const text = read('src/client.js')
+  // THE proven bug (probe12): hover over a group row of ANOTHER level refused
+  // without preventDefault, so {over} kept the INTO band the pointer crossed on
+  // its way down; the drop then ran move-into and left the row LAST in the
+  // group — exactly the user's "I aim at the first position and it lands at the
+  // end". A refused hover must also clear the stale highlight.
+  assert.match(text, /const clearOver = \(targetKind, target\) => setDrag\(\(current\) => \(current && current\.over && current\.over\.kind === targetKind && current\.over\.target === target\) \? \{ \.\.\.current, over: null \} : current\)/,
+    'refusals clear a stale highlight instead of leaving the old band to decide the drop')
+  // A workspace edge band on a group row now accepts a source from ANOTHER
+  // level as long as both live in the same disk scope; the middle band keeps
+  // move-into.
+  assert.match(text, /if \(zone !== 'into' && \(drag\.source\.levelKey \|\| ''\) !== parentKeyOf\(idPath\) && \(ownerPrefixOf\(idPath\) \|\| ''\) !== \(drag\.source\.disk \|\| ''\)\) \{ clearOver\('folder', idPath\); return \}/,
+    'the lift gate allows same-disk levels and refuses a disk crossing')
+  // Drop decides the band from the live highlight first, geometry second — a
+  // drop that arrives before any hover frame recorded a band still lands where
+  // the pointer is.
+  assert.match(text, /const overZone = drag\.over && drag\.over\.kind === 'folder' && drag\.over\.target === idPath && \(drag\.over\.zone === 'before' \|\| drag\.over\.zone === 'after'\) \? drag\.over\.zone : null/,
+    'the drop prefers the hovered band')
+  assert.match(text, /const geoZone = rowZone\(event\) \|\| 'into'/,
+    'a band-less drop falls back to the pointer geometry')
+  assert.match(text, /if \(\(drag\.source\.levelKey \|\| ''\) === parentKeyOf\(idPath\)\) commitLevelReorder\(\{ kind: 'workspace', source: drag\.source \}, \{ kind: 'folder', target: idPath \}, zone\)\n            else commitWorkspaceLift\(drag\.source, idPath, zone\)/,
+    'same level reorders, another level lifts')
+  // The lift itself: a title rewrite to the TARGET level (leaving a group is a
+  // rename, not a disk move), then a registry insert, then the level token that
+  // actually paints the row in place.
+  assert.match(text, /const commitWorkspaceLift = \(source, targetIdPath, zone, anchorWorkspaceId\) => \{/,
+    'the lift commit exists (an optional row anchor serves the workspace-row drop)')
+  // v0.36.6: a cross-LEVEL drop on a workspace row half is a placement too —
+  // renaming into the target row's group used to leave the row somewhere else
+  // inside that group (the "line here, lands there" report).
+  assert.match(text, /if \(workspaceSlash && \(targetWorkspace\.levelKey \|\| ''\) !== \(source\.levelKey \|\| ''\)\) \{\n          commitWorkspaceLift\(source, targetWorkspace\.levelKey \|\| '', half === 'after' \? 'after' : 'before', targetWorkspace\.workspaceId\)/,
+    'a cross-level workspace-row drop lifts to the target row level and anchors at that row')
+  assert.match(text, /if \(anchorWorkspaceId\) \{\n          if \(zone === 'before'\) \{\n            anchor = anchorWorkspaceId/,
+    'a row-anchored lift anchors at the dropped-on row')
+  assert.match(text, /insertLevelToken\(targetParentKey, 'w:' \+ source\.workspaceId, targetNamePath\.split\('\/'\)\.pop\(\), zone\)/,
+    'the level token lands beside the target group/token in the parent level')
+  assert.match(text, /const levelNamePath = cutAt === -1 \? targetParentKey : targetParentKey\.slice\(cutAt \+ 2\)/,
+    'the target level is read back out of the idPath')
+  assert.match(text, /const newTitle = levelNamePath !== '' \? levelNamePath \+ '\/' \+ source\.leaf : source\.leaf/,
+    'the lifted workspace is retitled to its new level (or to a bare leaf at the root)')
+  assert.match(text, /\.then\(\(\) => \(sameNameLevel \? Promise\.resolve\(\) : renameWorkspace\(source\.workspaceId, newTitle\)\)\)/,
+    'a same-name level skips the redundant rename')
+  assert.match(text, /anchor = targetMembers\[0\]/,
+    'before anchors at the target block head (so it lands first)')
+  assert.match(text, /const tailAt = registryIds\.indexOf\(targetMembers\[targetMembers\.length - 1\]\)/,
+    'after anchors at the id following the whole target block, not its head')
+  // insertLevelToken / removeLevelToken are the missing halves of writeLevelOrder:
+  // a lifted token is not in the target level yet, and the level it LEFT must
+  // not keep a stale token that a later re-group could resurrect.
+  assert.match(text, /const insertLevelToken = \(containerKey, sourceToken, targetToken, zone\) => \{/,
+    'the lift splices a token into a level that does not have it yet')
+  assert.match(text, /const tokens = levelSeqOf\(container\)\.map\(levelTokenOf\)\.filter\(\(token\) => token !== sourceToken\)/,
+    'the lift drops a duplicate token before splicing')
+  assert.match(text, /if \(targetAt === -1\) \{ console\.warn\('\[bw\] workspace lift refused: target group not in this level', targetToken\); return false \}/,
+    'a missing target token warns instead of silently misplacing the row')
+  assert.match(text, /const removeLevelToken = \(containerKey, token\) => \{/,
+    'the level the workspace LEFT is cleaned up')
+  assert.match(text, /if \(sourceKey !== targetParentKey\) removeLevelToken\(sourceKey, 'w:' \+ source\.workspaceId\)/,
+    'a lift within the same level never removes its own token')
 })
 

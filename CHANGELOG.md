@@ -3,6 +3,14 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.36.0 — 2026-10-23(未发版)
+
+**类型**:fix ×2 / feat ×1 / issue #14(性能)。
+
+- **fix #14([性能] 大会话改名卡 6 秒)**:改名此前走宿主 `sessions.using` retain 契约——它会 `await reference.ready()` 加载整段会话历史再执行操作,大会话(5MB transcript)改名要等历史加载完(api/session/rename 6s+),改名 RPC 本身只要 20ms;官方 ui-workspace 的 renameSession 是同款写法(宿主契约如此)。现在改三层快慢路径:已打开的会话直借 `sessions.binding(id)`(binding 存在即已 retain,与 using 内部同一 SessionBinding,行为等价);关闭的会话 feature-probe `sessions.manager.rename`(宿主 SessionManager 的不打开历史路径);老宿主回退 `sessions.using`(0.1.6 契约)。宿主把不打开历史的改名公开成正式 API 后整体切换(见 AGENTS.md 宿主跟随清单)。批量改名同名受益。
+- **fix 名称组「自定义外观」完全失效**:外观对话框的保存 key 用的是 `payload.path`(纯名称路径),渲染读的是 `folder:'<idPath>'`(`<wsId>//<namePath>`,用于消歧不同磁盘层级的同名组)——顶层组两者恰好相同所以没暴露,子层级名称组(名称里的 `/` 派生的嵌套组)保存到渲染读不到的 key 上,设置即丢。keyOf 统一回退 `payload.idPath || payload.path`。历史脏数据无迁移价值(渲染本来就读不到)。
+- **feat 工作区分组行可拖拽(整组移动)**:名称组行此前只有投放区没有拖拽把手。现在组行可拖到另一个组行上完成整组移动——组成员逐个改写名称前缀(与「重命名分组」同一 sweep 语义,`namePathOf` 从 idPath 取纯名称路径);防环:拖到自身或自己的子孙组上光标禁止、落点不接管。工作区拖到组行的既有归组行为不变;两种源悬停组行都亮蓝框(dashed → solid)。已知局限与重命名分组一致:名称路径是全局的,跨磁盘层的同名组会一起移动。
+- 冒烟断言 +2(v0.36.0):外观 key 的 idPath 回退断言、组行拖拽五件套(draggable 门搜索 / 一帧 arm 拖拽态 / commitFolderMoveInto 成员 sweep / 防环 hover+commit 各一次 / wsDropInto 双源)。
 ## v0.35.1 — 2026-10-22
 
 **类型**:fix / 用户验收反馈(工作区行内「⋯」退役收尾)。

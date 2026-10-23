@@ -999,6 +999,18 @@ test('official mirror: pin/archive surface, archived filter, gates, status migra
   assert.doesNotMatch(text, /'settings\.sessionMenu/)
   assert.doesNotMatch(text, /IconEllipsisOutline16/)
   assert.doesNotMatch(text, /function WorkspaceRow\(\{ workspace, depth, count, sessionsOpen, onToggle, onStart, onMenu,/)
+  // v0.35.2 (issue #14): rename tiers, cheapest first — open rows borrow the
+  // retained binding directly, closed rows go through manager.rename ("without
+  // opening its history"), and 0.1.6-era hosts keep the sessions.using fallback
+  // (slow but the only legal path there).
+  assert.match(text, /const manager = sessions\.manager/)
+  assert.match(text, /typeof manager\.rename === 'function'/)
+  assert.match(text, /await manager\.rename\(sessionId, title\)/)
+  const tierFast = text.indexOf('const face = binding ? binding.session : undefined')
+  const tierMgr = text.indexOf('typeof manager.rename === \'function\'')
+  const tierUsing = text.indexOf('(reference) => reference.binding.session.rename(title)')
+  assert.ok(tierFast !== -1 && tierMgr !== -1 && tierUsing !== -1, 'all three rename tiers present')
+  assert.ok(tierFast < tierMgr && tierMgr < tierUsing, 'rename tier order: binding < manager < using')
   // The view options menu rides the OFFICIAL dictionary for the filter
   // section and hides it entirely where the host lacks the keys.
   assert.match(text, /official\('filterBy\.label'\)/)
@@ -2003,3 +2015,48 @@ test('issue #13: local reads and writes ride the PRIVATE store instance', () => 
     'both inject faces must carry the private store getter')
 })
 
+/* ------------------------------ v0.36.0 ------------------------------ */
+
+test('v0.36.0: sub-level folder appearance saves by the RENDER key (idPath)', () => {
+  const text = read('src/client.js')
+  // keyOf must produce the SAME key the render side reads (renderPlainFolder
+  // reads 'folder:' + idPath; idPath = node.idPath || node.path). Saving by
+  // payload.path alone parked sub-level group styling under a key the render
+  // never reads (issue: name-slash group appearance never applied).
+  assert.match(text, /if \(kind === 'folder'\) return 'folder:' \+ \(payload\.idPath \|\| payload\.path\)/,
+    'the appearance entryKey must fall back through idPath exactly like the render side')
+})
+
+test('v0.36.0: folder rows drag as whole groups (members retitled under the target prefix)', () => {
+  const text = read('src/client.js')
+  // The row must be draggable and arm the same one-frame drag state the
+  // workspace drag uses (Chromium cancels a drag whose source moves).
+  assert.match(text, /const folderDropEvents = \(idPath, path\) => \(\{\n        draggable: !searching,/,
+    'folder rows carry draggable gated on search only')
+  assert.match(text, /setDrag\(\{ kind: 'folder', source: \{ idPath, path \}, over: null \}\)/,
+    'the drag source records both the render idPath and the semantic name path')
+  // Batch move = the drag twin of submitFolderRename: every member title is
+  // rewritten under the target prefix.
+  assert.match(text, /const commitFolderMoveInto = \(targetIdPath\) => \{/,
+    'the commit helper exists')
+  assert.match(text, /const affected = \(items \|\| \[\]\)\.filter\(\(w\) => String\(w\.title \|\| ''\)\.startsWith\(prefix\)\)/,
+    'members are swept by title prefix over all items')
+  assert.match(text, /await renameWorkspace\(w\.workspaceId, targetPath \+ String\(w\.title\)\.slice\(source\.path\.length\)\)/,
+    'each member is retitled targetPath + its relative title')
+  // Dropping a group into itself or its own descendant would loop: refused
+  // at hover (no preventDefault) AND again at commit (belt and braces).
+  const hoverCount = (text.match(/drag\.source\.path === targetPath \|\| targetPath\.startsWith\(drag\.source\.path \+ '\/'\)\) return/g) || []).length
+  assert.equal(hoverCount, 1, 'the hover refuses self/descendant targets exactly once')
+  const commitCount = (text.match(/source\.path === targetPath \|\| targetPath\.startsWith\(source\.path \+ '\/'\)\) return/g) || []).length
+  assert.equal(commitCount, 1, 'the commit re-checks self/descendant targets exactly once')
+  // The namePath helper is shared by hover refusal and the commit.
+  assert.equal((text.match(/const namePathOf = \(folderIdPath\) => \{/g) || []).length, 1,
+    'namePathOf is defined once')
+  // Folder rows light up for both drop kinds.
+  assert.match(text, /const wsDropInto = \(path\) => \(dragMatches\('workspace'\) \|\| dragMatches\('folder'\)\)/,
+    'the folder drop highlight accepts both drag kinds')
+  // The render passes BOTH keys: idPath for the drag/highlight state,
+  // node.path for the batch rename prefix.
+  assert.match(text, /dragEvents: folderDropEvents\(idPath, node\.path\)/,
+    'the render hands the row both the idPath and the name path')
+})

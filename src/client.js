@@ -7886,7 +7886,7 @@ window.__ModuleLoader__.load({
       const [copyNotice, setCopyNotice] = React.useState(null) // { seq, ok } copy-session-id notice
       const [customize, setCustomize] = React.useState(null) // { kind, entryKey, name }
       const [errorText, setErrorText] = React.useState(null)
-      const [drag, setDrag] = React.useState(null) // { kind: 'workspace'|'session', source, over } | null
+      const [drag, setDrag] = React.useState(null) // { kind: 'workspace'|'session'|'folder', source, over } | null
       // Workspace drags arm their state one frame LATE (see workspaceDragEvents):
       // arming synchronously re-renders during the dragstart dispatch, the chain
       // expansion inserts rows above the drag source, the cursor leaves the
@@ -8078,7 +8078,11 @@ window.__ModuleLoader__.load({
         return Object.keys(style).length > 0 ? style : null
       }
       const keyOf = (kind, payload) => {
-        if (kind === 'folder') return 'folder:' + payload.path
+        // Render keys folders by idPath (renderPlainFolder), which prefixes
+        // the ws id to disambiguate same-named groups across disk levels;
+        // saving by payload.path alone made sub-level group styling
+        // unreachable (name-slash group appearance never applied).
+        if (kind === 'folder') return 'folder:' + (payload.idPath || payload.path)
         if (kind === 'workspace') return 'workspace:' + payload.workspaceId
         if (kind === 'session') return 'session:' + payload.id
         if (kind === 'sgroup') return 'sgroup:' + payload.workspaceId + '|' + payload.path
@@ -8655,7 +8659,9 @@ window.__ModuleLoader__.load({
         const over = drag.over
         return over && over.kind === 'workspace' && over.target === workspaceId ? over.half : null
       }
-      const wsDropInto = (path) => dragMatches('workspace') && drag.over && drag.over.kind === 'folder' && drag.over.target === path
+      // Folder rows light up for a workspace drop (regroup one workspace)
+      // AND a folder drop (whole-group move) alike.
+      const wsDropInto = (path) => (dragMatches('workspace') || dragMatches('folder')) && drag.over && drag.over.kind === 'folder' && drag.over.target === path
       const workspaceDragEvents = (workspace) => ({
         draggable: !searching && canDragWorkspace,
         onDragStart: (event) => {
@@ -8733,21 +8739,62 @@ window.__ModuleLoader__.load({
           commitWorkspaceDrop(workspace, half)
         },
       })
-      const folderDropEvents = (path) => ({
+      // A folder row accepts BOTH drag kinds: a workspace drop regroups that
+      // one workspace (commitWorkspaceMoveInto), a folder drop moves the
+      // whole group — every member retitled under the target prefix
+      // (commitFolderMoveInto, the drag twin of submitFolderRename).
+      // Dropping a group onto itself or its own descendant would loop, so
+      // the hover refuses there and the browser shows its "no drop" cursor.
+      const namePathOf = (folderIdPath) => {
+        const cutAt = folderIdPath.lastIndexOf('//')
+        return cutAt === -1 ? folderIdPath : folderIdPath.slice(cutAt + 2)
+      }
+      const folderDropEvents = (idPath, path) => ({
+        draggable: !searching,
+        onDragStart: (event) => {
+          if (searching) return
+          event.stopPropagation()
+          try {
+            event.dataTransfer.effectAllowed = 'move'
+            event.dataTransfer.setData('text/plain', idPath)
+          } catch { /* drag payload is best-effort */ }
+          // Same one-frame arm as the workspace drag: Chromium cancels a
+          // just-started drag whose source element moves under the cursor.
+          if (wsDragArmTimer.current !== null) clearTimeout(wsDragArmTimer.current)
+          wsDragArmTimer.current = setTimeout(() => {
+            wsDragArmTimer.current = null
+            setDrag({ kind: 'folder', source: { idPath, path }, over: null })
+          }, 0)
+        },
+        onDragEnd: () => {
+          if (wsDragArmTimer.current !== null) { clearTimeout(wsDragArmTimer.current); wsDragArmTimer.current = null }
+          setDrag(null)
+        },
         onDragOver: (event) => {
-          if (!dragMatches('workspace')) return
+          if (dragMatches('folder')) {
+            const targetPath = namePathOf(idPath)
+            if (drag.source.path === targetPath || targetPath.startsWith(drag.source.path + '/')) return
+          } else if (!dragMatches('workspace')) {
+            return
+          }
           event.preventDefault()
           event.stopPropagation()
           try { event.dataTransfer.dropEffect = 'move' } catch { }
-          setDrag(current => (current && current.over && current.over.kind === 'folder' && current.over.target === path)
+          setDrag(current => (current && current.over && current.over.kind === 'folder' && current.over.target === idPath)
             ? current
-            : (current ? { ...current, over: { kind: 'folder', target: path } } : current))
+            : (current ? { ...current, over: { kind: 'folder', target: idPath } } : current))
         },
         onDrop: (event) => {
+          if (dragMatches('folder')) {
+            event.preventDefault()
+            event.stopPropagation()
+            commitFolderMoveInto(idPath)
+            return
+          }
           if (!dragMatches('workspace')) return
           event.preventDefault()
           event.stopPropagation()
-          commitWorkspaceMoveInto(path)
+          commitWorkspaceMoveInto(idPath)
         },
       })
       const nextWorkspaceAfter = (folderPath, workspaceId) => {
@@ -8796,6 +8843,28 @@ window.__ModuleLoader__.load({
         Promise.resolve()
           .then(() => renameWorkspace(source.workspaceId, newTitle))
           .then(() => insertWorkspaceBefore(source.workspaceId))
+          .catch(fail)
+      }
+      // Group drag (v0.36.0): moving a folder rewrites EVERY member's title
+      // under the target prefix — the same batch rename the rename-group
+      // dialog (submitFolderRename) performs. Titles are global name paths,
+      // so the member sweep is prefix-based over all items (same known
+      // limitation as that dialog: same-named groups on different disk
+      // levels move together). Self / descendant targets are already
+      // refused at hover time; re-checked here as belt and braces.
+      const commitFolderMoveInto = (targetIdPath) => {
+        const source = drag.source
+        setDrag(null)
+        const targetPath = namePathOf(targetIdPath)
+        if (source.path === targetPath || targetPath.startsWith(source.path + '/')) return
+        const prefix = source.path + '/'
+        const affected = (items || []).filter((w) => String(w.title || '').startsWith(prefix))
+        Promise.resolve()
+          .then(async () => {
+            for (const w of affected) {
+              await renameWorkspace(w.workspaceId, targetPath + String(w.title).slice(source.path.length))
+            }
+          })
           .catch(fail)
       }
 
@@ -9257,7 +9326,7 @@ window.__ModuleLoader__.load({
           onToggle: () => { if (!searching) actions.setExpanded(idPath, !expanded) },
           onContextMenu: (e) => openCtx('folder', { path: node.path, name: node.name, idPath, scope: node.scope, empty: countWorkspaces(node) === 0 }, e),
           dropInto: wsDropInto(idPath),
-          dragEvents: folderDropEvents(idPath),
+          dragEvents: folderDropEvents(idPath, node.path),
           custStyle: rowStyleOf('folder:' + idPath),
           iconMode: (styleEntry('folder:' + idPath) || {}).icon || 'solid',
           pulse: expanded ? null : folderPulseOf(node),
@@ -10195,33 +10264,54 @@ window.__ModuleLoader__.load({
         if (!result || !result.ok) throw new Error(result && result.error ? result.error.message : 'session search failed')
         return result.value
       }
-      // dsh 0.1.6-alpha.2 retention contract: rename borrows through
-      // sessions.using with an explicit source — the old plain binding(id)
-      // only ever saw already-retained sessions, so renaming a closed row
-      // reported "unknown session". Fork and open go through the uiWorkspace
-      // navigation service: ISessions no longer carries open() at all
-      // (navigation belongs to the view owner, replaceMain).
+      // Rename performance (issue #14): sessions.using retains the session and
+      // awaits reference.ready FIRST, so renaming a closed 5MB row stalled ~6s
+      // loading its whole history just to send a 20ms rename RPC (the rename
+      // itself is independent of the transcript). Tiered, cheapest first:
       //
-      // Host-era compat (0.1.5-rc.x hosts ship ISessions.binding only — the
-      // 0.1.6-alpha.2 contract replaced it with using): calling sessions.using
-      // there died with "sessions.using is not a function", which took down
-      // every rename path (row dialog, session-group batch, group move). Prefer
-      // the new contract, fall back to the old one, and only then fail loud.
+      // 1. Open session → borrow binding directly. On 0.1.6+ hosts binding(id)
+      //    only sees retained scopes (service.ts:539 `scopes.get(id)?.binding`,
+      //    undefined when closed), so "a binding comes back" IS the open test;
+      //    on 0.1.5-rc.x hosts every row is visible, identical to the old
+      //    fallback. Same SessionBinding object the using path borrows, so
+      //    title projection / list refresh behave exactly the same.
+      // 2. Closed session → sessions.manager.rename(id, title): "Rename a
+      //    Session ... without opening its history" (manager.ts:578) — a bare
+      //    remote.session.rename plus the title projection. manager is a
+      //    TS-private field of ClientSessions (service.ts:245), reachable at
+      //    runtime; feature-probed so hosts without it skip the tier.
+      // 3. Fallback → the 0.1.6-alpha.2 retention contract: sessions.using
+      //    with an explicit source (slow — loads history — but the only legal
+      //    path on hosts predating manager.rename). 0.1.5-rc.x hosts ship
+      //    ISessions.binding only; tier 1 already served them. Then fail loud.
+      // Fork and open go through the uiWorkspace navigation service: ISessions
+      // no longer carries open() at all (navigation belongs to the view owner,
+      // replaceMain).
       const renameSession = async (sessionId, title) => {
+        const fail = (result) => new Error(result && result.error ? result.error.message : 'session rename failed')
+        const binding = typeof sessions.binding === 'function' ? sessions.binding(sessionId) : undefined
+        const face = binding ? binding.session : undefined
+        if (face && typeof face.rename === 'function') {
+          const result = await face.rename(title)
+          if (!result || !result.ok) throw fail(result)
+          return
+        }
+        const manager = sessions.manager
+        if (manager && typeof manager.rename === 'function') {
+          const result = await manager.rename(sessionId, title)
+          if (!result || !result.ok) throw fail(result)
+          return
+        }
         if (typeof sessions.using === 'function') {
           const result = await sessions.using(
             sessionId,
             { source: 'workspaceOperation' },
             (reference) => reference.binding.session.rename(title),
           )
-          if (!result || !result.ok) throw new Error(result && result.error ? result.error.message : 'session rename failed')
+          if (!result || !result.ok) throw fail(result)
           return
         }
-        const binding = typeof sessions.binding === 'function' ? sessions.binding(sessionId) : undefined
-        const face = binding ? binding.session : undefined
-        if (!face || typeof face.rename !== 'function') throw new Error('session rename is unavailable on this host')
-        const result = await face.rename(title)
-        if (!result || !result.ok) throw new Error(result && result.error ? result.error.message : 'session rename failed')
+        throw new Error('session rename is unavailable on this host')
       }
       const forkSession = (sessionId) => {
         uiWorkspace.forkSession(sessionId)

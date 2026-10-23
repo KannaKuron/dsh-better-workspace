@@ -4673,7 +4673,7 @@ window.__ModuleLoader__.load({
       '.bw-rows-exits{position:fixed;inset:0;contain:strict;overflow:clip;pointer-events:none}',
       '.bw-tree[data-bw-density="compact"]{--bw-row-h:28px;--bw-session-h:26px}',
       '.bw-tree[data-bw-density="roomy"]{--bw-row-h:40px;--bw-session-h:38px}',
-      '.bw-row{display:flex;align-items:center;gap:6px;height:var(--bw-row-h,34px);padding:0 8px;padding-inline-start:calc(8px + var(--bw-indent,0px));border-radius:var(--dsw-radius-md,8px);cursor:pointer;user-select:none;font-size:14px;line-height:20px;color:var(--dsw-alias-label-primary,#e6e6e6);position:relative}',
+      '.bw-row{display:flex;align-items:center;gap:6px;height:var(--bw-row-h,34px);padding:0 8px;padding-inline-start:calc(8px + var(--bw-indent,0px));border-radius:var(--dsw-radius-md,8px);cursor:pointer;user-select:none;font-size:14px;line-height:20px;color:var(--dsw-alias-label-primary,#e6e6e6);position:relative;transition:height .15s ease-out,padding .15s ease-out}',
       '.bw-drop-before::before{content:"";position:absolute;z-index:1;left:0;right:4px;top:-7px;height:12px;pointer-events:none;background:linear-gradient(55deg,transparent 0,var(--dsw-alias-state-business-primary,#5b8def) 50%,transparent 100%) 0 0/5px 7px no-repeat,linear-gradient(125deg,transparent 0,var(--dsw-alias-state-business-primary,#5b8def) 50%,transparent 100%) 0 5px/5px 7px no-repeat,linear-gradient(var(--dsw-alias-state-business-primary,#5b8def),var(--dsw-alias-state-business-primary,#5b8def)) 4px 5px/calc(100% - 4px) 2px no-repeat}',
       '.bw-drop-after::after{content:"";position:absolute;z-index:1;left:0;right:4px;bottom:-7px;height:12px;pointer-events:none;background:linear-gradient(55deg,transparent 0,var(--dsw-alias-state-business-primary,#5b8def) 50%,transparent 100%) 0 0/5px 7px no-repeat,linear-gradient(125deg,transparent 0,var(--dsw-alias-state-business-primary,#5b8def) 50%,transparent 100%) 0 5px/5px 7px no-repeat,linear-gradient(var(--dsw-alias-state-business-primary,#5b8def),var(--dsw-alias-state-business-primary,#5b8def)) 4px 5px/calc(100% - 4px) 2px no-repeat}',
       '.bw-drop-into{outline:1.5px dashed var(--dsw-alias-brand-primary,#5b8def);outline-offset:-1.5px}',
@@ -4681,6 +4681,15 @@ window.__ModuleLoader__.load({
       // rim + a tinted wash so "this drop joins a group" reads stronger than
       // the reorder dashes above.
       '.bw-drop-into-strong{outline:2px solid var(--dsw-alias-brand-primary,#5b8def);outline-offset:-2px;background:color-mix(in srgb, var(--dsw-alias-brand-primary,#5b8def) 16%, transparent)}',
+      // v0.36.1 edge-band reorder slot on group rows: the row SPLITS OPEN to
+      // twice its height so "a row will land here" is visible without
+      // staring for the thin official line. Both the height and the content
+      // slide are transitioned (padding, which CAN animate — align-items
+      // cannot, it teleports the content and feels janky), so the row
+      // opens/closes like a drawer, not a flash. The gap fills with a faint
+      // brand wash; the middle half of the row (drop-into) never opens.
+      '.bw-slot-above{height:calc(var(--bw-row-h,34px)*2);padding-top:var(--bw-row-h,34px);background:linear-gradient(to bottom, color-mix(in srgb, var(--dsw-alias-brand-primary,#5b8def) 10%, transparent) 0, transparent calc(var(--bw-row-h,34px)))}',
+      '.bw-slot-below{height:calc(var(--bw-row-h,34px)*2);padding-bottom:var(--bw-row-h,34px);background:linear-gradient(to top, color-mix(in srgb, var(--dsw-alias-brand-primary,#5b8def) 10%, transparent) 0, transparent calc(var(--bw-row-h,34px)))}',
       // Session drag whose source sits in a group: a quiet dashed line at the
       // bottom of the tree says "anywhere outside a group = out of it". Kept
       // faint on purpose — the row outlines are the loud feedback.
@@ -5977,7 +5986,7 @@ window.__ModuleLoader__.load({
       }
     }
 
-    function FolderRow({ node, depth, expanded, onToggle, onContextMenu, dropInto, dragEvents, custStyle, iconMode, pulse, active, dataRowKey, t }) {
+    function FolderRow({ node, depth, expanded, onToggle, onContextMenu, dropInto, dropSlot, dragEvents, custStyle, iconMode, pulse, active, dataRowKey, t }) {
       const total = countWorkspaces(node)
       const iconEl = iconOf(iconMode, expanded)
       // Hidden status dots breathe on the icon; with the icon hidden (mode
@@ -5986,7 +5995,7 @@ window.__ModuleLoader__.load({
         ? E(PulseGlow, { state: pulse }, iconEl || (typeof ui.StateDot === 'function' ? E(ui.StateDot, { state: pulse, size: 10 }) : null))
         : iconEl
       return E('div', {
-        className: cls('bw-row', 'bw-container-row', dropInto && 'bw-drop-into', dropInto && 'bw-drop-into-strong'),
+        className: cls('bw-row', 'bw-container-row', dropSlot === 'before' && 'bw-slot-above', dropSlot === 'after' && 'bw-slot-below', dropInto && 'bw-drop-into', dropInto && 'bw-drop-into-strong'),
         'data-row-key': dataRowKey,
         style: { '--bw-indent': (depth * 12) + 'px', ...(custStyle || {}), ...(pulse ? { '--bw-pulse-color': PULSE_COLORS[pulse] || PULSE_COLORS.ongoing } : null) },
         onClick: onToggle,
@@ -7893,6 +7902,11 @@ window.__ModuleLoader__.load({
       // source element, and Chromium cancels the whole gesture. dragEnd clears
       // the timer so a same-tick cancel never leaves a ghost drag behind.
       const wsDragArmTimer = React.useRef(null)
+      // Group-hover auto-expand (v0.36.0): hovering a COLLAPSED group's
+      // middle band for a beat opens it so the landing spot is visible
+      // instead of a blind drop. One timer per drag, keyed by target row.
+      const folderHoverTimer = React.useRef(null)
+      const folderHoverTarget = React.useRef(null)
       // Quote-on-land eligibility sets (mount-scoped):
       // - blankSeen: ids observed BLANK in any snapshot. A blank row is a
       //   freshly created New Session, so ONLY these may ever receive an
@@ -8642,6 +8656,22 @@ window.__ModuleLoader__.load({
         const rect = event.currentTarget.getBoundingClientRect()
         return event.clientY < rect.top + rect.height / 2 ? 'before' : 'after'
       }
+      // Three-band targeting for group rows (react-arborist style): the
+      // outer QUARTERS mean "reorder against this group", the middle HALF
+      // means "drop into" — so move-into (the framed highlight) is easy to
+      // hit and reorder never swallows the pointer. Judged in LOGICAL
+      // geometry (--bw-row-h, which never animates): the opened slot doubles
+      // the rendered height, and a rect measured against that animated
+      // height flips the bands back and forth — the open/close jitter.
+      const rowZone = (event) => {
+        const el = event.currentTarget
+        const rect = el.getBoundingClientRect()
+        const tree = el.closest('.bw-tree')
+        const logical = tree ? (parseFloat(getComputedStyle(tree).getPropertyValue('--bw-row-h')) || 34) : 34
+        if (event.clientY < rect.top + logical * 0.25) return 'before'
+        if (event.clientY > rect.top + logical * 0.75) return 'after'
+        return 'into'
+      }
       const dragMatches = (kind) => drag !== null && drag.kind === kind
       const canDragWorkspace = typeof insertWorkspaceBefore === 'function'
       // Session REORDER needs the host insertSessionBefore action; dragging a
@@ -8660,8 +8690,10 @@ window.__ModuleLoader__.load({
         return over && over.kind === 'workspace' && over.target === workspaceId ? over.half : null
       }
       // Folder rows light up for a workspace drop (regroup one workspace)
-      // AND a folder drop (whole-group move) alike.
-      const wsDropInto = (path) => (dragMatches('workspace') || dragMatches('folder')) && drag.over && drag.over.kind === 'folder' && drag.over.target === path
+      // AND a folder drop (whole-group move) alike — the INTO band only:
+      // an edge-band reorder slot draws the official insert line instead.
+      const wsDropInto = (path) => (dragMatches('workspace') || dragMatches('folder')) && drag.over && drag.over.kind === 'folder' && drag.over.target === path && (!drag.over.zone || drag.over.zone === 'into')
+      const wsFolderSlotOf = (folderIdPath) => (dragMatches('folder') && drag.over && drag.over.kind === 'folder' && drag.over.target === folderIdPath && (drag.over.zone === 'before' || drag.over.zone === 'after')) ? drag.over.zone : null
       const workspaceDragEvents = (workspace) => ({
         draggable: !searching && canDragWorkspace,
         onDragStart: (event) => {
@@ -8695,6 +8727,7 @@ window.__ModuleLoader__.load({
         },
         onDragEnd: () => {
           if (wsDragArmTimer.current !== null) { clearTimeout(wsDragArmTimer.current); wsDragArmTimer.current = null }
+          clearFolderHoverTimer()
           setDrag(null)
         },
         onDragOver: (event) => {
@@ -8749,7 +8782,50 @@ window.__ModuleLoader__.load({
         const cutAt = folderIdPath.lastIndexOf('//')
         return cutAt === -1 ? folderIdPath : folderIdPath.slice(cutAt + 2)
       }
-      const folderDropEvents = (idPath, path) => ({
+      // idPath = [<wsId>//]*<namePath>: the owner prefix names the disk
+      // level a group renders in. Reordering only makes sense between
+      // groups of the SAME level — across levels a group's position
+      // belongs to its own container.
+      const ownerPrefixOf = (folderIdPath) => {
+        const cutAt = folderIdPath.lastIndexOf('//')
+        return cutAt === -1 ? '' : folderIdPath.slice(0, cutAt)
+      }
+      // Whole-block member ids of a name group, from this rendering level
+      // down: a reorder slides EVERY nested workspace (prefixes untouched,
+      // so sub-groups travel with the block; only the registry order
+      // shifts).
+      const collectMemberIds = (folderNode) => {
+        const acc = []
+        const walk = (level) => {
+          for (const w of level.workspaces || []) acc.push(w.workspaceId)
+          for (const f of level.folders || []) {
+            if (f.kind === 'ws') acc.push(f.workspace.workspaceId)
+            else walk(f)
+          }
+        }
+        walk(folderNode)
+        return acc
+      }
+      const clearFolderHoverTimer = () => {
+        if (folderHoverTimer.current !== null) { clearTimeout(folderHoverTimer.current); folderHoverTimer.current = null }
+        folderHoverTarget.current = null
+      }
+      // Hovering a COLLAPSED group's middle band for a beat opens it: the
+      // user sees the landing spot instead of dropping blind. One timer
+      // per drag, keyed by target row; cleanup rides the drag end.
+      const scheduleFolderHoverExpand = (folderIdPath, folderNode, wantExpand) => {
+        if (folderHoverTimer.current !== null && folderHoverTarget.current !== folderIdPath) clearFolderHoverTimer()
+        if (!wantExpand || folderHoverTimer.current !== null) return
+        if (searching || folderExpanded(folderIdPath)) return
+        if (!(folderNode && (((folderNode.folders || []).length) || ((folderNode.workspaces || []).length)))) return
+        folderHoverTarget.current = folderIdPath
+        folderHoverTimer.current = setTimeout(() => {
+          folderHoverTimer.current = null
+          folderHoverTarget.current = null
+          actions.setExpanded(folderIdPath, true)
+        }, 600)
+      }
+      const folderDropEvents = (idPath, path, node) => ({
         draggable: !searching,
         onDragStart: (event) => {
           if (searching) return
@@ -8763,32 +8839,48 @@ window.__ModuleLoader__.load({
           if (wsDragArmTimer.current !== null) clearTimeout(wsDragArmTimer.current)
           wsDragArmTimer.current = setTimeout(() => {
             wsDragArmTimer.current = null
-            setDrag({ kind: 'folder', source: { idPath, path }, over: null })
+            setDrag({ kind: 'folder', source: { idPath, path, memberIds: collectMemberIds(node) }, over: null })
           }, 0)
         },
         onDragEnd: () => {
           if (wsDragArmTimer.current !== null) { clearTimeout(wsDragArmTimer.current); wsDragArmTimer.current = null }
+          clearFolderHoverTimer()
           setDrag(null)
         },
         onDragOver: (event) => {
+          // Outer quarters = reorder against a SIBLING group (same owner
+          // level only); the middle half = move into the group, framed and
+          // never opened. Workspace sources keep whole-row move-into
+          // semantics. No band lock: logical geometry already makes the
+          // judgement stable, and a lock forced the pointer out of the row
+          // just to change its mind — the "weird timing" feel.
+          const zone = rowZone(event)
           if (dragMatches('folder')) {
             const targetPath = namePathOf(idPath)
-            if (drag.source.path === targetPath || targetPath.startsWith(drag.source.path + '/')) return
+            // No self / descendant targets (loop), no ANCESTOR targets
+            // (the group already lives there — a "move" would be a no-op
+            // at best and a wrong prefix rewrite at worst).
+            if (drag.source.path === targetPath || targetPath.startsWith(drag.source.path + '/') || (targetPath !== '' && drag.source.path.startsWith(targetPath + '/'))) return
+            if (zone !== 'into' && ownerPrefixOf(idPath) !== ownerPrefixOf(drag.source.idPath)) return
           } else if (!dragMatches('workspace')) {
             return
           }
           event.preventDefault()
           event.stopPropagation()
           try { event.dataTransfer.dropEffect = 'move' } catch { }
-          setDrag(current => (current && current.over && current.over.kind === 'folder' && current.over.target === idPath)
-            ? current
-            : (current ? { ...current, over: { kind: 'folder', target: idPath } } : current))
+          const reorder = dragMatches('folder') && zone !== 'into'
+          const settled = (current) => current && current.over && current.over.kind === 'folder' && current.over.target === idPath && (reorder ? current.over.zone === zone : (!current.over.zone || current.over.zone === 'into'))
+          setDrag(current => settled(current) ? current : (current ? { ...current, over: reorder ? { kind: 'folder', target: idPath, zone } : { kind: 'folder', target: idPath, zone: 'into' } } : current))
+          scheduleFolderHoverExpand(idPath, node, !reorder)
         },
         onDrop: (event) => {
+          clearFolderHoverTimer()
           if (dragMatches('folder')) {
             event.preventDefault()
             event.stopPropagation()
-            commitFolderMoveInto(idPath)
+            const zone = drag.over && drag.over.kind === 'folder' && drag.over.target === idPath ? drag.over.zone : 'into'
+            if (zone === 'before' || zone === 'after') commitFolderReorder(idPath, zone, node)
+            else commitFolderMoveInto(idPath)
             return
           }
           if (!dragMatches('workspace')) return
@@ -8856,13 +8948,44 @@ window.__ModuleLoader__.load({
         const source = drag.source
         setDrag(null)
         const targetPath = namePathOf(targetIdPath)
-        if (source.path === targetPath || targetPath.startsWith(source.path + '/')) return
+        // An ANCESTOR target means the group already lives there: a prefix
+        // rewrite would duplicate a segment (工作/A → 工作/工作/A). Refuse.
+        if (source.path === targetPath || targetPath.startsWith(source.path + '/') || (targetPath !== '' && source.path.startsWith(targetPath + '/'))) return
         const prefix = source.path + '/'
         const affected = (items || []).filter((w) => String(w.title || '').startsWith(prefix))
         Promise.resolve()
           .then(async () => {
             for (const w of affected) {
               await renameWorkspace(w.workspaceId, targetPath + String(w.title).slice(source.path.length))
+            }
+          })
+          .catch(fail)
+      }
+      // Group REORDER (v0.36.0): a name group's position IS the registry
+      // order of its members, so reordering = sliding the whole member
+      // block (prefixes untouched) to just before / after the target
+      // group's block. Anchored like commitWorkspaceDrop: before = the
+      // target's first member, after = whatever follows the target's last
+      // member (undefined = block-append at the level tail). Hover only
+      // arms this between same-level groups (identical owner prefix);
+      // re-checked here as belt and braces.
+      const commitFolderReorder = (targetIdPath, zone, targetNode) => {
+        const source = drag.source
+        setDrag(null)
+        if (!canDragWorkspace) return
+        if (ownerPrefixOf(source.idPath) !== ownerPrefixOf(targetIdPath)) return
+        const sourceIds = source.memberIds || []
+        const targetMembers = (targetNode && targetNode.workspaces) || []
+        if (!sourceIds.length || !targetMembers.length) return
+        const anchor = zone === 'after'
+          ? nextWorkspaceAfter(namePathOf(targetIdPath), targetMembers[targetMembers.length - 1].workspaceId)
+          : targetMembers[0].workspaceId
+        Promise.resolve()
+          .then(async () => {
+            if (anchor === undefined) {
+              for (const id of sourceIds) await insertWorkspaceBefore(id)
+            } else {
+              for (const id of sourceIds) await insertWorkspaceBefore(id, anchor)
             }
           })
           .catch(fail)
@@ -9326,7 +9449,8 @@ window.__ModuleLoader__.load({
           onToggle: () => { if (!searching) actions.setExpanded(idPath, !expanded) },
           onContextMenu: (e) => openCtx('folder', { path: node.path, name: node.name, idPath, scope: node.scope, empty: countWorkspaces(node) === 0 }, e),
           dropInto: wsDropInto(idPath),
-          dragEvents: folderDropEvents(idPath, node.path),
+          dropSlot: wsFolderSlotOf(idPath),
+          dragEvents: folderDropEvents(idPath, node.path, node),
           custStyle: rowStyleOf('folder:' + idPath),
           iconMode: (styleEntry('folder:' + idPath) || {}).icon || 'solid',
           pulse: expanded ? null : folderPulseOf(node),

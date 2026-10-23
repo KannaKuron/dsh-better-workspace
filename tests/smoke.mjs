@@ -2031,10 +2031,10 @@ test('v0.36.0: folder rows drag as whole groups (members retitled under the targ
   const text = read('src/client.js')
   // The row must be draggable and arm the same one-frame drag state the
   // workspace drag uses (Chromium cancels a drag whose source moves).
-  assert.match(text, /const folderDropEvents = \(idPath, path\) => \(\{\n        draggable: !searching,/,
+  assert.match(text, /const folderDropEvents = \(idPath, path, node\) => \(\{\n        draggable: !searching,/,
     'folder rows carry draggable gated on search only')
-  assert.match(text, /setDrag\(\{ kind: 'folder', source: \{ idPath, path \}, over: null \}\)/,
-    'the drag source records both the render idPath and the semantic name path')
+  assert.match(text, /setDrag\(\{ kind: 'folder', source: \{ idPath, path, memberIds: collectMemberIds\(node\) \}, over: null \}\)/,
+    'the drag source records the render idPath, the semantic name path and the member block')
   // Batch move = the drag twin of submitFolderRename: every member title is
   // rewritten under the target prefix.
   assert.match(text, /const commitFolderMoveInto = \(targetIdPath\) => \{/,
@@ -2043,20 +2043,65 @@ test('v0.36.0: folder rows drag as whole groups (members retitled under the targ
     'members are swept by title prefix over all items')
   assert.match(text, /await renameWorkspace\(w\.workspaceId, targetPath \+ String\(w\.title\)\.slice\(source\.path\.length\)\)/,
     'each member is retitled targetPath + its relative title')
-  // Dropping a group into itself or its own descendant would loop: refused
-  // at hover (no preventDefault) AND again at commit (belt and braces).
-  const hoverCount = (text.match(/drag\.source\.path === targetPath \|\| targetPath\.startsWith\(drag\.source\.path \+ '\/'\)\) return/g) || []).length
-  assert.equal(hoverCount, 1, 'the hover refuses self/descendant targets exactly once')
-  const commitCount = (text.match(/source\.path === targetPath \|\| targetPath\.startsWith\(source\.path \+ '\/'\)\) return/g) || []).length
-  assert.equal(commitCount, 1, 'the commit re-checks self/descendant targets exactly once')
+  // Dropping a group into itself, its own descendant OR its own ancestor
+  // would loop or duplicate a name segment: refused at hover (no
+  // preventDefault) AND again at commit (belt and braces).
+  const hoverCount = (text.match(/drag\.source\.path\.startsWith\(targetPath \+ '\/'\)/g) || []).length
+  assert.equal(hoverCount, 1, 'the hover refuses self/descendant/ancestor targets exactly once')
+  const commitCount = (text.match(/(?<!drag\.)source\.path\.startsWith\(targetPath \+ '\/'\)/g) || []).length
+  assert.equal(commitCount, 1, 'the commit re-checks self/descendant/ancestor targets exactly once')
   // The namePath helper is shared by hover refusal and the commit.
   assert.equal((text.match(/const namePathOf = \(folderIdPath\) => \{/g) || []).length, 1,
     'namePathOf is defined once')
-  // Folder rows light up for both drop kinds.
-  assert.match(text, /const wsDropInto = \(path\) => \(dragMatches\('workspace'\) \|\| dragMatches\('folder'\)\)/,
-    'the folder drop highlight accepts both drag kinds')
-  // The render passes BOTH keys: idPath for the drag/highlight state,
-  // node.path for the batch rename prefix.
-  assert.match(text, /dragEvents: folderDropEvents\(idPath, node\.path\)/,
-    'the render hands the row both the idPath and the name path')
+  // Folder rows light up for both drop kinds — the INTO band only.
+  assert.match(text, /const wsDropInto = \(path\) => \(dragMatches\('workspace'\) \|\| dragMatches\('folder'\)\) && drag\.over && drag\.over\.kind === 'folder' && drag\.over\.target === path && \(!drag\.over\.zone \|\| drag\.over\.zone === 'into'\)/,
+    'the folder drop highlight accepts both drag kinds on the into band')
+  // The render passes BOTH keys plus the node: idPath for the drag/highlight
+  // state, node.path for the batch rename prefix, node for member collection.
+  assert.match(text, /dragEvents: folderDropEvents\(idPath, node\.path, node\)/,
+    'the render hands the row both keys and the node')
+})
+
+test('v0.36.1: group rows use a quarter-band hover (outer reorder + middle into) with a growing slot', () => {
+  const text = read('src/client.js')
+  // Outer QUARTERS are the reorder bands (judged in logical row geometry,
+  // stable under the growing slot); the middle HALF is the move-into zone
+  // (framed, never opened) so move-into is easy to hit.
+  assert.match(text, /const rowZone = \(event\) => \{/,
+    'a quarter-band rowZone helper exists')
+  assert.match(text, /if \(event\.clientY < rect\.top \+ logical \* 0\.25\) return 'before'/,
+    'the upper quarter is the before band')
+  assert.match(text, /if \(event\.clientY > rect\.top \+ logical \* 0\.75\) return 'after'/,
+    'the lower quarter is the after band')
+  assert.match(text, /zone !== 'into' && ownerPrefixOf\(idPath\) !== ownerPrefixOf\(drag\.source\.idPath\)/,
+    'edge-band reorder is only armed between same-level (same owner) groups')
+  // Reorder = slide the whole member block in registry order, anchored like
+  // commitWorkspaceDrop (before = target's first member, after = whatever
+  // follows the target's last member).
+  assert.match(text, /const commitFolderReorder = \(targetIdPath, zone, targetNode\) => \{/,
+    'the reorder commit exists')
+  assert.match(text, /if \(ownerPrefixOf\(source\.idPath\) !== ownerPrefixOf\(targetIdPath\)\) return/,
+    'the reorder commit re-checks the same-level gate')
+  assert.match(text, /targetMembers\[targetMembers\.length - 1\]\.workspaceId/,
+    'the after-anchor is whatever follows the target block')
+  // Slot visuals: the row grows to twice its height and the content slides
+  // to the far edge via PADDING (transitionable; align-items cannot animate).
+  // The gap itself is the feedback: a faint brand wash, no insert line.
+  assert.match(text, /\.bw-slot-above\{height:calc\(var\(--bw-row-h,34px\)\*2\);padding-top:var\(--bw-row-h,34px\);background:linear-gradient/,
+    'the above slot slides content down and washes the gap')
+  assert.match(text, /\.bw-slot-below\{height:calc\(var\(--bw-row-h,34px\)\*2\);padding-bottom:var\(--bw-row-h,34px\);background:linear-gradient/,
+    'the below slot slides content up and washes the gap')
+  assert.match(text, /transition:height \.15s ease-out,padding \.15s ease-out/,
+    'the row height and content slide are both animated')
+  assert.match(text, /dropSlot === 'before' && 'bw-slot-above'/,
+    'FolderRow applies the slot classes')
+  assert.match(text, /dropSlot: wsFolderSlotOf\(idPath\)/,
+    'the render derives the slot from the hover zone')
+  // Hovering a collapsed group's middle band auto-expands it after a beat.
+  assert.match(text, /scheduleFolderHoverExpand\(idPath, node, !reorder\)/,
+    'the into-band hover schedules the auto-expand')
+  assert.match(text, /folderHoverTimer\.current = setTimeout\(\(\) => \{\n          folderHoverTimer\.current = null\n          folderHoverTarget\.current = null\n          actions\.setExpanded\(folderIdPath, true\)\n        \}, 600\)/,
+    'the auto-expand fires after 600ms')
+  assert.doesNotMatch(text, /folderSlotLock/,
+    'no band lock: logical geometry is stable and a lock forced pointer detours')
 })

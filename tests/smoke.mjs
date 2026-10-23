@@ -1387,7 +1387,7 @@ test('declared groups: they render even with no members to project from (v0.17.0
   assert.match(text, /if \(full\.length === 0 && !hasDeclared\(sessFolders, workspace\.workspaceId\)\) return \[\]/,
     'empty session rows no longer short-circuit a declared group away')
   // Every caller threads the bag through.
-  assert.match(text, /buildTree\(items, workspaceGroupMode, wsFolders\)/, 'the main tree passes the workspace bag')
+  assert.match(text, /buildTree\(items, workspaceGroupMode, wsFolders, folderOrderMap\)/, 'the main tree passes the workspace bag and the persisted group order')
   assert.equal((text.match(/buildSessionTree\(sessionsOf\(workspace\), sessionSlash, sessFolders, workspace\.workspaceId\)/g) || []).length, 4,
     'every session-tree caller passes the session bag and its workspace scope')
 })
@@ -1420,7 +1420,7 @@ test('new group: icon button, live tooltip, layer switch and a tree picker (v0.1
   // The dialog walks the UNCOMPRESSED tree: a merged single-child chain row
   // stands for a group AND its only workspace at once, which cannot be one
   // selectable and one unselectable node.
-  assert.match(text, /const rawTree = React\.useMemo\(\(\) => buildTree\(items, workspaceGroupMode, wsFolders\), \[items, workspaceGroupMode, wsFolders\]\)/,
+  assert.match(text, /const rawTree = React\.useMemo\(\(\) => buildTree\(items, workspaceGroupMode, wsFolders, folderOrderMap\), \[items, workspaceGroupMode, wsFolders, folderOrderMap\]\)/,
     'an uncompressed tree exists for the dialog')
   assert.match(text, /const folderLabelOf = \(node\) => String\(node\.name \|\| \(Array\.isArray\(node\.segs\)/,
     'labels survive a node shape that carries segs but no name')
@@ -2062,82 +2062,93 @@ test('v0.36.0: folder rows drag as whole groups (members retitled under the targ
     'the render hands the row both keys and the node')
 })
 
-test('v0.36.1: group rows use a quarter-band hover (outer reorder + middle into) with a growing slot', () => {
+test('v0.36.1: group rows use a content-band hover (outer reorder + middle into) with a growing slot', () => {
   const text = read('src/client.js')
-  // Outer bands (30% each, v0.36.3 — 25% was 8.5px and unhittable) are the
-  // reorder bands (judged in logical row geometry, stable under the growing
-  // slot); the middle 40% is the move-into zone (framed, never opened) so
-  // move-into is easy to hit.
+  // v0.36.4 judges the bands against the row's ORIGINAL position: an open
+  // slot pads the row with one logical row (--bw-row-h) via PADDING, so the
+  // row box is twice as tall while the original position is the half the
+  // content did NOT slide into (pad above for a before-slot, remaining
+  // content box for an after-slot). Judging there keeps a still pointer from
+  // flipping the slot when it opens (the "抽搐" report) and still lets the
+  // pointer cross the original midpoint to switch direction; the vacated
+  // half answers null so the caller keeps its current target.
+  assert.match(text, /const originalBoxOf = \(el\) => \{/,
+    'the original-position helper exists')
+  assert.match(text, /if \(padTop > 0\) return \{ top: rect\.top, bottom: rect\.top \+ padTop \}/,
+    'a before-slot judges the pad half (its original position)')
+  assert.match(text, /if \(padBottom > 0\) return \{ top: rect\.top, bottom: rect\.bottom - padBottom \}/,
+    'an after-slot judges the content-box half (its original position)')
   assert.match(text, /const rowZone = \(event\) => \{/,
     'a band-split rowZone helper exists')
-  assert.match(text, /if \(event\.clientY < rect\.top \+ logical \* 0\.3\) return 'before'/,
-    'the upper 30% band is the before band')
-  assert.match(text, /if \(event\.clientY > rect\.top \+ logical \* 0\.7\) return 'after'/,
-    'the lower 30% band is the after band')
-  assert.match(text, /zone !== 'into' && ownerPrefixOf\(idPath\) !== ownerPrefixOf\(drag\.source\.idPath\)/,
-    'edge-band reorder is only armed between same-level (same owner) groups')
-  // Reorder = slide the whole member block in registry order, anchored like
-  // commitWorkspaceDrop (before = target's first member, after = whatever
-  // follows the target's last member).
+  assert.match(text, /if \(y < box\.top \|\| y > box\.bottom\) return null/,
+    'the vacated half answers null instead of a stale band')
+  assert.match(text, /if \(h < 2\) return 'into'/,
+    'a zero-height row answers into')
+  assert.match(text, /const rel = \(y - box\.top\) \/ h\n        if \(rel < 0\.3\) return 'before'\n        if \(rel > 0\.7\) return 'after'\n        return 'into'/,
+    'the original row is split 30/40/30 into before/into/after')
+  assert.match(text, /if \(half === null\) return/,
+    'a workspace row keeps its slot while the pointer rests in the vacated half')
+  assert.match(text, /if \(zone === null\) \{/,
+    'a group row keeps its slot while the pointer rests in the vacated half')
+  // Siblings only for a band reorder: the target must share the parent whose
+  // name list is being permuted, or no list position exists for the source.
+  assert.match(text, /zone !== 'into' && parentKeyOf\(idPath\) !== parentKeyOf\(drag\.source\.idPath\)/,
+    'edge-band reorder is only armed between sibling groups')
   assert.match(text, /const commitFolderReorder = \(source, targetIdPath, zone, targetNode\) => \{/,
     'the reorder commit exists (source passed in, not closed over)')
   assert.match(text, /if \(ownerPrefixOf\(source\.idPath\) !== ownerPrefixOf\(targetIdPath\)\) \{ console\.warn/,
     'the reorder commit re-checks the same-level gate (refusals warn, never silent)')
+  assert.match(text, /if \(parentKeyOf\(source\.idPath\) !== parentKeyOf\(targetIdPath\)\) \{ console\.warn\('\[bw\] folder reorder refused: cross-parent target'\)/,
+    'the reorder commit re-checks the same-parent gate')
   assert.match(text, /collectMemberIds\(targetNode\)\.filter\(\(id\) => !sourceSet\.has\(id\)\)/,
-    'the source subtree is filtered out of the target block before anchoring (drag-out)')
+    'the source subtree is filtered out of the target block before anchoring')
   assert.match(text, /const anchor = zone === 'after'\n          \? targetMembers\[targetMembers\.length - 1\]\n          : targetMembers\[0\]/,
     'before anchors the surviving block head, after its tail')
-  // Slot visuals: the row grows to twice its height and the content slides
-  // to the far edge via PADDING (transitionable; align-items cannot animate).
-  // The gap itself is the feedback: a faint brand wash, no insert line.
-  assert.match(text, /\.bw-slot-above\{height:calc\(var\(--bw-row-h,34px\)\*2\);padding-top:var\(--bw-row-h,34px\);background:linear-gradient/,
+  // Slot visuals: the row keeps its logical height and grows by PADDING
+  // (transitionable; align-items cannot animate), so the total box is two
+  // rows and the original position stays addressable by originalBoxOf. The
+  // gap itself is the feedback: a faint brand wash, no insert line.
+  assert.match(text, /\.bw-slot-above\{padding-top:var\(--bw-row-h,34px\);background:linear-gradient/,
     'the above slot slides content down and washes the gap')
-  assert.match(text, /\.bw-slot-below\{height:calc\(var\(--bw-row-h,34px\)\*2\);padding-bottom:var\(--bw-row-h,34px\);background:linear-gradient/,
+  assert.match(text, /\.bw-slot-below\{padding-bottom:var\(--bw-row-h,34px\);background:linear-gradient/,
     'the below slot slides content up and washes the gap')
+  assert.doesNotMatch(text, /height:calc\(var\(--bw-row-h,34px\)\*2\)/,
+    'the slot never doubles the declared height (padding alone grows the box)')
   assert.match(text, /transition:height \.15s ease-out,padding \.15s ease-out/,
     'the row height and content slide are both animated')
-  assert.match(text, /dropSlot === 'before' && \(slotArmed \? 'bw-slot-above' : 'bw-drop-before'\)/,
-    'FolderRow paints the line before the intent wait and the slot after')
+  assert.match(text, /dropSlot === 'before' && 'bw-slot-above'/,
+    'FolderRow opens the slot the moment the band is hit')
+  assert.match(text, /dropHalf === 'before' && 'bw-slot-above'/,
+    'WorkspaceRow opens the slot the same way (the blue line is gone)')
   assert.match(text, /dropSlot: wsFolderSlotOf\(idPath\)/,
     'the render derives the slot from the hover zone')
-  assert.match(text, /slotArmed: wsFolderSlotArmed\(idPath\)/,
-    'the render derives the armed flag separately')
-  // The 600ms hover auto-expand is retired (v0.36.3): it kept opening
-  // groups under a passing cursor. The reveal moved to the commit.
-  assert.doesNotMatch(text, /scheduleFolderHoverExpand|folderHoverTimer/,
-    'no hover auto-expand survives anywhere')
-  assert.match(text, /\.then\(\(\) => \{ try \{ actions\.setExpanded\(targetIdPath, true\) \} catch \{ \} \}\)/,
-    'a successful move-into opens the target group')
-  assert.doesNotMatch(text, /folderSlotLock/,
-    'no band lock: logical geometry is stable and a lock forced pointer detours')
+  assert.doesNotMatch(text, /slotArmed|wsFolderSlotArmed/,
+    'no armed flag survives: the slot is immediate')
+  assert.doesNotMatch(text, /scheduleFolderHoverExpand|folderHoverTimer|folderSlotLock/,
+    'no hover auto-expand and no band lock survive')
+  assert.doesNotMatch(text, /actions\.setExpanded\(targetIdPath, true\)/,
+    'a successful move-into does NOT auto-open the target group')
+  assert.doesNotMatch(text, /draggingWorkspace/,
+    'the tree no longer reshapes itself while a workspace drag runs')
 })
 
-test('v0.36.2: edge-band reorder needs 200ms hover intent; refusals warn loudly', () => {
+test('v0.36.2: edge-band reorder needs no hover intent; refusals warn loudly', () => {
   const text = read('src/client.js')
-  // The slot only exists once the pointer has RESTED on the band: a 200ms
-  // intent timer arms drag.over.armed; crossing bands or rows restarts it.
-  assert.match(text, /const folderArmTimer = React\.useRef\(null\)/,
-    'the intent timer ref exists')
-  assert.match(text, /const clearFolderArmTimer = \(\) => \{\n        if \(folderArmTimer\.current !== null\) \{ clearTimeout\(folderArmTimer\.current\.timer\); folderArmTimer\.current = null \}\n      \}/,
-    'the timer is torn down as a whole (id + timer handle)')
-  assert.match(text, /if \(reorder && folderArmTimer\.current === null\) \{\n            const timer = setTimeout\(\(\) => \{\n              folderArmTimer\.current = null\n              setDrag\(\(current\) => current && current\.over && current\.over\.kind === 'folder' && current\.over\.target === idPath\n                \? \{ \.\.\.current, over: \{ \.\.\.current\.over, armed: true \} \}\n                : current\)\n            \}, 200\)\n            folderArmTimer\.current = \{ target: idPath, zone, timer \}\n          \}/,
-    'the arm fires after 200ms and only re-renders the same row')
-  assert.match(text, /if \(folderArmTimer\.current && \(!reorder \|\| folderArmTimer\.current\.target !== idPath \|\| folderArmTimer\.current\.zone !== zone\)\) clearFolderArmTimer\(\)/,
-    'a band or row change restarts the intent wait')
-  assert.match(text, /armed: !!\(current\.over && current\.over\.kind === 'folder' && current\.over\.target === idPath && current\.over\.zone === zone && current\.over\.armed\) \}/,
-    'armed survives only on the same band of the same row')
-  // v0.36.3: an un-rested edge band still FEEDS BACK (the official 12px
-  // insert line); only the drawer slot waits for the intent timer.
+  // v0.36.4 retired the 200ms intent timer: a resting pointer on a band
+  // opens the slot on the first dragover frame. Waiting made a fast drag
+  // read as "只有一条蓝线" while a slow one read as "抽搐" — the feedback
+  // itself has to be immediate for the drop position to be predictable.
+  assert.doesNotMatch(text, /folderArmTimer|clearFolderArmTimer/,
+    'the 200ms intent timer is retired')
+  assert.doesNotMatch(text, /armed: true/,
+    'nothing arms a band any more')
   assert.match(text, /const wsFolderSlotOf = \(folderIdPath\) => \(dragMatches\('folder'\) && drag\.over && drag\.over\.kind === 'folder' && drag\.over\.target === folderIdPath && \(drag\.over\.zone === 'before' \|\| drag\.over\.zone === 'after'\)\) \? drag\.over\.zone : null/,
-    'wsFolderSlotOf answers the band immediately (no armed gate)')
-  assert.match(text, /const wsFolderSlotArmed = \(folderIdPath\) => !!\(dragMatches\('folder'\)/,
-    'wsFolderSlotArmed carries the intent flag for the drawer slot')
-  // Every exit tears the intent timer down (drop, dragend, new dragstart).
-  assert.equal((text.match(/clearFolderArmTimer\(\)/g) || []).length >= 5, true,
-    'clearFolderArmTimer is called on dragover band change, drop, both dragends and the dragstart')
+    'wsFolderSlotOf answers the band immediately')
   // Silent returns are gone: every refusal says why in the console.
   assert.match(text, /console\.warn\('\[bw\] folder reorder refused: cross-level target'\)/,
     'cross-level reorder refusal warns')
+  assert.match(text, /console\.warn\('\[bw\] folder reorder refused: cross-parent target'\)/,
+    'cross-parent reorder refusal warns')
   assert.match(text, /console\.warn\('\[bw\] folder reorder refused: empty source block'\)/,
     'empty source refusal warns')
   assert.match(text, /console\.warn\('\[bw\] folder reorder refused: target has no members to anchor against'\)/,
@@ -2146,20 +2157,96 @@ test('v0.36.2: edge-band reorder needs 200ms hover intent; refusals warn loudly'
     'loop/duplicate move refusal warns')
 })
 
-test('v0.36.3: a nested group can be dragged OUT onto its direct parent edge bands', () => {
+test('v0.36.3: an ancestor row is never a reorder target (leaving a parent is a rename)', () => {
   const text = read('src/client.js')
-  // The old blanket refusal treated EVERY ancestor target as a loop: a
-  // nested group (source inside the target subtree) could not be dropped
-  // anywhere on the parent row, so it was unsortable (user report). Now
-  // into stays refused (the loop), the DIRECT parent edge bands are the one
-  // legal drag-out, and a grandparent band still refuses — a reorder never
-  // rewrites name prefixes, so moving registry order there is a no-op.
-  assert.match(text, /if \(drag\.source\.path === targetPath \|\| targetPath\.startsWith\(drag\.source\.path \+ '\/'\)\) return\n            if \(targetPath !== '' && drag\.source\.path\.startsWith\(targetPath \+ '\/'\)\) \{/,
-    'self/descendant targets refuse first, then the ancestor split')
-  assert.match(text, /const directParent = drag\.source\.path\.slice\(0, drag\.source\.path\.lastIndexOf\('\/'\)\)\n              if \(zone === 'into' \|\| targetPath !== directParent\) return/,
-    'into refuses on any ancestor; edge bands only open for the direct parent')
+  // v0.36.3 briefly opened the DIRECT parent's edge bands as a drag-out.
+  // v0.36.4 closed it again: a group's rendered position comes from its
+  // parent's order list, so a drop onto an ancestor cannot place it. Moving
+  // a group to another LEVEL is a title rewrite — the rename gesture — not
+  // an order change, so every ancestor refuses at hover (no preventDefault
+  // means the platform shows its own 'no drop' cursor, which is the truth).
+  assert.match(text, /if \(drag\.source\.path === targetPath \|\| targetPath\.startsWith\(drag\.source\.path \+ '\/'\)\) return/,
+    'self and descendant targets refuse first')
+  assert.match(text, /if \(targetPath !== '' && drag\.source\.path\.startsWith\(targetPath \+ '\/'\)\) return/,
+    'every ancestor target refuses')
+  assert.doesNotMatch(text, /const directParent = drag\.source\.path\.slice/,
+    'the direct-parent carve-out is retired')
   assert.match(text, /const sourceSet = new Set\(sourceIds\)\n        const targetMembers = collectMemberIds\(targetNode\)\.filter\(\(id\) => !sourceSet\.has\(id\)\)/,
-    'the reorder commit filters the source block out of its parent anchor')
+    'the reorder commit still filters the source block out of its anchor')
   assert.doesNotMatch(text, /folderHoverTimer|scheduleFolderHoverExpand/,
     'the hover auto-expand machinery is fully retired')
 })
+
+test('v0.36.4: group order is persisted per parent and drives the tree sort', () => {
+  const text = read('src/client.js')
+  // THE bug behind "工作区文件夹完全没法改排序": buildTree sorted every level
+  // by name, so a SUCCESSFUL commitFolderReorder (a registry edit) changed
+  // nothing the user could see. The visible order now lives in the view
+  // store, keyed by the PARENT identity, and buildTree sorts by it.
+  assert.match(text, /folders: \{ ws: \{\}, sess: \{\} \}, folderOrder: \{\}/,
+    'the store carries a persisted per-parent order map')
+  assert.match(text, /setFolderOrder: \(d, parentKey, names\) => \{/,
+    'an action writes it')
+  assert.match(text, /const key = String\(parentKey == null \? '' : parentKey\)/,
+    'the root level keys as the empty string')
+  assert.match(text, /const folderOrderMap = useStore \? \(useStore\(s => s\.folderOrder\) \|\| EMPTY_FOLDERS\) : EMPTY_FOLDERS/,
+    'the sidebar subscribes to it')
+  assert.match(text, /const pickerFolderOrder = typeof useStore === 'function'/,
+    'the workspace picker shares the same order')
+  assert.match(text, /const orderOf = \(parentKey\) => \{/,
+    'buildTree reads the order map per level')
+  assert.match(text, /const ra = rank\.has\(a\.name\) \? rank\.get\(a\.name\) : order\.length/,
+    'known names rank by list position')
+  assert.match(text, /sortRec\(child, child\.idPath\)/,
+    'each child level sorts by its own idPath')
+  assert.match(text, /sortRec\(root, idPrefix\)/,
+    'the top level sorts by its idPrefix')
+  // The commit writes the SIBLING list it just permuted BEFORE touching the
+  // registry, so the drop is visible on the spot.
+  assert.match(text, /const orderParent = parentKeyOf\(source\.idPath\)/,
+    'the commit resolves the parent whose list it permutes')
+  assert.match(text, /actions\.setFolderOrder\(orderParent, names\)/,
+    'the commit persists the new sibling order')
+  assert.match(text, /const folderContainerOf = \(key\) => \{/,
+    'a level is resolvable by parent key')
+  assert.match(text, /const parentKeyOf = \(folderIdPath\) => \{/,
+    'the parent identity helper exists')
+  // The padded source row must not swallow its own target: the slot grows a
+  // row by a full logical row, so the row the drag started on covers the
+  // pointer's first stop and commitWorkspaceDrop would no-op on itself.
+  assert.match(text, /if \(drag\.source && drag\.source\.workspaceId === workspace\.workspaceId\) return/,
+    'the dragged workspace row is never its own drop target')
+  // Persistence: the same store key the view options already ride.
+  assert.match(text, /persist: 'dsh\.betterWorkspace\.view\.v1'/,
+    'the order rides the existing persisted view store')
+})
+
+test('v0.36.4: an open reorder slot splits the original row at its midpoint (no INTO flip)', () => {
+  const text = read('src/client.js')
+  // fail() lives in BetterBrowser; setFlowOpen lives in WorkspacePicker. Crossing that
+  // fiber boundary threw ReferenceError on every failure path (v0.36.4 fix).
+  assert.doesNotMatch(text, /const fail = \(text\) => \{ setFlowOpen/,
+    'fail() must not reach for the picker-scoped setFlowOpen')
+  assert.match(text, /const fail = \(text\) => \{ setDialog\(null\); setErrorText/,
+    'fail() closes the dialog and surfaces the error text')
+  // THE flicker behind "变下级还是会被撑开" on the row being reordered: the
+  // three bands were re-judged on the PADDED row, so a still pointer sitting
+  // in the middle band flipped the just-opened slot to INTO on the next
+  // dragover frame — the slot closed, and the drop handed
+  // commitFolderMoveInto (a same-level no-op) instead of the reorder the
+  // user aimed at.
+  assert.equal((text.match(/const slotOpen = /g) || []).length, 1,
+    'the slot-open probe exists exactly once')
+  assert.match(text, /const slotOpen = drag\.over !== null && drag\.over\.kind === 'folder' && drag\.over\.target === idPath && \(drag\.over\.zone === 'before' \|\| drag\.over\.zone === 'after'\)/,
+    'the row knows whether it already holds this drag slot')
+  assert.match(text, /const zone = slotOpen \? rowHalf\(event\) : rowZone\(event\)/,
+    'an open slot answers before/after by original midpoint; the first entry keeps the three bands (INTO reachable)')
+  // rowHalf is the plain midpoint split of the ORIGINAL position: no INTO band.
+  assert.match(text, /return y < \(box\.top \+ box\.bottom\) \/ 2 \? 'before' : 'after'/,
+    'rowHalf splits at the original midpoint with no middle band')
+  // The pointer in the vacated half must keep the slot: re-deciding on the
+  // padded geometry is exactly what flickered.
+  assert.match(text, /if \(zone === null\) \{\n              if \(drag\.over && drag\.over\.kind === 'folder' && drag\.over\.target === idPath && \(drag\.over\.zone === 'before' \|\| drag\.over\.zone === 'after'\)\) \{/,
+    'a pointer in the vacated half keeps this row open slot')
+})
+

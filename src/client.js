@@ -4485,7 +4485,7 @@ window.__ModuleLoader__.load({
       return out
     }
 
-    function buildTree(items, groupMode, explicitWs) {
+    function buildTree(items, groupMode, explicitWs, folderOrder) {
       const list = items || []
       // Issue #7: 'disk' nests by disk only, 'disk-slash' adds the name
       // layer on top (the historical workspaceSlash-on shape), 'slash' runs
@@ -4564,11 +4564,34 @@ window.__ModuleLoader__.load({
           }
           ensure(segs.slice(0, -1)).workspaces.push(entry)
         }
-        const sortRec = (node) => {
-          node.folders.sort((a, b) => a.name.localeCompare(b.name, 'zh'))
-          for (const child of node.folders) sortRec(child)
+        // Group order: the NAME sort is only the seed. v0.36.4 keeps a
+        // persisted per-parent name list (folderOrder) so a dragged group
+        // keeps its place — before this the drop committed the registry
+        // order but the renderer re-sorted by name, which is why dragging a
+        // group row looked like a no-op. Names absent from the stored list
+        // (a just-created group) sort after the known ones by locale.
+        const orderOf = (parentKey) => {
+          if (!folderOrder || typeof folderOrder !== 'object') return null
+          const list = folderOrder[parentKey]
+          return Array.isArray(list) ? list : null
         }
-        sortRec(root)
+        const sortRec = (node, parentKey) => {
+          const order = orderOf(parentKey)
+          if (order) {
+            const rank = new Map()
+            for (let i = 0; i < order.length; i += 1) rank.set(order[i], i)
+            node.folders.sort((a, b) => {
+              const ra = rank.has(a.name) ? rank.get(a.name) : order.length
+              const rb = rank.has(b.name) ? rank.get(b.name) : order.length
+              if (ra !== rb) return ra - rb
+              return a.name.localeCompare(b.name, 'zh')
+            })
+          } else {
+            node.folders.sort((a, b) => a.name.localeCompare(b.name, 'zh'))
+          }
+          for (const child of node.folders) sortRec(child, child.idPath)
+        }
+        sortRec(root, idPrefix)
         return root
       }
       const topLevel = list.filter((w) => diskParentOf.get(w.workspaceId) === undefined)
@@ -4688,8 +4711,8 @@ window.__ModuleLoader__.load({
       // cannot, it teleports the content and feels janky), so the row
       // opens/closes like a drawer, not a flash. The gap fills with a faint
       // brand wash; the middle half of the row (drop-into) never opens.
-      '.bw-slot-above{height:calc(var(--bw-row-h,34px)*2);padding-top:var(--bw-row-h,34px);background:linear-gradient(to bottom, color-mix(in srgb, var(--dsw-alias-brand-primary,#5b8def) 10%, transparent) 0, transparent calc(var(--bw-row-h,34px)))}',
-      '.bw-slot-below{height:calc(var(--bw-row-h,34px)*2);padding-bottom:var(--bw-row-h,34px);background:linear-gradient(to top, color-mix(in srgb, var(--dsw-alias-brand-primary,#5b8def) 10%, transparent) 0, transparent calc(var(--bw-row-h,34px)))}',
+      '.bw-slot-above{padding-top:var(--bw-row-h,34px);background:linear-gradient(to bottom, color-mix(in srgb, var(--dsw-alias-brand-primary,#5b8def) 10%, transparent) 0, transparent calc(var(--bw-row-h,34px)))}',
+      '.bw-slot-below{padding-bottom:var(--bw-row-h,34px);background:linear-gradient(to top, color-mix(in srgb, var(--dsw-alias-brand-primary,#5b8def) 10%, transparent) 0, transparent calc(var(--bw-row-h,34px)))}',
       // Session drag whose source sits in a group: a quiet dashed line at the
       // bottom of the tree says "anywhere outside a group = out of it". Kept
       // faint on purpose — the row outlines are the loud feedback.
@@ -4987,7 +5010,7 @@ window.__ModuleLoader__.load({
       // LITERAL, not a spread of DEFAULT_APPEARANCE: init() is eval-harness
       // friendly (no cross-section reference), and the smoke suite asserts the
       // two stay in lockstep field by field.
-      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true, sessionLimit: 0, appearance: { color: '', glow: 0, weight: 0, shadow: false, stroke: false, strokeWidth: 1, strokeColor: '#808080' } }, styling: {}, groupBy: 'workspace-tree', orderBy: 'manual', archivedFilter: 'default', workspaceGroupMode: 'disk', sessionTitleSlash: true, workspaceTitleSlash: false, ungroupedOpen: true, folders: { ws: {}, sess: {} } }),
+      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true, sessionLimit: 0, appearance: { color: '', glow: 0, weight: 0, shadow: false, stroke: false, strokeWidth: 1, strokeColor: '#808080' } }, styling: {}, groupBy: 'workspace-tree', orderBy: 'manual', archivedFilter: 'default', workspaceGroupMode: 'disk', sessionTitleSlash: true, workspaceTitleSlash: false, ungroupedOpen: true, folders: { ws: {}, sess: {} }, folderOrder: {} }),
       // NOTE: hydration REPLACES the state with the persisted whole value —
       // init defaults never merge. Every action must tolerate a missing key
       // (states persisted by older plugin versions lack sessionGroups), and
@@ -5047,6 +5070,19 @@ window.__ModuleLoader__.load({
         },
         // v0.21.0 collapsible Ungrouped block (issue #6).
         setUngroupedOpen: (d, value) => { d.ungroupedOpen = value },
+        // Persisted GROUP order (v0.36.4), one name list per PARENT identity
+        // (a level's idPrefix for the root level, else the parent group's
+        // idPath). Only sibling reorders are written here — a cross-parent
+        // move is a rename, not an order change, and stays refused in the
+        // drop handler. An empty list deletes the entry so the name sort
+        // comes back for that parent.
+        setFolderOrder: (d, parentKey, names) => {
+          if (!d.folderOrder || typeof d.folderOrder !== 'object') d.folderOrder = {}
+          const key = String(parentKey == null ? '' : parentKey)
+          const clean = (Array.isArray(names) ? names : []).map((n) => String(n)).filter((n) => n !== '')
+          if (clean.length === 0) delete d.folderOrder[key]
+          else d.folderOrder[key] = clean
+        },
         // Explicit (possibly EMPTY) groups, v0.17.0. A group has always been a
         // projection of "/" in member titles, so a group with no members simply
         // did not exist and "create a group" had nothing to write. These two
@@ -5986,7 +6022,7 @@ window.__ModuleLoader__.load({
       }
     }
 
-    function FolderRow({ node, depth, expanded, onToggle, onContextMenu, dropInto, dropSlot, slotArmed, dragEvents, custStyle, iconMode, pulse, active, dataRowKey, t }) {
+    function FolderRow({ node, depth, expanded, onToggle, onContextMenu, dropInto, dropSlot, dragEvents, custStyle, iconMode, pulse, active, dataRowKey, t }) {
       const total = countWorkspaces(node)
       const iconEl = iconOf(iconMode, expanded)
       // Hidden status dots breathe on the icon; with the icon hidden (mode
@@ -5995,12 +6031,13 @@ window.__ModuleLoader__.load({
         ? E(PulseGlow, { state: pulse }, iconEl || (typeof ui.StateDot === 'function' ? E(ui.StateDot, { state: pulse, size: 10 }) : null))
         : iconEl
       return E('div', {
-        // v0.36.3: an un-rested edge band paints the official 12px insert
-        // line right away; the drawer slot only opens once the intent timer
-        // arms (slotArmed). Same visual grammar as the workspace rows.
+        // v0.36.4: an edge band opens the EMPTY reorder slot immediately —
+        // the row grows by one row height on the dropped side, so the
+        // insertion point is a real gap the block slides into (the user
+        // report: a thin line is not "撑开让位").
         className: cls('bw-row', 'bw-container-row',
-          dropSlot === 'before' && (slotArmed ? 'bw-slot-above' : 'bw-drop-before'),
-          dropSlot === 'after' && (slotArmed ? 'bw-slot-below' : 'bw-drop-after'),
+          dropSlot === 'before' && 'bw-slot-above',
+          dropSlot === 'after' && 'bw-slot-below',
           dropInto && 'bw-drop-into', dropInto && 'bw-drop-into-strong'),
         'data-row-key': dataRowKey,
         style: { '--bw-indent': (depth * 12) + 'px', ...(custStyle || {}), ...(pulse ? { '--bw-pulse-color': PULSE_COLORS[pulse] || PULSE_COLORS.ongoing } : null) },
@@ -6027,7 +6064,11 @@ window.__ModuleLoader__.load({
         ? E(PulseGlow, { state: pulse }, iconEl || (typeof ui.StateDot === 'function' ? E(ui.StateDot, { state: pulse, size: 10 }) : null))
         : iconEl
       let row = E('div', {
-        className: cls('bw-row', 'bw-container-row', currentInside && 'bw-row-current', menuOpen && 'menu-open', dropHalf === 'before' && 'bw-drop-before', dropHalf === 'after' && 'bw-drop-after', dropInto && 'bw-drop-into', dropInto && 'bw-drop-into-strong'),
+        // v0.36.4: workspace rows open the same empty reorder slot a group
+        // row does (the official 12px insert line alone read as "没撑开").
+        // The half split is judged in LOGICAL height, so the grown row
+        // cannot flip its own band under the pointer.
+        className: cls('bw-row', 'bw-container-row', currentInside && 'bw-row-current', menuOpen && 'menu-open', dropHalf === 'before' && 'bw-slot-above', dropHalf === 'after' && 'bw-slot-below', dropInto && 'bw-drop-into', dropInto && 'bw-drop-into-strong'),
         'data-row-key': dataRowKey,
         style: { '--bw-indent': (depth * 12) + 'px', ...(custStyle || {}), ...(pulse ? { '--bw-pulse-color': PULSE_COLORS[pulse] || PULSE_COLORS.ongoing } : null) },
         onClick: onToggle,
@@ -7302,6 +7343,12 @@ window.__ModuleLoader__.load({
       const wsFolders = typeof useStore === 'function'
         ? useStore(state => (state && state.folders && state.folders.ws) || EMPTY_FOLDERS)
         : EMPTY_FOLDERS
+      // Same persisted group order the sidebar uses (v0.36.4) — a chooser that
+      // listed groups alphabetically while the tree showed the dragged order
+      // would contradict the surface it selects for.
+      const pickerFolderOrder = typeof useStore === 'function'
+        ? useStore(state => (state && state.folderOrder) || EMPTY_FOLDERS)
+        : EMPTY_FOLDERS
       // Occupancy is the only reactive fact here: the ledger read re-runs on
       // every render, so the count just forces the re-render when the shipped
       // occupant loads or unloads (its identity is stable while occupied).
@@ -7323,10 +7370,10 @@ window.__ModuleLoader__.load({
       // Same construction the sidebar runs (buildTree + optional chain
       // compression), so both surfaces answer the same view options.
       const tree = React.useMemo(() => {
-        const built = buildTree(items, groupMode, wsFolders)
+        const built = buildTree(items, groupMode, wsFolders, pickerFolderOrder)
         if (!compactChains) return built
         return { ...built, folders: built.folders.map((f) => materializeChain(compressTree(f))), workspaces: built.workspaces }
-      }, [items, groupMode, wsFolders, compactChains])
+      }, [items, groupMode, wsFolders, pickerFolderOrder, compactChains])
 
       const rows = React.useMemo(() => {
         const out = []
@@ -7557,6 +7604,10 @@ window.__ModuleLoader__.load({
       const foldersMap = useStore ? (useStore(s => s.folders) || {}) : {}
       const wsFolders = foldersMap && typeof foldersMap.ws === 'object' && foldersMap.ws !== null ? foldersMap.ws : EMPTY_FOLDERS
       const sessFolders = foldersMap && typeof foldersMap.sess === 'object' && foldersMap.sess !== null ? foldersMap.sess : EMPTY_FOLDERS
+      // Persisted group order (v0.36.4): { [parentKey]: name[] }. Absent on
+      // every snapshot written before it existed — the seed name sort then
+      // stands, so old states render unchanged.
+      const folderOrderMap = useStore ? (useStore(s => s.folderOrder) || EMPTY_FOLDERS) : EMPTY_FOLDERS
       // View options (v0.13). Selector reads take fallbacks: hydration
       // replaces the whole persisted value, so states written by older
       // plugin versions lack these keys (hard store discipline).
@@ -7912,15 +7963,11 @@ window.__ModuleLoader__.load({
       // opening groups under a passing cursor ("变下级会被撑开"). The
       // deterministic reveal now lives in commitFolderMoveInto — the target
       // group opens when the members actually land.
-      // Hover-intent arming for the reorder slot (v0.36.2): the slot only
-      // opens after the pointer RESTS on an edge band for a beat — passing
-      // through the band on the way elsewhere must not flash the row open
-      // (the "drop-into still opens the slot" complaint). Cleared on band
-      // change, row change, drop and drag end.
-      const folderArmTimer = React.useRef(null)
-      const clearFolderArmTimer = () => {
-        if (folderArmTimer.current !== null) { clearTimeout(folderArmTimer.current.timer); folderArmTimer.current = null }
-      }
+      // (v0.36.4) The hover-intent arming is retired. It made the reorder
+      // slot appear only after a ~200ms rest on the band, so a normal drag
+      // across a group row showed the thin insert line and never the empty
+      // slot — the user report "还是一条蓝线,没拨开让我插入". The edge bands
+      // are 30% wide and geometrically judged, so they can answer at once.
       // Quote-on-land eligibility sets (mount-scoped):
       // - blankSeen: ids observed BLANK in any snapshot. A blank row is a
       //   freshly created New Session, so ONLY these may ever receive an
@@ -8077,7 +8124,12 @@ window.__ModuleLoader__.load({
       const normalizedQuery = query.trim().toLowerCase()
       const now = Date.now()
 
-      const fail = (text) => { setFlowOpen(false); setDialog(null); setErrorText(String(text || 'unknown error')) }
+      // v0.36.4: no setFlowOpen here. flowOpen belongs to the PICKER component
+      // (WorkspacePicker), not to this browser: referencing it from here threw
+      // 'ReferenceError: setFlowOpen is not defined' on every failure path —
+      // including the .catch(fail) of a group move-into, which then silently
+      // aborted the rename ('变下级没反应').
+      const fail = (text) => { setDialog(null); setErrorText(String(text || 'unknown error')) }
 
       const styleEntry = (key) => stylingMap[key] || null
       // Effective appearance = the settings card's default, overridden field by
@@ -8144,26 +8196,24 @@ window.__ModuleLoader__.load({
         pinnedPartitionInPlace(ungrouped)
       }
 
-      // While a workspace drag is active, single-child chains render UNCOMPRESSED:
-      // a merged "group/workspace" row hides every folder level of the chain inside
-      // its label, and those levels are exactly the drop targets for "move into
-      // this group". Suspending the merge for the drag's duration re-exposes each
-      // level as a real folder row (folder expansion defaults apply); when the
-      // drag ends, the chains merge back. Session drags keep the merged view —
-      // their drop targets live inside workspace rows, which compression merges.
-      const draggingWorkspace = drag !== null && drag.kind === 'workspace'
+      // (v0.36.4) The drag-time chain EXPANSION is retired. Suspending the
+      // merge while a workspace was dragged re-exposed every single-child
+      // chain as folder rows, so the tree visibly re-laid itself one frame
+      // after dragstart and every drop target below the source shifted —
+      // the user report "拖拽中树会乱/落点漂移". Drop targets are now
+      // answered by the stable render; nothing re-flows mid-drag.
       const tree = React.useMemo(() => {
-        const built = buildTree(items, workspaceGroupMode, wsFolders)
-        if (!compactChains || draggingWorkspace) return built
+        const built = buildTree(items, workspaceGroupMode, wsFolders, folderOrderMap)
+        if (!compactChains) return built
         return { ...built, folders: built.folders.map((f) => materializeChain(compressTree(f))), workspaces: built.workspaces }
-      }, [items, compactChains, draggingWorkspace, workspaceGroupMode, wsFolders])
+      }, [items, compactChains, workspaceGroupMode, wsFolders, folderOrderMap])
       // UNCOMPRESSED tree, for the new-group dialog only. compressTree merges a
       // single-child chain into one row that stands for BOTH a group and the
       // workspace under it — fine for drawing, useless for choosing a
       // container: one half must stay unselectable and the other must be
       // selectable, and a merged row cannot be both. (It also carried no
       // `name`, which is how a lone "E" rendered blank.)
-      const rawTree = React.useMemo(() => buildTree(items, workspaceGroupMode, wsFolders), [items, workspaceGroupMode, wsFolders])
+      const rawTree = React.useMemo(() => buildTree(items, workspaceGroupMode, wsFolders, folderOrderMap), [items, workspaceGroupMode, wsFolders, folderOrderMap])
       // Disk-layer ancestry for drag semantics (same derivation as buildTree).
       const diskParentMap = React.useMemo(() => diskParentMapOf(items), [items])
 
@@ -8666,27 +8716,50 @@ window.__ModuleLoader__.load({
         }
       }, [drag === null])
 
+      // Geometry helpers shared by both reorder targets. v0.36.4 judges in
+      // v0.36.4 geometry: an open reorder slot (bw-slot-above / -below) pads
+      // the row open by one logical row (padding, so the box grows to two
+      // rows). Judge the pointer against the row's ORIGINAL position, not the
+      // padded box: the original position is the half its content did NOT
+      // slide into — the pad above for a before-slot, the remaining content
+      // box for an after-slot. Judging there keeps a still pointer from
+      // flipping the slot the moment it opens (the reported "抽搐"), while
+      // still letting the pointer cross the original midpoint to switch
+      // direction — the padded half answers null instead of a stale band.
+      const originalBoxOf = (el) => {
+        const rect = el.getBoundingClientRect()
+        const style = getComputedStyle(el)
+        const padTop = parseFloat(style.paddingTop) || 0
+        const padBottom = parseFloat(style.paddingBottom) || 0
+        if (padTop > 0) return { top: rect.top, bottom: rect.top + padTop }
+        if (padBottom > 0) return { top: rect.top, bottom: rect.bottom - padBottom }
+        return { top: rect.top, bottom: rect.bottom }
+      }
+      // null = the pointer sits in the half the open slot vacated: the caller
+      // keeps its current drop target instead of re-deciding on geometry that
+      // only exists because of that slot.
       const rowHalf = (event) => {
-        const rect = event.currentTarget.getBoundingClientRect()
-        return event.clientY < rect.top + rect.height / 2 ? 'before' : 'after'
+        const box = originalBoxOf(event.currentTarget)
+        const y = event.clientY
+        if (y < box.top || y > box.bottom) return null
+        return y < (box.top + box.bottom) / 2 ? 'before' : 'after'
       }
       // Three-band targeting for group rows (react-arborist style): the
-      // outer QUARTERS mean "reorder against this group", the middle HALF
-      // means "drop into" — so move-into (the framed highlight) is easy to
-      // hit and reorder never swallows the pointer. Judged in LOGICAL
-      // geometry (--bw-row-h, which never animates): the opened slot doubles
-      // the rendered height, and a rect measured against that animated
-      // height flips the bands back and forth — the open/close jitter.
+      // outer 30% of the CONTENT means "reorder against this group", the
+      // middle 40% means "drop into" — so move-into (the framed highlight)
+      // is easy to hit and reorder never swallows the pointer. v0.36.3
+      // widened the bands from a quarter: at 25% they were 8.5px on a 34px
+      // row and practically unhittable (every drop landed "into" instead
+      // of reordering beside).
       const rowZone = (event) => {
-        const el = event.currentTarget
-        const rect = el.getBoundingClientRect()
-        const tree = el.closest('.bw-tree')
-        const logical = tree ? (parseFloat(getComputedStyle(tree).getPropertyValue('--bw-row-h')) || 34) : 34
-        // v0.36.3: the edge bands widen to 30% — at 25% they were 8.5px on a
-        // 34px row and practically unhittable (user report: every drop landed
-        // "into" the group instead of reordering beside it).
-        if (event.clientY < rect.top + logical * 0.3) return 'before'
-        if (event.clientY > rect.top + logical * 0.7) return 'after'
+        const box = originalBoxOf(event.currentTarget)
+        const y = event.clientY
+        if (y < box.top || y > box.bottom) return null
+        const h = box.bottom - box.top
+        if (h < 2) return 'into'
+        const rel = (y - box.top) / h
+        if (rel < 0.3) return 'before'
+        if (rel > 0.7) return 'after'
         return 'into'
       }
       const dragMatches = (kind) => drag !== null && drag.kind === kind
@@ -8710,12 +8783,10 @@ window.__ModuleLoader__.load({
       // AND a folder drop (whole-group move) alike — the INTO band only:
       // an edge-band reorder slot draws the official insert line instead.
       const wsDropInto = (path) => (dragMatches('workspace') || dragMatches('folder')) && drag.over && drag.over.kind === 'folder' && drag.over.target === path && (!drag.over.zone || drag.over.zone === 'into')
-      // v0.36.3: the edge band answers IMMEDIATELY with the official 12px
-      // insert line (bw-drop-before/after — the workspace-row style); only
-      // after the ~200ms intent wait does the row split open into a slot.
-      // A restless pass now still shows where the drop would land.
+      // v0.36.4: an edge band on a group row answers IMMEDIATELY with the
+      // empty reorder slot (bw-slot-above/below) — the drop position is
+      // visible the moment the pointer enters the band, no intent wait.
       const wsFolderSlotOf = (folderIdPath) => (dragMatches('folder') && drag.over && drag.over.kind === 'folder' && drag.over.target === folderIdPath && (drag.over.zone === 'before' || drag.over.zone === 'after')) ? drag.over.zone : null
-      const wsFolderSlotArmed = (folderIdPath) => !!(dragMatches('folder') && drag.over && drag.over.kind === 'folder' && drag.over.target === folderIdPath && drag.over.armed)
       const workspaceDragEvents = (workspace) => ({
         draggable: !searching && canDragWorkspace,
         onDragStart: (event) => {
@@ -8749,7 +8820,6 @@ window.__ModuleLoader__.load({
         },
         onDragEnd: () => {
           if (wsDragArmTimer.current !== null) { clearTimeout(wsDragArmTimer.current); wsDragArmTimer.current = null }
-          clearFolderArmTimer()
           setDrag(null)
         },
         onDragOver: (event) => {
@@ -8770,10 +8840,19 @@ window.__ModuleLoader__.load({
             return
           }
           if (!dragMatches('workspace')) return
+          // v0.36.4: the SOURCE row is never its own drop target. A reorder
+          // slot pads a row open by one logical row, so the row the drag
+          // started on ends up covering the pointer's first stop — without
+          // this gate the source row swallowed the target, the drop landed on
+          // itself, commitWorkspaceDrop no-oped and the gesture read as
+          // "拖了没反应".
+          if (drag.source && drag.source.workspaceId === workspace.workspaceId) return
           event.preventDefault()
           event.stopPropagation()
           try { event.dataTransfer.dropEffect = 'move' } catch { }
           const half = rowHalf(event)
+          // Pointer in the half the open slot vacated: keep this row's slot.
+          if (half === null) return
           setDrag(current => (current && current.over && current.over.kind === 'workspace' && current.over.target === workspace.workspaceId && current.over.half === half)
             ? current
             : (current ? { ...current, over: { kind: 'workspace', target: workspace.workspaceId, half } } : current))
@@ -8812,6 +8891,43 @@ window.__ModuleLoader__.load({
         const cutAt = folderIdPath.lastIndexOf('//')
         return cutAt === -1 ? '' : folderIdPath.slice(0, cutAt)
       }
+      // PARENT container identity of a group row (v0.36.4) — the key its
+      // sibling order is persisted under. The ROOT level of a disk scope
+      // answers the scope prefix ('' at the top level, '<wsId>' one disk
+      // level down); a deeper group answers the idPath of its parent group.
+      const parentKeyOf = (folderIdPath) => {
+        const cutAt = folderIdPath.lastIndexOf('//')
+        const prefix = cutAt === -1 ? '' : folderIdPath.slice(0, cutAt)
+        const namePath = cutAt === -1 ? folderIdPath : folderIdPath.slice(cutAt + 2)
+        const segs = namePath.split('/')
+        segs.pop()
+        const parentNamePath = segs.join('/')
+        return parentNamePath === '' ? prefix : prefix + '//' + parentNamePath
+      }
+      // Locate the container a group order list belongs to inside the RAW
+      // (uncompressed) tree: the ROOT level, a disk sub-level (a
+      // workspace's `sub`), or a group node whose `folders` are its
+      // children. Compression never runs on rawTree, so every group the
+      // user can drop beside still has its own idPath here.
+      const folderContainerOf = (key) => {
+        if (key === '') return rawTree
+        let hit = null
+        const walk = (level) => {
+          if (hit || !level) return
+          for (const w of level.workspaces || []) {
+            if (hit) return
+            if (w.subPrefix === key && w.sub) { hit = w.sub; return }
+            if (w.sub) walk(w.sub)
+          }
+          for (const f of level.folders || []) {
+            if (hit) return
+            if (f.idPath === key) { hit = f; return }
+            walk(f)
+          }
+        }
+        walk(rawTree)
+        return hit
+      }
       // Whole-block member ids of a name group, from this rendering level
       // down: a reorder slides EVERY nested workspace (prefixes untouched,
       // so sub-groups travel with the block; only the registry order
@@ -8839,7 +8955,6 @@ window.__ModuleLoader__.load({
           } catch { /* drag payload is best-effort */ }
           // Same one-frame arm as the workspace drag: Chromium cancels a
           // just-started drag whose source element moves under the cursor.
-          clearFolderArmTimer()
           if (wsDragArmTimer.current !== null) clearTimeout(wsDragArmTimer.current)
           wsDragArmTimer.current = setTimeout(() => {
             wsDragArmTimer.current = null
@@ -8848,35 +8963,56 @@ window.__ModuleLoader__.load({
         },
         onDragEnd: () => {
           if (wsDragArmTimer.current !== null) { clearTimeout(wsDragArmTimer.current); wsDragArmTimer.current = null }
-          clearFolderArmTimer()
           setDrag(null)
         },
         onDragOver: (event) => {
-          // Outer quarters = reorder against a SIBLING group (same owner
-          // level only); the middle half = move into the group, framed and
-          // never opened. Workspace sources keep whole-row move-into
-          // semantics. The slot is HOVER-INTENT gated: it arms after the
-          // pointer rests ~200ms on the band (see folderArmTimer), so
-          // passing through the band never flashes the row open.
-          const zone = rowZone(event)
+          // Three bands on a group row: the outer 30% bands reorder this
+          // group among its SIBLINGS (an empty slot opens at once — the
+          // drop position is visible the moment the band is entered); the
+          // middle 40% moves the source INSIDE the hovered group (framed,
+          // never opened). Workspace sources keep whole-row move-into
+          // semantics.
+          //
+          // SIBLINGS means the SAME PARENT (parentKeyOf): a band reorder
+          // only permutes one level's group name list, it never rewrites a
+          // title prefix. Cross-parent and self/descendant targets are
+          // refused — no preventDefault, so the platform shows its own
+          // 'no drop' cursor, which is the truth.
+          //
+          // v0.36.4: once THIS row already holds a reorder slot, the whole
+          // original row position answers before/after ONLY (a plain
+          // midpoint split). Judging the three bands again there reintroduced
+          // the INTO band on the very row that just padded open: a pointer
+          // drifting a few pixels inside it flipped to INTO, closed the slot
+          // and read as a flicker ("抽搐") — and worse, the drop then landed
+          // as move-into (a no-op) instead of the reorder the user aimed at.
+          // The three bands still decide the FIRST entry, so INTO (move the
+          // source inside this group) stays reachable.
+          const slotOpen = drag.over !== null && drag.over.kind === 'folder' && drag.over.target === idPath && (drag.over.zone === 'before' || drag.over.zone === 'after')
+          const zone = slotOpen ? rowHalf(event) : rowZone(event)
           const isFolder = dragMatches('folder')
           if (isFolder) {
             const targetPath = namePathOf(idPath)
-            // No self / descendant targets (loop). An ANCESTOR target is
-            // refused for move-into only (the group already lives there):
-            // its edge bands are the ONE legal way to drag a nested group
-            // OUT to the parent level, anchored by commitFolderReorder
-            // (v0.36.3 — the old blanket refusal made nested groups
-            // unsortable, the user report). Cross-level edge bands stay
-            // refused: a reorder never rewrites the name prefix.
+            // Self / descendant: looping. Ancestor: the group already lives
+            // inside, so neither a reorder nor a move-into can mean anything
+            // there (its edge bands are not a way out — leaving a parent is
+            // a title rename, not an order change).
             if (drag.source.path === targetPath || targetPath.startsWith(drag.source.path + '/')) return
-            if (targetPath !== '' && drag.source.path.startsWith(targetPath + '/')) {
-              // Drag-out is only meaningful against the DIRECT parent: a
-              // reorder slides registry order without rewriting prefixes,
-              // so a grandparent band could not move the block anyway.
-              const directParent = drag.source.path.slice(0, drag.source.path.lastIndexOf('/'))
-              if (zone === 'into' || targetPath !== directParent) return
-            } else if (zone !== 'into' && ownerPrefixOf(idPath) !== ownerPrefixOf(drag.source.idPath)) return
+            if (targetPath !== '' && drag.source.path.startsWith(targetPath + '/')) return
+            // Pointer in the half the open slot vacated: keep this row's slot
+            // (re-deciding there would flicker the slot it just opened).
+            if (zone === null) {
+              if (drag.over && drag.over.kind === 'folder' && drag.over.target === idPath && (drag.over.zone === 'before' || drag.over.zone === 'after')) {
+                event.preventDefault()
+                event.stopPropagation()
+                try { event.dataTransfer.dropEffect = 'move' } catch { }
+              }
+              return
+            }
+            // Edge bands permute ONE level's sibling list; a cross-parent
+            // band is refused. Move-into (the middle band) stays open across
+            // parents: it is a batch rename, which does reach another group.
+            if (zone !== 'into' && parentKeyOf(idPath) !== parentKeyOf(drag.source.idPath)) return
           } else if (!dragMatches('workspace')) {
             return
           }
@@ -8884,26 +9020,14 @@ window.__ModuleLoader__.load({
           event.stopPropagation()
           try { event.dataTransfer.dropEffect = 'move' } catch { }
           const reorder = isFolder && zone !== 'into'
-          // (Re)arm the intent timer whenever the band or the row changes.
-          if (folderArmTimer.current && (!reorder || folderArmTimer.current.target !== idPath || folderArmTimer.current.zone !== zone)) clearFolderArmTimer()
-          if (reorder && folderArmTimer.current === null) {
-            const timer = setTimeout(() => {
-              folderArmTimer.current = null
-              setDrag((current) => current && current.over && current.over.kind === 'folder' && current.over.target === idPath
-                ? { ...current, over: { ...current.over, armed: true } }
-                : current)
-            }, 200)
-            folderArmTimer.current = { target: idPath, zone, timer }
-          }
-          const settled = (current) => current && current.over && current.over.kind === 'folder' && current.over.target === idPath && (reorder ? current.over.zone === zone : (!current.over.zone || current.over.zone === 'into'))
-          setDrag(current => settled(current) ? current : (current ? { ...current, over: reorder
-            // armed survives only on the SAME band of the SAME row; a band
-            // change restarts the intent wait.
-            ? { kind: 'folder', target: idPath, zone, armed: !!(current.over && current.over.kind === 'folder' && current.over.target === idPath && current.over.zone === zone && current.over.armed) }
-            : { kind: 'folder', target: idPath, zone: 'into' } } : current))
+          const nextOver = reorder
+            ? { kind: 'folder', target: idPath, zone }
+            : { kind: 'folder', target: idPath, zone: 'into' }
+          setDrag(current => (current && current.over && current.over.kind === 'folder' && current.over.target === idPath && current.over.zone === nextOver.zone)
+            ? current
+            : (current ? { ...current, over: nextOver } : current))
         },
         onDrop: (event) => {
-          clearFolderArmTimer()
           if (dragMatches('folder')) {
             event.preventDefault()
             event.stopPropagation()
@@ -8988,11 +9112,12 @@ window.__ModuleLoader__.load({
               await renameWorkspace(w.workspaceId, targetPath + String(w.title).slice(source.path.length))
             }
           })
-          // v0.36.3: the 600ms hover auto-expand is gone (it "opened" rows
-          // the user was only passing over). The deterministic reveal is
-          // HERE instead: once the members land, the target group opens so
-          // the move is visible without hunting for it.
-          .then(() => { try { actions.setExpanded(targetIdPath, true) } catch { } })
+          // (v0.36.4) NO automatic expand after a move-into. v0.36.3 opened
+          // the target group here so the move would be visible, but on the
+          // real tree a drop in the middle band is exactly the "变下级"
+          // gesture, and auto-opening made that read as "又被撑开了".
+          // The row the user just dropped into stays as it was; the moved
+          // members appear under it once the user opens that group.
           .catch(fail)
       }
       // Group REORDER (v0.36.0): a name group's position IS the registry
@@ -9007,6 +9132,10 @@ window.__ModuleLoader__.load({
         setDrag(null)
         if (!canDragWorkspace) { console.warn('[bw] folder reorder refused: workspace reorder unavailable on this host'); return }
         if (ownerPrefixOf(source.idPath) !== ownerPrefixOf(targetIdPath)) { console.warn('[bw] folder reorder refused: cross-level target'); return }
+        // v0.36.4: SIBLINGS ONLY. A group's rendered position is decided by
+        // its parent's order list, so a target that hangs off a different
+        // parent cannot place it at all.
+        if (parentKeyOf(source.idPath) !== parentKeyOf(targetIdPath)) { console.warn('[bw] folder reorder refused: cross-parent target'); return }
         const sourceIds = source.memberIds || []
         if (!sourceIds.length) { console.warn('[bw] folder reorder refused: empty source block'); return }
         // Whole-block anchors: the target's members include its nested
@@ -9027,6 +9156,24 @@ window.__ModuleLoader__.load({
         const anchor = zone === 'after'
           ? targetMembers[targetMembers.length - 1]
           : targetMembers[0]
+        // v0.36.4: THE DISPLAYED ORDER IS PERSISTED HERE. Group order used to
+        // follow buildTree's name sort, so the registry edit below changed
+        // nothing the user could see ("拖了没反应"). folderOrder[parentKey]
+        // is the sibling name list buildTree sorts by; write it first so the
+        // drop is visible immediately, then sync the registry for the
+        // workspace order other surfaces read.
+        const orderParent = parentKeyOf(source.idPath)
+        const orderContainer = folderContainerOf(orderParent)
+        const sourceName = namePathOf(source.idPath).split('/').pop()
+        const targetName = namePathOf(targetIdPath).split('/').pop()
+        if (orderContainer) {
+          const names = (orderContainer.folders || []).map((n) => n.name).filter((n) => n !== sourceName)
+          const at = names.indexOf(targetName)
+          if (at !== -1) {
+            names.splice(zone === 'after' ? at + 1 : at, 0, sourceName)
+            if (typeof actions.setFolderOrder === 'function') actions.setFolderOrder(orderParent, names)
+          }
+        }
         Promise.resolve()
           .then(async () => {
             if (anchor === undefined) {
@@ -9497,7 +9644,6 @@ window.__ModuleLoader__.load({
           onContextMenu: (e) => openCtx('folder', { path: node.path, name: node.name, idPath, scope: node.scope, empty: countWorkspaces(node) === 0 }, e),
           dropInto: wsDropInto(idPath),
           dropSlot: wsFolderSlotOf(idPath),
-          slotArmed: wsFolderSlotArmed(idPath),
           dragEvents: folderDropEvents(idPath, node.path, node),
           custStyle: rowStyleOf('folder:' + idPath),
           iconMode: (styleEntry('folder:' + idPath) || {}).icon || 'solid',

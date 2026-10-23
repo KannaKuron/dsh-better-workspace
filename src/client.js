@@ -8921,7 +8921,28 @@ window.__ModuleLoader__.load({
           // workspace sliding beside a group row). Siblings only — a group
           // that lives in another container has no position in this level.
           if (dragMatches('folder')) {
-            if ((drag.source.levelKey || '') !== (workspace.levelKey || '')) { clearOver('workspace', workspace.workspaceId); return }
+            const sourceLevel = drag.source.levelKey || ''
+            if (sourceLevel !== (workspace.levelKey || '')) {
+              // v0.36.7 INTO on the OWNING disk row: a group block dropped on
+              // the workspace row that CONTAINS it answers the same framed
+              // INTO a workspace row gets on a group row ("放入这个工作区
+              // 下"). The only position that means without rewriting a path
+              // is the tail of the level it already lives in, so the drop
+              // commits moveFolderToLevelEnd. Every other cross-level target
+              // stays refused: the disk layer is a filesystem fact.
+              if (sourceLevel === (workspace.subPrefix || '')) {
+                event.preventDefault()
+                event.stopPropagation()
+                try { event.dataTransfer.dropEffect = 'move' } catch { }
+                setDrag(current => (current && current.over && current.over.kind === 'ws-level' && current.over.target === workspace.workspaceId)
+                  ? current
+                  : (current ? { ...current, over: { kind: 'ws-level', target: workspace.workspaceId } } : current))
+              } else {
+                clearOver('workspace', workspace.workspaceId)
+                clearOver('ws-level', workspace.workspaceId)
+              }
+              return
+            }
             event.preventDefault()
             event.stopPropagation()
             try { event.dataTransfer.dropEffect = 'move' } catch { }
@@ -8960,7 +8981,17 @@ window.__ModuleLoader__.load({
             return
           }
           if (dragMatches('folder')) {
-            if ((drag.source.levelKey || '') !== (workspace.levelKey || '')) return
+            const sourceLevel = drag.source.levelKey || ''
+            if (sourceLevel !== (workspace.levelKey || '')) {
+              // v0.36.7: the group's OWNING disk row accepts the framed INTO
+              // (see onDragOver) — put the block back at that level's tail.
+              if (sourceLevel === (workspace.subPrefix || '')) {
+                event.preventDefault()
+                event.stopPropagation()
+                commitFolderMoveToLevelEnd(drag.source)
+              }
+              return
+            }
             event.preventDefault()
             event.stopPropagation()
             const half = drag.over && drag.over.kind === 'workspace' && drag.over.target === workspace.workspaceId ? drag.over.half : rowHalf(event)
@@ -9095,12 +9126,20 @@ window.__ModuleLoader__.load({
           const isWorkspace = dragMatches('workspace')
           if (isFolder) {
             const targetPath = namePathOf(idPath)
-            // Self / descendant: looping. Ancestor: the group already lives
-            // inside, so neither a reorder nor a move-into can mean anything
-            // there (its edge bands are not a way out — leaving a parent is
-            // a title rename, not an order change).
+            // Self / descendant: looping.
             if (drag.source.path === targetPath || targetPath.startsWith(drag.source.path + '/')) { clearOver('folder', idPath); return }
-            if (targetPath !== '' && drag.source.path.startsWith(targetPath + '/')) { clearOver('folder', idPath); return }
+            // Ancestor: the group already lives inside. The DIRECT parent is
+            // the container it lives in, so v0.36.7 reopens its MIDDLE band
+            // (the framed INTO): "放进那个组" can only mean "move to the end
+            // of that group", the same feedback a workspace row gets when
+            // dropped INTO its own group. Edge bands still mean nothing
+            // there (leaving a parent is a title rename, not an order
+            // change), and a further ancestor stays refused.
+            if (targetPath !== '' && drag.source.path.startsWith(targetPath + '/')) {
+              const cutAt = drag.source.path.lastIndexOf('/')
+              const directParent = cutAt === -1 ? '' : drag.source.path.slice(0, cutAt)
+              if (targetPath !== directParent || zone !== 'into') { clearOver('folder', idPath); return }
+            }
             // Pointer in the half the open slot vacated: keep this row's slot
             // (re-deciding there would flicker the slot it just opened).
             if (zone === null) {
@@ -9188,6 +9227,28 @@ window.__ModuleLoader__.load({
       // (workspace-only) order, because "above that group" is a VIEW position
       // the registry has no vocabulary for: a workspace title still decides
       // which group it belongs to, the list only decides where the row sits.
+      // v0.36.7: a group block dropped INTO the container it already lives in
+      // (the framed INTO on its DIRECT parent group row, or on the disk-level
+      // row that owns it) lands at that container's TAIL — the same
+      // "放入=排到最后" a workspace row gets when dropped INTO its own group.
+      // No prefix is rewritten (the block already lives under the right path),
+      // only the level order moves.
+      const moveFolderToLevelEnd = (source) => {
+        const containerKey = source.levelKey || ''
+        const container = folderContainerOf(containerKey)
+        if (!container) { console.warn('[bw] folder move refused: target level not found', containerKey); return false }
+        const token = namePathOf(source.idPath).split('/').pop()
+        const tokens = levelSeqOf(container).map(levelTokenOf)
+        if (!tokens.includes(token)) { console.warn('[bw] folder move refused: group not in this level', token); return false }
+        const next = tokens.filter((entry) => entry !== token)
+        next.push(token)
+        if (typeof actions.setFolderOrder === 'function') actions.setFolderOrder(containerKey, next)
+        return true
+      }
+      const commitFolderMoveToLevelEnd = (source) => {
+        setDrag(null)
+        moveFolderToLevelEnd(source)
+      }
       const writeLevelOrder = (containerKey, sourceToken, targetToken, zone) => {
         const container = folderContainerOf(containerKey)
         if (!container) { console.warn('[bw] level reorder refused: container not found', containerKey); return false }
@@ -9366,6 +9427,13 @@ window.__ModuleLoader__.load({
       const commitFolderMoveInto = (source, targetIdPath) => {
         setDrag(null)
         const targetPath = namePathOf(targetIdPath)
+        // v0.36.7: the DIRECT parent is the container the group already lives
+        // in. The hover already showed the framed INTO there, so "放进那个
+        // 组" means "move to the end of that group" — no rename involved.
+        // Checked BEFORE the ancestor refusal below.
+        const cutAt = source.path.lastIndexOf('/')
+        const directParent = cutAt === -1 ? '' : source.path.slice(0, cutAt)
+        if (targetPath === directParent) { moveFolderToLevelEnd(source); return }
         // An ANCESTOR target means the group already lives there: a prefix
         // rewrite would duplicate a segment (工作/A → 工作/工作/A). Refuse.
         if (source.path === targetPath || targetPath.startsWith(source.path + '/') || (targetPath !== '' && source.path.startsWith(targetPath + '/'))) { console.warn('[bw] folder move refused: target is self, descendant or ancestor of', source.path); return }
@@ -9572,6 +9640,10 @@ window.__ModuleLoader__.load({
           .catch(fail)
       }
       const wsRootDropActive = (workspaceId) => dragMatches('session') && drag.over !== null && drag.over.kind === 'ws-root' && drag.over.target === workspaceId
+      // v0.36.7: a group block hovering the disk-level row that OWNS it lights
+      // the SAME framed INTO a workspace row gets on a group row — the visual
+      // is one language: edge bands reorder, the middle band "puts inside".
+      const wsGroupIntoActive = (workspaceId) => dragMatches('folder') && drag.over !== null && drag.over.kind === 'ws-level' && drag.over.target === workspaceId
       const commitSessionMoveInto = (workspaceId, groupPath) => {
         const source = drag.source
         setDrag(null)
@@ -9838,7 +9910,7 @@ window.__ModuleLoader__.load({
           menuOpen: !!(ctx && ctx.kind === 'workspace' && ctx.payload && ctx.payload.workspaceId === workspace.workspaceId),
           hoverBody: workspaceHoverBody,
           dropHalf: wsDropHalf(workspace.workspaceId),
-          dropInto: wsRootDropActive(workspace.workspaceId),
+          dropInto: wsRootDropActive(workspace.workspaceId) || wsGroupIntoActive(workspace.workspaceId),
           dragEvents: workspaceDragEvents(workspace),
           custStyle: rowStyleOf('workspace:' + workspace.workspaceId),
           iconMode: (styleEntry('workspace:' + workspace.workspaceId) || {}).icon || 'solid',

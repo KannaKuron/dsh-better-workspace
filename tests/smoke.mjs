@@ -2157,20 +2157,20 @@ test('v0.36.2: edge-band reorder needs no hover intent; refusals warn loudly', (
     'loop/duplicate move refusal warns')
 })
 
-test('v0.36.3: an ancestor row is never a reorder target (leaving a parent is a rename)', () => {
+test('v0.36.3/0.36.7: an ancestor row only answers the framed INTO on the DIRECT parent', () => {
   const text = read('src/client.js')
-  // v0.36.3 briefly opened the DIRECT parent's edge bands as a drag-out.
-  // v0.36.4 closed it again: a group's rendered position comes from its
-  // parent's order list, so a drop onto an ancestor cannot place it. Moving
-  // a group to another LEVEL is a title rewrite — the rename gesture — not
-  // an order change, so every ancestor refuses at hover (no preventDefault
-  // means the platform shows its own 'no drop' cursor, which is the truth).
+  // v0.36.3 briefly opened the DIRECT parent's edge bands as a drag-out;
+  // v0.36.4 closed it again. v0.36.7 reopens ONLY the parent's MIDDLE band,
+  // and only as the framed INTO: "放进那个组" = move the block to the tail of
+  // the container it already lives in (no rename). A further ancestor, or
+  // either edge band on the parent, still refuses — moving a group to another
+  // LEVEL is a title rewrite (the rename gesture), not an order change.
   assert.match(text, /if \(drag\.source\.path === targetPath \|\| targetPath\.startsWith\(drag\.source\.path \+ '\/'\)\) \{ clearOver\('folder', idPath\); return \}/,
     'self and descendant targets refuse first')
-  assert.match(text, /if \(targetPath !== '' && drag\.source\.path\.startsWith\(targetPath \+ '\/'\)\) \{ clearOver\('folder', idPath\); return \}/,
-    'every ancestor target refuses')
-  assert.doesNotMatch(text, /const directParent = drag\.source\.path\.slice/,
-    'the direct-parent carve-out is retired')
+  assert.match(text, /if \(targetPath !== directParent \|\| zone !== 'into'\) \{ clearOver\('folder', idPath\); return \}/,
+    'only the direct parent\'s middle band is accepted; every other ancestor refuses')
+  assert.match(text, /const cutAt = drag\.source\.path\.lastIndexOf\('\/'\)\n              const directParent = cutAt === -1 \? '' : drag\.source\.path\.slice\(0, cutAt\)/,
+    'the direct-parent carve-out is derived from the source name path')
   assert.match(text, /const sourceSet = new Set\(sourceIds\)\n        const targetMembers = collectMemberIds\(targetNode\)\.filter\(\(id\) => !sourceSet\.has\(id\)\)/,
     'the reorder commit still filters the source block out of its anchor')
   assert.doesNotMatch(text, /folderHoverTimer|scheduleFolderHoverExpand/,
@@ -2305,10 +2305,19 @@ test('v0.36.5: a workspace row and a group row reorder into each other (mixed dr
   // v0.36.6: the hover path now also CLEARS the stale highlight on refusal (an
   // un-preventDefaulted hover used to leave over.zone pointing at whatever band
   // the pointer passed through, so the drop read 'into' and landed at the end).
-  assert.equal((text.match(/if \(\(drag\.source\.levelKey \|\| ''\) !== \(workspace\.levelKey \|\| ''\)\) \{ clearOver\('workspace', workspace\.workspaceId\); return \}/g) || []).length, 1,
-    'the group-onto-workspace hover gate clears the stale highlight when it refuses')
-  assert.match(text, /if \(\(drag\.source\.levelKey \|\| ''\) !== \(workspace\.levelKey \|\| ''\)\) return/,
-    'the group-onto-workspace drop gate still refuses cross-level targets')
+  // v0.36.7: the cross-level hover now has ONE meaningful target — the disk
+  // row that OWNS the group answers the framed INTO (drop = back to that
+  // level's tail); every other cross-level hover refuses and clears.
+  assert.match(text, /const sourceLevel = drag\.source\.levelKey \|\| ''\n            if \(sourceLevel !== \(workspace\.levelKey \|\| ''\)\) \{/,
+    'the group-onto-workspace hover gate splits the cross-level case')
+  assert.match(text, /if \(sourceLevel === \(workspace\.subPrefix \|\| ''\)\) \{/,
+    'the OWNING disk row is the one cross-level INTO target')
+  assert.match(text, /setDrag\(current => \(current && current\.over && current\.over\.kind === 'ws-level' && current\.over\.target === workspace\.workspaceId\)/,
+    'the owning row records a ws-level INTO hover')
+  assert.match(text, /clearOver\('workspace', workspace\.workspaceId\)\n                clearOver\('ws-level', workspace\.workspaceId\)/,
+    'every other cross-level hover clears the stale highlight')
+  assert.match(text, /commitFolderMoveToLevelEnd\(drag\.source\)/,
+    'the owning row drop commits the block back to its level tail')
   // v0.36.6: a workspace edge band on a group row accepts a same-DISK source so
   // the workspace can be lifted out of its name group into the parent level —
   // that lift (not INTO) is what makes "insert at the top" reachable.
@@ -2420,3 +2429,43 @@ test('v0.36.6: a workspace lifts OUT of its group onto any same-disk level (inse
     'a lift within the same level never removes its own token')
 })
 
+
+test('v0.36.7: dropping a group on its OWN container row is the framed INTO (block goes to the level tail)', () => {
+  const text = read('src/client.js')
+  // The user's report: dragging a group row ("工作区分区") onto the workspace
+  // row that CONTAINS it showed no feedback at all, while a workspace row
+  // dropped on a group row answers the framed INTO. Same visual language now:
+  // the owning disk row lights the framed INTO and the drop puts the block at
+  // that level's tail — the only position that means "放入这个工作区下"
+  // without rewriting any title prefix.
+  assert.match(text, /const wsGroupIntoActive = \(workspaceId\) => dragMatches\('folder'\) && drag\.over !== null && drag\.over\.kind === 'ws-level' && drag\.over\.target === workspaceId/,
+    'a group hover on its owning disk row is the framed INTO state')
+  assert.match(text, /dropInto: wsRootDropActive\(workspace\.workspaceId\) \|\| wsGroupIntoActive\(workspace\.workspaceId\)/,
+    'the workspace row renders the framed INTO for both drop languages')
+  // The gesture exists only for the row that OWNS the group: sourceLevel is
+  // the level the group lives in, and a disk row owns exactly its subPrefix.
+  assert.equal((text.match(/if \(sourceLevel === \(workspace\.subPrefix \|\| ''\)\) \{/g) || []).length, 2,
+    'both the hover and the drop offer the INTO on the owning disk row')
+  // The commit: read the level tokens, move the group token to the tail.
+  assert.match(text, /const moveFolderToLevelEnd = \(source\) => \{/,
+    'the level-tail move is one shared helper')
+  assert.match(text, /const containerKey = source\.levelKey \|\| ''\n        const container = folderContainerOf\(containerKey\)/,
+    'the container is the level the group already lives in')
+  assert.match(text, /const token = namePathOf\(source\.idPath\)\.split\('\/'\)\.pop\(\)\n        const tokens = levelSeqOf\(container\)\.map\(levelTokenOf\)/,
+    'the block is identified by its level token')
+  assert.match(text, /const next = tokens\.filter\(\(entry\) => entry !== token\)\n        next\.push\(token\)/,
+    'the token is re-appended at the tail')
+  assert.match(text, /console\.warn\('\[bw\] folder move refused: group not in this level', token\)/,
+    'a stale token warns instead of silently dropping the drag')
+  assert.match(text, /const commitFolderMoveToLevelEnd = \(source\) => \{\n        setDrag\(null\)\n        moveFolderToLevelEnd\(source\)/,
+    'the disk-row drop closes the gesture and commits')
+  // The DIRECT parent group row is the same container at the name layer, and
+  // its commit (a batch move-into) must take the tail branch BEFORE the
+  // ancestor refusal — otherwise the framed INTO would die at drop time.
+  assert.match(text, /if \(targetPath === directParent\) \{ moveFolderToLevelEnd\(source\); return \}/,
+    'the direct-parent INTO commits the tail move instead of the rename')
+  // The immediate hover still opens the empty slot on edge bands (reorder);
+  // only the middle band changed meaning.
+  assert.match(text, /if \(targetPath !== directParent \|\| zone !== 'into'\) \{ clearOver\('folder', idPath\); return \}/,
+    'the parent edge bands still refuse (a rename is not an order change)')
+})

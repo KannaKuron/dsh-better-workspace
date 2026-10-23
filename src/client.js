@@ -5986,7 +5986,7 @@ window.__ModuleLoader__.load({
       }
     }
 
-    function FolderRow({ node, depth, expanded, onToggle, onContextMenu, dropInto, dropSlot, dragEvents, custStyle, iconMode, pulse, active, dataRowKey, t }) {
+    function FolderRow({ node, depth, expanded, onToggle, onContextMenu, dropInto, dropSlot, slotArmed, dragEvents, custStyle, iconMode, pulse, active, dataRowKey, t }) {
       const total = countWorkspaces(node)
       const iconEl = iconOf(iconMode, expanded)
       // Hidden status dots breathe on the icon; with the icon hidden (mode
@@ -5995,7 +5995,13 @@ window.__ModuleLoader__.load({
         ? E(PulseGlow, { state: pulse }, iconEl || (typeof ui.StateDot === 'function' ? E(ui.StateDot, { state: pulse, size: 10 }) : null))
         : iconEl
       return E('div', {
-        className: cls('bw-row', 'bw-container-row', dropSlot === 'before' && 'bw-slot-above', dropSlot === 'after' && 'bw-slot-below', dropInto && 'bw-drop-into', dropInto && 'bw-drop-into-strong'),
+        // v0.36.3: an un-rested edge band paints the official 12px insert
+        // line right away; the drawer slot only opens once the intent timer
+        // arms (slotArmed). Same visual grammar as the workspace rows.
+        className: cls('bw-row', 'bw-container-row',
+          dropSlot === 'before' && (slotArmed ? 'bw-slot-above' : 'bw-drop-before'),
+          dropSlot === 'after' && (slotArmed ? 'bw-slot-below' : 'bw-drop-after'),
+          dropInto && 'bw-drop-into', dropInto && 'bw-drop-into-strong'),
         'data-row-key': dataRowKey,
         style: { '--bw-indent': (depth * 12) + 'px', ...(custStyle || {}), ...(pulse ? { '--bw-pulse-color': PULSE_COLORS[pulse] || PULSE_COLORS.ongoing } : null) },
         onClick: onToggle,
@@ -7902,11 +7908,10 @@ window.__ModuleLoader__.load({
       // source element, and Chromium cancels the whole gesture. dragEnd clears
       // the timer so a same-tick cancel never leaves a ghost drag behind.
       const wsDragArmTimer = React.useRef(null)
-      // Group-hover auto-expand (v0.36.0): hovering a COLLAPSED group's
-      // middle band for a beat opens it so the landing spot is visible
-      // instead of a blind drop. One timer per drag, keyed by target row.
-      const folderHoverTimer = React.useRef(null)
-      const folderHoverTarget = React.useRef(null)
+      // (v0.36.3) The 600ms group-hover auto-expand is retired: it kept
+      // opening groups under a passing cursor ("变下级会被撑开"). The
+      // deterministic reveal now lives in commitFolderMoveInto — the target
+      // group opens when the members actually land.
       // Hover-intent arming for the reorder slot (v0.36.2): the slot only
       // opens after the pointer RESTS on an edge band for a beat — passing
       // through the band on the way elsewhere must not flash the row open
@@ -8677,8 +8682,11 @@ window.__ModuleLoader__.load({
         const rect = el.getBoundingClientRect()
         const tree = el.closest('.bw-tree')
         const logical = tree ? (parseFloat(getComputedStyle(tree).getPropertyValue('--bw-row-h')) || 34) : 34
-        if (event.clientY < rect.top + logical * 0.25) return 'before'
-        if (event.clientY > rect.top + logical * 0.75) return 'after'
+        // v0.36.3: the edge bands widen to 30% — at 25% they were 8.5px on a
+        // 34px row and practically unhittable (user report: every drop landed
+        // "into" the group instead of reordering beside it).
+        if (event.clientY < rect.top + logical * 0.3) return 'before'
+        if (event.clientY > rect.top + logical * 0.7) return 'after'
         return 'into'
       }
       const dragMatches = (kind) => drag !== null && drag.kind === kind
@@ -8702,7 +8710,12 @@ window.__ModuleLoader__.load({
       // AND a folder drop (whole-group move) alike — the INTO band only:
       // an edge-band reorder slot draws the official insert line instead.
       const wsDropInto = (path) => (dragMatches('workspace') || dragMatches('folder')) && drag.over && drag.over.kind === 'folder' && drag.over.target === path && (!drag.over.zone || drag.over.zone === 'into')
-      const wsFolderSlotOf = (folderIdPath) => (dragMatches('folder') && drag.over && drag.over.kind === 'folder' && drag.over.target === folderIdPath && drag.over.armed && (drag.over.zone === 'before' || drag.over.zone === 'after')) ? drag.over.zone : null
+      // v0.36.3: the edge band answers IMMEDIATELY with the official 12px
+      // insert line (bw-drop-before/after — the workspace-row style); only
+      // after the ~200ms intent wait does the row split open into a slot.
+      // A restless pass now still shows where the drop would land.
+      const wsFolderSlotOf = (folderIdPath) => (dragMatches('folder') && drag.over && drag.over.kind === 'folder' && drag.over.target === folderIdPath && (drag.over.zone === 'before' || drag.over.zone === 'after')) ? drag.over.zone : null
+      const wsFolderSlotArmed = (folderIdPath) => !!(dragMatches('folder') && drag.over && drag.over.kind === 'folder' && drag.over.target === folderIdPath && drag.over.armed)
       const workspaceDragEvents = (workspace) => ({
         draggable: !searching && canDragWorkspace,
         onDragStart: (event) => {
@@ -8736,7 +8749,6 @@ window.__ModuleLoader__.load({
         },
         onDragEnd: () => {
           if (wsDragArmTimer.current !== null) { clearTimeout(wsDragArmTimer.current); wsDragArmTimer.current = null }
-          clearFolderHoverTimer()
           clearFolderArmTimer()
           setDrag(null)
         },
@@ -8816,25 +8828,6 @@ window.__ModuleLoader__.load({
         walk(folderNode)
         return acc
       }
-      const clearFolderHoverTimer = () => {
-        if (folderHoverTimer.current !== null) { clearTimeout(folderHoverTimer.current); folderHoverTimer.current = null }
-        folderHoverTarget.current = null
-      }
-      // Hovering a COLLAPSED group's middle band for a beat opens it: the
-      // user sees the landing spot instead of dropping blind. One timer
-      // per drag, keyed by target row; cleanup rides the drag end.
-      const scheduleFolderHoverExpand = (folderIdPath, folderNode, wantExpand) => {
-        if (folderHoverTimer.current !== null && folderHoverTarget.current !== folderIdPath) clearFolderHoverTimer()
-        if (!wantExpand || folderHoverTimer.current !== null) return
-        if (searching || folderExpanded(folderIdPath)) return
-        if (!(folderNode && (((folderNode.folders || []).length) || ((folderNode.workspaces || []).length)))) return
-        folderHoverTarget.current = folderIdPath
-        folderHoverTimer.current = setTimeout(() => {
-          folderHoverTimer.current = null
-          folderHoverTarget.current = null
-          actions.setExpanded(folderIdPath, true)
-        }, 600)
-      }
       const folderDropEvents = (idPath, path, node) => ({
         draggable: !searching,
         onDragStart: (event) => {
@@ -8855,7 +8848,6 @@ window.__ModuleLoader__.load({
         },
         onDragEnd: () => {
           if (wsDragArmTimer.current !== null) { clearTimeout(wsDragArmTimer.current); wsDragArmTimer.current = null }
-          clearFolderHoverTimer()
           clearFolderArmTimer()
           setDrag(null)
         },
@@ -8870,11 +8862,21 @@ window.__ModuleLoader__.load({
           const isFolder = dragMatches('folder')
           if (isFolder) {
             const targetPath = namePathOf(idPath)
-            // No self / descendant targets (loop), no ANCESTOR targets
-            // (the group already lives there — a "move" would be a no-op
-            // at best and a wrong prefix rewrite at worst).
-            if (drag.source.path === targetPath || targetPath.startsWith(drag.source.path + '/') || (targetPath !== '' && drag.source.path.startsWith(targetPath + '/'))) return
-            if (zone !== 'into' && ownerPrefixOf(idPath) !== ownerPrefixOf(drag.source.idPath)) return
+            // No self / descendant targets (loop). An ANCESTOR target is
+            // refused for move-into only (the group already lives there):
+            // its edge bands are the ONE legal way to drag a nested group
+            // OUT to the parent level, anchored by commitFolderReorder
+            // (v0.36.3 — the old blanket refusal made nested groups
+            // unsortable, the user report). Cross-level edge bands stay
+            // refused: a reorder never rewrites the name prefix.
+            if (drag.source.path === targetPath || targetPath.startsWith(drag.source.path + '/')) return
+            if (targetPath !== '' && drag.source.path.startsWith(targetPath + '/')) {
+              // Drag-out is only meaningful against the DIRECT parent: a
+              // reorder slides registry order without rewriting prefixes,
+              // so a grandparent band could not move the block anyway.
+              const directParent = drag.source.path.slice(0, drag.source.path.lastIndexOf('/'))
+              if (zone === 'into' || targetPath !== directParent) return
+            } else if (zone !== 'into' && ownerPrefixOf(idPath) !== ownerPrefixOf(drag.source.idPath)) return
           } else if (!dragMatches('workspace')) {
             return
           }
@@ -8899,10 +8901,8 @@ window.__ModuleLoader__.load({
             // change restarts the intent wait.
             ? { kind: 'folder', target: idPath, zone, armed: !!(current.over && current.over.kind === 'folder' && current.over.target === idPath && current.over.zone === zone && current.over.armed) }
             : { kind: 'folder', target: idPath, zone: 'into' } } : current))
-          scheduleFolderHoverExpand(idPath, node, !reorder)
         },
         onDrop: (event) => {
-          clearFolderHoverTimer()
           clearFolderArmTimer()
           if (dragMatches('folder')) {
             event.preventDefault()
@@ -8988,6 +8988,11 @@ window.__ModuleLoader__.load({
               await renameWorkspace(w.workspaceId, targetPath + String(w.title).slice(source.path.length))
             }
           })
+          // v0.36.3: the 600ms hover auto-expand is gone (it "opened" rows
+          // the user was only passing over). The deterministic reveal is
+          // HERE instead: once the members land, the target group opens so
+          // the move is visible without hunting for it.
+          .then(() => { try { actions.setExpanded(targetIdPath, true) } catch { } })
           .catch(fail)
       }
       // Group REORDER (v0.36.0): a name group's position IS the registry
@@ -9003,13 +9008,24 @@ window.__ModuleLoader__.load({
         if (!canDragWorkspace) { console.warn('[bw] folder reorder refused: workspace reorder unavailable on this host'); return }
         if (ownerPrefixOf(source.idPath) !== ownerPrefixOf(targetIdPath)) { console.warn('[bw] folder reorder refused: cross-level target'); return }
         const sourceIds = source.memberIds || []
+        if (!sourceIds.length) { console.warn('[bw] folder reorder refused: empty source block'); return }
         // Whole-block anchors: the target's members include its nested
         // sub-groups (a plain .workspaces read misses container groups and
         // silently returned on them — the "drop did nothing" report).
-        const targetMembers = collectMemberIds(targetNode)
-        if (!sourceIds.length || !targetMembers.length) { console.warn('[bw] folder reorder refused: empty member list', sourceIds.length, targetMembers.length); return }
+        // v0.36.3 drag-out: the source block IS part of the target's block
+        // (dropping a nested group onto its parent), so the source subtree
+        // is filtered out before anchoring — otherwise the anchor lands
+        // inside the moving subtree and the drop no-ops or oscillates.
+        const sourceSet = new Set(sourceIds)
+        const targetMembers = collectMemberIds(targetNode).filter((id) => !sourceSet.has(id))
+        if (!targetMembers.length) { console.warn('[bw] folder reorder refused: target has no members to anchor against'); return }
+        // before = the surviving block's first member; after = its last
+        // member (inserting before it = right after the block). Anchoring
+        // on the block tail itself replaces nextWorkspaceAfter, whose
+        // node.workspaces lookup missed nested tails (findIndex -1 →
+        // silent append).
         const anchor = zone === 'after'
-          ? nextWorkspaceAfter(namePathOf(targetIdPath), targetMembers[targetMembers.length - 1])
+          ? targetMembers[targetMembers.length - 1]
           : targetMembers[0]
         Promise.resolve()
           .then(async () => {
@@ -9481,6 +9497,7 @@ window.__ModuleLoader__.load({
           onContextMenu: (e) => openCtx('folder', { path: node.path, name: node.name, idPath, scope: node.scope, empty: countWorkspaces(node) === 0 }, e),
           dropInto: wsDropInto(idPath),
           dropSlot: wsFolderSlotOf(idPath),
+          slotArmed: wsFolderSlotArmed(idPath),
           dragEvents: folderDropEvents(idPath, node.path, node),
           custStyle: rowStyleOf('folder:' + idPath),
           iconMode: (styleEntry('folder:' + idPath) || {}).icon || 'solid',

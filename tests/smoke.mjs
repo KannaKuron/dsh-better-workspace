@@ -2037,8 +2037,8 @@ test('v0.36.0: folder rows drag as whole groups (members retitled under the targ
     'the drag source records the render idPath, the semantic name path and the member block')
   // Batch move = the drag twin of submitFolderRename: every member title is
   // rewritten under the target prefix.
-  assert.match(text, /const commitFolderMoveInto = \(targetIdPath\) => \{/,
-    'the commit helper exists')
+  assert.match(text, /const commitFolderMoveInto = \(source, targetIdPath\) => \{/,
+    'the commit helper exists (source passed in, not closed over)')
   assert.match(text, /const affected = \(items \|\| \[\]\)\.filter\(\(w\) => String\(w\.title \|\| ''\)\.startsWith\(prefix\)\)/,
     'members are swept by title prefix over all items')
   assert.match(text, /await renameWorkspace\(w\.workspaceId, targetPath \+ String\(w\.title\)\.slice\(source\.path\.length\)\)/,
@@ -2078,11 +2078,13 @@ test('v0.36.1: group rows use a quarter-band hover (outer reorder + middle into)
   // Reorder = slide the whole member block in registry order, anchored like
   // commitWorkspaceDrop (before = target's first member, after = whatever
   // follows the target's last member).
-  assert.match(text, /const commitFolderReorder = \(targetIdPath, zone, targetNode\) => \{/,
-    'the reorder commit exists')
-  assert.match(text, /if \(ownerPrefixOf\(source\.idPath\) !== ownerPrefixOf\(targetIdPath\)\) return/,
-    'the reorder commit re-checks the same-level gate')
-  assert.match(text, /targetMembers\[targetMembers\.length - 1\]\.workspaceId/,
+  assert.match(text, /const commitFolderReorder = \(source, targetIdPath, zone, targetNode\) => \{/,
+    'the reorder commit exists (source passed in, not closed over)')
+  assert.match(text, /if \(ownerPrefixOf\(source\.idPath\) !== ownerPrefixOf\(targetIdPath\)\) \{ console\.warn/,
+    'the reorder commit re-checks the same-level gate (refusals warn, never silent)')
+  assert.match(text, /const targetMembers = collectMemberIds\(targetNode\)/,
+    'target block members are collected over the whole subtree, not just direct workspaces')
+  assert.match(text, /nextWorkspaceAfter\(namePathOf\(targetIdPath\), targetMembers\[targetMembers\.length - 1\]\)/,
     'the after-anchor is whatever follows the target block')
   // Slot visuals: the row grows to twice its height and the content slides
   // to the far edge via PADDING (transitionable; align-items cannot animate).
@@ -2104,4 +2106,33 @@ test('v0.36.1: group rows use a quarter-band hover (outer reorder + middle into)
     'the auto-expand fires after 600ms')
   assert.doesNotMatch(text, /folderSlotLock/,
     'no band lock: logical geometry is stable and a lock forced pointer detours')
+})
+
+test('v0.36.2: edge-band reorder needs 200ms hover intent; refusals warn loudly', () => {
+  const text = read('src/client.js')
+  // The slot only exists once the pointer has RESTED on the band: a 200ms
+  // intent timer arms drag.over.armed; crossing bands or rows restarts it.
+  assert.match(text, /const folderArmTimer = React\.useRef\(null\)/,
+    'the intent timer ref exists')
+  assert.match(text, /const clearFolderArmTimer = \(\) => \{\n        if \(folderArmTimer\.current !== null\) \{ clearTimeout\(folderArmTimer\.current\.timer\); folderArmTimer\.current = null \}\n      \}/,
+    'the timer is torn down as a whole (id + timer handle)')
+  assert.match(text, /if \(reorder && folderArmTimer\.current === null\) \{\n            const timer = setTimeout\(\(\) => \{\n              folderArmTimer\.current = null\n              setDrag\(\(current\) => current && current\.over && current\.over\.kind === 'folder' && current\.over\.target === idPath\n                \? \{ \.\.\.current, over: \{ \.\.\.current\.over, armed: true \} \}\n                : current\)\n            \}, 200\)\n            folderArmTimer\.current = \{ target: idPath, zone, timer \}\n          \}/,
+    'the arm fires after 200ms and only re-renders the same row')
+  assert.match(text, /if \(folderArmTimer\.current && \(!reorder \|\| folderArmTimer\.current\.target !== idPath \|\| folderArmTimer\.current\.zone !== zone\)\) clearFolderArmTimer\(\)/,
+    'a band or row change restarts the intent wait')
+  assert.match(text, /armed: !!\(current\.over && current\.over\.kind === 'folder' && current\.over\.target === idPath && current\.over\.zone === zone && current\.over\.armed\) \}/,
+    'armed survives only on the same band of the same row')
+  // The slot is gated on armed — an un-rested pass never opens a gap.
+  assert.match(text, /drag\.over\.armed && \(drag\.over\.zone === 'before' \|\| drag\.over\.zone === 'after'\)/,
+    'wsFolderSlotOf requires the armed flag')
+  // Every exit tears the intent timer down (drop, dragend, new dragstart).
+  assert.equal((text.match(/clearFolderArmTimer\(\)/g) || []).length >= 5, true,
+    'clearFolderArmTimer is called on dragover band change, drop, both dragends and the dragstart')
+  // Silent returns are gone: every refusal says why in the console.
+  assert.match(text, /console\.warn\('\[bw\] folder reorder refused: cross-level target'\)/,
+    'cross-level reorder refusal warns')
+  assert.match(text, /console\.warn\('\[bw\] folder reorder refused: empty member list'/,
+    'empty member refusal warns (with counts)')
+  assert.match(text, /console\.warn\('\[bw\] folder move refused: target is self, descendant or ancestor of', source\.path\)/,
+    'loop/duplicate move refusal warns')
 })

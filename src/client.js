@@ -7907,6 +7907,15 @@ window.__ModuleLoader__.load({
       // instead of a blind drop. One timer per drag, keyed by target row.
       const folderHoverTimer = React.useRef(null)
       const folderHoverTarget = React.useRef(null)
+      // Hover-intent arming for the reorder slot (v0.36.2): the slot only
+      // opens after the pointer RESTS on an edge band for a beat — passing
+      // through the band on the way elsewhere must not flash the row open
+      // (the "drop-into still opens the slot" complaint). Cleared on band
+      // change, row change, drop and drag end.
+      const folderArmTimer = React.useRef(null)
+      const clearFolderArmTimer = () => {
+        if (folderArmTimer.current !== null) { clearTimeout(folderArmTimer.current.timer); folderArmTimer.current = null }
+      }
       // Quote-on-land eligibility sets (mount-scoped):
       // - blankSeen: ids observed BLANK in any snapshot. A blank row is a
       //   freshly created New Session, so ONLY these may ever receive an
@@ -8693,7 +8702,7 @@ window.__ModuleLoader__.load({
       // AND a folder drop (whole-group move) alike — the INTO band only:
       // an edge-band reorder slot draws the official insert line instead.
       const wsDropInto = (path) => (dragMatches('workspace') || dragMatches('folder')) && drag.over && drag.over.kind === 'folder' && drag.over.target === path && (!drag.over.zone || drag.over.zone === 'into')
-      const wsFolderSlotOf = (folderIdPath) => (dragMatches('folder') && drag.over && drag.over.kind === 'folder' && drag.over.target === folderIdPath && (drag.over.zone === 'before' || drag.over.zone === 'after')) ? drag.over.zone : null
+      const wsFolderSlotOf = (folderIdPath) => (dragMatches('folder') && drag.over && drag.over.kind === 'folder' && drag.over.target === folderIdPath && drag.over.armed && (drag.over.zone === 'before' || drag.over.zone === 'after')) ? drag.over.zone : null
       const workspaceDragEvents = (workspace) => ({
         draggable: !searching && canDragWorkspace,
         onDragStart: (event) => {
@@ -8728,6 +8737,7 @@ window.__ModuleLoader__.load({
         onDragEnd: () => {
           if (wsDragArmTimer.current !== null) { clearTimeout(wsDragArmTimer.current); wsDragArmTimer.current = null }
           clearFolderHoverTimer()
+          clearFolderArmTimer()
           setDrag(null)
         },
         onDragOver: (event) => {
@@ -8836,6 +8846,7 @@ window.__ModuleLoader__.load({
           } catch { /* drag payload is best-effort */ }
           // Same one-frame arm as the workspace drag: Chromium cancels a
           // just-started drag whose source element moves under the cursor.
+          clearFolderArmTimer()
           if (wsDragArmTimer.current !== null) clearTimeout(wsDragArmTimer.current)
           wsDragArmTimer.current = setTimeout(() => {
             wsDragArmTimer.current = null
@@ -8845,17 +8856,19 @@ window.__ModuleLoader__.load({
         onDragEnd: () => {
           if (wsDragArmTimer.current !== null) { clearTimeout(wsDragArmTimer.current); wsDragArmTimer.current = null }
           clearFolderHoverTimer()
+          clearFolderArmTimer()
           setDrag(null)
         },
         onDragOver: (event) => {
           // Outer quarters = reorder against a SIBLING group (same owner
           // level only); the middle half = move into the group, framed and
           // never opened. Workspace sources keep whole-row move-into
-          // semantics. No band lock: logical geometry already makes the
-          // judgement stable, and a lock forced the pointer out of the row
-          // just to change its mind — the "weird timing" feel.
+          // semantics. The slot is HOVER-INTENT gated: it arms after the
+          // pointer rests ~200ms on the band (see folderArmTimer), so
+          // passing through the band never flashes the row open.
           const zone = rowZone(event)
-          if (dragMatches('folder')) {
+          const isFolder = dragMatches('folder')
+          if (isFolder) {
             const targetPath = namePathOf(idPath)
             // No self / descendant targets (loop), no ANCESTOR targets
             // (the group already lives there — a "move" would be a no-op
@@ -8868,19 +8881,35 @@ window.__ModuleLoader__.load({
           event.preventDefault()
           event.stopPropagation()
           try { event.dataTransfer.dropEffect = 'move' } catch { }
-          const reorder = dragMatches('folder') && zone !== 'into'
+          const reorder = isFolder && zone !== 'into'
+          // (Re)arm the intent timer whenever the band or the row changes.
+          if (folderArmTimer.current && (!reorder || folderArmTimer.current.target !== idPath || folderArmTimer.current.zone !== zone)) clearFolderArmTimer()
+          if (reorder && folderArmTimer.current === null) {
+            const timer = setTimeout(() => {
+              folderArmTimer.current = null
+              setDrag((current) => current && current.over && current.over.kind === 'folder' && current.over.target === idPath
+                ? { ...current, over: { ...current.over, armed: true } }
+                : current)
+            }, 200)
+            folderArmTimer.current = { target: idPath, zone, timer }
+          }
           const settled = (current) => current && current.over && current.over.kind === 'folder' && current.over.target === idPath && (reorder ? current.over.zone === zone : (!current.over.zone || current.over.zone === 'into'))
-          setDrag(current => settled(current) ? current : (current ? { ...current, over: reorder ? { kind: 'folder', target: idPath, zone } : { kind: 'folder', target: idPath, zone: 'into' } } : current))
+          setDrag(current => settled(current) ? current : (current ? { ...current, over: reorder
+            // armed survives only on the SAME band of the SAME row; a band
+            // change restarts the intent wait.
+            ? { kind: 'folder', target: idPath, zone, armed: !!(current.over && current.over.kind === 'folder' && current.over.target === idPath && current.over.zone === zone && current.over.armed) }
+            : { kind: 'folder', target: idPath, zone: 'into' } } : current))
           scheduleFolderHoverExpand(idPath, node, !reorder)
         },
         onDrop: (event) => {
           clearFolderHoverTimer()
+          clearFolderArmTimer()
           if (dragMatches('folder')) {
             event.preventDefault()
             event.stopPropagation()
             const zone = drag.over && drag.over.kind === 'folder' && drag.over.target === idPath ? drag.over.zone : 'into'
-            if (zone === 'before' || zone === 'after') commitFolderReorder(idPath, zone, node)
-            else commitFolderMoveInto(idPath)
+            if (zone === 'before' || zone === 'after') commitFolderReorder(drag.source, idPath, zone, node)
+            else commitFolderMoveInto(drag.source, idPath)
             return
           }
           if (!dragMatches('workspace')) return
@@ -8944,15 +8973,15 @@ window.__ModuleLoader__.load({
       // limitation as that dialog: same-named groups on different disk
       // levels move together). Self / descendant targets are already
       // refused at hover time; re-checked here as belt and braces.
-      const commitFolderMoveInto = (targetIdPath) => {
-        const source = drag.source
+      const commitFolderMoveInto = (source, targetIdPath) => {
         setDrag(null)
         const targetPath = namePathOf(targetIdPath)
         // An ANCESTOR target means the group already lives there: a prefix
         // rewrite would duplicate a segment (工作/A → 工作/工作/A). Refuse.
-        if (source.path === targetPath || targetPath.startsWith(source.path + '/') || (targetPath !== '' && source.path.startsWith(targetPath + '/'))) return
+        if (source.path === targetPath || targetPath.startsWith(source.path + '/') || (targetPath !== '' && source.path.startsWith(targetPath + '/'))) { console.warn('[bw] folder move refused: target is self, descendant or ancestor of', source.path); return }
         const prefix = source.path + '/'
         const affected = (items || []).filter((w) => String(w.title || '').startsWith(prefix))
+        if (!affected.length) { console.warn('[bw] folder move refused: no members under', source.path); return }
         Promise.resolve()
           .then(async () => {
             for (const w of affected) {
@@ -8969,17 +8998,19 @@ window.__ModuleLoader__.load({
       // member (undefined = block-append at the level tail). Hover only
       // arms this between same-level groups (identical owner prefix);
       // re-checked here as belt and braces.
-      const commitFolderReorder = (targetIdPath, zone, targetNode) => {
-        const source = drag.source
+      const commitFolderReorder = (source, targetIdPath, zone, targetNode) => {
         setDrag(null)
-        if (!canDragWorkspace) return
-        if (ownerPrefixOf(source.idPath) !== ownerPrefixOf(targetIdPath)) return
+        if (!canDragWorkspace) { console.warn('[bw] folder reorder refused: workspace reorder unavailable on this host'); return }
+        if (ownerPrefixOf(source.idPath) !== ownerPrefixOf(targetIdPath)) { console.warn('[bw] folder reorder refused: cross-level target'); return }
         const sourceIds = source.memberIds || []
-        const targetMembers = (targetNode && targetNode.workspaces) || []
-        if (!sourceIds.length || !targetMembers.length) return
+        // Whole-block anchors: the target's members include its nested
+        // sub-groups (a plain .workspaces read misses container groups and
+        // silently returned on them — the "drop did nothing" report).
+        const targetMembers = collectMemberIds(targetNode)
+        if (!sourceIds.length || !targetMembers.length) { console.warn('[bw] folder reorder refused: empty member list', sourceIds.length, targetMembers.length); return }
         const anchor = zone === 'after'
-          ? nextWorkspaceAfter(namePathOf(targetIdPath), targetMembers[targetMembers.length - 1].workspaceId)
-          : targetMembers[0].workspaceId
+          ? nextWorkspaceAfter(namePathOf(targetIdPath), targetMembers[targetMembers.length - 1])
+          : targetMembers[0]
         Promise.resolve()
           .then(async () => {
             if (anchor === undefined) {

@@ -2520,3 +2520,39 @@ test('flat last-updated order is global, preserving blank and pinned sections', 
     'blank', 'loose-newest', 'b-recent', 'b-pin', 'a-pin', 'a-old',
   ])
 })
+
+/**
+ * Regression (v0.36.9): a workspace that CONTAINS the drop target — the disk
+ * scope ancestor, e.g. the "用户目录" container dragged onto its own group
+ * "工作" or onto a workspace row inside it — must refuse every band. The old
+ * code renamed the container under its own subtree ("工作/用户目录"; the lift
+ * path even wrote the raw scope id into the title, "2d412faa…/用户目录").
+ */
+
+test('v0.36.9: a container workspace cannot be dropped inside its own disk subtree', () => {
+  const text = read('src/client.js')
+  // The shared judgement: resolve a drop target's disk scope down the parent
+  // chain, then walk the disk parent map looking for the dragged workspace.
+  const diskScopeAt = text.indexOf('const diskScopeOf = (folderIdPath) => {')
+  assert.ok(diskScopeAt !== -1, 'a group row resolves to the disk scope that actually owns it')
+  assert.ok(text.indexOf('if (diskParentMap.has(current)) return current', diskScopeAt) !== -1,
+    'the scope walk stops at the first real workspace id')
+  const loopAt = text.indexOf('const isOwnDescendantScope = (diskScope, workspaceId) => {')
+  assert.ok(loopAt !== -1, 'the container check walks the disk parent map')
+  assert.ok(text.indexOf('if (current === workspaceId) return true', loopAt) !== -1,
+    'the scope chain reaching the dragged container means a loop')
+  // Group-row hover: the anti-loop gate runs BEFORE any band is answered —
+  // the INTO middle included — and clears any leftover over state.
+  const folderHoverGate = "if (isOwnDescendantScope(diskScopeOf(idPath), drag.source.workspaceId)) { clearOver('folder', idPath); return }"
+  assert.ok(text.includes(folderHoverGate), 'a container never lights any band on its own group rows')
+  assert.ok(text.indexOf(folderHoverGate) < text.indexOf("if (zone !== 'into' && (drag.source.levelKey || '') !== parentKeyOf(idPath)"),
+    'the group-row anti-loop gate precedes the lift band decision')
+  // Group-row drop: the geometry fallback must not resurrect a refused drop.
+  assert.equal(text.split('if (isOwnDescendantScope(diskScopeOf(idPath), drag.source.workspaceId)) return').length - 1, 1,
+    'the group-row drop repeats the gate before preventDefault')
+  // Workspace-row hover AND drop: the target row may sit inside the dragged
+  // container's subtree — lifting beside it would rename the container under
+  // itself. Both entry points refuse with no feedback.
+  assert.equal(text.split('if (isOwnDescendantScope(diskParentMap.get(workspace.workspaceId), drag.source.workspaceId)) return').length - 1, 2,
+    'both the workspace-row hover and its drop refuse the container ancestor')
+})

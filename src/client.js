@@ -8966,6 +8966,10 @@ window.__ModuleLoader__.load({
           // itself, commitWorkspaceDrop no-oped and the gesture read as
           // "拖了没反应".
           if (drag.source && drag.source.workspaceId === workspace.workspaceId) return
+          // v0.36.9: this row may sit INSIDE the dragged container's disk
+          // subtree — lifting beside it would rename the container under
+          // itself. No feedback, like any other refused band.
+          if (isOwnDescendantScope(diskParentMap.get(workspace.workspaceId), drag.source.workspaceId)) return
           event.preventDefault()
           event.stopPropagation()
           try { event.dataTransfer.dropEffect = 'move' } catch { }
@@ -9004,6 +9008,9 @@ window.__ModuleLoader__.load({
             return
           }
           if (!dragMatches('workspace')) return
+          // v0.36.9: the geometry fallback must not resurrect a drop the
+          // hover refused — a container never lands inside its own subtree.
+          if (isOwnDescendantScope(diskParentMap.get(workspace.workspaceId), drag.source.workspaceId)) return
           event.preventDefault()
           event.stopPropagation()
           const half = drag.over && drag.over.kind === 'workspace' && drag.over.target === workspace.workspaceId ? drag.over.half : rowHalf(event)
@@ -9040,6 +9047,31 @@ window.__ModuleLoader__.load({
         segs.pop()
         const parentNamePath = segs.join('/')
         return parentNamePath === '' ? prefix : prefix + '//' + parentNamePath
+      }
+      // v0.36.9 ANTI-LOOP. A workspace that CONTAINS the drop target's disk
+      // scope may not be dropped onto it: the container would become its own
+      // descendant (用户目录 → 工作 → "工作/用户目录"; the lift path even
+      // rewrote the title with the raw scope id, "2d412faa…/用户目录").
+      // The disk scope behind a group row is its owner prefix resolved down
+      // the parent chain until it names a real workspace ('' — the top
+      // level — owns nothing, so sibling groups stay untouched).
+      const diskScopeOf = (folderIdPath) => {
+        let current = ownerPrefixOf(folderIdPath)
+        while (current !== '') {
+          if (diskParentMap.has(current)) return current
+          const cutAt = current.lastIndexOf('//')
+          if (cutAt === -1) return null
+          current = current.slice(0, cutAt)
+        }
+        return null
+      }
+      const isOwnDescendantScope = (diskScope, workspaceId) => {
+        let current = diskScope || ''
+        while (current !== '') {
+          if (current === workspaceId) return true
+          current = diskParentMap.get(current) || ''
+        }
+        return false
       }
       // Locate the container a group order list belongs to inside the RAW
       // (uncompressed) tree: the ROOT level, a disk sub-level (a
@@ -9162,6 +9194,12 @@ window.__ModuleLoader__.load({
           } else if (!isWorkspace) {
             return
           } else {
+            // v0.36.9 ANTI-LOOP first: the dragged workspace may own the
+            // disk scope this group lives in (用户目录 dragging onto its
+            // own group 工作). Every band there — the INTO middle included
+            // — would rename the container under its own subtree, so the
+            // whole row is dead and any leftover over state is cleared.
+            if (isOwnDescendantScope(diskScopeOf(idPath), drag.source.workspaceId)) { clearOver('folder', idPath); return }
             // v0.36.6 LIFT: a bare workspace row slides beside a group of ANY
             // level it can reach. Same level keeps the v0.36.5 mixed reorder.
             // Another level is a LIFT: the workspace leaves its current group
@@ -9205,6 +9243,9 @@ window.__ModuleLoader__.load({
             return
           }
           if (!dragMatches('workspace')) return
+          // v0.36.9: same anti-loop gate as the hover — the geometry
+          // fallback must not resurrect a drop the hover refused.
+          if (isOwnDescendantScope(diskScopeOf(idPath), drag.source.workspaceId)) return
           event.preventDefault()
           event.stopPropagation()
           // The live {over} wins; the geometry is the fallback for a drop that

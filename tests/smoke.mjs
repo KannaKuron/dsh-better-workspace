@@ -1387,7 +1387,10 @@ test('declared groups: they render even with no members to project from (v0.17.0
   assert.match(text, /if \(full\.length === 0 && !hasDeclared\(sessFolders, workspace\.workspaceId\)\) return \[\]/,
     'empty session rows no longer short-circuit a declared group away')
   // Every caller threads the bag through.
-  assert.match(text, /buildTree\(items, workspaceGroupMode, wsFolders, folderOrderMap\)/, 'the main tree passes the workspace bag and the persisted group order')
+  // v0.36.11: the sidebar resolves its tree mode through groupBy first
+  // ("workspaces" + a name layer = 'slash'), picker keeps its own variable.
+  assert.match(text, /const treeMode = groupBy === 'workspace' && workspaceGroupMode !== 'disk'\n          \? 'slash'\n          : workspaceGroupMode\n        const built = buildTree\(items, treeMode, wsFolders, folderOrderMap\)/,
+    'the main tree passes the workspace bag and the persisted group order')
   assert.equal((text.match(/buildSessionTree\(sessionsOf\(workspace\), sessionSlash, sessFolders, workspace\.workspaceId\)/g) || []).length, 4,
     'every session-tree caller passes the session bag and its workspace scope')
 })
@@ -1414,14 +1417,15 @@ test('new group: icon button, live tooltip, layer switch and a tree picker (v0.1
   // The container tree mirrors the sidebar's view mode, and the session layer
   // walks the SAME tree the sidebar renders (disk nesting included) instead of
   // the flat registry list — a child workspace must nest under its parent.
-  assert.match(text, /const treeView = groupBy === 'workspace-tree'/, 'the dialog follows the live view mode')
+  assert.match(text, /const treeView = groupBy === 'workspace-tree'\n          \|\| \(groupBy === 'workspace' && workspaceGroupMode !== 'disk'\)/,
+    'the dialog follows the live view mode (v0.36.11: "workspaces" + name layer included)')
   assert.match(text, /if \(treeView\) return \{ hint: t\('group\.new\.pickWorkspace'\), nodes: sessNodesOf\(rawTree\) \}/,
     'tree view: session layer walks the tree')
   // The dialog walks the UNCOMPRESSED tree: a merged single-child chain row
   // stands for a group AND its only workspace at once, which cannot be one
   // selectable and one unselectable node.
-  assert.match(text, /const rawTree = React\.useMemo\(\(\) => buildTree\(items, workspaceGroupMode, wsFolders, folderOrderMap\), \[items, workspaceGroupMode, wsFolders, folderOrderMap\]\)/,
-    'an uncompressed tree exists for the dialog')
+  assert.match(text, /const rawTree = React\.useMemo\(\(\) => buildTree\(\n        items,\n        groupBy === 'workspace' && workspaceGroupMode !== 'disk' \? 'slash' : workspaceGroupMode,\n        wsFolders,\n        folderOrderMap,\n      \)/,
+    'an uncompressed tree exists for the dialog (same groupBy-aware mode as the render)')
   assert.match(text, /const folderLabelOf = \(node\) => String\(node\.name \|\| \(Array\.isArray\(node\.segs\)/,
     'labels survive a node shape that carries segs but no name')
   assert.match(text, /const sessNodesOf = \(node\) => \{/, 'the recursive walk exists')
@@ -2285,14 +2289,41 @@ test('v0.36.5: a level is ONE mixed sequence (bare workspaces interleave with gr
     'a level item tokenizes as a group name or a w:<id> token')
   assert.match(text, /const levelSeqOf = \(level\) => \(level && Array\.isArray\(level\.seq\)\)/,
     'levels without a sequence fall back to groups-then-workspaces')
-  assert.equal((text.match(/for \(const item of levelSeqOf\(/g) || []).length, 3,
-    'every render path walks the mixed sequence (root level, group row, plain folder)')
+  // v0.36.11 adds a fourth walk: "workspaces" + a name layer renders the
+  // root-level name tree through the same loop.
+  assert.equal((text.match(/for \(const item of levelSeqOf\(/g) || []).length, 4,
+    'every render path walks the mixed sequence (root level, group row, plain folder, workspace+name tree)')
   // Chain compression rebuilds the folder nodes; the sequence must keep the
   // compressed stand-ins in place or a bare workspace lands next to the wrong row.
   assert.match(text, /const seq = Array\.isArray\(built\.seq\)/,
     'chain compression repoints the sequence instead of dropping it')
   assert.match(text, /return \{ \.\.\.built, folders, workspaces: built\.workspaces, seq \}/,
     'the compressed tree carries the mixed sequence forward')
+})
+
+test('v0.36.11: "workspaces" + a name layer renders the root-level name tree', () => {
+  const text = read('src/client.js')
+  // THE bug behind "切到按工作区后树完全散开": the workspace branch hard-coded
+  // the official scatter (every workspace at the root) and ignored the name
+  // layer the user had enabled. The tree memo now resolves its mode through
+  // groupBy — disk nesting OFF (official) but the name tree ON — and the
+  // branch renders that same tree instead of the flat list.
+  assert.match(text, /const treeMode = groupBy === 'workspace' && workspaceGroupMode !== 'disk'/,
+    'the tree memo folds groupBy into its mode')
+  assert.match(text, /\} else if \(groupBy === 'workspace'\) \{\n        if \(workspaceGroupMode === 'disk'\) \{/,
+    'the workspace branch keeps the official scatter only when the name layer is off')
+  assert.match(text, /for \(const item of levelSeqOf\(tree\)\) \{\n            bodyRows\.push\(\.\.\.\(item\.kind === 'ws'\n              \? renderWorkspaceEntry\(\{ workspace: item\.entry \}, 0, wsPulseOf\(item\.entry\)\)\n              : renderPlainFolder\(item\.node, 0\)\)\)\n          \}\n        \}\n        bodyRows\.push\(\.\.\.renderUngroupedBlock\(\)\)\n      \} else \{/,
+    'a name layer turns the workspace branch into the same render loop as the tree branch')
+  // buildTree('slash') is the model: disk nesting fully off, name groups at
+  // the root, every workspace a top-level leaf.
+  assert.match(text, /const diskParentOf = diskOn \? diskParentMapOf\(list\) : new Map\(\)/,
+    'slash mode drops disk nesting at the source (empty parent map)')
+  // The new-group dialog mirrors the hierarchy the user actually sees.
+  assert.match(text, /const treeView = groupBy === 'workspace-tree'\n          \|\| \(groupBy === 'workspace' && workspaceGroupMode !== 'disk'\)/,
+    'the new-group dialog mirrors the workspace+name tree')
+  // The workspaces-layer picker keeps its own tree mode (it has no groupBy).
+  assert.match(text, /const built = buildTree\(items, groupMode, wsFolders, pickerFolderOrder\)/,
+    'the picker stays on its own groupMode variable')
 })
 
 test('v0.36.5: a workspace row and a group row reorder into each other (mixed drag)', () => {

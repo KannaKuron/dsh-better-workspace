@@ -8273,7 +8273,15 @@ window.__ModuleLoader__.load({
       // the user report "拖拽中树会乱/落点漂移". Drop targets are now
       // answered by the stable render; nothing re-flows mid-drag.
       const tree = React.useMemo(() => {
-        const built = buildTree(items, workspaceGroupMode, wsFolders, folderOrderMap)
+        // v0.36.11: "workspaces" (groupBy === 'workspace') turns OFF disk
+        // nesting — official semantics — but the NAME tree stays on when the
+        // user enabled one (workspaceGroupMode !== 'disk'). A plain buildTree
+        // mode of 'slash' expresses exactly that: name groups at the root,
+        // every workspace at the top, entry.sub always null.
+        const treeMode = groupBy === 'workspace' && workspaceGroupMode !== 'disk'
+          ? 'slash'
+          : workspaceGroupMode
+        const built = buildTree(items, treeMode, wsFolders, folderOrderMap)
         if (!compactChains) return built
         const folders = built.folders.map((f) => materializeChain(compressTree(f)))
         // v0.36.5: keep the MIXED root sequence across chain compression —
@@ -8285,14 +8293,21 @@ window.__ModuleLoader__.load({
           ? built.seq.map((item) => item.kind === 'folder' ? { kind: 'folder', node: byName.get(item.node.name) || item.node } : item)
           : built.seq
         return { ...built, folders, workspaces: built.workspaces, seq }
-      }, [items, compactChains, workspaceGroupMode, wsFolders, folderOrderMap])
+      }, [items, compactChains, groupBy, workspaceGroupMode, wsFolders, folderOrderMap])
       // UNCOMPRESSED tree, for the new-group dialog only. compressTree merges a
       // single-child chain into one row that stands for BOTH a group and the
       // workspace under it — fine for drawing, useless for choosing a
       // container: one half must stay unselectable and the other must be
       // selectable, and a merged row cannot be both. (It also carried no
       // `name`, which is how a lone "E" rendered blank.)
-      const rawTree = React.useMemo(() => buildTree(items, workspaceGroupMode, wsFolders, folderOrderMap), [items, workspaceGroupMode, wsFolders, folderOrderMap])
+      // v0.36.11: same groupBy-aware mode as the rendered tree — the
+      // new-group dialog must mirror the hierarchy the user actually sees.
+      const rawTree = React.useMemo(() => buildTree(
+        items,
+        groupBy === 'workspace' && workspaceGroupMode !== 'disk' ? 'slash' : workspaceGroupMode,
+        wsFolders,
+        folderOrderMap,
+      ), [items, groupBy, workspaceGroupMode, wsFolders, folderOrderMap])
       // Disk-layer ancestry for drag semantics (same derivation as buildTree).
       const diskParentMap = React.useMemo(() => diskParentMapOf(items), [items])
 
@@ -8619,7 +8634,10 @@ window.__ModuleLoader__.load({
         // hierarchy to mirror, so they fall back to a flat workspace list.
         // Offering a nesting the sidebar is not showing would be a lie about
         // where the new group lands.
+        // v0.36.11: "workspaces" + an enabled name layer shows a root-level
+        // name tree — mirror it instead of claiming there is no hierarchy.
         const treeView = groupBy === 'workspace-tree'
+          || (groupBy === 'workspace' && workspaceGroupMode !== 'disk')
         if (kind === 'workspace') {
           // "Top level" IS a real target here (a group at the root of the
           // workspace tree), so it is a node like any other.
@@ -10263,14 +10281,28 @@ window.__ModuleLoader__.load({
       } else if (groupBy === 'flat') {
         bodyRows.push(...renderFlatRows())
       } else if (groupBy === 'workspace') {
-        // Official 'workspace' mode (v0.13): one level — every workspace at
-        // the root, no name groups, no disk nesting, no chain compression.
-        // Session rows keep the slash toggle; disk-nested children do not
-        // recurse here because raw items carry no .sub level.
-        // flatWorkspaceEntry, never the raw item: see its note — the raw one
-        // has no `leaf` and the row would render nameless.
-        for (const workspace of items || []) {
-          bodyRows.push(...renderWorkspaceEntry({ workspace: flatWorkspaceEntry(workspace) }, 0, wsPulseOf(workspace)))
+        if (workspaceGroupMode === 'disk') {
+          // Official 'workspace' mode (v0.13): one level — every workspace at
+          // the root, no name groups, no disk nesting, no chain compression.
+          // Session rows keep the slash toggle; disk-nested children do not
+          // recurse here because raw items carry no .sub level.
+          // flatWorkspaceEntry, never the raw item: see its note — the raw
+          // one has no `leaf` and the row would render nameless.
+          for (const workspace of items || []) {
+            bodyRows.push(...renderWorkspaceEntry({ workspace: flatWorkspaceEntry(workspace) }, 0, wsPulseOf(workspace)))
+          }
+        } else {
+          // v0.36.11: with a NAME layer enabled (disk-slash / slash), the
+          // official scatter contradicts the user's mental model — the name
+          // tree the sidebar has been rendering all along should stay a tree,
+          // just lifted to the root (disk nesting OFF = 'slash' mode in the
+          // tree memo above). Same render loop as the tree branch below:
+          // mixed sequence, drag events, ungrouped block all apply.
+          for (const item of levelSeqOf(tree)) {
+            bodyRows.push(...(item.kind === 'ws'
+              ? renderWorkspaceEntry({ workspace: item.entry }, 0, wsPulseOf(item.entry))
+              : renderPlainFolder(item.node, 0)))
+          }
         }
         bodyRows.push(...renderUngroupedBlock())
       } else {

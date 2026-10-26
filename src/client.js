@@ -4041,6 +4041,19 @@ window.__ModuleLoader__.load({
       return [...blanks, ...pins, ...rest]
     }
 
+    // Global and per-workspace recency share the same ordering contract:
+    // current blank first, then pinned Sessions, then ordinary Sessions.
+    // In flat mode this must run AFTER collecting every workspace and Ungrouped.
+    const orderSessionsByRecency = (rows, currentId) => {
+      const sorted = rows.slice().sort((a, b) => (b.updatedAt - a.updatedAt) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+      const blank = currentId !== undefined && sorted.find((row) => row.id === currentId && row.blank)
+      if (blank) {
+        const at = sorted.indexOf(blank)
+        if (at > 0) { sorted.splice(at, 1); sorted.unshift(blank) }
+      }
+      return pinnedPartition(sorted)
+    }
+
     const sessionTitleOf = (summary, t, rememberedTitle) => {
       if (!summary) return ''
       if (summary.blank) return t('session.new')
@@ -8307,15 +8320,7 @@ window.__ModuleLoader__.load({
         // presentational: nothing is persisted, the host order is untouched,
         // and drag-to-reorder anchors are suppressed while active (an order
         // the very next render would re-sort is a lie).
-        if (orderBy === 'updated') {
-          const sorted = rows.slice().sort((a, b) => (b.updatedAt - a.updatedAt) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
-          const pin = currentId !== undefined && sorted.find((row) => row.id === currentId && row.blank)
-          if (pin) {
-            const at = sorted.indexOf(pin)
-            if (at > 0) { sorted.splice(at, 1); sorted.unshift(pin) }
-          }
-          return pinnedPartition(sorted)
-        }
+        if (orderBy === 'updated') return orderSessionsByRecency(rows, currentId)
         const local = typeof insertSessionBefore === 'function' ? [] : sessionOrderOf(workspace.workspaceId)
         if (local.length === 0) return pinnedPartition(rows)
         const remaining = new Map(rows.map((row) => [row.id, row]))
@@ -10006,7 +10011,10 @@ window.__ModuleLoader__.load({
         const rows = []
         for (const workspace of items || []) rows.push(...sessionsOf(workspace))
         rows.push(...ungrouped)
-        return rows.map((s) => renderSessionRow({ ...s, leaf: s.title }, 0, undefined))
+        // sessionsOf() sorts inside one workspace; flat mode needs one global
+        // recency sort, including the Ungrouped bucket (not per-workspace runs).
+        const ordered = orderBy === 'updated' ? orderSessionsByRecency(rows, currentId) : rows
+        return ordered.map((s) => renderSessionRow({ ...s, leaf: s.title }, 0, undefined))
       }
       const renderUngroupedBlock = () => {
         const rows = []

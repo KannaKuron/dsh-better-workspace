@@ -2469,3 +2469,54 @@ test('v0.36.7: dropping a group on its OWN container row is the framed INTO (blo
   assert.match(text, /if \(targetPath !== directParent \|\| zone !== 'into'\) \{ clearOver\('folder', idPath\); return \}/,
     'the parent edge bands still refuse (a rename is not an order change)')
 })
+
+/**
+ * Regression: "In one list" + "Last updated" must sort across workspace
+ * boundaries (and Ungrouped), rather than concatenating individually sorted
+ * workspace runs. Exercise the actual client functions without a Cordis host.
+ */
+test('flat last-updated order is global, preserving blank and pinned sections', () => {
+  const source = read('src/client.js')
+  const helperStart = source.indexOf('    const pinnedPartition = (rows) => {')
+  const helperEnd = source.indexOf('    const sessionTitleOf = ', helperStart)
+  const flatStart = source.indexOf('      const renderFlatRows = () => {')
+  const flatEnd = source.indexOf('      const renderUngroupedBlock = ', flatStart)
+  assert.ok(helperStart !== -1 && helperEnd > helperStart && flatStart !== -1 && flatEnd > flatStart)
+  const render = new Function('items', 'sessionsOf', 'ungrouped', 'orderBy', 'currentId', 'renderSessionRow',
+    source.slice(helperStart, helperEnd) + '\n' + source.slice(flatStart, flatEnd) + '\nreturn renderFlatRows()')
+
+  const workspaces = [{ workspaceId: 'a' }, { workspaceId: 'b' }]
+  const sessions = {
+    a: [
+      { id: 'a-old', title: 'a/old', updatedAt: 10 },
+      { id: 'a-pin', title: 'a/pin', updatedAt: 20, pinned: true },
+    ],
+    b: [
+      { id: 'b-recent', title: 'b/recent', updatedAt: 80 },
+      { id: 'b-pin', title: 'b/pin', updatedAt: 60, pinned: true },
+    ],
+  }
+  const ungrouped = [
+    { id: 'loose-newest', title: 'loose', updatedAt: 100 },
+    { id: 'blank', title: 'New Session', updatedAt: 0, blank: true },
+  ]
+  const run = (orderBy, rows = ungrouped) => render(
+    workspaces, (w) => sessions[w.workspaceId], rows, orderBy, 'blank', (s) => s)
+  assert.deepEqual(run('updated').map(s => s.id), [
+    'blank', 'b-pin', 'a-pin', 'loose-newest', 'b-recent', 'a-old',
+  ])
+  // Preserve full names in flat mode; only grouping modes split by '/'.
+  assert.equal(run('updated').find(s => s.id === 'b-recent').leaf, 'b/recent')
+  // Manual view deliberately retains caller order; no global sort.
+  assert.deepEqual(run('manual').map(s => s.id), [
+    'a-old', 'a-pin', 'b-recent', 'b-pin', 'loose-newest', 'blank',
+  ])
+  // Blank still leads when there are NO pinned sessions.
+  const noPins = Object.fromEntries(Object.entries(sessions).map(([key, value]) =>
+    [key, value.map(s => ({ ...s, pinned: false }))]))
+  const noPinRender = (w) => noPins[w.workspaceId]
+  const withoutPins = render(workspaces, noPinRender, ungrouped, 'updated', 'blank', (s) => s)
+  assert.deepEqual(withoutPins.map(s => s.id), [
+    'blank', 'loose-newest', 'b-recent', 'b-pin', 'a-pin', 'a-old',
+  ])
+})

@@ -8014,6 +8014,21 @@ window.__ModuleLoader__.load({
       // source element, and Chromium cancels the whole gesture. dragEnd clears
       // the timer so a same-tick cancel never leaves a ghost drag behind.
       const wsDragArmTimer = React.useRef(null)
+      // v0.36.10: Chromium CANCELS a drag whose pointer rests long enough —
+      // the mouse-up arrives as dragleave+dragend and 'drop' never fires
+      // (probe-measured: resting ~1-2s loses the drop every time). The
+      // user reads that as "松手没反应". dragStateRef mirrors {drag} for a
+      // dragEnd fallback that honors the armed {over}; dragDroppedRef
+      // tells dragEnd a real drop already committed; Escape still cancels.
+      const dragStateRef = React.useRef(null)
+      const dragDroppedRef = React.useRef(false)
+      const dragCancelledRef = React.useRef(false)
+      React.useEffect(() => { dragStateRef.current = drag }, [drag])
+      React.useEffect(() => {
+        const onKey = (event) => { if (event.key === 'Escape') dragCancelledRef.current = true }
+        window.addEventListener('keydown', onKey, true)
+        return () => window.removeEventListener('keydown', onKey, true)
+      }, [])
       // (v0.36.3) The 600ms group-hover auto-expand is retired: it kept
       // opening groups under a passing cursor ("变下级会被撑开"). The
       // deterministic reveal now lives in commitFolderMoveInto — the target
@@ -8832,6 +8847,18 @@ window.__ModuleLoader__.load({
         if (rel > 0.7) return 'after'
         return 'into'
       }
+      // v0.36.10: TRUE when the pointer sits in the row's ORIGINAL content
+      // box (a possibly-open slot's padding excluded). While this row holds
+      // a reorder slot the padding band keeps the slot verdict, and the
+      // content box re-judges the three bands — that is what keeps the
+      // INTO middle reachable after a slot opened. The old slotOpen lock
+      // answered before/after forever, so a pointer that entered through an
+      // edge band could never reach the middle: "拖到另一个下面(嵌套)" was
+      // unreachable through the natural approach path.
+      const pointerInRowBox = (event) => {
+        const box = originalBoxOf(event.currentTarget)
+        return event.clientY >= box.top && event.clientY <= box.bottom
+      }
       const dragMatches = (kind) => drag !== null && drag.kind === kind
       // A refused hover must DROP the highlight it already owns: leaving a
       // stale {over} in place drew the previous target's INTO frame on a row
@@ -8902,7 +8929,23 @@ window.__ModuleLoader__.load({
         },
         onDragEnd: () => {
           if (wsDragArmTimer.current !== null) { clearTimeout(wsDragArmTimer.current); wsDragArmTimer.current = null }
+          const committed = dragDroppedRef.current
+          dragDroppedRef.current = false
+          const cancelled = dragCancelledRef.current
+          dragCancelledRef.current = false
+          const live = dragStateRef.current
           setDrag(null)
+          // v0.36.10: same resting-drag fallback as the folder dragEnd.
+          if (committed || cancelled || !live || live.kind !== 'workspace' || !live.over) return
+          const over = live.over
+          if (over.kind === 'folder') {
+            const zone = over.zone === 'before' || over.zone === 'after' ? over.zone : 'into'
+            if (zone === 'into') commitWorkspaceMoveInto(live.source, over.target)
+            else if ((live.source.levelKey || '') === parentKeyOf(over.target)) commitLevelReorder({ kind: 'workspace', source: live.source }, { kind: 'folder', target: over.target }, zone)
+            else commitWorkspaceLift(live.source, over.target, zone)
+          } else if (over.kind === 'workspace' && over.half && over.workspace) {
+            commitWorkspaceDrop(over.workspace, over.half)
+          }
         },
         onDragOver: (event) => {
           // A SESSION dragged onto the workspace row lands at the root level of
@@ -8943,8 +8986,28 @@ window.__ModuleLoader__.load({
                   ? current
                   : (current ? { ...current, over: { kind: 'ws-level', target: workspace.workspaceId } } : current))
               } else {
-                clearOver('workspace', workspace.workspaceId)
-                clearOver('ws-level', workspace.workspaceId)
+                // v0.36.10 GROUP LIFT: an EDGE band on a cross-level row of
+                // the SAME disk scope lifts the whole group out to this
+                // row's level, anchored at the row — "把平行帮拖到和用户
+                // 目录、工作平级". The row must not live inside the dragged
+                // group (that would nest the group under itself) and not on
+                // another disk (a title rename cannot cross disks).
+                const half = rowHalf(event)
+                const sourceScope = diskScopeOf(drag.source.idPath)
+                const targetDisk = diskParentMap.get(workspace.workspaceId) || workspace.workspaceId
+                const targetLevel = workspace.levelKey || ''
+                const insideSource = targetLevel === drag.source.idPath || targetLevel.startsWith(drag.source.idPath + '/')
+                if (half !== null && sourceScope !== null && targetDisk === sourceScope && !insideSource) {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  try { event.dataTransfer.dropEffect = 'move' } catch { }
+                  setDrag(current => (current && current.over && current.over.kind === 'workspace' && current.over.target === workspace.workspaceId && current.over.half === half)
+                    ? current
+                    : (current ? { ...current, over: { kind: 'workspace', target: workspace.workspaceId, half, workspace, folderLift: true } } : current))
+                } else {
+                  clearOver('workspace', workspace.workspaceId)
+                  clearOver('ws-level', workspace.workspaceId)
+                }
               }
               return
             }
@@ -8953,9 +9016,11 @@ window.__ModuleLoader__.load({
             try { event.dataTransfer.dropEffect = 'move' } catch { }
             const half = rowHalf(event)
             if (half === null) return
+            // The row object rides along for the dragEnd fallback (same
+            // reason as the folder over's node above).
             setDrag(current => (current && current.over && current.over.kind === 'workspace' && current.over.target === workspace.workspaceId && current.over.half === half)
               ? current
-              : (current ? { ...current, over: { kind: 'workspace', target: workspace.workspaceId, half } } : current))
+              : (current ? { ...current, over: { kind: 'workspace', target: workspace.workspaceId, half, workspace } } : current))
             return
           }
           if (!dragMatches('workspace')) return
@@ -8978,7 +9043,7 @@ window.__ModuleLoader__.load({
           if (half === null) return
           setDrag(current => (current && current.over && current.over.kind === 'workspace' && current.over.target === workspace.workspaceId && current.over.half === half)
             ? current
-            : (current ? { ...current, over: { kind: 'workspace', target: workspace.workspaceId, half } } : current))
+            : (current ? { ...current, over: { kind: 'workspace', target: workspace.workspaceId, half, workspace } } : current))
         },
         onDrop: (event) => {
           if (dragMatches('session')) {
@@ -8997,12 +9062,23 @@ window.__ModuleLoader__.load({
               if (sourceLevel === (workspace.subPrefix || '')) {
                 event.preventDefault()
                 event.stopPropagation()
+                dragDroppedRef.current = true
                 commitFolderMoveToLevelEnd(drag.source)
+              } else {
+                // v0.36.10: the lift band armed in onDragOver.
+                const over = drag.over
+                if (over && over.kind === 'workspace' && over.target === workspace.workspaceId && over.folderLift && over.half) {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  dragDroppedRef.current = true
+                  commitFolderLift(drag.source, workspace, over.half)
+                }
               }
               return
             }
             event.preventDefault()
             event.stopPropagation()
+            dragDroppedRef.current = true
             const half = drag.over && drag.over.kind === 'workspace' && drag.over.target === workspace.workspaceId ? drag.over.half : rowHalf(event)
             commitLevelReorder({ kind: 'folder', source: drag.source }, { kind: 'workspace', workspace }, half || 'before')
             return
@@ -9013,6 +9089,7 @@ window.__ModuleLoader__.load({
           if (isOwnDescendantScope(diskParentMap.get(workspace.workspaceId), drag.source.workspaceId)) return
           event.preventDefault()
           event.stopPropagation()
+          dragDroppedRef.current = true
           const half = drag.over && drag.over.kind === 'workspace' && drag.over.target === workspace.workspaceId ? drag.over.half : rowHalf(event)
           commitWorkspaceDrop(workspace, half)
         },
@@ -9132,7 +9209,29 @@ window.__ModuleLoader__.load({
         },
         onDragEnd: () => {
           if (wsDragArmTimer.current !== null) { clearTimeout(wsDragArmTimer.current); wsDragArmTimer.current = null }
+          const committed = dragDroppedRef.current
+          dragDroppedRef.current = false
+          const cancelled = dragCancelledRef.current
+          dragCancelledRef.current = false
+          const live = dragStateRef.current
           setDrag(null)
+          // v0.36.10: no drop AND not cancelled means Chromium killed a
+          // RESTING drag (mouse-up as dragleave+dragend, drop never fires).
+          // Honor the armed {over} instead of throwing the gesture away —
+          // the user aimed at a visible slot/into for seconds. Escape still
+          // cancels for real.
+          if (committed || cancelled || !live || live.kind !== 'folder' || !live.over) return
+          const over = live.over
+          if (over.kind === 'folder') {
+            if (over.zone === 'before' || over.zone === 'after') commitFolderReorder(live.source, over.target, over.zone, over.node)
+            else commitFolderMoveInto(live.source, over.target)
+          } else if (over.kind === 'ws-level') {
+            commitFolderMoveToLevelEnd(live.source)
+          } else if (over.kind === 'workspace' && over.half && over.folderLift && over.workspace) {
+            commitFolderLift(live.source, over.workspace, over.half)
+          } else if (over.kind === 'workspace' && over.half && over.workspace) {
+            commitLevelReorder({ kind: 'folder', source: live.source }, { kind: 'workspace', workspace: over.workspace }, over.half)
+          }
         },
         onDragOver: (event) => {
           // Three bands on a group row: the outer 30% bands reorder this
@@ -9158,7 +9257,13 @@ window.__ModuleLoader__.load({
           // The three bands still decide the FIRST entry, so INTO (move the
           // source inside this group) stays reachable.
           const slotOpen = drag.over !== null && drag.over.kind === 'folder' && drag.over.target === idPath && (drag.over.zone === 'before' || drag.over.zone === 'after')
-          const zone = slotOpen ? rowHalf(event) : rowZone(event)
+          // v0.36.10: an open slot no longer locks the verdict. The slot's
+          // padding band keeps the slot (rowHalf is null there and the
+          // zone-null branch below holds), but the ORIGINAL content box
+          // re-judges the three bands — the INTO middle stays reachable.
+          const zone = slotOpen
+            ? (pointerInRowBox(event) ? rowZone(event) : rowHalf(event))
+            : rowZone(event)
           const isFolder = dragMatches('folder')
           const isWorkspace = dragMatches('workspace')
           if (isFolder) {
@@ -9226,9 +9331,12 @@ window.__ModuleLoader__.load({
           event.stopPropagation()
           try { event.dataTransfer.dropEffect = 'move' } catch { }
           const reorder = zone !== 'into'
+          // The row's node rides along: the dragEnd fallback (a Chromium
+          // resting drag that never fires drop) commits from {over} alone
+          // and needs it for the target-block anchor.
           const nextOver = reorder
-            ? { kind: 'folder', target: idPath, zone }
-            : { kind: 'folder', target: idPath, zone: 'into' }
+            ? { kind: 'folder', target: idPath, zone, node }
+            : { kind: 'folder', target: idPath, zone: 'into', node }
           setDrag(current => (current && current.over && current.over.kind === 'folder' && current.over.target === idPath && current.over.zone === nextOver.zone)
             ? current
             : (current ? { ...current, over: nextOver } : current))
@@ -9237,6 +9345,7 @@ window.__ModuleLoader__.load({
           if (dragMatches('folder')) {
             event.preventDefault()
             event.stopPropagation()
+            dragDroppedRef.current = true
             const zone = drag.over && drag.over.kind === 'folder' && drag.over.target === idPath ? drag.over.zone : 'into'
             if (zone === 'before' || zone === 'after') commitFolderReorder(drag.source, idPath, zone, node)
             else commitFolderMoveInto(drag.source, idPath)
@@ -9248,6 +9357,7 @@ window.__ModuleLoader__.load({
           if (isOwnDescendantScope(diskScopeOf(idPath), drag.source.workspaceId)) return
           event.preventDefault()
           event.stopPropagation()
+          dragDroppedRef.current = true
           // The live {over} wins; the geometry is the fallback for a drop that
           // lands before any hover frame recorded a band on this row.
           const overZone = drag.over && drag.over.kind === 'folder' && drag.over.target === idPath && (drag.over.zone === 'before' || drag.over.zone === 'after') ? drag.over.zone : null
@@ -9470,6 +9580,47 @@ window.__ModuleLoader__.load({
       // limitation as that dialog: same-named groups on different disk
       // levels move together). Self / descendant targets are already
       // refused at hover time; re-checked here as belt and braces.
+      // v0.36.10 GROUP LIFT. Dropping a group row on a cross-level
+      // workspace row's EDGE band (same disk scope) means: take the whole
+      // group out of its parent, give it the target level's name prefix and
+      // place it beside that row — "把平行帮拖到和用户目录、工作平级".
+      // Mirrors commitWorkspaceLift: member renames plus a level token,
+      // never a disk move; the hover gate already checked scope and nesting.
+      const commitFolderLift = (source, workspace, zone) => {
+        setDrag(null)
+        if (!canDragWorkspace) { console.warn('[bw] folder lift refused: workspace reorder unavailable on this host'); return }
+        const targetLevel = workspace.levelKey || ''
+        if (targetLevel === source.idPath || targetLevel.startsWith(source.idPath + '/')) { console.warn('[bw] folder lift refused: target level inside the source', targetLevel); return }
+        const sourceLeaf = namePathOf(source.idPath).split('/').pop()
+        // The target level's name prefix: '' = the disk root (the group
+        // becomes a plain top-level group), otherwise the level key's name
+        // path after the owner separator.
+        const cutAt = targetLevel.lastIndexOf('//')
+        const levelNamePath = cutAt === -1 ? '' : targetLevel.slice(cutAt + 2)
+        const newSourcePath = levelNamePath === '' ? sourceLeaf : levelNamePath + '/' + sourceLeaf
+        const prefix = source.path + '/'
+        const affected = (items || []).filter((w) => String(w.title || '').startsWith(prefix))
+        if (!affected.length) { console.warn('[bw] folder lift refused: no members under', source.path); return }
+        Promise.resolve()
+          .then(async () => {
+            for (const w of affected) {
+              await renameWorkspace(w.workspaceId, newSourcePath + String(w.title).slice(source.path.length))
+            }
+          })
+          .then(() => {
+            removeLevelToken(source.levelKey || '', sourceLeaf)
+            insertLevelToken(targetLevel, sourceLeaf, 'w:' + workspace.workspaceId, zone === 'after' ? 'after' : 'before')
+            // Carry the group's own member order across to its NEW level
+            // key, so the members keep their inside order after the rename.
+            const oldContainer = folderContainerOf(source.idPath)
+            if (oldContainer && typeof actions.setFolderOrder === 'function') {
+              const owner = ownerPrefixOf(source.idPath)
+              const newKey = owner === '' ? newSourcePath : owner + '//' + newSourcePath
+              if (newKey !== source.idPath) actions.setFolderOrder(newKey, levelSeqOf(oldContainer).map(levelTokenOf))
+            }
+          })
+          .catch(fail)
+      }
       const commitFolderMoveInto = (source, targetIdPath) => {
         setDrag(null)
         const targetPath = namePathOf(targetIdPath)
@@ -9486,10 +9637,37 @@ window.__ModuleLoader__.load({
         const prefix = source.path + '/'
         const affected = (items || []).filter((w) => String(w.title || '').startsWith(prefix))
         if (!affected.length) { console.warn('[bw] folder move refused: no members under', source.path); return }
+        // v0.36.10 NEST semantics: the group keeps its identity UNDER the
+        // target (工作/平行帮 → 工作/Fis管理后台/平行帮). The old prefix
+        // swap merged the members straight into the target's own level —
+        // "平行帮/Web" became "Fis管理后台/Web", colliding with the
+        // target's own Web and dying on workspace/name-conflict before
+        // anything moved: the "平级的没法拖动" report. Nesting names every
+        // member BELOW the moved group, which cannot collide with the
+        // target's direct children.
+        const sourceLeaf = namePathOf(source.idPath).split('/').pop()
+        const newSourcePath = targetPath + '/' + sourceLeaf
         Promise.resolve()
           .then(async () => {
             for (const w of affected) {
-              await renameWorkspace(w.workspaceId, targetPath + String(w.title).slice(source.path.length))
+              await renameWorkspace(w.workspaceId, newSourcePath + String(w.title).slice(source.path.length))
+            }
+          })
+          .then(() => {
+            // The group token moves from the source's level to INSIDE the
+            // target group, and the member order follows to the new key.
+            removeLevelToken(source.levelKey || '', sourceLeaf)
+            const targetContainer = folderContainerOf(targetIdPath)
+            if (targetContainer) {
+              const tokens = levelSeqOf(targetContainer).map(levelTokenOf)
+              if (tokens.length) insertLevelToken(targetIdPath, sourceLeaf, tokens[tokens.length - 1], 'after')
+              else if (typeof actions.setFolderOrder === 'function') actions.setFolderOrder(targetIdPath, [sourceLeaf])
+            }
+            const oldContainer = folderContainerOf(source.idPath)
+            if (oldContainer && typeof actions.setFolderOrder === 'function') {
+              const owner = ownerPrefixOf(source.idPath)
+              const newKey = owner === '' ? newSourcePath : owner + '//' + newSourcePath
+              if (newKey !== source.idPath) actions.setFolderOrder(newKey, levelSeqOf(oldContainer).map(levelTokenOf))
             }
           })
           // (v0.36.4) NO automatic expand after a move-into. v0.36.3 opened

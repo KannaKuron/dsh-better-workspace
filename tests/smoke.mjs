@@ -2041,8 +2041,10 @@ test('v0.36.0: folder rows drag as whole groups (members retitled under the targ
     'the commit helper exists (source passed in, not closed over)')
   assert.match(text, /const affected = \(items \|\| \[\]\)\.filter\(\(w\) => String\(w\.title \|\| ''\)\.startsWith\(prefix\)\)/,
     'members are swept by title prefix over all items')
-  assert.match(text, /await renameWorkspace\(w\.workspaceId, targetPath \+ String\(w\.title\)\.slice\(source\.path\.length\)\)/,
-    'each member is retitled targetPath + its relative title')
+  assert.match(text, /const newSourcePath = targetPath \+ '\/' \+ sourceLeaf/,
+    'v0.36.10 nest semantics: the group lands UNDER the target as target/leaf')
+  assert.match(text, /await renameWorkspace\(w\.workspaceId, newSourcePath \+ String\(w\.title\)\.slice\(source\.path\.length\)\)/,
+    'each member is retitled target/leaf + its relative title (cannot collide with the target children)')
   // Dropping a group into itself, its own descendant OR its own ancestor
   // would loop or duplicate a name segment: refused at hover (no
   // preventDefault) AND again at commit (belt and braces).
@@ -2239,8 +2241,10 @@ test('v0.36.4: an open reorder slot splits the original row at its midpoint (no 
     'the slot-open probe exists exactly once')
   assert.match(text, /const slotOpen = drag\.over !== null && drag\.over\.kind === 'folder' && drag\.over\.target === idPath && \(drag\.over\.zone === 'before' \|\| drag\.over\.zone === 'after'\)/,
     'the row knows whether it already holds this drag slot')
-  assert.match(text, /const zone = slotOpen \? rowHalf\(event\) : rowZone\(event\)/,
-    'an open slot answers before/after by original midpoint; the first entry keeps the three bands (INTO reachable)')
+  assert.match(text, /const pointerInRowBox = \(event\) => \{/,
+    'v0.36.10: a helper tells the slot padding apart from the content box')
+  assert.match(text, /const zone = slotOpen\n            \? \(pointerInRowBox\(event\) \? rowZone\(event\) : rowHalf\(event\)\)\n            : rowZone\(event\)/,
+    'an open slot keeps its verdict on the padding band but RE-JUDGES the three bands in the content box — the INTO middle stays reachable after entering through an edge')
   // rowHalf is the plain midpoint split of the ORIGINAL position: no INTO band.
   assert.match(text, /return y < \(box\.top \+ box\.bottom\) \/ 2 \? 'before' : 'after'/,
     'rowHalf splits at the original midpoint with no middle band')
@@ -2314,7 +2318,7 @@ test('v0.36.5: a workspace row and a group row reorder into each other (mixed dr
     'the OWNING disk row is the one cross-level INTO target')
   assert.match(text, /setDrag\(current => \(current && current\.over && current\.over\.kind === 'ws-level' && current\.over\.target === workspace\.workspaceId\)/,
     'the owning row records a ws-level INTO hover')
-  assert.match(text, /clearOver\('workspace', workspace\.workspaceId\)\n                clearOver\('ws-level', workspace\.workspaceId\)/,
+  assert.match(text, /clearOver\('workspace', workspace\.workspaceId\)\n\s+clearOver\('ws-level', workspace\.workspaceId\)/,
     'every other cross-level hover clears the stale highlight')
   assert.match(text, /commitFolderMoveToLevelEnd\(drag\.source\)/,
     'the owning row drop commits the block back to its level tail')
@@ -2555,4 +2559,56 @@ test('v0.36.9: a container workspace cannot be dropped inside its own disk subtr
   // itself. Both entry points refuse with no feedback.
   assert.equal(text.split('if (isOwnDescendantScope(diskParentMap.get(workspace.workspaceId), drag.source.workspaceId)) return').length - 1, 2,
     'both the workspace-row hover and its drop refuse the container ancestor')
+})
+
+test('v0.36.10: level-mate groups nest, lift and survive a resting drag', () => {
+  const text = read('src/client.js')
+  // 1) NEST — "把平行帮拖到 Fis管理后台 下面". The old prefix swap merged the
+  // members straight into the target level and died on name-conflict when the
+  // target had a child with the same leaf name (Web/Back on both sides).
+  assert.match(text, /const commitFolderLift = \(source, workspace, zone\) => \{/,
+    'the group lift commit exists (mirror of commitWorkspaceLift)')
+  assert.ok(text.includes("const cutAt = targetLevel.lastIndexOf('//')"),
+    'the lift cuts the target level key at the owner separator')
+  assert.ok(text.includes("const levelNamePath = cutAt === -1 ? '' : targetLevel.slice(cutAt + 2)"),
+    'the lift resolves the target level name path (disk root lifts to a plain top-level group)')
+  assert.match(text, /removeLevelToken\(source\.levelKey \|\| '', sourceLeaf\)\n            insertLevelToken\(targetLevel, sourceLeaf, 'w:' \+ workspace\.workspaceId, zone === 'after' \? 'after' : 'before'\)/,
+    'the lifted group token moves to the target level anchored at the row')
+  // 2) The nest commit moves the token INSIDE the target group.
+  assert.match(text, /insertLevelToken\(targetIdPath, sourceLeaf, tokens\[tokens\.length - 1\], 'after'\)/,
+    'the nested group token lands inside the target group list')
+  assert.ok(text.includes("const newKey = owner === '' ? newSourcePath : owner + '//' + newSourcePath"),
+    'member order follows the group to its new level key')
+  // 3) LIFT hover — a cross-level workspace row's EDGE band (same disk scope,
+  // not inside the source) arms a folderLift instead of silently refusing.
+  assert.match(text, /const half = rowHalf\(event\)\n                const sourceScope = diskScopeOf\(drag\.source\.idPath\)\n                const targetDisk = diskParentMap\.get\(workspace\.workspaceId\) \|\| workspace\.workspaceId\n                const targetLevel = workspace\.levelKey \|\| ''\n                const insideSource = targetLevel === drag\.source\.idPath \|\| targetLevel\.startsWith\(drag\.source\.idPath \+ '\/'\)/,
+    'the lift hover gates on the edge band, the disk scope and self-nesting')
+  assert.match(text, /over: \{ kind: 'workspace', target: workspace\.workspaceId, half, workspace, folderLift: true \}/,
+    'the lift hover arms a folderLift carrying the row object')
+  assert.match(text, /commitFolderLift\(drag\.source, workspace, over\.half\)/,
+    'the lift drop commits')
+  // 4) The middle band of an open slot stays reachable (three bands re-judged
+  // in the content box) — nesting through the natural approach path works.
+  assert.match(text, /pointerInRowBox\(event\) \? rowZone\(event\) : rowHalf\(event\)/,
+    'the content box re-judges while the padding keeps the slot')
+  // 5) A resting drag still commits: dragEnd honors the armed {over} unless a
+  // real drop ran or Escape cancelled.
+  assert.equal((text.match(/const dragStateRef = React\.useRef\(null\)/g) || []).length, 1,
+    'one drag state mirror for the dragEnd fallback')
+  assert.equal((text.match(/dragDroppedRef\.current = true/g) || []).length, 6,
+    'every preventDefault drop marks itself (folder drop, ws drop, owning-row nest, group lift, group reorder, ws drop)')
+  assert.equal((text.match(/dragCancelledRef\.current = false/g) || []).length, 2,
+    'both dragEnds reset the escape flag')
+  assert.match(text, /if \(committed \|\| cancelled \|\| !live \|\| live\.kind !== 'folder' \|\| !live\.over\) return/,
+    'the folder dragEnd falls back to the armed over only when no drop and no escape happened')
+  assert.match(text, /if \(over\.kind === 'folder'\) \{\n            if \(over\.zone === 'before' \|\| over\.zone === 'after'\) commitFolderReorder\(live\.source, over\.target, over\.zone, over\.node\)\n            else commitFolderMoveInto\(live\.source, over\.target\)/,
+    'the folder dragEnd replays the armed reorder or nest')
+  assert.match(text, /else if \(over\.kind === 'workspace' && over\.half && over\.folderLift && over\.workspace\) \{\n            commitFolderLift\(live\.source, over\.workspace, over\.half\)/,
+    'the folder dragEnd replays the armed lift')
+  assert.match(text, /if \(committed \|\| cancelled \|\| !live \|\| live\.kind !== 'workspace' \|\| !live\.over\) return/,
+    'the workspace dragEnd falls back the same way')
+  assert.match(text, /commitWorkspaceDrop\(over\.workspace, over\.half\)/,
+    'the workspace dragEnd replays the armed workspace reorder')
+  assert.match(text, /if \(event\.key === 'Escape'\) dragCancelledRef\.current = true/,
+    'Escape still cancels the gesture for real')
 })

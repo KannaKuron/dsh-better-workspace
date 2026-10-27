@@ -143,3 +143,11 @@
 4. **改名免打开历史 + 官方拖拽指示效果**(2026-10-23,v0.36.0 记账):
    - **改名免打开历史**:v0.36.0 的 renameSession 三层快慢路径中,tier2 feature-probe 的 `sessions.manager.rename`(SessionManager「without opening its history」路径,`packages/api/session-manager/src/manager.ts:578-590`)挂在一个 TS private 字段上(`session-controller/src/client/sessions/service.ts:245`),不是公开契约——官方若把它公开(re-export / 文档化 / 官方 UI 改用),插件立即删掉三层探测整体切换官方写法;官方 ui-workspace 的 renameSession(`ui-workspace/src/client/index.ts:174-181`)目前同样是 `sessions.using` retain 写法,它若先改,也是切换信号。
    - **拖拽插入指示**:官方会话/工作区排序的放置反馈是**插入线**(渐变小箭头+横线,`Rows.module.css:309-347`、`WorkspaceBrowser.module.css:452-497`),没有「拖过去让开一个空间」的占位效果;插件工作区行已 1:1 移植插入线、组行用放入蓝框(放入语义非插入语义)。官方若升级为让位/占位动画,**删移植版整体跟随官方方案**。
+
+## 层级不变式(2026-10-27 起,最高优先级用户纪律)
+
+**只要层级有渲染,你就得要处理**——任何「按层/按组」的行为(高亮、拖拽、排序、计数、pulse、菜单、重命名、防环…),必须对**所有会渲染出该层级的视图**统一成立。用户可以自由组合「分组方式」(workspace-tree / workspace / flat)×「工作区分组」(disk / disk-slash / slash),**不允许任何一处因为切了组合就失效或走样**。
+
+- 新写层级行为时默认写法 = 沿 `levelSeqOf(node)` 树形递归(视图无关),**禁止**在行为函数里读 groupBy/workspaceGroupMode 分支;视图分支只允许出现在「构建树的入口」(treeMode/rawTree/treeView/flatMode 四处)。
+- 树形消费面清单(必须共用同一条视图规则,smoke 有守卫测试):侧栏 tree memo、侧栏 rawTree、新建分组选择器 treeView、会话选择器 flatMode。新增消费面必须加入该测试。
+- 每次改分组/视图相关代码,先过一遍视图矩阵:3 个 groupBy × 3 个 groupMode × (搜索态 / 归档态 / compactChains 开关),问「这个行为在每种组合下渲染出的层级上是否都成立」。

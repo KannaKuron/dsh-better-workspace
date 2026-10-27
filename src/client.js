@@ -7432,7 +7432,11 @@ window.__ModuleLoader__.load({
 
       const rows = React.useMemo(() => {
         const out = []
-        const flatMode = groupBy !== 'workspace-tree'
+        // ONE view rule for every tree-shaped surface (sidebar memo, new-group
+        // chooser, this picker): "workspaces" keeps the name tree whenever a
+        // name layer is on — only a purely disk flat view or 'flat' collapses.
+        const flatMode = groupBy === 'flat'
+          || (groupBy === 'workspace' && workspaceGroupMode === 'disk')
         const isFolded = (key) => folded[key] === true
         const toggle = (key) => {
           setFolded((prev) => {

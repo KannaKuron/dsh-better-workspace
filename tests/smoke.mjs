@@ -2644,3 +2644,26 @@ test('v0.36.10: level-mate groups nest, lift and survive a resting drag', () => 
   assert.match(text, /if \(event\.key === 'Escape'\) dragCancelledRef\.current = true/,
     'Escape still cancels the gesture for real')
 })
+
+test('v0.36.13: every tree-shaped surface shares ONE view rule (no per-surface drift)', () => {
+  const text = read('src/client.js')
+  // THE recurring bug class: a surface renders a hierarchy but keeps its own
+  // private view condition, so toggling a grouping mode leaves ONE surface
+  // scattering rows the others keep as a tree (v0.36.11 sidebar vs v0.36.13
+  // picker). The rule lives once per surface, and all of them agree:
+  // "workspaces" + a name layer ON renders the tree; only a purely-disk flat
+  // view or 'flat' collapses.
+  const rule = /groupBy === 'workspace' && workspaceGroupMode !==? 'disk'/
+  const surfaces = [
+    ['sidebar tree memo', /const treeMode = groupBy === 'workspace' && workspaceGroupMode !== 'disk'\s*\n\s*\? 'slash'\s*:\s*workspaceGroupMode/],
+    ['sidebar rawTree', /groupBy === 'workspace' && workspaceGroupMode !== 'disk' \? 'slash' : workspaceGroupMode,/],
+    ['new-group chooser treeView', /const treeView = groupBy === 'workspace-tree'\s*\n\s*\|\| \(groupBy === 'workspace' && workspaceGroupMode !== 'disk'\)/],
+    ['session picker flatMode', /const flatMode = groupBy === 'flat'\s*\n\s*\|\| \(groupBy === 'workspace' && workspaceGroupMode === 'disk'\)/],
+  ]
+  for (const [name, re] of surfaces) assert.match(text, re, name + ' must carry the shared view rule')
+  assert.match(text, rule, 'the shared rule names groupBy and the name layer together')
+  // The ancestor-active walk (v0.36.12) must be view-agnostic: it recurses the
+  // mixed sequence itself instead of asking which mode produced it.
+  assert.match(text, /const nodeHoldsCurrent = \(level\) => \{[\s\S]{0,220}for \(const item of levelSeqOf\(level\)\)/,
+    'ancestor folder active walks the rendered tree, not a view branch')
+})

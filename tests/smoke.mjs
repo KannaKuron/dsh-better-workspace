@@ -2290,9 +2290,10 @@ test('v0.36.5: a level is ONE mixed sequence (bare workspaces interleave with gr
   assert.match(text, /const levelSeqOf = \(level\) => \(level && Array\.isArray\(level\.seq\)\)/,
     'levels without a sequence fall back to groups-then-workspaces')
   // v0.36.11 adds a fourth walk: "workspaces" + a name layer renders the
-  // root-level name tree through the same loop.
-  assert.equal((text.match(/for \(const item of levelSeqOf\(/g) || []).length, 4,
-    'every render path walks the mixed sequence (root level, group row, plain folder, workspace+name tree)')
+  // root-level name tree through the same loop. v0.36.12 adds a fifth:
+  // nodeHoldsCurrent walks it to light ancestor folders holding the session.
+  assert.equal((text.match(/for \(const item of levelSeqOf\(/g) || []).length, 5,
+    'every render/active path walks the mixed sequence (root level, group row, plain folder, workspace+name tree, ancestor-active walk)')
   // Chain compression rebuilds the folder nodes; the sequence must keep the
   // compressed stand-ins in place or a bare workspace lands next to the wrong row.
   assert.match(text, /const seq = Array\.isArray\(built\.seq\)/,

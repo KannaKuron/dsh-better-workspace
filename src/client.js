@@ -10191,6 +10191,17 @@ window.__ModuleLoader__.load({
       }
       const wsHasCurrent = (w) => !!currentId && !!w
         && ((w.sessionIds || []).includes(currentId) || subHasCurrent(w.sub))
+      // Name groups (slash view) have no disk path to prefix-match; the
+      // folder glyph lights up whenever its SUBTREE holds the current
+      // session — the official ProjectRow rule, applied tree-wide.
+      const nodeHoldsCurrent = (level) => {
+        if (!level || !currentId) return false
+        for (const item of levelSeqOf(level)) {
+          if (item.kind === 'ws') { if (wsHasCurrent(item.entry)) return true }
+          else if (nodeHoldsCurrent(item.node)) return true
+        }
+        return false
+      }
       const currentWsPath = currentId
         ? ((items || []).find((w) => (w.sessionIds || []).includes(currentId)) || {}).path
         : undefined
@@ -10226,7 +10237,7 @@ window.__ModuleLoader__.load({
           custStyle: rowStyleOf('folder:' + idPath),
           iconMode: (styleEntry('folder:' + idPath) || {}).icon || 'solid',
           pulse: expanded ? null : folderPulseOf(node),
-          active: pathHoldsCurrent(currentWsPath, node.path),
+          active: pathHoldsCurrent(currentWsPath, node.path) || nodeHoldsCurrent(node),
           t,
         })]
         if (expanded) {

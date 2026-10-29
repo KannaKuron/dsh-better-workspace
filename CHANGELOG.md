@@ -3,6 +3,20 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.36.14 — 2026-10-30
+
+**类型**:fix / 无标题会话行回退成工作区名(issue #16:侧栏出现一堆「点不开」的同名空会话行)。
+
+### fix
+- **无标题行改显官方「未命名」**:插件的 `sessionTitleOf` 在宿主 wire 缺 `title` 时,最后一档回退到宿主的 `displayTitle`(basename 兜底),于是每个没有投影标题的会话都显示成工作区 / cwd 目录名——issue #16 里同一工作区下 22 行全叫「OH-WorkSpace」。官方语义(Rows.tsx `displayTitle`)= `node.blank ? t('session.new') : (node.title || t('session.untitled'))`,空标题渲染本地化的「未命名」,绝不回退 basename。现在插件对齐官方:`wire title → 本机记住的最近真实标题(冷启动窗口)→ t('session.untitled')`,`displayTitle` 回退彻底移除。
+- **21 门词典补齐 `session.untitled`**:zh「未命名」、en「Untitled」、ja「無題」等,其余语言按官方 / 通行译法补齐;每个已发布语言都必须带该词条(smoke 守卫)。
+
+### 已知边界(留给宿主,不在插件可修范围)
+- issue #16 的「点不开」:宿主 `navigation.ts` 的 `openSession → replaceMain → retain` 成功即静默,主视图内容缺失也不报错,插件层拿不到失败信号。
+- 零轮次 header-only 空会话无法在插件侧可靠过滤:列表摘要不含 `createdAt` / 消息计数,`tokenUsage` 不进 `summary`,而冷会话缺 metadata 时 `sessionListMetadata.blank` 被宿主判为 `false`(list.ts `summarizeCold`)——没有可靠信号区分「零轮次空会话」与「有内容的会话」。这两项需宿主提供信号或修复。
+
+### 验证
+- 冒烟 78 → **79**(新增 v0.36.14:21 门词条齐全 + `displayTitle` 回退永不再现)。
 ## v0.36.13 — 2026-10-27
 
 **类型**:fix / 会话选择器未跟上「按工作区」名称树(用户纪律:只要层级有渲染就必须处理,不允许切分组模式后任何消费面走样)。

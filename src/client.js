@@ -48,6 +48,7 @@ window.__ModuleLoader__.load({
       'shortcut.noCompletedTurn': '当前会话没有已结束的轮次',
       'workspace.defaultName': '默认工作区',
       'session.new': '新会话',
+      'session.untitled': '未命名',
         'viewOptions.label': '视图选项',
         'viewOptions.groupBy': '分组方式',
         'viewOptions.byWorkspace': '按工作区',
@@ -224,6 +225,7 @@ window.__ModuleLoader__.load({
       'shortcut.noCompletedTurn': 'This session has no completed turn',
       'workspace.defaultName': 'Default workspace',
       'session.new': 'New session',
+      'session.untitled': 'Untitled',
         'viewOptions.label': 'View options',
         'viewOptions.groupBy': 'Group by',
         'viewOptions.byWorkspace': 'Workspaces',
@@ -408,6 +410,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': 'لا توجد جولة مكتملة في هذه الجلسة',
         'workspace.defaultName': 'مساحة العمل الافتراضية',
         'session.new': 'جلسة جديدة',
+        'session.untitled': 'بدون عنوان',
         'viewOptions.label': 'خيارات العرض',
         'viewOptions.groupBy': 'التجميع حسب',
         'viewOptions.byWorkspace': 'مساحات العمل',
@@ -584,6 +587,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': 'Diese Sitzung hat keinen abgeschlossenen Durchlauf',
         'workspace.defaultName': 'Standard-Arbeitsbereich',
         'session.new': 'Neue Sitzung',
+        'session.untitled': 'Ohne Titel',
         'viewOptions.label': 'Ansichtsoptionen',
         'viewOptions.groupBy': 'Gruppieren',
         'viewOptions.byWorkspace': 'Arbeitsbereiche',
@@ -760,6 +764,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': "Cette session n'a aucun tour terminé",
         'workspace.defaultName': 'Espace de travail par défaut',
         'session.new': 'Nouvelle session',
+        'session.untitled': 'Sans titre',
         'viewOptions.label': 'Options d’affichage',
         'viewOptions.groupBy': 'Regrouper par',
         'viewOptions.byWorkspace': 'Espaces de travail',
@@ -936,6 +941,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': 'इस सत्र में कोई पूर्ण चक्र नहीं है',
         'workspace.defaultName': 'डिफ़ॉल्ट कार्यस्थान',
         'session.new': 'नया सत्र',
+        'session.untitled': 'बिना शीर्षक',
         'viewOptions.label': 'दृश्य विकल्प',
         'viewOptions.groupBy': 'समूहीकरण',
         'viewOptions.byWorkspace': 'कार्यक्षेत्र अनुसार',
@@ -1112,6 +1118,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': 'Sesi ini tidak memiliki putaran yang selesai',
         'workspace.defaultName': 'Ruang kerja default',
         'session.new': 'Sesi baru',
+        'session.untitled': 'Tanpa judul',
         'viewOptions.label': 'Opsi tampilan',
         'viewOptions.groupBy': 'Kelompokkan berdasarkan',
         'viewOptions.byWorkspace': 'Ruang kerja',
@@ -1288,6 +1295,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': 'Questa sessione non ha turni completati',
         'workspace.defaultName': 'Area di lavoro predefinita',
         'session.new': 'Nuova sessione',
+        'session.untitled': 'Senza titolo',
         'viewOptions.label': 'Opzioni vista',
         'viewOptions.groupBy': 'Raggruppa per',
         'viewOptions.byWorkspace': 'Aree di lavoro',
@@ -1464,6 +1472,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': 'このセッションには完了したターンがありません',
         'workspace.defaultName': '既定のワークスペース',
         'session.new': '新しいセッション',
+        'session.untitled': '無題',
         'viewOptions.label': '表示オプション',
         'viewOptions.groupBy': 'グループ化',
         'viewOptions.byWorkspace': 'ワークスペースごと',
@@ -1640,6 +1649,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': '이 세션에는 완료된 턴이 없습니다',
         'workspace.defaultName': '기본 워크스페이스',
         'session.new': '새 세션',
+        'session.untitled': '제목 없음',
         'viewOptions.label': '보기 옵션',
         'viewOptions.groupBy': '그룹화',
         'viewOptions.byWorkspace': '작업 공간별',
@@ -1816,6 +1826,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': 'Deze sessie heeft geen voltooide ronde',
         'workspace.defaultName': 'Standaardwerkruimte',
         'session.new': 'Nieuwe sessie',
+        'session.untitled': 'Zonder titel',
         'viewOptions.label': 'Weergaveopties',
         'viewOptions.groupBy': 'Groeperen op',
         'viewOptions.byWorkspace': 'Werkruimtes',
@@ -1992,6 +2003,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': 'Ta sesja nie ma ukończonej tury',
         'workspace.defaultName': 'Domyślna przestrzeń robocza',
         'session.new': 'Nowa sesja',
+        'session.untitled': 'Bez tytułu',
         'viewOptions.label': 'Opcje widoku',
         'viewOptions.groupBy': 'Grupuj według',
         'viewOptions.byWorkspace': 'Obszary robocze',
@@ -2168,6 +2180,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': 'Esta sessão não tem nenhum turno concluído',
         'workspace.defaultName': 'Espaço de trabalho predefinido',
         'session.new': 'Nova sessão',
+        'session.untitled': 'Sem título',
         'viewOptions.label': 'Opções de vista',
         'viewOptions.groupBy': 'Agrupar por',
         'viewOptions.byWorkspace': 'Áreas de trabalho',
@@ -2344,6 +2357,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': 'В этом сеансе нет завершённых циклов',
         'workspace.defaultName': 'Рабочая область по умолчанию',
         'session.new': 'Новая сессия',
+        'session.untitled': 'Без названия',
         'viewOptions.label': 'Параметры вида',
         'viewOptions.groupBy': 'Группировка',
         'viewOptions.byWorkspace': 'По рабочим областям',
@@ -2520,6 +2534,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': 'Den här sessionen har ingen avslutad omgång',
         'workspace.defaultName': 'Standardarbetsyta',
         'session.new': 'Ny session',
+        'session.untitled': 'Utan titel',
         'viewOptions.label': 'Visningsalternativ',
         'viewOptions.groupBy': 'Gruppera efter',
         'viewOptions.byWorkspace': 'Arbetsytor',
@@ -2696,6 +2711,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': 'เซสชันนี้ไม่มีรอบที่เสร็จสิ้น',
         'workspace.defaultName': 'พื้นที่ทำงานเริ่มต้น',
         'session.new': 'เซสชันใหม่',
+        'session.untitled': 'ไม่มีชื่อ',
         'viewOptions.label': 'ตัวเลือกมุมมอง',
         'viewOptions.groupBy': 'จัดกลุ่มตาม',
         'viewOptions.byWorkspace': 'ตามพื้นที่ทำงาน',
@@ -2872,6 +2888,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': 'Bu oturumda tamamlanmış tur yok',
         'workspace.defaultName': 'Varsayılan çalışma alanı',
         'session.new': 'Yeni oturum',
+        'session.untitled': 'Başlıksız',
         'viewOptions.label': 'Görünüm seçenekleri',
         'viewOptions.groupBy': 'Gruplandır',
         'viewOptions.byWorkspace': 'Çalışma alanları',
@@ -3048,6 +3065,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': 'Phiên này chưa có lượt nào hoàn thành',
         'workspace.defaultName': 'Không gian làm việc mặc định',
         'session.new': 'Phiên mới',
+        'session.untitled': 'Chưa đặt tên',
         'viewOptions.label': 'Tùy chọn hiển thị',
         'viewOptions.groupBy': 'Nhóm theo',
         'viewOptions.byWorkspace': 'Theo khu vực làm việc',
@@ -3224,6 +3242,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': '呢個會話未有已完成嘅回合',
         'workspace.defaultName': '預設工作區',
         'session.new': '新對話',
+        'session.untitled': '未命名',
         'viewOptions.label': '檢視選項',
         'viewOptions.groupBy': '分組方式',
         'viewOptions.byWorkspace': '按工作區',
@@ -3400,6 +3419,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': '呢個會話未有已完成嘅回合',
         'workspace.defaultName': '預設工作區',
         'session.new': '新對話',
+        'session.untitled': '未命名',
         'viewOptions.label': '檢視選項',
         'viewOptions.groupBy': '分組方式',
         'viewOptions.byWorkspace': '按工作區',
@@ -3576,6 +3596,7 @@ window.__ModuleLoader__.load({
         'shortcut.noCompletedTurn': '此工作階段沒有已完成的回合',
         'workspace.defaultName': '預設工作區',
         'session.new': '新工作階段',
+        'session.untitled': '未命名',
         'viewOptions.label': '檢視選項',
         'viewOptions.groupBy': '分組方式',
         'viewOptions.byWorkspace': '按工作區',
@@ -4058,14 +4079,17 @@ window.__ModuleLoader__.load({
       if (!summary) return ''
       if (summary.blank) return t('session.new')
       if (summary.title) return String(summary.title)
-      // Cold-restart window: when the wire omits title, displayTitle is the
-      // host's basename fallback (dsh list only serves the projection cache,
-      // and fork-born/never-checkpointed sessions always miss it — the durable
-      // title stays in the session log, unread for a list row). A title
-      // remembered from an earlier snapshot restores the "/" grouping until
-      // the session opens and the wire catches up.
+      // Cold-restart window: the wire serves only the projection cache, so a
+      // title that was never checkpointed (fork-born, never-checkpointed) is
+      // missing for the list row even though the durable title sits in the
+      // session log. A title remembered from an earlier snapshot restores the
+      // "/" grouping until the session opens and the wire catches up.
       if (typeof rememberedTitle === 'string' && rememberedTitle !== '') return rememberedTitle
-      return String(summary.displayTitle || summary.title || '')
+      // Nothing remembered: stay official. Rows.tsx displayTitle() renders
+      // t('session.untitled') for an unnamed row — NEVER the host's
+      // displayTitle, which falls back to the project basename and turned
+      // every title-less row into a duplicate workspace name (issue #16).
+      return t('session.untitled')
     }
 
     /**

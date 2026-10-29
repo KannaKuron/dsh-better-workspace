@@ -340,8 +340,12 @@ test('sessionTitleOf: wire title wins, remembered fills the cold-restart window'
   assert.equal(sessionTitleOf({ blank: true }, t, 'x'), 'session.new', 'blank stays New Session')
   assert.equal(sessionTitleOf({ title: 'wire/real' }, t, 'old/name'), 'wire/real', 'wire title beats memory')
   assert.equal(sessionTitleOf({ displayTitle: 'basename' }, t, 'web/前端'), 'web/前端', 'remembered beats the basename fallback')
-  assert.equal(sessionTitleOf({ displayTitle: 'basename' }, t), 'basename', 'no memory: fallback stands')
-  assert.equal(sessionTitleOf({ displayTitle: 'basename' }, t, ''), 'basename', 'blank memory never masks the fallback')
+  // v0.36.14 (issue #16): an unnamed row renders the official Untitled label.
+  // The host displayTitle used to leak through as its basename fallback, so
+  // every title-less session showed up as a duplicate workspace name.
+  assert.equal(sessionTitleOf({ displayTitle: 'basename' }, t), 'session.untitled', 'no memory: official Untitled, never the basename')
+  assert.equal(sessionTitleOf({ displayTitle: 'basename' }, t, ''), 'session.untitled', 'blank memory never masks the official label')
+  assert.doesNotMatch(text.slice(start, end), /summary\.displayTitle/, 'the host displayTitle fallback must never reach a row')
   assert.equal(sessionTitleOf(undefined, t, 'x'), '', 'no summary renders nothing')
 })
 
@@ -2666,4 +2670,26 @@ test('v0.36.13: every tree-shaped surface shares ONE view rule (no per-surface d
   // mixed sequence itself instead of asking which mode produced it.
   assert.match(text, /const nodeHoldsCurrent = \(level\) => \{[\s\S]{0,220}for \(const item of levelSeqOf\(level\)\)/,
     'ancestor folder active walks the rendered tree, not a view branch')
+})
+
+test('v0.36.14: unnamed rows use the official Untitled label in every language (issue #16)', () => {
+  const text = read('src/client.js')
+  const locales = [...text.matchAll(/\/\* locale: ([\w-]+) \*\//g)].map((match) => match[1])
+  assert.equal(locales.length, 19, 'the LOCALES table must still carry 19 marked languages')
+  const entries = [...text.matchAll(/'session\.untitled':\s*'([^']*)'/g)].map((match) => match[1])
+  assert.equal(entries.length, 21, 'every shipped language must define session.untitled')
+  entries.forEach((value, index) => {
+    const tag = index === 0 ? 'zh' : index === 1 ? 'en' : locales[index - 2]
+    assert.ok(value.length > 0, tag + ': session.untitled must not be empty')
+  })
+  assert.equal(entries[0], '未命名')
+  assert.equal(entries[1], 'Untitled')
+  // The official label is the ONLY terminal fallback: the host displayTitle
+  // (project basename) must never become a row title again.
+  const start = text.indexOf('const sessionTitleOf =')
+  const end = text.indexOf('/**', start)
+  assert.ok(start !== -1 && end !== -1)
+  const body = text.slice(start, end)
+  assert.match(body, /return t\('session\.untitled'\)/)
+  assert.doesNotMatch(body, /summary\.displayTitle/)
 })

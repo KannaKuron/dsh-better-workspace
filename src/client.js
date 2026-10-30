@@ -4878,9 +4878,10 @@ window.__ModuleLoader__.load({
       // it is supposed to support.
       '.bw-row-count,.bw-row-time{-webkit-text-stroke-width:0}',
       '.bw-schedule-badge{flex:none;display:inline-flex;align-items:center;color:var(--dsw-alias-label-tertiary,#9a9a9a);margin:0 6px}',
+      '.bw-row-trailing{flex:none;display:inline-flex;align-items:center;gap:6px;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
       '.bw-row-actions{flex:none;display:none;align-items:center;gap:15px}',
       '.bw-row:hover .bw-row-actions,.bw-row.menu-open .bw-row-actions{display:flex}',
-      '.bw-row:hover .bw-row-time,.bw-row:hover .bw-row-count,.bw-row:hover .bw-schedule-badge,.bw-row:hover .bw-pin-indicator,.bw-row.menu-open .bw-row-time,.bw-row.menu-open .bw-row-count,.bw-row.menu-open .bw-schedule-badge,.bw-row.menu-open .bw-pin-indicator{display:none}',
+      '.bw-row:hover .bw-row-time,.bw-row:hover .bw-row-count,.bw-row:hover .bw-schedule-badge,.bw-row:hover .bw-row-trailing,.bw-row:hover .bw-pin-indicator,.bw-row.menu-open .bw-row-time,.bw-row.menu-open .bw-row-count,.bw-row.menu-open .bw-schedule-badge,.bw-row.menu-open .bw-row-trailing,.bw-row.menu-open .bw-pin-indicator{display:none}',
       '.bw-row-archived .bw-row-label{color:var(--dsw-alias-label-caption,#8a8a8a)}',
       '.bw-pin-indicator{flex:none;display:inline-flex;align-items:center;justify-content:center;width:16px;height:20px;color:var(--dsw-alias-label-caption,#adb2b8);margin:0 0 0 6px}',
       '.bw-overflow-row{display:block;width:100%;text-align:left;border:0;background:transparent;color:var(--dsw-alias-label-tertiary,#9a9a9a);font-size:12px;cursor:pointer;padding:4px 6px;font-family:inherit}',
@@ -6306,6 +6307,22 @@ window.__ModuleLoader__.load({
           t: scheduleSeat.t,
         }))
         : null
+      // Official rc.5/alpha.2 row-trailing strip: a list seat nested INSIDE the
+      // row, between the time cell and the pin marker, hidden while the hover
+      // actions show. Officially populated by the experimental worktree/PR
+      // icon; rendering it here keeps that surface visible in our sidebar.
+      const trailingSeats = sessionActions && Array.isArray(sessionActions.trailingSeat)
+        ? sessionActions.trailingSeat
+        : []
+      const trailingNode = !node.blank && trailingSeats.length > 0
+        ? E('span', { className: 'bw-row-trailing' }, trailingSeats.map((seat, index) => E(QuietBoundary, {
+          key: 'trailing-seat-' + index,
+        }, E(ShippedSeatOccupant, {
+          seat,
+          ownerProps: { sessionId: node.id },
+          t: seat.t,
+        }))))
+        : null
       // Official mirror surface (dsh 0.1.7 Rows.tsx): pinned rows carry the
       // pin marker; archived rows render grayed and never open; the hover
       // strip hosts the "..." trigger and the pin/archive quick buttons.
@@ -6410,6 +6427,7 @@ window.__ModuleLoader__.load({
         // Official blank rows carry no time, no pin, no actions (a standing
         // "new session" placeholder, not a session).
         !node.blank ? E('span', { className: 'bw-row-time' }, timeLabel(node.updatedAt, now, t)) : null,
+        trailingNode,
         !node.blank && node.pinned ? E('span', { className: 'bw-pin-indicator', role: 'img', 'aria-label': pinnedTitle || undefined, title: pinnedTitle || undefined }, icon('IconPinFillRegular', 13)) : null,
         strip,
       )
@@ -7863,6 +7881,7 @@ window.__ModuleLoader__.load({
       // off the ledger like the schedule mark.
       const seatEntriesOf = typeof seatEntriesReader === 'function' ? seatEntriesReader : null
       const rowActionSeat = seatEntriesOf ? seatEntriesOf('sidebar.workspaces.session.row.action') : []
+      const trailingSeat = seatEntriesOf ? seatEntriesOf('sidebar.session.row.trailing') : []
       const hoverSeat = seatEntriesOf ? seatEntriesOf('sidebar.session.row.hover') : []
       /** Effective catalog row of one shipped command (current keybinding, label). */
       const shortcutRowOf = (id) => {
@@ -8565,6 +8584,7 @@ window.__ModuleLoader__.load({
         // reproduction cannot supply); the context menu keeps every entry
         // through sessionMenuEntriesFor + handleCtxPick.
         rowActionSeat,
+        trailingSeat,
         rename: (node) => setDialog({ kind: 'sess-rename', session: node }),
         hoverBody: (node, status) => sessionHoverBody(node, status),
         explainArchived: () => {

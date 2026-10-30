@@ -2002,6 +2002,36 @@ test('issue #12: the in-row "..." menu is retired, row.action seat renders in a 
     'the seat/fallback switch must stay')
 })
 
+test('alpha.2: sidebar.session.row.trailing renders inside the row, between time and pin', () => {
+  const text = read('src/client.js')
+  // alpha.2 declares a row-inline trailing seat (ui-workspace Rows.tsx:744:
+  // resting cell order time → trailing → pinned). It is where the official
+  // experimental worktree/PR icon registers; a custom sidebar that never reads
+  // the seat silently hides that surface.
+  assert.ok(text.includes("const trailingSeat = seatEntriesOf ? seatEntriesOf('sidebar.session.row.trailing') : []"),
+    'the trailing seat must be read from the ledger')
+  assert.ok(text.includes('        trailingSeat,\n        rename:'),
+    'the seat must reach SessionRow through sessionActions')
+  assert.ok(text.includes('const trailingNode = !node.blank && trailingSeats.length > 0'),
+    'blank rows carry no trailing cell (shipped rule)')
+  assert.ok(text.includes("E(QuietBoundary, {\n          key: 'trailing-seat-' + index,"),
+    'each occupant renders behind the render-crash boundary')
+  assert.ok(text.includes('ownerProps: { sessionId: node.id }'),
+    'the seat owner receives only the sessionId alpha.2 declares')
+  // Resting-cell order must mirror Rows.tsx, or the icon lands left of the time.
+  const timeAt = text.indexOf("className: 'bw-row-time'")
+  const trailingAt = text.indexOf('        trailingNode,', timeAt)
+  const pinAt = text.indexOf("className: 'bw-pin-indicator'", timeAt)
+  assert.ok(timeAt > 0 && trailingAt > timeAt && pinAt > trailingAt,
+    'trailing must sit between the time cell and the pin marker')
+  // Same visibility rule as the shipped resting cell: hidden while hover
+  // actions replace it.
+  assert.ok(text.includes("'.bw-row-trailing{flex:none;display:inline-flex;align-items:center;gap:6px;"),
+    'the trailing strip needs its resting-cell layout')
+  assert.ok(text.includes('.bw-row:hover .bw-row-trailing'),
+    'the trailing strip must yield to the hover actions like time/pin')
+})
+
 test('issue #13: local reads and writes ride the PRIVATE store instance', () => {
   const text = read('src/client.js')
   // The bundle creates its own instance once (defineStore returns a HANDLE;

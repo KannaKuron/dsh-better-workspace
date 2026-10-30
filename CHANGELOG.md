@@ -3,6 +3,24 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.37.0 — 2026-10-30
+
+**类型**:feat(适配 DSH 0.2.2-alpha.2:会话行尾座位 + 空白会话复用语义)
+
+### feat
+- **渲染 `sidebar.session.row.trailing` 行尾座位**:自绘会话行现在把官方行尾占用者画在「时间」之后、「置顶角标」之前;座位 owner 只拿到 `{ sessionId }`(与官方契约一致),空会话不渲染,每个占用者单独包 `QuietBoundary`,某个占用者缺失或抛错不会带崩整行。这样官方实验性工作树 / PR 图标(`ui-forge` 注册的 `forge-panel.row`)在插件接管侧栏后也能出现;老宿主没有该槽位时座位读取结果为空,行外观与旧版完全一致。
+- **兼容下限抬到 `>=0.2.2-alpha.2`**:`engines.dsh`、`dsh.plugin.json` 与 `@deepseek-ai/dsh` peer 三处同步;alpha.2 之前没有 `sidebar.session.row.trailing`,继续声明更低下限会让用户在旧宿主上拿到一个永远不出现的座位。
+
+### 适配说明
+- **接受官方的空白会话复用语义**:rc.5 / alpha.2 的 `startSession(workspaceId)` 在不传 `agentPreset` 时会复用同一工作区里任意 preset 的空白会话(官方只在该参数是字符串时才过滤其他 preset)。本插件不接管、也不额外传 `agentPreset`,行为与官方一致;未发送的草稿仍由官方保留。这是宿主语义,不是本插件新增的开关。
+
+### fix
+- **折叠侧栏点「添加工作区」不再触发 TDZ**:折叠窄栏分支在 `startAddFlow` 这个后声明的 `const` 之前就提前引用了它,整块侧栏会因 `ReferenceError` 降级空白;现在该分支移到 `startAddFlowRef` 赋值之后,折叠态与宽态行为一致。
+
+### 验证
+- 冒烟 79 → **81**:新增会话行尾座位的渲染位置(时间之后、置顶之前)、空会话跳过、单个座位错误隔离,以及折叠侧栏添加工作区的 TDZ 回归断言。
+- 隔离 DSH 0.2.2-alpha.2 实例(临时 DSH_HOME + 本地 mock 模型)安装 0.37.0:侧栏工作区树正常渲染、既有会话行可见、无 `data-slot-error`、无插件自身异常,启动日志没有 `register skipped`。
+
 ## v0.36.14 — 2026-10-30
 
 **类型**:fix / 无标题会话行回退成工作区名(issue #16:侧栏出现一堆「点不开」的同名空会话行)。

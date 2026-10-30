@@ -6307,7 +6307,7 @@ window.__ModuleLoader__.load({
           t: scheduleSeat.t,
         }))
         : null
-      // Official rc.5/alpha.2 row-trailing strip: a list seat nested INSIDE the
+      // Official alpha.2 row-trailing strip: a list seat nested INSIDE the
       // row, between the time cell and the pin marker, hidden while the hover
       // actions show. Officially populated by the experimental worktree/PR
       // icon; rendering it here keeps that surface visible in our sidebar.

@@ -30,7 +30,7 @@ test('package.json declares the dsh peers the 0.1.7+ compatibility gate reads', 
   // was observed (dsh-any-background@0.3.0 was refused on 0.1.7-rc.1 for
   // exactly that).
   const pkg = JSON.parse(read('package.json'))
-  assert.equal(pkg.peerDependencies['@deepseek-ai/dsh'], '>=0.1.6-alpha.2')
+  assert.equal(pkg.peerDependencies['@deepseek-ai/dsh'], '>=0.2.2-alpha.2')
   // Both dsh peers must be OPTIONAL: the gate reads peerDependencies only, but
   // a package manager with autoInstallPeers (pnpm's default) resolves the range
   // against the registry — and every published version of both packages is a
@@ -59,7 +59,7 @@ test('cordis.patch.yml inserts exactly one plugin row', () => {
 test('package.json declares the dsh engine floor (plugin market requirement)', () => {
   const pkg = JSON.parse(read('package.json'))
   assert.equal(pkg.engines.node, '>=18')
-  assert.equal(pkg.engines.dsh, '>=0.1.6-alpha.2')
+  assert.equal(pkg.engines.dsh, '>=0.2.2-alpha.2')
 })
 
 test('client half is a __ModuleLoader__ bundle with baseline requires only', () => {

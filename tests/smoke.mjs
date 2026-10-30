@@ -2032,6 +2032,21 @@ test('alpha.2: sidebar.session.row.trailing renders inside the row, between time
     'the trailing strip must yield to the hover actions like time/pin')
 })
 
+test('collapsed rail add button never reaches startAddFlow before initialization', () => {
+  const text = read('src/client.js')
+  // Regression: the rail renders before the main tree, but startAddFlow is a
+  // const declared later in the component body. An early return placed above
+  // it left the click handler in the temporal dead zone; the first collapsed
+  // click threw "Cannot access 'startAddFlow' before initialization".
+  const flowAt = text.indexOf('const startAddFlow = () => {')
+  const refAt = text.indexOf('startAddFlowRef.current = startAddFlow')
+  const railAt = text.indexOf('      if (!wide) {')
+  assert.ok(flowAt > 0 && refAt > flowAt && railAt > refAt,
+    'the collapsed rail must render only after startAddFlow is initialized')
+  assert.ok(text.includes('onClick: () => { expandSidebar(); startAddFlow() }'),
+    'the rail button must still expand and start the add flow')
+})
+
 test('issue #13: local reads and writes ride the PRIVATE store instance', () => {
   const text = read('src/client.js')
   // The bundle creates its own instance once (defineStore returns a HANDLE;

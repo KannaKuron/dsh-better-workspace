@@ -10637,29 +10637,6 @@ window.__ModuleLoader__.load({
 
       /* ---------------------------- render --------------------------- */
 
-      if (!wide) {
-        return E('div', { className: 'bw-rail' },
-          StyleNode(),
-          E('button', {
-            type: 'button',
-            className: 'bw-rail-btn',
-            'aria-label': shortcutLabel(t('rail.search'), 'session.search'),
-            'aria-keyshortcuts': shortcutAria('session.search'),
-            title: shortcutLabel(t('rail.search'), 'session.search'),
-            onClick: () => { expandSidebar(); setSearchOpen(true); setFocusPending(true) },
-          }, icon('IconSearchOutline16', 18)),
-          flowAvailable ? E('button', {
-            type: 'button',
-            className: 'bw-rail-btn',
-            'aria-label': shortcutLabel(t('rail.add'), 'workspace.add'),
-            'aria-keyshortcuts': shortcutAria('workspace.add'),
-            title: shortcutLabel(t('rail.add'), 'workspace.add'),
-            onClick: () => { expandSidebar(); startAddFlow() },
-            disabled: flowBusy,
-          }, icon('IconProjectAddOutline16', 18)) : null,
-        )
-      }
-
       const dialogElement = (() => {
         if (dialog === null) return null
         if (dialog.kind === 'ws-rename') return E(TextDialog, {
@@ -10879,6 +10856,29 @@ window.__ModuleLoader__.load({
       // The shortcut consumer runs from an effect declared above, after this
       // definition: the ref is the one stable handle it can call.
       startAddFlowRef.current = startAddFlow
+
+      if (!wide) {
+        return E('div', { className: 'bw-rail' },
+          StyleNode(),
+          E('button', {
+            type: 'button',
+            className: 'bw-rail-btn',
+            'aria-label': shortcutLabel(t('rail.search'), 'session.search'),
+            'aria-keyshortcuts': shortcutAria('session.search'),
+            title: shortcutLabel(t('rail.search'), 'session.search'),
+            onClick: () => { expandSidebar(); setSearchOpen(true); setFocusPending(true) },
+          }, icon('IconSearchOutline16', 18)),
+          flowAvailable ? E('button', {
+            type: 'button',
+            className: 'bw-rail-btn',
+            'aria-label': shortcutLabel(t('rail.add'), 'workspace.add'),
+            'aria-keyshortcuts': shortcutAria('workspace.add'),
+            title: shortcutLabel(t('rail.add'), 'workspace.add'),
+            onClick: () => { expandSidebar(); startAddFlow() },
+            disabled: flowBusy,
+          }, icon('IconProjectAddOutline16', 18)) : null,
+        )
+      }
 
       // v0.18.0 — "drag it OUT" must never land on nothing. The row level
       // already covers the workspace row and the root-level session rows; this

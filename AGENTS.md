@@ -14,6 +14,13 @@
 - **校验发布是否成功要看 registry.npmjs.org,不能看本机 `npm view`(v0.23.0 实测)**:本机 `npm config get registry` 指向 `https://registry.npmmirror.com`,镜像有缓存延迟 —— 发布成功后头几分钟 `npm view dsh-better-workspace version` 仍显示旧版本,容易误判成「Action 绿了但没发出去」。正确做法:`curl -s https://registry.npmjs.org/dsh-better-workspace | python3 -c "import json,sys;print(json.load(sys.stdin)['dist-tags'])"` 看 latest,再 PUT `/sync` 触发镜像并轮询镜像的 dist-tags。
 - 本机 web profile 装本地开发版:npm pack 出 tarball → 在 (dsh home)/profiles/web 里 pnpm add <tarball> → profile cordis.patch.yml 加挂载行(- insert: - id: better-workspace / name: dsh-better-workspace)→ 重启 DSH。
 
+## 适配分支纪律(2026-10-30 起)
+
+- 每轮适配 dsh 新版本,都从最新 `main` 开分支 `alpha适配`;本轮所有适配改动只提交到该分支,不直接推 `main`。
+- 在该分支跑完 `npm test` 与隔离实例真机验证,确认没问题后再合并回 `main`、再发版本。
+- 下一轮适配重新从 `main` 开同名 `alpha适配` 分支,不复用上一轮的分支;已合并的旧分支可删。
+- 本纪律与各仓库的「变更记录纪律」并列:CHANGELOG 记录改了什么,分支记录这一轮改动的边界。
+
 ## 变更记录纪律(2026-09-13 起)
 
 - **所有版本发布、修复、事故复盘、复现/验证记录一律写进本仓库 `CHANGELOG.md`**,不再追加进本文件;

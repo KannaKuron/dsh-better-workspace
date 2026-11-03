@@ -8230,6 +8230,14 @@ window.__ModuleLoader__.load({
             stable.delete(id) // quoted already, or the LLM name arrived slash-free: done
             continue
           }
+          // v0.37.3: a path-shaped title is already ONE row at render time
+          // (titleQuotesPath). Renaming it here would append a USER title and
+          // supersede an asynchronous LLM name that has not landed yet, so the
+          // fallback would stay pinned as a raw path. Leave it to the host.
+          if (titleQuotesPath(text)) {
+            stable.delete(id)
+            continue
+          }
           const prev = stable.get(id)
           if (prev && prev.title === text) {
             if (now - prev.since >= TITLE_STABLE_MS) {

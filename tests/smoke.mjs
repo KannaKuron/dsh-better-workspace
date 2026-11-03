@@ -229,6 +229,10 @@ test('quote-on-land effect: blank-born only, user renames pinned, stability wind
   assert.match(text, /TITLE_STABLE_MS = 20000/)
   assert.match(text, /prev\.title === text/, 'title change resets the window')
   assert.match(text, /\[list, stableTick\]/, 'stability tick re-runs the effect')
+  // v0.37.3: a path title is flattened by the display guard; the effect must
+  // not pin it (and cancel an async LLM name) with a 20s quote-on-land rename.
+  assert.match(text, /if \(titleQuotesPath\(text\)\) \{[\s\S]{0,160}?stable\.delete\(id\)/,
+    'path titles skip the pinning rename')
 })
 
 test('host half imports cleanly and applies without side effects', async () => {

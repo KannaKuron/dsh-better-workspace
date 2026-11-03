@@ -3792,6 +3792,28 @@ window.__ModuleLoader__.load({
     }
 
     /**
+     * A title that QUOTES an absolute path is a sentence, not a name
+     * hierarchy (v0.37.2, issue #17): the host auto-titles a new session by
+     * echoing its first message verbatim, so "/Users/x/repo/file.md" used to
+     * shred into one fake folder per segment. Detection stays narrow on
+     * purpose — a token starts at line start / whitespace with "/" (or a
+     * "C:/" drive form) and carries at least one more "/" — so plain name
+     * groups ("web/前端") and relative pairs ("a/b") keep splitting.
+     */
+    const titleQuotesPath = (text) => {
+      // A path inside a PAIRED quote span is already an opaque leaf (the
+      // quote parser below keeps it verbatim), so only the unquoted remainder
+      // can be mistaken for a name hierarchy.
+      const s = String(text || '').replace(/"[^"]*"|“[^”]*”/g, ' ')
+      const re = /(?:^|\s)(?:[A-Za-z]:)?\/\S+/g
+      let m
+      while ((m = re.exec(s)) !== null) {
+        if ((m[0].match(/\//g) || []).length >= 2) return true
+      }
+      return false
+    }
+
+    /**
      * Title → hierarchy segments, QUOTE-AWARE: a PAIRED “…” (or "…") span is
      * verbatim — slashes inside quotes never split, the quotes stay part of
      * the leaf. Text outside paired spans splits through splitPlainSegs
@@ -3804,6 +3826,7 @@ window.__ModuleLoader__.load({
      */
     const splitTitleSegs = (title) => {
       const s = String(title || '')
+      if (titleQuotesPath(s)) return [s.trim()]
       if (!/["“]/.test(s)) return splitPlainSegs(s)
       const out = []
       let plain = ''
@@ -8617,7 +8640,13 @@ window.__ModuleLoader__.load({
       const titleMovedToGroup = (title, anchorTitle) => {
         const leaf = leafOf(title)
         const group = groupPrefixOf(anchorTitle)
-        return group ? group + '/' + leaf : leaf
+        if (!group) return leaf
+        // A path-shaped leaf stays ONE opaque row (titleQuotesPath), so an
+        // unwrapped prefix would never become a visible group. Quote the leaf
+        // — the same convention quote-on-land uses — and the prefix splits
+        // while the path stays verbatim inside the quotes.
+        const safe = titleQuotesPath(leaf) ? '“' + leaf + '”' : leaf
+        return group + '/' + safe
       }
       /**
        * Every existing group path, deduplicated (datalist source). `kind`

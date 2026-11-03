@@ -195,6 +195,20 @@ test('splitTitleSegs: paired quotes verbatim, lone quotes are plain text', () =>
   assert.deepEqual(splitTitleSegs('a/b”c'), ['a', 'b”c'])
   // URL tail stays opaque from the first :// onward.
   assert.deepEqual(splitTitleSegs('see https://x.dev/a/b'), ['see https://x.dev/a/b'])
+  // v0.37.2 (issue #17): a title quoting an absolute path is ONE row. The
+  // host auto-title echoes the first message, and "/Users/x/y" used to shred
+  // into one fake folder per segment.
+  assert.deepEqual(splitTitleSegs('读一下 /Users/mars/jobs/zgci.ac.cn/PhotoStory/docs/deploy.md ，按这里配置'),
+    ['读一下 /Users/mars/jobs/zgci.ac.cn/PhotoStory/docs/deploy.md ，按这里配置'])
+  assert.deepEqual(splitTitleSegs('看看 /etc/passwd 权限'), ['看看 /etc/passwd 权限'])
+  assert.deepEqual(splitTitleSegs('/Users/mars/a.md'), ['/Users/mars/a.md'])
+  assert.deepEqual(splitTitleSegs('C:/Users/mars/a.md'), ['C:/Users/mars/a.md'])
+  // Deliberate name groups and relative pairs still split.
+  assert.deepEqual(splitTitleSegs('web/前端/登录页'), ['web', '前端', '登录页'])
+  assert.deepEqual(splitTitleSegs('a/b'), ['a', 'b'])
+  // A quoted path stays opaque; a real prefix outside the quotes still
+  // groups (the drag-into-group path quotes the leaf before prefixing).
+  assert.deepEqual(splitTitleSegs('web/“读一下 /Users/mars/a.md”'), ['web', '“读一下 /Users/mars/a.md”'])
 })
 
 test('quote-on-land effect: blank-born only, user renames pinned, stability window', () => {
@@ -787,7 +801,8 @@ test('buildTree: disk nesting + name groups inside each level (0.12.0)', () => {
 test('view options: group/order menu + the two slash toggles (0.13.0)', () => {
   const text = read('src/client.js')
   // v0.15: the workspace name layer ships OFF (see the opt-in test below);
-  // session grouping keeps its 0.13 default.
+  // session grouping keeps its 0.13 default (v0.37.2 protects path titles at
+  // the SPLIT layer instead of turning the feature off — issue #17).
   assert.match(text, /groupBy: 'workspace-tree', orderBy: 'manual', archivedFilter: 'default', workspaceGroupMode: 'disk', sessionTitleSlash: true, workspaceTitleSlash: false, ungroupedOpen: true/)
   // v0.20.0: the archived filter rides the same store (official mirror).
   assert.match(text, /setArchivedFilter: \(d, value\)/)
@@ -1227,7 +1242,7 @@ test('current session: mainView retention preferred, wire current as the 0.1.5-r
  */
 test('workspace "/" grouping: opt-in default, pre-0.13 snapshots stay on', () => {
   const text = read('src/client.js')
-  assert.match(text, /workspaceGroupMode: 'disk', sessionTitleSlash: true, workspaceTitleSlash: false, ungroupedOpen: true/, 'init ships the disk-only default plus the declared-group bags')
+  assert.match(text, /workspaceGroupMode: 'disk', sessionTitleSlash: true, workspaceTitleSlash: false, ungroupedOpen: true/, 'init ships the disk-only workspace default plus the declared-group bags')
   assert.match(text, /const workspaceSlashOf = \(value\) => value === undefined \? true : value === true/, 'tri-state read')
   const start = text.indexOf('const workspaceSlashOf = (value) =>')
   const end = text.indexOf('\n', start)

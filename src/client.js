@@ -5366,6 +5366,42 @@ window.__ModuleLoader__.load({
         )
         : HOST_SNAP_UNAVAILABLE
     }
+    // dsh 0.2.2-alpha.3: the shared context menu owns the popup, so its
+    // captured target (not our local ctx) decides which row keeps the open
+    // state. Capability probing stays inside the callbacks — old hosts have
+    // no service and the hook degrades to a stable null.
+    // Late-arriving shared menu: the row highlight subscribes to face.active,
+    // but the face itself can be adopted AFTER the first render (soft inject).
+    // A tiny module-level revision bus re-renders those rows once, so the
+    // highlight starts following the official target without waiting for an
+    // unrelated store tick.
+    const menuFaceListeners = new Set()
+    const subscribeMenuFace = (listener) => {
+      menuFaceListeners.add(listener)
+      return () => { menuFaceListeners.delete(listener) }
+    }
+    const notifyMenuFace = () => {
+      for (const listener of Array.from(menuFaceListeners)) {
+        try { listener() } catch { /* one stale row must not stop the rest */ }
+      }
+    }
+    const useActiveContextMenu = (faceOf) => {
+      const [, bumpFace] = React.useState(0)
+      React.useEffect(() => {
+        if (typeof faceOf === 'function' && faceOf()) return undefined
+        return subscribeMenuFace(() => bumpFace((value) => value + 1))
+      }, [])
+      const face = typeof faceOf === 'function' ? faceOf() : null
+      const active = face && face.active
+      return HAS_USE_SYNC_EXTERNAL_STORE
+        ? React.useSyncExternalStore(
+          (onChange) => (active && typeof active.subscribe === 'function' ? active.subscribe(onChange) : () => {}),
+          () => {
+            try { return active && typeof active.getSnapshot === 'function' ? active.getSnapshot() : null } catch { return null }
+          },
+        )
+        : null
+    }
 
     // MANUAL cross-device sync (user-chosen, never automatic): the settings
     // card offers a pull button ("从客户端获取" on the web / "从 Web 获取" in
@@ -6125,6 +6161,23 @@ window.__ModuleLoader__.load({
       }
     }
 
+    // dsh 0.2.2-alpha.3 keyboard trigger, mirroring the shared menu's own
+    // getTriggerProps: ContextMenu or Shift+F10 opens the row menu and the
+    // row itself is reachable with Tab. Kept local (not the official helper)
+    // so the SAME openCtx path still owns the target payload and the fallback
+    // to the local menu on hosts without the service.
+    const menuTriggerProps = (onContextMenu) => typeof onContextMenu !== 'function' ? {} : {
+      tabIndex: 0,
+      onKeyDown: (event) => {
+        if (!event || event.repeat || event.isComposing || event.ctrlKey || event.altKey || event.metaKey) return
+        if (event.key !== 'ContextMenu' && !(event.shiftKey && event.key === 'F10')) return
+        event.preventDefault()
+        event.stopPropagation()
+        try { event.currentTarget.focus() } catch { /* detached row */ }
+        onContextMenu(event)
+      },
+    }
+
     function FolderRow({ node, depth, expanded, onToggle, onContextMenu, dropInto, dropSlot, dragEvents, custStyle, iconMode, pulse, active, dataRowKey, t }) {
       const total = countWorkspaces(node)
       const iconEl = iconOf(iconMode, expanded)
@@ -6149,6 +6202,7 @@ window.__ModuleLoader__.load({
         role: 'treeitem',
         'aria-expanded': expanded,
         ...(dragEvents || {}),
+        ...menuTriggerProps(onContextMenu),
       },
         // Official projectRow duality (Rows.module.css): the chevron hides
         // until hover, swapping in for the folder glyph; the arrow spins
@@ -6179,6 +6233,7 @@ window.__ModuleLoader__.load({
         role: 'treeitem',
         'aria-expanded': sessionsOpen,
         ...(dragEvents || {}),
+        ...menuTriggerProps(onContextMenu),
       },
         // Official projectRow duality (Rows.module.css): the chevron hides
         // until hover, swapping in for the folder glyph; the arrow spins
@@ -6429,6 +6484,7 @@ window.__ModuleLoader__.load({
         role: 'treeitem',
         'aria-description': node.archived ? archivedTitle || undefined : undefined,
         ...(dragEvents || {}),
+        ...menuTriggerProps(onContextMenu),
       },
         E('span', { className: 'bw-row-icon', title: status ? status.title : undefined },
           status && typeof ui.StateDot === 'function'
@@ -6486,6 +6542,7 @@ window.__ModuleLoader__.load({
         role: 'treeitem',
         'aria-expanded': expanded,
         ...(dragEvents || {}),
+        ...menuTriggerProps(onContextMenu),
       },
         // Session groups are a plugin concept: their chevron stays visible
         // (only the official container rows hide it until hover).
@@ -7666,6 +7723,7 @@ window.__ModuleLoader__.load({
         shippedBrowserFace, scheduleSeatReader, seatEntriesReader,
         officialT,
         presetFaceOf,
+        contextMenuFaceOf, setMenuBridge,
         t,
       } = props
       // Issue #13: local reads and writes go through OUR store instance, never
@@ -7684,6 +7742,10 @@ window.__ModuleLoader__.load({
       // Every consumer below keeps reading this local, so a late-arriving
       // agent-preset service is picked up by the next render's menu build.
       const presetFace = typeof presetFaceOf === 'function' ? presetFaceOf() : null
+      // Official menu integration (alpha.3): the active target drives the
+      // workspace row's open state, while the bridge carries the live bw
+      // extras into the apply-level contribution.
+      const activeContextMenu = useActiveContextMenu(contextMenuFaceOf)
 
       if (typeof useWorkspaces !== 'function' || typeof useSessions !== 'function') {
         console.error('[dsh-better-workspace] standard snapshot hooks missing; browser renders nothing')
@@ -8521,9 +8583,53 @@ window.__ModuleLoader__.load({
       const sessionsOpenOf = (workspaceId) => (sessionsExpandedMap ? sessionsExpandedMap[workspaceId] !== false : true)
       const sessionGroupOpen = (key) => (sessionGroupsMap ? sessionGroupsMap[key] !== false : true)
 
+      // Keyboard triggers carry clientX/clientY = 0. Mirror the shared menu's
+      // own trigger: (0,0) anchors the popup at the focused row's bottom-left
+      // instead of the viewport corner. Pointer events pass their point
+      // through untouched.
+      const menuPointOf = (e) => {
+        const x = e && Number.isFinite(e.clientX) ? e.clientX : 0
+        const y = e && Number.isFinite(e.clientY) ? e.clientY : 0
+        if (x !== 0 || y !== 0) return { x, y }
+        const target = e && e.currentTarget
+        const rect = target && typeof target.getBoundingClientRect === 'function' ? target.getBoundingClientRect() : null
+        return rect ? { x: rect.left, y: rect.bottom } : { x, y }
+      }
       const openCtx = (kind, payload, e) => {
         if (e) e.preventDefault()
-        setCtx({ kind, payload, x: e.clientX, y: e.clientY })
+        const point = menuPointOf(e)
+        // dsh 0.2.2-alpha.3: session and workspace are official target
+        // families, so the shared popup owns their entries (official ones
+        // plus our order-700 extras). Folder/session-group rows are virtual
+        // objects with no official family and keep the local menu. Hosts
+        // without the service keep the local menu for everything.
+        if (e && (kind === 'session' || kind === 'workspace')) {
+          const face = typeof contextMenuFaceOf === 'function' ? contextMenuFaceOf() : null
+          if (face && typeof face.open === 'function') {
+            try {
+              if (kind === 'session') {
+                face.open({
+                  kind: 'session',
+                  value: { sessionId: payload.id, displayTitle: String(payload.title || '') },
+                }, point)
+              } else {
+                face.open({
+                  kind: 'workspace',
+                  value: {
+                    workspaceId: payload.workspaceId,
+                    path: String(payload.path || ''),
+                    displayTitle: String(payload.title || payload.leaf || ''),
+                  },
+                }, point)
+              }
+              setCtx(null)
+              return
+            } catch (error) {
+              console.warn('[dsh-better-workspace] official context menu open failed; using local menu', error)
+            }
+          }
+        }
+        setCtx({ kind, payload, ...point })
       }
 
       // Session-action surface (v0.20.0, official mirror): the right-click
@@ -10233,8 +10339,13 @@ window.__ModuleLoader__.load({
           // The in-row ellipsis is retired; the ctx surface stays the
           // right-click path. While the menu is open the row still pins
           // (hover fill + visible actions), matching the official menuOpen
-          // state.
-          menuOpen: !!(ctx && ctx.kind === 'workspace' && ctx.payload && ctx.payload.workspaceId === workspace.workspaceId),
+          // state — the shared popup reports its captured target through
+          // contextMenus.active, while older hosts keep the local ctx.
+          menuOpen: !!(
+            (ctx && ctx.kind === 'workspace' && ctx.payload && ctx.payload.workspaceId === workspace.workspaceId)
+            || (activeContextMenu && activeContextMenu.kind === 'workspace'
+              && activeContextMenu.value && activeContextMenu.value.workspaceId === workspace.workspaceId)
+          ),
           hoverBody: workspaceHoverBody,
           dropHalf: wsDropHalf(workspace.workspaceId),
           dropInto: wsRootDropActive(workspace.workspaceId) || wsGroupIntoActive(workspace.workspaceId),
@@ -10497,6 +10608,13 @@ window.__ModuleLoader__.load({
           customizeEntry,
         ]
       }
+      // One group-LEAVING implementation for the local menu and the official
+      // contribution: retitle to the leaf and let the user-touch wrapper pin it.
+      const moveSessionOut = (payload) => {
+        const title = String(payload.title || '')
+        const leaf = leafOf(title)
+        if (leaf !== title) Promise.resolve().then(() => renameByUser(payload.id, leaf)).catch(fail)
+      }
       const pickSessionAction = (payload, id) => {
         if (id === 'rename') { setDialog({ kind: 'sess-rename', session: payload }); return true }
         if (id === 'fork') { forkSession(payload.id); return true }
@@ -10536,12 +10654,47 @@ window.__ModuleLoader__.load({
         }
         // Plain retitle back to the leaf: the row leaves its group and
         // returns to the top level of its workspace (v0.18.0).
-        if (id === 'move-out') {
-          const leaf = leafOf(String(payload.title || ''))
-          if (leaf !== payload.title) Promise.resolve().then(() => renameByUser(payload.id, leaf)).catch(fail)
-          return true
-        }
+        if (id === 'move-out') { moveSessionOut(payload); return true }
         return false
+      }
+      // Shared workspace-preset flow: the local menu and the official
+      // contribution both land here, so the blank-session rules cannot drift.
+      const openWorkspacePresetDialog = (payload) => {
+        if (!presetFace) return
+        // Freeze the target NOW (the dialog outlives the menu ctx): the
+        // blank lookup mirrors the official createInWorkspace rule — a
+        // standing blank IS the workspace default (its preset projection
+        // is what the hero chip shows). With NO standing blank the edit
+        // still applies: ClientSessions.create prepares one WITH the
+        // picked preset (the same channel as the official new-session
+        // button), which makes it the workspace default. Creating a
+        // session here is deliberate, not a side effect — the host has
+        // no other per-workspace default store (agent-preset-registry
+        // selectedDefault is GLOBAL; the standing blank IS the carrier).
+        const raw = (storedItems || []).find((item) => item.workspaceId === payload.workspaceId)
+        const blankIds = raw && Array.isArray(raw.sessionIds) ? raw.sessionIds : []
+        const blankId = raw && raw.path
+          ? (list.ids || []).find((sid) => {
+            const summary = list.byId[sid]
+            return summary && summary.blank === true && summary.cwd === raw.path
+              && blankIds.indexOf(sid) !== -1 && !archivedSet.has(sid)
+          })
+          : undefined
+        const blankSummary = blankId !== undefined ? list.byId[blankId] : undefined
+        const projection = blankSummary ? blankSummary.projectionValues : undefined
+        setDialog({
+          kind: 'ws-preset',
+          hasBlank: blankId !== undefined,
+          applyPreset: blankId !== undefined
+            ? (presetId) => presetFace.select(blankId, presetId)
+            // Reuse declined / no draft to reuse: create WITH the preset.
+            // Shape matches select's { ok } contract; a SessionCreateError
+            // lands in the dialog as an inline refusal line.
+            : (presetId) => Promise.resolve()
+              .then(() => sessions.create({ cwd: raw.path, agentPreset: presetId }))
+              .then(() => ({ ok: true }), (reason) => ({ ok: false, refusal: reason instanceof Error ? reason.message : String(reason || 'session create failed') })),
+          current: projection && typeof projection.agentPreset === 'string' ? projection.agentPreset : undefined,
+        })
       }
       const menuEntries = () => {
         if (ctx === null) return []
@@ -10624,42 +10777,7 @@ window.__ModuleLoader__.load({
         else if (kind === 'sgroup' && id === 'delete-sgroup') setDialog({ kind: 'sgroup-delete', target: payload })
         else if (kind === 'workspace' && id === 'rename') setDialog({ kind: 'ws-rename', workspace: payload })
         else if (kind === 'workspace' && id === 'delete') setDialog({ kind: 'ws-delete', workspace: payload })
-        else if (kind === 'workspace' && id === 'ws-preset' && presetFace) {
-          // Freeze the target NOW (the dialog outlives the menu ctx): the
-          // blank lookup mirrors the official createInWorkspace rule — a
-          // standing blank IS the workspace default (its preset projection
-          // is what the hero chip shows). With NO standing blank the edit
-          // still applies: ClientSessions.create prepares one WITH the
-          // picked preset (the same channel as the official new-session
-          // button), which makes it the workspace default. Creating a
-          // session here is deliberate, not a side effect — the host has
-          // no other per-workspace default store (agent-preset-registry
-          // selectedDefault is GLOBAL; the standing blank IS the carrier).
-          const raw = (storedItems || []).find((item) => item.workspaceId === payload.workspaceId)
-          const blankIds = raw && Array.isArray(raw.sessionIds) ? raw.sessionIds : []
-          const blankId = raw && raw.path
-            ? (list.ids || []).find((sid) => {
-              const summary = list.byId[sid]
-              return summary && summary.blank === true && summary.cwd === raw.path
-                && blankIds.indexOf(sid) !== -1 && !archivedSet.has(sid)
-            })
-            : undefined
-          const blankSummary = blankId !== undefined ? list.byId[blankId] : undefined
-          const projection = blankSummary ? blankSummary.projectionValues : undefined
-          setDialog({
-            kind: 'ws-preset',
-            hasBlank: blankId !== undefined,
-            applyPreset: blankId !== undefined
-              ? (presetId) => presetFace.select(blankId, presetId)
-              // Reuse declined / no draft to reuse: create WITH the preset.
-              // Shape matches select's { ok } contract; a SessionCreateError
-              // lands in the dialog as an inline refusal line.
-              : (presetId) => Promise.resolve()
-                .then(() => sessions.create({ cwd: raw.path, agentPreset: presetId }))
-                .then(() => ({ ok: true }), (reason) => ({ ok: false, refusal: reason instanceof Error ? reason.message : String(reason || 'session create failed') })),
-            current: projection && typeof projection.agentPreset === 'string' ? projection.agentPreset : undefined,
-          })
-        }
+        else if (kind === 'workspace' && id === 'ws-preset' && presetFace) openWorkspacePresetDialog(payload)
         else if (kind === 'sgroup' && id === 'rename-sgroup') setDialog({ kind: 'sgroup-rename', target: payload })
         else if (kind === 'session') {
           // The shared dispatcher owns every session verb (see
@@ -10667,6 +10785,40 @@ window.__ModuleLoader__.load({
           if (!pickSessionAction(payload, id)) return
         }
       }
+
+      // The official contribution runs outside this component, so it gets a
+      // live bridge to the SAME action implementations (dialogs included).
+      // The effect republishes after every render: slash switches, the preset
+      // face and the current session inventory all feed availability.
+      const menuBridgeValue = {
+        slashes: { session: sessionSlash, workspace: workspaceSlash },
+        hasPreset: () => !!presetFace,
+        groupPrefix: (title) => groupPrefixOf(title),
+        label: (key) => t(key),
+        customize: (kind, payload) => {
+          const name = kind === 'workspace' ? (payload.title || payload.leaf) : payload.title
+          setCustomize({ kind, entryKey: keyOf(kind, payload), name })
+        },
+        moveGroup: (kind, payload) => {
+          const title = kind === 'workspace' ? (payload.title || payload.leaf) : payload.title
+          const target = kind === 'workspace'
+            ? { kind: 'workspace', id: payload.workspaceId, title }
+            : { kind: 'session', id: payload.id, title }
+          setDialog({
+            kind: 'group-move',
+            target,
+            initial: groupPrefixOf(target.title),
+            groupPaths: collectGroupPaths(kind),
+          })
+        },
+        moveOut: moveSessionOut,
+        workspacePreset: (payload) => openWorkspacePresetDialog(payload),
+      }
+      React.useEffect(() => {
+        if (typeof setMenuBridge !== 'function') return undefined
+        setMenuBridge(menuBridgeValue)
+        return () => setMenuBridge(null)
+      })
 
       /* --------------------------- dialogs --------------------------- */
       // TextDialog / ConfirmDialog are module-level components: a per-render
@@ -11161,6 +11313,17 @@ window.__ModuleLoader__.load({
       // the handle before any flow can open.
       pickerState.api = uiWorkspace
 
+      // dsh 0.2.2-alpha.3 context menus. The service is acquired SOFTLY for
+      // the same reason as remote.agentPresets: a hard inject would pend the
+      // whole bundle forever on older hosts. The bridge is written by the
+      // browser seat through browserInjected (a stable getter), so the
+      // contribution resolves against the same dialogs and switches the
+      // local menu uses.
+      let contextMenus = null
+      let menuBridge = null
+      let menusRegistered = false
+      const setMenuBridge = (bridge) => { menuBridge = bridge }
+
       // The OFFICIAL browser's own dictionary (NS 'workspace'), bound so the
       // context menu COPY follows upstream wording automatically — the menu
       // mirrors the official row menus item-for-item (Rows.tsx), and this
@@ -11263,6 +11426,126 @@ window.__ModuleLoader__.load({
         }
       }
 
+      // The official shared menu owns session/workspace rows from alpha.3 on.
+      // The built-in contributions cover pin/rename/fork/copy/archive and
+      // workspace rename/delete; these two bring the bw-only verbs (name
+      // groups, Customize appearance, the workspace default preset) after
+      // them. The first extra carries the separator, so the popup keeps the
+      // same grouping the retired local menu had.
+      const withMenuSeparator = (actions) => actions.map((action, index) => index === 0
+        ? Object.assign({}, action, { separatorBefore: true })
+        : action)
+      const registerContextMenus = (menus) => {
+        if (!menus || menusRegistered) return
+        if (typeof menus.register !== 'function' || typeof menus.open !== 'function') return
+        menusRegistered = true
+        const sessionExtras = {
+          id: 'bw-session-extras',
+          target: 'session',
+          order: 700,
+          resolve: (target) => {
+            const bridge = menuBridge
+            if (!bridge) return []
+            const title = String((target && target.displayTitle) || '')
+            const actions = []
+            if (bridge.slashes && bridge.slashes.session) {
+              actions.push({
+                id: 'bw-move-group',
+                label: bridge.label('menu.moveToGroup'),
+                run: () => bridge.moveGroup('session', { id: target.sessionId, title }),
+              })
+            }
+            if (bridge.groupPrefix && bridge.groupPrefix(title) !== '') {
+              actions.push({
+                id: 'bw-move-out',
+                label: bridge.label('menu.moveOutGroup'),
+                run: () => bridge.moveOut({ id: target.sessionId, title }),
+              })
+            }
+            actions.push({
+              id: 'bw-customize',
+              label: bridge.label('custom.title'),
+              run: () => bridge.customize('session', { id: target.sessionId, title }),
+            })
+            return withMenuSeparator(actions)
+          },
+        }
+        const workspaceExtras = {
+          id: 'bw-workspace-extras',
+          target: 'workspace',
+          order: 700,
+          resolve: (target) => {
+            const bridge = menuBridge
+            if (!bridge) return []
+            const title = String((target && target.displayTitle) || '')
+            const payload = { workspaceId: target.workspaceId, path: target.path, title, leaf: title }
+            const actions = []
+            if (bridge.slashes && bridge.slashes.workspace) {
+              actions.push({
+                id: 'bw-move-group',
+                label: bridge.label('menu.moveToGroup'),
+                run: () => bridge.moveGroup('workspace', payload),
+              })
+            }
+            actions.push({
+              id: 'bw-customize',
+              label: bridge.label('custom.title'),
+              run: () => bridge.customize('workspace', payload),
+            })
+            if (bridge.hasPreset && bridge.hasPreset()) {
+              actions.push({
+                id: 'bw-ws-preset',
+                label: bridge.label('menu.workspacePreset'),
+                run: () => bridge.workspacePreset(payload),
+              })
+            }
+            return withMenuSeparator(actions)
+          },
+        }
+        try {
+          ctx.effect(() => {
+            const disposers = []
+            try { disposers.push(menus.register(sessionExtras)) } catch (registerError) {
+              console.warn('[dsh-better-workspace] session context menu registration failed', registerError)
+            }
+            try { disposers.push(menus.register(workspaceExtras)) } catch (registerError) {
+              console.warn('[dsh-better-workspace] workspace context menu registration failed', registerError)
+            }
+            return () => {
+              for (const dispose of disposers) {
+                try { dispose() } catch { /* already withdrawn */ }
+              }
+            }
+          }, 'better-workspace: context menu contributions')
+        } catch (effectError) {
+          console.warn('[dsh-better-workspace] context menu effect failed', effectError)
+        }
+      }
+      const adoptContextMenus = (candidate) => {
+        if (!candidate || typeof candidate.register !== 'function' || typeof candidate.open !== 'function') return
+        const changed = contextMenus !== candidate
+        contextMenus = candidate
+        registerContextMenus(candidate)
+        if (changed) notifyMenuFace()
+      }
+      try { adoptContextMenus(ctx.get('contextMenus')) } catch (contextMenuProbeError) {
+        console.warn('[dsh-better-workspace] context menu probe failed', contextMenuProbeError)
+      }
+      if (!contextMenus && ctx && typeof ctx.inject === 'function') {
+        // Late arrival: the shared menu service mounts after this bundle on
+        // some boots. A soft child fiber waits for it; old hosts simply keep
+        // the fiber pending and the local menu stays in charge.
+        try {
+          ctx.inject(['contextMenus'], (fctx) => {
+            try { adoptContextMenus(fctx && fctx.contextMenus) } catch (lateError) {
+              console.warn('[dsh-better-workspace] context menu late face failed', lateError)
+            }
+          })
+        } catch (injectError) {
+          console.warn('[dsh-better-workspace] context menu soft inject failed', injectError)
+        }
+      }
+
       if (ctx.locale && typeof ctx.locale.register === 'function') {
         ctx.effect(() => {
           try {
@@ -11346,6 +11629,12 @@ window.__ModuleLoader__.load({
         // closure live, so every render and every menu build re-asks; hosts
         // without the service keep returning null, which simply hides the row.
         presetFaceOf: () => presetFace,
+        // dsh 0.2.2-alpha.3: the shared context-menu service (getter for the
+        // same late-arrival reason as presetFaceOf; null on older hosts, which
+        // keep the local menu) and the live action bridge its contribution
+        // reads. The getter is what openCtx probes on every right-click.
+        contextMenuFaceOf: () => contextMenus,
+        setMenuBridge,
         // Issue #13: the PRIVATE store face — a stable getter like presetFaceOf
         // (the slot renderer caches inject results; keep the same discipline
         // even though this face never changes).

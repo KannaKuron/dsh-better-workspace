@@ -235,6 +235,46 @@ test('quote-on-land effect: blank-born only, user renames pinned, stability wind
     'path titles skip the pinning rename')
 })
 
+test('alpha.3: the official context menu owns session/workspace rows (v0.38.0)', () => {
+  const text = read('src/client.js')
+  const pkg = JSON.parse(read('package.json'))
+  const inject = pkg.dsh.client.inject
+  assert.ok(inject.includes('@deepseek-ai/dsh-client-ui-context-menu'),
+    'the shared menu bundle is declared for prefetch (old hosts skip it)')
+  // The service is adopted through ctx.get + a soft child fiber: a hard
+  // cordis inject would never resolve on 0.2.2-alpha.2 hosts.
+  assert.match(text, /const useActiveContextMenu = \(faceOf\) => \{/)
+  assert.match(text, /active && typeof active\.subscribe === 'function'/)
+  assert.match(text, /ctx\.get\('contextMenus'\)/)
+  assert.match(text, /ctx\.inject\(\['contextMenus'\]/)
+  assert.match(text, /contextMenuFaceOf: \(\) => contextMenus/)
+  assert.match(text, /setMenuBridge,/)
+  // Only the two official target families move to the shared popup; the
+  // plugin's virtual folder/session-group rows keep the local menu.
+  assert.match(text, /kind === 'session' \|\| kind === 'workspace'/)
+  assert.match(text, /face\.open\(\{[\s\S]{0,80}kind: 'session'/)
+  assert.match(text, /face\.open\(\{[\s\S]{0,80}kind: 'workspace'/)
+  assert.match(text, /console\.warn\('\[dsh-better-workspace\] official context menu open failed; using local menu'/)
+  assert.match(text, /setCtx\(\{ kind, payload, \.\.\.point \}\)/)
+  // Keyboard parity: the same trigger as the shared menu (ContextMenu or
+  // Shift+F10), attached to all four row families, and a keyboard point
+  // anchored at the focused row instead of the viewport corner.
+  assert.match(text, /const menuTriggerProps = \(onContextMenu\) =>/)
+  assert.match(text, /event\.key !== 'ContextMenu' && !\(event\.shiftKey && event\.key === 'F10'\)/)
+  assert.equal((text.match(/\.\.\.menuTriggerProps\(onContextMenu\)/g) || []).length, 4,
+    'folder / workspace / session / session-group rows all open the menu from the keyboard')
+  assert.match(text, /const menuPointOf = \(e\) => \{/)
+  assert.match(text, /return rect \? \{ x: rect\.left, y: rect\.bottom \} : \{ x, y \}/)
+  // Extras ride AFTER the official contributions (order 700) and the first
+  // one carries the separator the retired local menu had.
+  assert.match(text, /const registerContextMenus = \(menus\) => \{/)
+  assert.match(text, /order: 700/)
+  assert.match(text, /id: 'bw-session-extras',[\s\S]{0,80}target: 'session'/)
+  assert.match(text, /id: 'bw-workspace-extras',[\s\S]{0,80}target: 'workspace'/)
+  assert.match(text, /separatorBefore: true/)
+  assert.match(text, /ctx\.effect\(\(\) => \{[\s\S]{0,600}?menus\.register\(sessionExtras\)/)
+})
+
 test('host half imports cleanly and applies without side effects', async () => {
   const plugin = await import('../src/index.js')
   assert.equal(plugin.name, 'dsh-better-workspace')

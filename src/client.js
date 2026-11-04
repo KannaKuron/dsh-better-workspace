@@ -5,14 +5,13 @@
  *  1. sidebar.workspaces (priority -1): replaces the shipped workspace
  *     browser with a two-layer hierarchy — disk nesting (a workspace row
  *     nests under its nearest registered ancestor directory, the official
- *     0.1.6-alpha.2 workspace-tree semantics) plus "/"-segment name groups
- *     inside each level (this plugin's founding feature). The registration
- *     declares the sidebar.workspaces.directoryFlow child hole without
- *     occupying it, so the official composed picker (OS chooser or in-app
- *     browser, whichever the Host serves) drives the add-workspace flow.
- *  2. plugins.bundle.config (the Plugins panel's bundle page, dsh
- *     0.1.6-alpha.2+; keyed by package name): the settings card — the single
- *     settings seat since the host floor was raised past the old list seat.
+ *     workspace-tree semantics) plus "/"-segment name groups inside each
+ *     level (this plugin's founding feature). The registration neither
+ *     declares nor occupies the sidebar.workspaces.directoryFlow child hole:
+ *     the official entry keeps the declaration and the add-workspace flow
+ *     reads its occupant from the slot ledger.
+ *  2. plugins.bundle.config (the Plugins panel's bundle page, keyed by
+ *     package name): the settings card — the only settings seat.
  *
  * Every require below is a dsh client baseline module (see
  * @deepseek-ai/dsh-client-web seed.ts): react, @deepseek-ai/dsh-client-store,
@@ -27,9 +26,9 @@ window.__ModuleLoader__.load({
 
     const E = React.createElement
     const NS = 'betterWorkspace'
-    // Official transient banner (dsh 0.2.1-alpha.5 primitives Toast; body
-    // portal, self-fading). Absent on older hosts — the copy-session-id
-    // notice then falls back to this plugin's own chip.
+    // Official transient banner (rc.1 primitives Toast; body portal,
+    // self-fading). If the primitives family has no Toast, the
+    // copy-session-id notice falls back to this plugin's own chip.
     const officialToast = typeof ui.Toast === 'function' ? ui.Toast : null
 
     /* ============================== i18n ============================== */
@@ -135,30 +134,17 @@ window.__ModuleLoader__.load({
     const normPath = (p) => splitTitleSegs(p).join('/')
 
     /**
-     * Glyphs a host may have RETIRED, mapped to the surviving equivalents in
-     * preference order. dsh 0.1.6-alpha.1 replaced IconSendOutline16 with
-     * IconPaperPlaneOutline14 and deleted the old export, so a saved custom
-     * icon naming it must land on something real rather than an empty cell.
-     */
-    const ICON_ALIASES = { IconSendOutline16: ['IconSendOutline14'] }
-
-    /**
      * Resolve one configured icon value to a glyph the LOADED primitives
-     * actually export (pure). Retired names follow their alias chain, unknown
-     * names degrade to '' — so both the picker grid and a choice persisted
-     * before an upgrade survive a host that renamed its icon set.
+     * actually export (pure). The current icon set uses stroke-weight names
+     * (…Regular / …Medium) while persisted choices from older plugin releases
+     * carry pixel-size suffixes (…16 / …14 / …20); strip the suffix and try
+     * the current spellings so those saved choices keep rendering. Unknown
+     * names degrade to ''.
      */
     const resolveIconName = (name) => {
       if (typeof name !== 'string' || name === '') return ''
       if (ui[name]) return name
-      const aliases = ICON_ALIASES[name]
-      if (aliases) for (const alias of aliases) if (ui[alias]) return alias
-      // Icon-set generation fallback (dsh 0.1.7): the primitives renamed the
-      // whole product set from pixel-size suffixes (…16/…14/…20) to stroke
-      // weights (…Regular/…Medium). Strip the trailing size and try the new
-      // spellings so pre-0.1.7 names keep rendering on current hosts — the
-      // header/menus call icon() with historical names directly.
-      const base = typeof name === 'string' ? name.replace(/\d+$/, '') : ''
+      const base = name.replace(/\d+$/, '')
       if (base !== '' && base !== name) {
         if (ui[base + 'Regular']) return base + 'Regular'
         if (ui[base + 'Medium']) return base + 'Medium'
@@ -326,14 +312,7 @@ window.__ModuleLoader__.load({
       }
     }
 
-    const pendingKindOf = (pending, id) => {
-      if (!pending) return undefined
-      const p = typeof pending.get === 'function' ? pending.get(id) : pending[id]
-      if (!p) return undefined
-      return p.kind || p.status || p.type || 'pending'
-    }
-
-    // Official visiblePendingKind (dsh 0.1.7 tree.ts): only the three
+    // Official visiblePendingKind: only the three
     // navigation kinds light the warning lamp; anything else a domain
     // publishes stays off the sidebar.
     const visiblePendingKind = (kind) => (kind === 'approval' || kind === 'plan-review' || kind === 'question' ? kind : undefined)
@@ -397,8 +376,7 @@ window.__ModuleLoader__.load({
      * children live in their parent's catalog, a blank row is the provisional
      * New Session of the current selection, and archived rows follow the
      * archived filter — 'default' hides them, 'show' mixes them into their
-     * kept slots, 'only' restricts the view to them. Pre-filter hosts only
-     * ever pass 'default' (the historical hide-archived behavior).
+     * kept slots, 'only' restricts the view to them.
      */
     const sessionVisible = (summary, current, archivedSet, archivedFilter) => {
       if (!summary || summary.origin === 'subagent') return false
@@ -410,37 +388,17 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * The "open" session, across BOTH host generations.
-     *
-     * dsh 0.1.6-alpha.2 dropped SessionListState.current: the open session is
-     * now the one retained under the mainView source — navigation belongs to
-     * the view owner (official ui-workspace tree.ts mainSessionId).
-     *
-     * dsh 0.1.5-rc.x never carried `retainedBy` at all (it was introduced by
-     * the same 2026-09-17 generation refactor that added it), so the retention
-     * loop matches nothing there and reading retention alone yields a permanent
-     * undefined: no current highlight, and every blank row (a brand-new session
-     * before its first message) filtered out by sessionVisible. Both contracts
-     * must stay wired — same shape as the renameSession probe below.
+     * The "open" session: the one retained under the mainView source —
+     * navigation belongs to the view owner (official ui-workspace
+     * tree.ts mainSessionId). SessionListState has no `current` field.
      */
     const mainSessionIdOf = (list) => {
       if (!list || !list.byId) return undefined
       for (const session of Object.values(list.byId)) {
         if (session && session.retainedBy && (session.retainedBy.mainView || 0) > 0) return session.id
       }
-      return typeof list.current === 'string' && list.current !== '' ? list.current : undefined
+      return undefined
     }
-
-    /**
-     * Active-schedule marker, mirroring the official tree's
-     * hasActiveSchedule(): the list projection carries one entry per active
-     * Schedule record, and a non-empty projection is the badge's only gate.
-     * Defensive shapes (missing/mis-typed projection) degrade to false.
-     */
-    const hasActiveScheduleOf = (summary) => !!(summary
-      && summary.projectionValues
-      && Array.isArray(summary.projectionValues.schedule)
-      && summary.projectionValues.schedule.length > 0)
 
     /**
      * First-use Workspace naming, official semantics (dsh 0.1.7-rc.2:
@@ -454,8 +412,8 @@ window.__ModuleLoader__.load({
      * mirrored here so the tree, the hero picker and the rename prefill agree
      * with the shipped browser. The copy comes from this plugin's dictionaries,
      * which cover the 19 languages the official common dictionary leaves on its
-     * English fallback. A host without the key (pre-rc.2) simply keeps the
-     * stored title — the substitution is a display layer, never a write.
+     * English fallback. Without a localized name the stored title is kept —
+     * the substitution is a display layer, never a write.
      */
     const DEFAULT_WORKSPACE_TITLE = 'default-workspace'
     const withDisplayTitles = (items, localizedDefault) => {
@@ -471,16 +429,15 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * The SHIPPED sidebar's own business face, read off the slot ledger (dsh
-     * 0.1.7-rc.2). The shipped shortcut layer routes session search and
-     * add-workspace into a private request store whose ONLY consumer is the
-     * shipped browser's own effect; a seat shadowed at priority -1 never mounts
-     * that consumer, so this plugin consumes the same channel instead of
-     * leaving Cmd/Ctrl+K and Cmd/Ctrl+O consumed-but-dead. Same ledger-read
-     * technique as the hero picker's directory-flow occupant. Every read is
-     * best-effort and version-gated by the face's own shape: an older host has
-     * no requestSearch at all (no channel, no consumption), and a host that
-     * hides the ledger costs the channel only.
+     * The SHIPPED sidebar's own business face, read off the slot ledger (rc.1).
+     * The shipped shortcut layer routes session search and add-workspace into a
+     * private request store whose ONLY consumer is the shipped browser's own
+     * effect; a seat shadowed at priority -1 never mounts that consumer, so this
+     * plugin consumes the same channel instead of leaving Cmd/Ctrl+K and
+     * Cmd/Ctrl+O consumed-but-dead. Same ledger-read technique as the hero
+     * picker's directory-flow occupant. Every read is best-effort and gated by
+     * the face's own shape: a missing requestSearch means no channel and no
+     * consumption, and a hidden ledger costs the channel only.
      */
     const shippedBrowserFaceOf = (slots, ownComponent) => {
       try {
@@ -505,8 +462,8 @@ window.__ModuleLoader__.load({
      * DECLARED BY THE SHIPPED BROWSER — a shadowing entry cannot render another
      * entry's child seat, so the occupant is read off the ledger and rendered
      * inside our own row, exactly like the hero picker's directory-flow
-     * occupant. No occupant (the Schedule overlay is off, or an older host has
-     * no such seat) means no mark, which is the shipped default anyway.
+     * occupant. No occupant (the Schedule overlay is off) means no mark, which
+     * is the shipped default anyway.
      */
     const scheduleSeatOf = (slots) => {
       try {
@@ -613,15 +570,13 @@ window.__ModuleLoader__.load({
      * Running subagent descendants per session (light lineage walk over
      * parent links) — a parent row keeps its "ongoing" ring while a spawned
      * subagent is still working. The client SessionSummary exposes the
-     * parent as parentId (the session controller maps parentSessionId to
-     * parentId on the wire); the old parentSessionId spelling is kept as a
-     * fallback for profiles serving the pre-rename shape.
+     * parent as parentId.
      */
     const subagentRunningCounts = (byId) => {
       const children = new Map()
       for (const id of Object.keys(byId || {})) {
         const summary = byId[id]
-        const parentId = summary && (summary.parentId || summary.parentSessionId)
+        const parentId = summary && summary.parentId
         if (!summary || !parentId) continue
         let list = children.get(parentId)
         if (!list) { list = []; children.set(parentId, list) }
@@ -728,7 +683,7 @@ window.__ModuleLoader__.load({
 
     /**
      * Build the hierarchy tree. Two orthogonal layers, the way the official
-     * 0.1.6-alpha.2 browser composes them:
+     * browser composes them:
      * - the DISK layer nests a workspace under its nearest registered
      *   ancestor directory (owningParentFolder semantics — workspace rows
      *   nest, no virtual nodes for paths nobody registered; a filesystem
@@ -1124,37 +1079,15 @@ window.__ModuleLoader__.load({
       // every selector read takes a fallback.
       persist: 'dsh.betterWorkspace.view.v1',
       actions: {
-        // Manual-sync pull targets (overwrite / merge): the host settings
-        // values land in the local store, and rendering keeps reading the
-        // local selectors, so scope-less hosts keep working unchanged.
-        importHost: (d, host) => {
-          if (!host || typeof host !== 'object') return
-          if (host.styling && typeof host.styling === 'object') d.styling = host.styling
-          if (!d.prefs) d.prefs = {}
-          if (host.compactChains !== undefined) d.prefs.compactChains = host.compactChains !== false
-          if (host.statusPulse !== undefined) d.prefs.statusPulse = host.statusPulse !== false
-          if (host.appearance && typeof host.appearance === 'object') d.prefs.appearance = host.appearance
-        },
-        // Merge mode: union of both sides, the PULLED (host) copy wins any
-        // per-key conflict; prefs take the pulled booleans when present.
-        mergeHost: (d, host) => {
-          if (!host || typeof host !== 'object') return
-          if (host.styling && typeof host.styling === 'object') d.styling = { ...(d.styling || {}), ...host.styling }
-          if (!d.prefs) d.prefs = {}
-          if (host.compactChains !== undefined) d.prefs.compactChains = host.compactChains !== false
-          if (host.statusPulse !== undefined) d.prefs.statusPulse = host.statusPulse !== false
-          if (host.appearance && typeof host.appearance === 'object') d.prefs.appearance = { ...(d.prefs.appearance || {}), ...host.appearance }
-        },
         setExpanded: (d, key, value) => { if (!d.expanded) d.expanded = {}; d.expanded[key] = value },
         setSessionsExpanded: (d, key, value) => { if (!d.sessionsExpanded) d.sessionsExpanded = {}; d.sessionsExpanded[key] = value },
         setSessionGroupExpanded: (d, key, value) => { if (!d.sessionGroups) d.sessionGroups = {}; d.sessionGroups[key] = value },
         setPref: (d, key, value) => { if (!d.prefs) d.prefs = {}; d.prefs[key] = value },
         setStyling: (d, key, value) => { if (!d.styling) d.styling = {}; if (value === null) delete d.styling[key]; else d.styling[key] = value },
-        // Browser-local session order (v0.10.2): the fallback channel for
-        // drag-to-reorder on hosts that no longer inject insertSessionBefore
-        // (dsh 0.1.6-alpha.1). Per-workspace and per-browser on purpose — the
-        // host order stays authoritative wherever the action exists, and this
-        // never rides the cross-device sync.
+        // Browser-local session order (v0.10.2): the fallback channel when the
+        // injected WorkspaceService has no insertSessionBefore. Per-workspace
+        // and per-browser on purpose — the host order stays authoritative
+        // wherever the action exists, and this never leaves the browser profile.
         setSessionOrder: (d, workspaceId, order) => {
           if (!d.sessionOrder || typeof d.sessionOrder !== 'object') d.sessionOrder = {}
           if (!Array.isArray(order) || order.length === 0) delete d.sessionOrder[workspaceId]
@@ -1321,28 +1254,15 @@ window.__ModuleLoader__.load({
       return true
     }
 
-    /* ======================= host settings sync ======================= */
+    /* ================== host settings (per profile) =================== */
 
-    // Cross-device preferences: styling / the two toggles
-    // live in the HOST settings store (~/.dsh/settings.yaml through the
-    // better-workspace namespace). Web and the desktop app share one DSH_HOME,
-    // so a style set in the browser follows the user into the Electron app and
-    // back. The browser localStorage view store stays the rendering source and
-    // the fallback: host values are MIRRORED into it one-way, and every write
-    // goes to BOTH stores (local action for immediate echo, scope.set for
-    // durable cross-device persistence). Hosts without the settingsScope
-    // service — or non-loopback pages where the scope stays process-local —
-    // simply never mirror and never sync, which is exactly the pre-0.9.5
-    // browser-local behavior.
+    // The browser localStorage view store stays the rendering source: every
+    // write goes to BOTH stores (local action for immediate echo, and this
+    // profile's ConfigForm for durable persistence). There is no pull or
+    // mirror path — the local snapshot is authoritative at render time.
     let prefsScopeRef = null
-    // 'settingsScope' (dsh <= 0.1.6, the shared ~/.dsh/settings.yaml home —
-    // the only world where CROSS-DEVICE sync makes sense) or 'configForms'
-    // (dsh >= 0.1.7, per-profile patch persistence). null = browser-local.
-    let prefsScopeVia = null
-    const HOST_SNAP_UNAVAILABLE = { status: 'unavailable', value: undefined }
-    const hostPrefsOf = (snap) => (snap && snap.status === 'ready' && snap.value && typeof snap.value === 'object'
-      ? snap.value
-      : null)
+    // Only fields that exist in the host Config schema are writable there.
+    const HOST_CONFIG_FIELDS = new Set(['compactChains', 'statusPulse', 'styling', 'appearance'])
     const scopeSet = (field, value) => {
       const scope = prefsScopeRef
       if (!scope || typeof scope.set !== 'function') return
@@ -1354,26 +1274,11 @@ window.__ModuleLoader__.load({
         console.warn('[dsh-better-workspace] host settings write threw: ' + field, error)
       }
     }
-    // React hook over the scope snapshot; degrades to a stable "unavailable"
-    // constant when the scope is absent so useSyncExternalStore never re-binds.
-    // The hook call itself is unconditional (React discipline: no conditional
-    // hooks) — capability probing lives inside the callbacks.
     const HAS_USE_SYNC_EXTERNAL_STORE = typeof React.useSyncExternalStore === 'function'
-    const useHostScope = () => {
-      const scope = prefsScopeRef
-      return HAS_USE_SYNC_EXTERNAL_STORE
-        ? React.useSyncExternalStore(
-          (onChange) => (scope && typeof scope.subscribe === 'function' ? scope.subscribe(onChange) : () => {}),
-          () => {
-            try { return scope && typeof scope.getSnapshot === 'function' ? scope.getSnapshot() : HOST_SNAP_UNAVAILABLE } catch { return HOST_SNAP_UNAVAILABLE }
-          },
-        )
-        : HOST_SNAP_UNAVAILABLE
-    }
-    // dsh 0.2.2-alpha.3: the shared context menu owns the popup, so its
-    // captured target (not our local ctx) decides which row keeps the open
-    // state. Capability probing stays inside the callbacks — old hosts have
-    // no service and the hook degrades to a stable null.
+    // rc.1: the shared context menu owns the popup, so its captured target
+    // (not our local ctx) decides which row keeps the open state. Capability
+    // probing stays inside the callbacks — if the optional service is absent,
+    // the hook degrades to a stable null.
     // Late-arriving shared menu: the row highlight subscribes to face.active,
     // but the face itself can be adopted AFTER the first render (soft inject).
     // A tiny module-level revision bus re-renders those rows once, so the
@@ -1407,19 +1312,9 @@ window.__ModuleLoader__.load({
         : null
     }
 
-    // MANUAL cross-device sync (user-chosen, never automatic): the settings
-    // card offers a pull button ("从客户端获取" on the web / "从 Web 获取" in
-    // the desktop app — the other surface's copy arrives through the host
-    // settings store) with an overwrite-or-merge mode choice, plus a push
-    // button that uploads THIS device's current values (pre-0.9.5 history was
-    // never uploaded, so a first explicit push is needed once). Routine new
-    // writes already dual-write through makeSharedWrites, so the host copy
-    // stays fresh after the first push.
-
     // Shared write wrappers: local action first (immediate echo + fallback
-    // store), then the durable host write computed from the CURRENT rendered
-    // values — after a manual pull the local store already holds the host
-    // copy, so host-only entries written on the other surface survive.
+    // store), then the durable per-profile write computed from the CURRENT
+    // rendered values.
     const makeSharedWrites = (actions, stylingMap) => ({
       setStyling: (key, value) => {
         if (actions && typeof actions.setStyling === 'function') actions.setStyling(key, value)
@@ -1446,10 +1341,6 @@ window.__ModuleLoader__.load({
           else next[entry[0]] = entry[1]
         }
         scopeSet('styling', next)
-      },
-      setPref: (key, value) => {
-        if (actions && typeof actions.setPref === 'function') actions.setPref(key, value)
-        scopeSet(key, value)
       },
     })
 
@@ -1960,8 +1851,8 @@ window.__ModuleLoader__.load({
     /** Folder glyph variants from the primitives family (solid / outline / hidden). */
     /**
      * Custom icon value → glyph: legacy slots (solid/outline/none) or any
-     * primitives icon name, resolved through ICON_ALIASES so a value persisted
-     * before a host renamed its icon set still renders something.
+     * primitives icon name, resolved through resolveIconName so a value
+     * persisted before a host renamed its icon set still renders something.
      */
     const iconOf = (mode, expanded) => {
       if (!mode || mode === 'none') return null
@@ -1986,11 +1877,11 @@ window.__ModuleLoader__.load({
      * Two palettes, one slot table — the "auto color" of a row is stored as the
      * SLOT TOKEN (`auto:3`), never as a hex. Rendering resolves it against the
      * live theme, so a theme flip re-colours every auto-assigned row with no
-     * migration, no rewrite of stored data and no cross-device mismatch (the
-     * host settings copy carries the token, and each device paints its own
-     * theme). Manual colours stay plain hex and are never touched.
+     * migration and no rewrite of stored data (the profile's host settings copy
+     * carries the token, and the live theme paints it). Manual colours stay
+     * plain hex and are never touched.
      *
-     * APPEND-ONLY, like ICON_CHOICES / ICON_ALIASES: a stored token must keep
+     * APPEND-ONLY, like ICON_CHOICES: a stored token must keep
      * resolving forever, so never reorder or delete a slot (an out-of-range index
      * clamps to slot 0 rather than rendering nothing).
      *
@@ -2165,11 +2056,11 @@ window.__ModuleLoader__.load({
       }
     }
 
-    // dsh 0.2.2-alpha.3 keyboard trigger, mirroring the shared menu's own
-    // getTriggerProps: ContextMenu or Shift+F10 opens the row menu and the
-    // row itself is reachable with Tab. Kept local (not the official helper)
-    // so the SAME openCtx path still owns the target payload and the fallback
-    // to the local menu on hosts without the service.
+    // rc.1 keyboard trigger, mirroring the shared menu's own getTriggerProps:
+    // ContextMenu or Shift+F10 opens the row menu and the row itself is
+    // reachable with Tab. Kept local (not the official helper) so the SAME
+    // openCtx path still owns the target payload and the fallback to the local
+    // menu when the optional service is absent.
     const menuTriggerProps = (onContextMenu) => typeof onContextMenu !== 'function' ? {} : {
       tabIndex: 0,
       onKeyDown: (event) => {
@@ -2372,16 +2263,13 @@ window.__ModuleLoader__.load({
             ? (node.running ? t('status.running') : t('status.subagents', { n: node.subagents }))
             : t('status.completed'),
       }
-      // Ambient Schedule mark, two host generations, exactly one of them live:
-      // · dsh 0.1.7-rc.2+ — the shipped row's leading seat
-      //   (`sidebar.session.row.leading`), declared by an entry this seat
-      //   shadows, so its occupant is rendered here (see scheduleSeatOf). The
-      //   shipped rule holds: the cell belongs to the mark only while the row's
-      //   own primary state is idle — a status dot and a seat occupant never
-      //   share it — and an archived or blank row keeps the cell empty.
-      // · up to 0.1.7-rc.1 — the active-Schedule list projection, which rc.2
-      //   deleted; the legacy badge below still serves those hosts, and its
-      //   `!markNode` gate is what keeps the two marks from ever doubling up.
+      // Ambient Schedule mark: the shipped row's leading seat
+      // (`sidebar.session.row.leading`), declared by an entry this seat
+      // shadows, so its occupant is rendered here (see scheduleSeatOf). The
+      // shipped rule holds: the cell belongs to the mark only while the row's
+      // own primary state is idle — a status dot and a seat occupant never
+      // share it — and an archived or blank row keeps the cell empty. No seat
+      // (the Schedule overlay is off) means no mark, the shipped default.
       const markNode = scheduleSeat && !status && !node.archived && !node.blank
         ? E(QuietBoundary, { key: 'schedule-seat' }, E(ShippedSeatOccupant, {
           seat: scheduleSeat,
@@ -2505,11 +2393,6 @@ window.__ModuleLoader__.load({
             : (markNode || E('span', { className: 'bw-dot' })),
         ),
         E('span', { className: 'bw-row-label', ref: marquee.titleRef }, title),
-        // Legacy projection mark (see markNode): only ever renders where the
-        // shipped seat does not exist, so the row never shows two marks.
-        node.hasActiveSchedule && !markNode
-          ? E('span', { className: 'bw-schedule-badge', role: 'img', 'aria-label': t('schedule.active'), title: t('schedule.active') }, icon('IconAlarmClockOutline16', 14))
-          : null,
         // Official blank rows carry no time, no pin, no actions (a standing
         // "new session" placeholder, not a session).
         !node.blank ? E('span', { className: 'bw-row-time' }, timeLabel(node.updatedAt, now, t)) : null,
@@ -2592,12 +2475,9 @@ window.__ModuleLoader__.load({
       const hideLabel = official('viewOptions.hideArchived')
       const showLabel = official('viewOptions.showArchived')
       const onlyLabel = official('viewOptions.onlyArchived')
-      // rc.2 turns the filter into three explicit radio-style picks (hide /
-      // show / only) and names the default one; pre-rc.2 hosts only ship the
-      // two toggles, where re-picking the selected item returns to the default
-      // view. The presence of the hide label is the era probe, and the icons
-      // follow the same generation split (the rc.2 glyphs are absent earlier).
-      const threeState = hideLabel !== null
+      // Three explicit radio-style picks (hide / show / only); the default one
+      // is a real item and stays selected. The whole section is optional only
+      // because a host dictionary may lack the keys.
       const hasFilter = filterLabel !== null && showLabel !== null && onlyLabel !== null
         && typeof onFilterPick === 'function'
       const filter = archivedFilter === 'show' || archivedFilter === 'only' ? archivedFilter : 'default'
@@ -2616,8 +2496,8 @@ window.__ModuleLoader__.load({
           ...(hasFilter ? [
             { type: 'separator', id: 'bw-filter-sep' },
             { type: 'label', id: 'bw-filter-by', text: filterLabel },
-            ...(threeState ? [{ id: 'hide-archived', label: hideLabel, icon: icon('IconArchiveOffOutlineRegular', 16) }] : []),
-            { id: 'show-archived', label: showLabel, icon: icon(threeState ? 'IconQueueOutlineRegular' : 'IconArchiveOutline20', 16) },
+            { id: 'hide-archived', label: hideLabel, icon: icon('IconArchiveOffOutlineRegular', 16) },
+            { id: 'show-archived', label: showLabel, icon: icon('IconQueueOutlineRegular', 16) },
             { id: 'only-archived', label: onlyLabel, icon: icon('IconArchiveCheckOutlineRegular', 16) },
           ] : []),
           { type: 'separator', id: 'bw-wsgroup-sep' },
@@ -2635,9 +2515,9 @@ window.__ModuleLoader__.load({
         ],
         selectedIds: [groupBy, orderBy]
           .concat(sessionSlash ? ['session-slash'] : [])
-          // rc.2 keeps exactly one filter pick selected (the default one is a
-          // real item); the pre-rc.2 pair only shows a selection when it is on.
-          .concat(filter === 'show' ? ['show-archived'] : filter === 'only' ? ['only-archived'] : (threeState ? ['hide-archived'] : []))
+          // Exactly one filter pick is selected; the default pick is a real
+          // item.
+          .concat(filter === 'show' ? ['show-archived'] : filter === 'only' ? ['only-archived'] : ['hide-archived'])
           .concat(workspaceGroupMode === 'disk' ? ['ws-disk'] : [])
           .concat(workspaceGroupMode === 'disk-slash' ? ['ws-disk-slash'] : [])
           .concat(workspaceGroupMode === 'slash' ? ['ws-slash'] : []),
@@ -2645,8 +2525,8 @@ window.__ModuleLoader__.load({
           if (id === 'workspace' || id === 'workspace-tree' || id === 'flat') { onPick('groupBy', id); setOpen(false); return }
           if (id === 'manual' || id === 'updated') { onPick('orderBy', id); setOpen(false); return }
           if (id === 'hide-archived') { onFilterPick('default'); setOpen(false); return }
-          if (id === 'show-archived') { onFilterPick(threeState ? 'show' : (filter === 'show' ? 'default' : 'show')); setOpen(false); return }
-          if (id === 'only-archived') { onFilterPick(threeState ? 'only' : (filter === 'only' ? 'default' : 'only')); setOpen(false); return }
+          if (id === 'show-archived') { onFilterPick('show'); setOpen(false); return }
+          if (id === 'only-archived') { onFilterPick('only'); setOpen(false); return }
           if (id === 'ws-disk' || id === 'ws-disk-slash' || id === 'ws-slash') { onWsGroupPick(id.slice(3)); setOpen(false); return }
           if (id === 'session-slash') { onToggle('sessionTitleSlash', !sessionSlash); return }
         },
@@ -2691,14 +2571,13 @@ window.__ModuleLoader__.load({
       'IconThinkOutline16', 'IconTrashOutline16', 'IconUserOutline16', 'IconWarningOutline16',
       'IconLikeOutline16', 'IconDislikeOutline16', 'IconFollowsystemOutline16',
       'IconAlarmClockOutline16', 'IconClockOutline16', 'IconDatabaseOutline16',
-      // Added with dsh 0.1.6-alpha.1 — absent on older hosts, where the picker
-      // filters them out (see ICON_PICKER_CHOICES).
+      // Historical candidates: ICON_PICKER_CHOICES keeps only what this host
+      // actually exports, so names retired upstream simply drop out.
       'IconPaperPlaneOutline14', 'IconShieldOutline16', 'IconPlanOutline14',
       'IconWrapLinesOutline16', 'IconCompactOutline16',
-      // dsh 0.1.7 generation (resolveIconName filters them out on older
-      // hosts): the renamed set added pin/archive-check/tree/list glyphs the
-      // native browser now ships. Historical names above resolve through the
-      // Regular/Medium generation fallback, so both spellings coexist here.
+      // Renamed Regular/Medium generation (pin/archive-check/tree/list glyphs).
+      // Historical 14/16/20 names above resolve through resolveIconName's
+      // suffix fallback, so both spellings coexist here.
       'IconPinOutlineRegular', 'IconPinFillRegular', 'IconSlidersTwoOutlineRegular',
       'IconArchiveCheckOutlineRegular', 'IconUnarchiveOutlineRegular',
       'IconWorkspaceTreeOutlineRegular', 'IconFlatListOutlineRegular',
@@ -2707,15 +2586,15 @@ window.__ModuleLoader__.load({
       'IconCompareSplitOutlineRegular', 'IconPluginPinwheelOutlineRegular',
       'IconMicrophoneOutlineRegular', 'IconSendOutlineRegular',
       'IconTreeCornerRegular', 'IconDeliverDocRegular', 'IconWrapFillRegular',
-      // dsh 0.1.7-rc.1 added the users pair (agent-team / subagent surfaces);
-      // committed here first and filtered on hosts that lack them.
+      // Users pair (agent-team / subagent surfaces), filtered if this host
+      // does not export it.
       'IconUsersOutlineRegular', 'IconUsersOutlineMedium',
     ]
 
     /**
      * What the picker actually offers on THIS host: every legacy slot, plus the
      * primitives this page's icon module really exports, deduped by resolved
-     * name so a retired alias can never double a cell. Computed once — the icon
+     * name so two spellings can never double a cell. Computed once — the icon
      * module is fixed for the lifetime of the page.
      */
     const ICON_PICKER_CHOICES = (() => {
@@ -3131,10 +3010,6 @@ window.__ModuleLoader__.load({
 
     /* ------------------------- settings page ------------------------- */
 
-    // The desktop renderer serves the shell over the private dsh-app: scheme;
-    // every other context (http/https) is the web profile.
-    const IS_DESKTOP_SURFACE = typeof location !== 'undefined' && location.protocol === 'dsh-app:'
-
     function BetterWorkspaceSettings({ useStore, actions, t }) {
       const prefs = useStore ? (useStore(s => s.prefs) || {}) : {}
       const localStyling = useStore ? (useStore(s => s.styling) || {}) : {}
@@ -3163,12 +3038,14 @@ window.__ModuleLoader__.load({
         ? workspaceGroupModeOf(useStore(s => s.workspaceGroupMode), useStore(s => s.workspaceTitleSlash))
         : 'disk'
       // Default appearance: the base every row inherits unless it carries its
-      // own per-row entry. The outline ships ON — text over a background image
-      // is often unreadable without it.
+      // own per-row entry. Fresh installs bake stroke OFF; snapshots without
+      // the key keep the legacy ON default through readAppearance.
       const appearance = readAppearance(prefs.appearance)
       const setPref = (key, value) => {
         if (actions && typeof actions.setPref === 'function') actions.setPref(key, value)
-        scopeSet(key, value)
+        // Only fields in the host Config schema exist on the ConfigForm;
+        // browser-only view preferences never produce a rejected host write.
+        if (HOST_CONFIG_FIELDS.has(key)) scopeSet(key, value)
       }
       const setAppearance = (next) => setPref('appearance', readAppearance(next))
       // Foldable sections, HAND-DRAWN (mirrors dsh-gitbash-shell v0.38.4).
@@ -3203,38 +3080,6 @@ window.__ModuleLoader__.load({
           open ? E('div', { className: 'bw-stack' }, body) : null,
         )
       }
-      // Manual cross-device sync state.
-      const [syncMode, setSyncMode] = React.useState('overwrite')
-      const [syncMsg, setSyncMsg] = React.useState(null)
-      const snap = useHostScope()
-      const host = hostPrefsOf(snap)
-      const scopeLive = prefsScopeRef !== null
-      const onPull = () => {
-        if (host === null) { setSyncMsg(t('sync.empty')); return }
-        if (syncMode === 'merge' && actions && typeof actions.mergeHost === 'function') actions.mergeHost(host)
-        else if (actions && typeof actions.importHost === 'function') actions.importHost(host)
-        else { setSyncMsg(t('sync.off')); return }
-        setSyncMsg(t('sync.done'))
-      }
-      const onPush = () => {
-        scopeSet('styling', localStyling)
-        scopeSet('compactChains', prefs.compactChains !== false)
-        scopeSet('statusPulse', prefs.statusPulse !== false)
-        scopeSet('appearance', appearance)
-        setSyncMsg(t('sync.done'))
-      }
-      const modeButton = (id, label) => E('button', {
-        type: 'button',
-        className: cls('bw-sync-mode', syncMode === id && 'bw-sync-mode-on'),
-        'aria-pressed': syncMode === id,
-        onClick: () => { setSyncMode(id); setSyncMsg(null) },
-      }, label)
-      const syncActionButton = (label, onClick, primary, disabled) => E('button', {
-        type: 'button',
-        className: cls('bw-sync-btn', primary && 'bw-sync-btn-primary'),
-        disabled,
-        onClick,
-      }, label)
       return E('div', { className: 'bw-settings' },
         StyleNode(),
         fold('settings.group.tree',
@@ -3375,24 +3220,7 @@ window.__ModuleLoader__.load({
             E(BTN, { variant: 'outline', onClick: () => setAppearance(DEFAULT_APPEARANCE) }, t('settings.appearance.reset')),
           ),
         ),
-        // Manual cross-device sync exists only where a SHARED host home does
-        // (dsh <= 0.1.6 settings.yaml; both surfaces read one file). On
-        // dsh >= 0.1.7 settings persist per profile, so the section hides.
         ),
-        prefsScopeVia === 'settingsScope' ? fold('settings.group.sync',
-          E('div', { className: 'bw-hint' }, t('sync.desc')),
-          E('div', { className: 'bw-sync-modes' },
-            modeButton('overwrite', t('sync.mode.overwrite')),
-            modeButton('merge', t('sync.mode.merge')),
-          ),
-          E('div', { className: 'bw-sync-actions' },
-            syncActionButton(t(IS_DESKTOP_SURFACE ? 'sync.pull.web' : 'sync.pull.desktop'), onPull, true, !scopeLive || snap.status === 'loading'),
-            syncActionButton(t('sync.push'), onPush, false, !scopeLive),
-          ),
-          syncMsg !== null ? E('div', { className: 'bw-hint' }, syncMsg)
-            : (scopeLive ? null : E('div', { className: 'bw-hint' }, t('sync.off'))),
-          scopeLive && snap.status === 'loading' ? E('div', { className: 'bw-hint' }, t('sync.loading')) : null,
-        ) : null,
       )
     }
 
@@ -3407,7 +3235,7 @@ window.__ModuleLoader__.load({
         ? localStoreFace.useStore
         : injectedUseStore
       const actions = localStoreFace && localStoreFace.actions ? localStoreFace.actions : injectedActions
-      // The bundle page (plugins.bundle.config, dsh 0.1.6-alpha.2+) renders
+      // The bundle page (plugins.bundle.config) renders
       // this card inline with view: 'page' — no accordion chrome there, the
       // settings body sits directly under a one-line title.
       const pageView = props.view === 'page'
@@ -3718,7 +3546,7 @@ window.__ModuleLoader__.load({
     function BetterBrowser(props) {
       const {
         wide, expandSidebar,
-        useSessions, useSessionPendingInteraction, useSessionStatus, useWorkspaces,
+        useSessions, useSessionStatus, useWorkspaces,
         useSessionAccess,
         useStore: injectedUseStore, actions: injectedActions,
         localStore: localStoreProp,
@@ -3759,12 +3587,10 @@ window.__ModuleLoader__.load({
         console.error('[dsh-better-workspace] standard snapshot hooks missing; browser renders nothing')
         return null
       }
-      // rc.1 added useSessionAccess to the GLOBAL standard hooks. Shipped seat
-      // occupants (row.action pin/archive) call it directly, so an in-row
-      // reproduction must hand it down exactly like the slot renderer does.
-      // Older hosts do not define it; omit the prop there so the seats stay
-      // compatible with their own generation.
-      const seatStandardProps = typeof useSessionAccess === 'function' ? { useSessionAccess } : null
+      // useSessionAccess is a GLOBAL standard hook on rc.1. Shipped seat
+      // occupants (row.action pin/archive) call it directly, so
+      // an in-row reproduction hands it down exactly like the slot renderer.
+      const seatStandardProps = { useSessionAccess }
 
       const storedItems = useWorkspaces(s => s.items)
       // Official rc.2 first-use naming (see withDisplayTitles): every surface
@@ -3778,15 +3604,11 @@ window.__ModuleLoader__.load({
       )
       const phase = useWorkspaces(s => s.phase)
       const archivedSessionIds = useWorkspaces(s => s.archivedSessionIds) || []
-      // Registry-global pin set (dsh 0.1.7): absent on older hosts, which
-      // simply never see pinned rows or pin actions.
+      // Registry-global pin set.
       const pinnedSessionIds = useWorkspaces(s => s.pinnedSessionIds) || []
       const list = useSessions(s => s)
-      // Session UI status, BOTH eras: dsh 0.1.7 replaced the pending-only
-      // hook with the unified status map (running / pendingInteraction /
-      // completionUnread). Prefer it when bound; the legacy hook stays the
-      // pre-0.1.7 source, and summary fields fill whatever neither carries.
-      const pending = useSessionPendingInteraction ? useSessionPendingInteraction(s => s) : null
+      // Unified session UI status map (running / pendingInteraction /
+      // completionUnread); summary fields fill whatever it does not carry.
       const statusMap = typeof useSessionStatus === 'function' ? useSessionStatus(s => s) : null
       const statusOf = (id) => {
         if (!statusMap || typeof statusMap.get !== 'function') return undefined
@@ -3830,9 +3652,8 @@ window.__ModuleLoader__.load({
       const density = densityRaw === 'compact' || densityRaw === 'roomy' ? densityRaw : 'comfortable'
       const showCount = prefsMap.showCount === true
       // Dual-write wrappers: every preference mutation lands in the local
-      // store (immediate echo + scope-less fallback) AND the host settings
-      // store (durable cross-device copy for the manual pull on the other
-      // surface). Computed from the CURRENT rendered values.
+      // store (immediate echo + fallback) AND, for the four Config fields, the
+      // current profile's ConfigForm. Computed from the CURRENT rendered values.
       const shared = makeSharedWrites(actions, stylingMap)
       const compactChains = prefsMap.compactChains !== false
       const statusPulse = prefsMap.statusPulse !== false
@@ -3860,8 +3681,8 @@ window.__ModuleLoader__.load({
       const autoDarkTheme = useAutoThemeDark()
       // Workspace stream state: a `ready` phase with a settled stream is the
       // first authoritative inventory — the point where "everything seen so
-      // far is pre-existing" can be recorded once (older hosts without the
-      // field simply report undefined, which is not 'loading').
+      // far is pre-existing" can be recorded once (an absent field reads
+      // undefined, which is not 'loading').
       const workspaceStreamState = useWorkspaces(s => s.state)
       // Archived-row visibility (v0.20.0, official ArchivedFilter mirror);
       // persisted snapshots from older plugin versions lack the key.
@@ -3904,8 +3725,8 @@ window.__ModuleLoader__.load({
         // real rows are still on their way, and a flag consumed there would style
         // every pre-existing row that shows up next (observed once in eight cold
         // starts). An intermediate snapshot therefore leaves the flag alone and
-        // the next populated one seeds instead. `phase` is 'pending' | 'ready' in
-        // the Host contract; an older host without the field counts as ready.
+        // the next populated one seeds instead. `phase` is 'pending' | 'ready'
+        // in the Host contract; an absent field is treated as ready defensively.
         if (list && list.byId && list.phase !== 'pending') {
           let sessionRowsSeen = false
           for (const id of Object.keys(list.byId)) {
@@ -3958,10 +3779,6 @@ window.__ModuleLoader__.load({
       const shortcutStateOf = shortcutState && typeof shortcutState === 'object' ? shortcutState : null
       const searchRequest = shortcutStateOf ? shortcutStateOf.searchRequest : 0
       const addRequested = !!(shortcutStateOf && shortcutStateOf.addRequested)
-      const forkError = shortcutStateOf ? shortcutStateOf.forkError : null
-      const dismissForkError = shippedFace && typeof shippedFace.dismissForkError === 'function'
-        ? shippedFace.dismissForkError
-        : null
       const closeAddWorkspace = shippedFace && typeof shippedFace.closeAddWorkspace === 'function'
         ? shippedFace.closeAddWorkspace
         : null
@@ -3992,7 +3809,7 @@ window.__ModuleLoader__.load({
        * Feature copy with the command's CURRENT keys appended — the shipped
        * sidebar shows them in its tooltips (Tooltip shortcutKeys) and this
        * surface has no tooltip primitive, so the same information rides the
-       * native title/aria-label. Unbound (or an older host without the catalog)
+       * native title/aria-label. Unbound (or a host without the catalog)
        * keeps the copy alone.
        */
       const shortcutLabel = (label, id) => {
@@ -4019,13 +3836,10 @@ window.__ModuleLoader__.load({
           return fallback
         }
       }
-      // Current session across both host generations (see mainSessionIdOf).
-      // `current` belongs in the deps: 0.1.5-rc.x switches it without
-      // necessarily handing back a new byId, so keying on byId alone would
-      // freeze the highlight (and keep filtering blank rows) on those hosts.
+      // The session retained under mainView (see mainSessionIdOf).
       const currentId = React.useMemo(
         () => mainSessionIdOf(list),
-        [list ? list.byId : null, list ? list.current : null],
+        [list ? list.byId : null],
       )
       // Last-known real titles for the cold-restart fallback window (see
       // the title-cache block). Read per render via getSnapshot: no
@@ -4262,20 +4076,6 @@ window.__ModuleLoader__.load({
         const flow = startAddFlowRef.current
         if (typeof flow === 'function') flow()
       }, [addRequested])
-      // The fork notification belongs to the shipped browser's own overlay,
-      // which is shadowed with it; without this the shortcut's async failure
-      // would be silent. Dismissal rides the shipped channel so both surfaces
-      // agree on the notice's lifetime. dsh 0.2.1-alpha.5 retired the
-      // forkError state (a frame-level shortcutForkFailed toast replaced it),
-      // so on current hosts this mirror idles — the typeof defenses keep it
-      // alive for rc.2-era hosts that still report the field.
-      React.useEffect(() => {
-        if (forkError === null || forkError === undefined) return
-        const timer = setTimeout(() => {
-          if (typeof dismissForkError === 'function') dismissForkError()
-        }, 6000)
-        return () => clearTimeout(timer)
-      }, [forkError ? forkError.seq : null])
       // The copy notice normally self-dismisses (the official toast calls
       // onDone; the fallback chip rides this cap). Keyed on seq so a second
       // copy restarts the window.
@@ -4408,10 +4208,9 @@ window.__ModuleLoader__.load({
             blank: !!summary.blank,
             running: (st && st.running === true) || !!summary.running,
             completed: summary.completed === true || (st && st.completionUnread === true),
-            hasActiveSchedule: hasActiveScheduleOf(summary),
             subagents: subCounts.get(id) || 0,
             updatedAt: summary.updatedAt || 0,
-            pending: visiblePendingKind(st && st.pendingInteraction && st.pendingInteraction.kind) || pendingKindOf(pending, id),
+            pending: visiblePendingKind(st && st.pendingInteraction && st.pendingInteraction.kind),
             pinned: pinnedSet.has(id) && !archivedSet.has(id),
             archived: archivedSet.has(id),
           })
@@ -4485,19 +4284,18 @@ window.__ModuleLoader__.load({
             blank: !!summary.blank,
             running: (st && st.running === true) || !!summary.running,
             completed: summary.completed === true || (st && st.completionUnread === true),
-            hasActiveSchedule: hasActiveScheduleOf(summary),
             subagents: subCounts.get(id) || 0,
             updatedAt: summary.updatedAt || 0,
-            pending: visiblePendingKind(st && st.pendingInteraction && st.pendingInteraction.kind) || pendingKindOf(pending, id),
+            pending: visiblePendingKind(st && st.pendingInteraction && st.pendingInteraction.kind),
             pinned: pinnedSet.has(id) && !archivedSet.has(id),
             archived: archivedSet.has(id),
           })
         }
-        // Browser-local reorder fallback (dsh 0.1.6-alpha.1 stopped injecting
-        // insertSessionBefore): the local flat order wins for the workspaces the
-        // user dragged in, and is empty everywhere else — so a host that still
-        // exposes the action keeps its authoritative order untouched.
-        // Host order stays authoritative wherever the action exists.
+        // Browser-local reorder fallback: used only when the injected
+        // WorkspaceService has no insertSessionBefore. The local flat order wins
+        // for the workspaces the user dragged in, and is empty everywhere else —
+        // so a host that exposes the action keeps its authoritative order
+        // untouched.
         // Recency ordering (v0.13 view option, official orderBy semantics):
         // updatedAt descending with an id tie-break, and the CURRENT blank
         // session — the provisional New Session row — pinned on top. Purely
@@ -4949,8 +4747,8 @@ window.__ModuleLoader__.load({
         if (target.kind === 'workspace') {
           Promise.resolve()
             .then(() => renameWorkspace(target.id, next))
-            // The host action is optional (dsh 0.1.6-alpha.1 dropped it from
-            // the browser contract); the rename above is the move either way.
+            // The host action is optional; the rename above is the move either
+            // way. rc.1's browserInjected provides insertWorkspaceBefore.
             .then(() => { if (typeof insertWorkspaceBefore === 'function') insertWorkspaceBefore(target.id) })
             .then(() => setDialog(null))
             .catch(fail)
@@ -5091,12 +4889,11 @@ window.__ModuleLoader__.load({
       // here" and the drop then goes elsewhere).
       const clearOver = (targetKind, target) => setDrag((current) => (current && current.over && current.over.kind === targetKind && current.over.target === target) ? { ...current, over: null } : current)
       const canDragWorkspace = typeof insertWorkspaceBefore === 'function'
-      // Session REORDER needs the host insertSessionBefore action; dragging a
-      // session onto a sub-group row (a pure rename) stays available without it.
-      // Session reorder keeps working either way: the host action is preferred
-      // (authoritative, visible to every surface), while hosts that no longer
-      // inject it — dsh 0.1.6-alpha.1 dropped insertSessionBefore from the
-      // browser contract — fall back to the browser-local flat order.
+      // Session REORDER prefers the injected WorkspaceService's
+      // insertSessionBefore (authoritative, visible to every surface); dragging
+      // a session onto a sub-group row is a pure rename and stays available
+      // without it. When the service lacks the action, reorder falls back to the
+      // browser-local flat order (sessionOrder).
       const canReorderSessions = true
 
       /* --------------------- workspace drag & drop -------------------- */
@@ -6356,7 +6153,7 @@ window.__ModuleLoader__.load({
           // right-click path. While the menu is open the row still pins
           // (hover fill + visible actions), matching the official menuOpen
           // state — the shared popup reports its captured target through
-          // contextMenus.active, while older hosts keep the local ctx.
+          // contextMenus.active, while the local ctx covers folder/sgroup rows.
           menuOpen: !!(
             (ctx && ctx.kind === 'workspace' && ctx.payload && ctx.payload.workspaceId === workspace.workspaceId)
             || (activeContextMenu && activeContextMenu.kind === 'workspace'
@@ -6597,7 +6394,7 @@ window.__ModuleLoader__.load({
         // unarchive). Copy Session ID (order 450) rides the official
         // dictionary, so upstream rewording AND future item additions land
         // without a plugin release; every verb is gated on its service
-        // method so older hosts simply never offer what they cannot do.
+        // method so a host without it never offers what it cannot do.
         return [
           ...(pinAvailable && !archived ? [{
             id: pinned ? 'unpin' : 'pin',
@@ -6748,8 +6545,8 @@ window.__ModuleLoader__.load({
           customizeEntry,
           // v0.32.0: the workspace default preset. Rides the official
           // agent-preset roster + blank-composition channels (the hero
-          // chip's remotes); hidden entirely where the host lacks them —
-          // older hosts simply never offer what they cannot do.
+          // chip's remotes); hidden entirely where the host lacks them, so a
+          // missing service never offers what it cannot do.
           ...(presetFace ? [{ id: 'ws-preset', label: t('menu.workspacePreset'), icon: icon('IconAgentPresetOutlineRegular', 16) }] : []),
         ]
         if (ctx.kind === 'session') {
@@ -7106,11 +6903,9 @@ window.__ModuleLoader__.load({
       }
 
       // Copy-session-id notice copy: the official 'workspace' dictionary is
-      // the source of truth, this plugin's aligned fallback covers older hosts.
-      // Copy-session-id notice copy: the official 'workspace' dictionary is
-      // the source of truth, this plugin's aligned fallback covers older
-      // hosts. An explicit `text` override (v0.32.0 workspace-preset done
-      // notice) reuses the same toast pipeline with its own copy.
+      // the source of truth; this plugin's aligned fallback covers a missing or
+      // incomplete official dictionary. An explicit `text` override (v0.32.0
+      // workspace-preset done notice) reuses the same toast pipeline.
       const copyNoticeText = copyNotice
         ? (typeof copyNotice.text === 'string' ? copyNotice.text
           : officialText(copyNotice.ok ? 'toast.sessionIdCopied' : 'toast.sessionIdCopyFailed',
@@ -7119,28 +6914,9 @@ window.__ModuleLoader__.load({
 
       return E('div', { className: cls('bw-root', sessionCouldLeaveGroup && 'bw-root-drop-out'), ...rootDropEvents },
         StyleNode(),
-        // The shipped fork notice rides the shipped browser's overlay, which is
-        // shadowed with it: the shortcut's async failure would otherwise be
-        // silent. Copy follows the shipped dictionary, the lifetime follows the
-        // shipped channel (the effect above dismisses it). Retired upstream in
-        // dsh 0.2.1-alpha.5 (frame-level toast now); kept for rc.2-era hosts.
-        (forkError && typeof forkError === 'object')
-          ? E('div', { className: 'bw-toast', role: 'status' },
-              E('span', { className: 'bw-toast-text' }, forkError.reason === 'unavailable'
-                ? shippedText('shortcut.noCompletedTurn', t('shortcut.noCompletedTurn'))
-                : shippedText('shortcut.forkFailed', t('shortcut.forkFailed'))),
-              E('button', {
-                type: 'button',
-                className: 'bw-toast-close',
-                'aria-label': t('close'),
-                title: t('close'),
-                onClick: () => { if (typeof dismissForkError === 'function') dismissForkError() },
-              }, icon('IconCloseOutline16', 12)),
-            )
-          : null,
         // Copy-session-id notice (the dsh 0.2.1-alpha.5 menu mirror): the
         // official primitives Toast when this host ships it (body portal,
-        // official look), otherwise the same chip the fork notice uses.
+        // official look), otherwise the local chip below.
         (copyNotice && officialToast)
           ? E(officialToast, {
               key: 'bw-copy-' + copyNotice.seq,
@@ -7344,9 +7120,9 @@ window.__ModuleLoader__.load({
       // the handle before any flow can open.
       pickerState.api = uiWorkspace
 
-      // dsh 0.2.2-alpha.3 context menus. The service is acquired SOFTLY for
-      // the same reason as remote.agentPresets: a hard inject would pend the
-      // whole bundle forever on older hosts. The bridge is written by the
+      // rc.1 context menus. The service is acquired SOFTLY for the same reason
+      // as remote.agentPresets: a hard inject would pend the whole bundle
+      // forever on a host that lacks it. The bridge is written by the
       // browser seat through browserInjected (a stable getter), so the
       // contribution resolves against the same dialogs and switches the
       // local menu uses.
@@ -7372,7 +7148,7 @@ window.__ModuleLoader__.load({
       // property chain only along the reading fiber's ancestry — v0.32.1
       // probed it from a fiber outside that subtree, the chain threw, and the
       // row hid; v0.32.0's strict ctx.get ran before the gateway went ACTIVE
-      // and read undefined. The fix keeps NO hard inject (the settingsScope
+      // and read undefined. The fix keeps NO hard inject (the optional-service
       // lesson: a service the host lacks would pend this bundle forever):
       // probe synchronously for the common case, then WAIT with a soft
       // ctx.inject child fiber that fires once the two services go ACTIVE —
@@ -7564,8 +7340,8 @@ window.__ModuleLoader__.load({
       }
       if (!contextMenus && ctx && typeof ctx.inject === 'function') {
         // Late arrival: the shared menu service mounts after this bundle on
-        // some boots. A soft child fiber waits for it; old hosts simply keep
-        // the fiber pending and the local menu stays in charge.
+        // some boots. A soft child fiber waits for it; if the service never
+        // appears the fiber stays pending and the local menu stays in charge.
         try {
           ctx.inject(['contextMenus'], (fctx) => {
             try { adoptContextMenus(fctx && fctx.contextMenus) } catch (lateError) {
@@ -7598,21 +7374,21 @@ window.__ModuleLoader__.load({
       // loading its whole history just to send a 20ms rename RPC (the rename
       // itself is independent of the transcript). Tiered, cheapest first:
       //
-      // 1. Open session → borrow binding directly. On 0.1.6+ hosts binding(id)
-      //    only sees retained scopes (service.ts:539 `scopes.get(id)?.binding`,
-      //    undefined when closed), so "a binding comes back" IS the open test;
-      //    on 0.1.5-rc.x hosts every row is visible, identical to the old
-      //    fallback. Same SessionBinding object the using path borrows, so
-      //    title projection / list refresh behave exactly the same.
-      // 2. Closed session → sessions.manager.rename(id, title): "Rename a
-      //    Session ... without opening its history" (manager.ts:578) — a bare
-      //    remote.session.rename plus the title projection. manager is a
-      //    TS-private field of ClientSessions (service.ts:245), reachable at
-      //    runtime; feature-probed so hosts without it skip the tier.
-      // 3. Fallback → the 0.1.6-alpha.2 retention contract: sessions.using
-      //    with an explicit source (slow — loads history — but the only legal
-      //    path on hosts predating manager.rename). 0.1.5-rc.x hosts ship
-      //    ISessions.binding only; tier 1 already served them. Then fail loud.
+      // 1. Open session → borrow binding directly. binding(id) only sees
+      //    retained scopes, so "a binding comes back" IS the open test. Same
+      //    SessionBinding object the using path borrows, so title projection
+      //    and list refresh behave exactly the same.
+      // 2. Closed session → PRIVATE BRIDGE: sessions.manager.rename(id, title)
+      //    is "Rename a Session ... without opening its history"
+      //    (manager.ts:578). `manager` is a TS-private field of ClientSessions
+      //    (service.d.ts:105), not part of ISessions; it is reachable at
+      //    runtime, so this tier is feature-probed. It is kept because the
+      //    public using() path below loads the whole history first (multi-second
+      //    on a large closed session). This is the plugin's ONLY private-API
+      //    reach; if the host ever stops exposing the field, tier 3 still
+      //    renames correctly (just slower).
+      // 3. Fallback → sessions.using with an explicit source: public, but slow
+      //    (loads history). Then fail loud.
       // Fork and open go through the uiWorkspace navigation service: ISessions
       // no longer carries open() at all (navigation belongs to the view owner,
       // replaceMain).
@@ -7660,9 +7436,9 @@ window.__ModuleLoader__.load({
         // closure live, so every render and every menu build re-asks; hosts
         // without the service keep returning null, which simply hides the row.
         presetFaceOf: () => presetFace,
-        // dsh 0.2.2-alpha.3: the shared context-menu service (getter for the
-        // same late-arrival reason as presetFaceOf; null on older hosts, which
-        // keep the local menu) and the live action bridge its contribution
+        // rc.1: the shared context-menu service (getter for the same
+        // late-arrival reason as presetFaceOf; null while the service is absent,
+        // which keeps the local menu) and the live action bridge its contribution
         // reads. The getter is what openCtx probes on every right-click.
         contextMenuFaceOf: () => contextMenus,
         setMenuBridge,
@@ -7720,13 +7496,13 @@ window.__ModuleLoader__.load({
           ? (workspaceId, beforeWorkspaceId) => workspaces.insertBefore(workspaceId, beforeWorkspaceId)
           : undefined,
         // Official contract exposes session reorder through the WORKSPACES
-        // service (see dsh ui-workspace client index.ts); feature-probed so
-        // older hosts degrade to "group-move only" instead of a TypeError.
+        // service (see dsh ui-workspace client index.ts); feature-probed so a
+        // service without it degrades to "group-move only" instead of a TypeError.
         insertSessionBefore: typeof workspaces.insertSessionBefore === 'function'
           ? (workspaceId, sessionId, beforeSessionId) => workspaces.insertSessionBefore(workspaceId, sessionId, beforeSessionId)
           : undefined,
-        // options rides through for the 0.1.7 stop-and-archive hop; older
-        // services simply never receive a second argument.
+        // options rides through for the rc.1 stop-and-archive hop; a service
+        // without that option simply never receives a second argument.
         archiveSession: (sessionId, options) => uiWorkspace.archiveSession(sessionId, options),
         pinSession: typeof uiWorkspace.pinSession === 'function' ? (sessionId) => uiWorkspace.pinSession(sessionId) : undefined,
         unpinSession: typeof uiWorkspace.unpinSession === 'function' ? (sessionId) => uiWorkspace.unpinSession(sessionId) : undefined,
@@ -7816,42 +7592,18 @@ window.__ModuleLoader__.load({
         },
       }
 
-      // Cross-device settings scope (manual sync, see the host-settings-sync
-      // block). Binding is best-effort: a missing/failed bind leaves the
-      // plugin fully browser-local — the pre-0.9.5 behavior.
+      // One ConfigForm per live profile entry is the rc.1 settings channel
+      // (getSnapshot/set/subscribe). Values persist in THIS
+      // profile's patch. The form id is the Host plugin entry id — the
+      // cordis.patch.yml row id 'better-workspace', not the package name.
       prefsScopeRef = null
-      prefsScopeVia = null
-      try {
-        // dsh >= 0.1.7 removed the settings service, and READING the service
-        // property on a host that never injected it throws on the cordis
-        // Context proxy ("cannot get property \"settingsScope\" without
-        // inject") — the pre-0.1.7 probe wrote a stack trace into the console
-        // on EVERY boot, noise that hides real failures and made this seat look
-        // broken during the rc.1 audit. ctx.get is the era-safe read: it
-        // answers with the service when it exists (both eras) and simply
-        // reports absence when it does not, so the property is never touched.
-        const scopeHost = ctx && typeof ctx.get === 'function' ? ctx.get('settingsScope') : null
-        if (scopeHost && typeof scopeHost.bind === 'function') {
-          prefsScopeRef = scopeHost.bind({ namespace: 'better-workspace' })
-          prefsScopeVia = 'settingsScope'
-        }
-      } catch (error) {
-        console.warn('[dsh-better-workspace] settings scope bind failed; sync stays local', error)
-        prefsScopeRef = null
-      }
-      // dsh >= 0.1.7: the settings service is gone; one ConfigForm per live
-      // profile entry replaces it (same getSnapshot/set/subscribe contract).
-      // Values then persist in THIS profile's patch — there is no shared home
-      // any more, so the manual cross-device sync section stays hidden.
       try {
         if (ctx.inject) {
           ctx.inject(['configForms'], (fctx) => {
             try {
-              if (prefsScopeVia === 'settingsScope') return
               const forms = fctx && fctx.configForms
               if (forms && typeof forms.get === 'function') {
                 prefsScopeRef = forms.get('better-workspace')
-                prefsScopeVia = 'configForms'
               }
             } catch (error) {
               console.warn('[dsh-better-workspace] configForms acquisition failed', error)
@@ -7862,12 +7614,9 @@ window.__ModuleLoader__.load({
         console.warn('[dsh-better-workspace] configForms wiring failed', error)
       }
 
-      // dsh 0.1.6-alpha.2+ hosts third-party configuration on the Plugins
-      // panel's bundle page: plugins.bundle.config, keyed by PACKAGE name and
-      // rendered with view: 'page'. This is the only settings seat now — the
-      // legacy settings-list card (the pre-alpha.2 Settings → Plugins list)
-      // went away with the raised host floor. The inject waits for the
-      // declaration, so older hosts simply never grow this seat.
+      // Third-party configuration lives on the Plugins panel's bundle page:
+      // plugins.bundle.config, keyed by PACKAGE name and rendered with
+      // view: 'page'. This is the only settings seat.
       slots.inject('plugins.bundle.config', guarded(
         'plugins.bundle.config',
         {
@@ -7944,12 +7693,11 @@ window.__ModuleLoader__.load({
 
     return {
       name: 'dsh-better-workspace',
-      // v0.32.2: the list stays at the five era-guaranteed services (the
-      // settingsScope lesson — a hard inject of anything a host may lack
-      // pends this whole bundle forever). 'remote' + 'remote.agentPresets'
-      // are acquired SOFTLY inside apply: a synchronous probe plus a
-      // ctx.inject child fiber that waits for their ACTIVE transition
-      // (see the agent-preset face block above).
+      // The list stays at the five services guaranteed on this host
+      // generation (a hard inject of anything optional pends this whole
+      // bundle forever). 'remote' + 'remote.agentPresets' are acquired SOFTLY
+      // inside apply: a synchronous probe plus a ctx.inject child fiber that
+      // waits for their ACTIVE transition (see the agent-preset face block).
       inject: ['slots', 'sessions', 'workspaces', 'locale', 'uiWorkspace'],
       apply,
     }

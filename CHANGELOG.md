@@ -3,6 +3,29 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.39.0 — 2026-11-05
+
+**类型**:breaking(收敛到 dsh 0.2.2-rc.1 单代基线)
+
+### breaking
+- **运行时下限**:`engines.dsh` 与 `peerDependencies["@deepseek-ai/dsh"]` 改为 `>=0.2.2-rc.1`(不设上界),`engines.node` 改为 `>=24.9.0`,`@deepseek-ai/schemastery` 对齐到 `^3.19.0`。删除 `@deepseek-ai/dsh-settings` 的 peer 声明与 optional 标记——host 半已不再使用它。
+- **host 半删除旧设置面**:`src/index.js` 移除 0.1.6 时代的 `settingsNamespace()` / `settings.register('better-workspace', ...)` 整段、`legacySettings` 探测、`live()` 与 `valueOf()`;rc.1 的 `Context.settings` 是 `SettingsForms`,没有 `register`。`Config` 继续静态导出四个 volatile 字段(compactChains / statusPulse / styling / appearance),schemastery 仍动态 import,解析失败时 `Config` 降级为 undefined。
+- **client 半删除 rc.1 不可达分支**:`SessionListState.current` 回落(rc.1 只有 `retainedBy.mainView`)、`projectionValues.schedule` 自绘角标全链、`parentSessionId` 旧拼写、`useSessionPendingInteraction` 旧 pending 源、`forkError` 镜像与 toast(0.2.1-alpha.5 已退役)、`settingsScope` 探测与整段手动跨端同步 UI(含 `importHost` / `mergeHost` / `useHostScope` / `IS_DESKTOP_SURFACE`)、pre-rc.2 归档筛选两开关回退、`ICON_ALIASES` 死映射。
+- **同步清理物化资产**:21 门词典各删 14 键(11 个 `settings.group.sync` / `sync.*`、`schedule.active`、`shortcut.forkFailed` / `shortcut.noCompletedTurn`),`src/client.locales.js` 3744 → 3450 行;样式删除 `.bw-sync-*`、`.bw-schedule-badge` 及其 hover 选择器、已退役 fork 提示注释与文件尾过时的 browse 注释。
+- **只保留单设置座位**:`plugins.bundle.config`(按包名 `dsh-better-workspace`);`settings.plugin.item` 不再注册,冒烟断言不存在。`configForms.get('better-workspace')` 的参数是 Host plugin entry id(对应 `cordis.patch.yml` 的 row id),不是包名。
+- **文档同步**:README / README_EN 的版本下限、跨端同步、旧宿主回退与「不碰私有 API」叙述重写;AGENTS 新增「单代基线与大版本清理纪律」,并改写双设置座位、`SessionListState.current`、schedule 双源、`useSessionPendingInteraction`、`settingsScope` / `register`、peer 门禁与跨端同步等旧事实。
+
+### fix
+- **设置写入只碰 Config 声明的字段**:`setPref` 现在仅在 `HOST_CONFIG_FIELDS`(compactChains / statusPulse / styling / appearance)内调用 `scopeSet`,其余视图偏好只写本地 store。此前 sessionLimit / graftTitlePrefix / rowActions / density / showCount / autoStyle 每次切换都会向 rc.1 提交一次非 volatile 字段写入,被 `Config field ... is not volatile` 拒绝并告警。
+- **改名私有桥显式化**:保留 `sessions.binding → sessions.manager.rename → sessions.using` 三层。tier1 `binding` 与 tier3 `using` 是 rc.1 公开面;tier2 的 `sessions.manager` 是 `ClientSessions` 的 TS private 字段,仅为「改名不打开历史」保留,代码内已标注 PRIVATE BRIDGE,官方公开后删除。
+- **用户数据迁移保留**:`workspaceSlashOf` / `workspaceGroupModeOf`(旧快照键)、`readAppearance`(缺 stroke 键按旧版开启)、`iconOf` 与 `resolveIconName`(去尾部数字 + `base + Regular/Medium`,覆盖 `IconSendOutline16 → IconSendOutlineRegular`)、`auto:N` 颜色 token 与标题缓存均未改动。
+
+### 验证
+- 冒烟 `npm test`:83 项全绿。
+- `node --check` 覆盖 `src/client.js`、`src/index.js`、`src/client.locales.js`、`src/client.styles.js`。
+- 隔离实例真机(dsh 0.2.2-rc.1,Web):插件面板显示 v0.39.0;侧栏 `.bw-root` 两层树、折叠、置顶/归档按钮正常,零 pageerror;设置卡 `.bw-settings` 三节可展开,切换「状态呼吸灯」后当前 profile 的 `cordis.patch.yml` 写入 `- id: better-workspace / config.statusPulse: false`。
+- 桌面客户端内置 dsh 0.2.1-rc.5,低于本版 `engines.dsh` 下限,本轮未做 rc.1 桌面真机;客户端升级到 rc.1 后补验两端。
+
 ## v0.38.2 — 2026-11-04
 
 **类型**:fix(适配 dsh 0.2.2-rc.1:侧栏官方行内按钮补 `useSessionAccess`)

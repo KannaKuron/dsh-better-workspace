@@ -28,24 +28,19 @@ test('package.json declares a dual-face dsh web plugin', () => {
   assert.ok(pkg.files.includes('src/index.js'), 'host entry must ship')
 })
 
-test('package.json declares the dsh peers the 0.1.7+ compatibility gate reads', () => {
-  // dsh 0.1.7-rc.1 enforces exactly one thing at install and boot
-  // (packages/boot/app-boot/src/plugin-compatibility.ts): every
-  // peerDependencies entry named `@deepseek-ai/dsh` or `@deepseek-ai/dsh-*`,
-  // compared with prereleases participating. Without such an entry a plugin is
-  // never validated at all, which is how this one used to be invisible to the
-  // gate. The range mirrors engines.dsh and stays open-ended: an upper bound
-  // would only disable the plugin on the next dsh line before any real break
-  // was observed (dsh-any-background@0.3.0 was refused on 0.1.7-rc.1 for
-  // exactly that).
+test('package.json declares the dsh peer the 0.2.2-rc.1 compatibility gate reads', () => {
+  // app-boot's plugin-compatibility check compares the plugin's dsh range with
+  // prereleases participating. The plugin targets exactly one host generation
+  // now: dsh >= 0.2.2-rc.1. No upper bound — a bound would disable the plugin
+  // on the next line before any real break was observed.
   const pkg = JSON.parse(read('package.json'))
-  assert.equal(pkg.peerDependencies['@deepseek-ai/dsh'], '>=0.1.6-alpha.2')
-  // Both dsh peers must be OPTIONAL: the gate reads peerDependencies only, but
-  // a package manager with autoInstallPeers (pnpm's default) resolves the range
-  // against the registry — and every published version of both packages is a
-  // prerelease, which a plain range excludes (ERR_PNPM_NO_MATCHING_VERSION).
+  assert.equal(pkg.peerDependencies['@deepseek-ai/dsh'], '>=0.2.2-rc.1')
+  assert.doesNotMatch(pkg.peerDependencies['@deepseek-ai/dsh'], /</, 'the dsh peer stays open-ended')
+  // Still OPTIONAL: autoInstallPeers resolves the range against the registry,
+  // and published dsh versions are prereleases that a plain range excludes
+  // (ERR_PNPM_NO_MATCHING_VERSION) unless the peer is optional.
   assert.equal(pkg.peerDependenciesMeta?.['@deepseek-ai/dsh']?.optional, true)
-  assert.equal(pkg.peerDependenciesMeta?.['@deepseek-ai/dsh-settings']?.optional, true)
+  assert.equal(pkg.peerDependenciesMeta?.['@deepseek-ai/dsh-settings'], undefined, 'the removed settings peer stays gone')
 })
 
 test('dsh.plugin.json version matches package.json', () => {
@@ -54,6 +49,7 @@ test('dsh.plugin.json version matches package.json', () => {
   assert.equal(manifest.id, 'dsh-external/dsh-better-workspace')
   assert.equal(manifest.version, pkg.version)
   assert.equal(manifest.main, './src/index.js')
+  assert.equal(manifest.engines.dsh, '>=0.2.2-rc.1')
 })
 
 test('cordis.patch.yml inserts exactly one plugin row', () => {
@@ -67,8 +63,8 @@ test('cordis.patch.yml inserts exactly one plugin row', () => {
 
 test('package.json declares the dsh engine floor (plugin market requirement)', () => {
   const pkg = JSON.parse(read('package.json'))
-  assert.equal(pkg.engines.node, '>=18')
-  assert.equal(pkg.engines.dsh, '>=0.1.6-alpha.2')
+  assert.equal(pkg.engines.node, '>=24.9.0')
+  assert.equal(pkg.engines.dsh, '>=0.2.2-rc.1')
 })
 
 test('client half is a __ModuleLoader__ bundle with baseline requires only', () => {
@@ -138,7 +134,7 @@ test('client half registers the expected seats (v0.12.1)', () => {
     'the sidebar hole must stay official (v0.16.0)')
   assert.doesNotMatch(text, /slots\.inject\('conversation\.hero\.workspace\.directoryFlow'/,
     'the hero hole must stay official')
-  // Settings ride BOTH host eras.
+  // Only the bundle-config seat exists since v0.39.0.
   assert.doesNotMatch(text, /settings\.plugin\.item/, 'the legacy settings-list seat must stay gone')
   assert.match(text, /slots\.inject\('plugins\.bundle\.config',[\s\S]*?key: 'dsh-better-workspace',/)
   assert.match(text, /props\.view === 'page'/)
@@ -181,13 +177,12 @@ test('customize dialog seeds the draft by row identity, not the rebuilt initial 
 test('client plugin exports the cordis plugin triple', () => {
   const text = clientText()
   assert.match(text, /name: 'dsh-better-workspace'/)
-  // dsh 0.1.7 removed the settingsScope service: a hard inject would leave
-  // the fiber PENDING forever, so only era-guaranteed services stay; the
-  // settings face is acquired softly (settingsScope) / optionally
-  // (configForms) inside apply.
+  // rc.1 has no settingsScope and no settings.register: only
+  // rc.1-guaranteed services stay in the hard inject; the settings face is
+  // acquired softly through configForms inside apply.
   assert.match(text, /inject: \['slots', 'sessions', 'workspaces', 'locale', 'uiWorkspace'\]/)
   assert.match(text, /ctx\.inject\(\['configForms'\]/)
-  assert.doesNotMatch(text, /'uiWorkspace', 'settingsScope'/)
+  assert.doesNotMatch(text, /settingsScope|settings\.register/)
   assert.match(text, /async function apply\(ctx\)/)
 })
 
@@ -276,9 +271,9 @@ test('alpha.3: the official context menu owns session/workspace rows (v0.38.0)',
   const pkg = JSON.parse(read('package.json'))
   const inject = pkg.dsh.client.inject
   assert.ok(inject.includes('@deepseek-ai/dsh-client-ui-context-menu'),
-    'the shared menu bundle is declared for prefetch (old hosts skip it)')
-  // The service is adopted through ctx.get + a soft child fiber: a hard
-  // cordis inject would never resolve on 0.2.2-alpha.2 hosts.
+    'the shared menu bundle is declared for prefetch (optional service)')
+  // The service is optional, so it is adopted through ctx.get + a soft child
+  // fiber: a hard cordis inject would pend the seat if it is ever absent.
   assert.match(text, /const useActiveContextMenu = \(faceOf\) => \{/)
   assert.match(text, /active && typeof active\.subscribe === 'function'/)
   assert.match(text, /ctx\.get\('contextMenus'\)/)
@@ -465,7 +460,7 @@ test('title cache: persisted key, batch learning, debounced save, bounded evicti
   assert.match(text, /forgetDisplay\(String\(sessionId\)\)/)
   // Drive the real block with a mocked localStorage.
   const start = text.indexOf('const TITLE_CACHE_LIMIT =')
-  const end = text.indexOf('/* ======================= host settings sync')
+  const end = text.indexOf('/* ================== host settings (per profile)')
   assert.ok(start !== -1 && end !== -1 && start < end, 'title cache block not found')
   const saved = new Map()
   const fakeLocalStorage = {
@@ -521,38 +516,6 @@ test('title cache: persisted key, batch learning, debounced save, bounded evicti
   api.rememberAllTitles(list4)
   assert.equal(api.titleCache.byId.g1.title, 'Other/renamed')
   assert.equal(api.titleCache.byId.g1.display, undefined, 'grouped rename clears the display')
-})
-
-
-test('manual cross-device sync: host scope bind, dual writes, pull modes', () => {
-  const text = clientText()
-  // Scope bound once per activation; failures degrade to browser-local.
-  // v0.21.1: the probe goes through ctx.get — reading the service PROPERTY on
-  // a host that never injected it throws on the cordis proxy ("cannot get
-  // property \"settingsScope\" without inject"), which put a stack trace in the
-  // console on every 0.1.7 boot.
-  assert.match(text, /ctx\.get\('settingsScope'\)/, 'the soft probe reads the service without injecting it')
-  assert.doesNotMatch(text, /ctx\.settingsScope/, 'the throwing property read is gone')
-  assert.match(text, /typeof scopeHost\.bind === 'function'/)
-  assert.match(text, /bind\(\{ namespace: 'better-workspace' \}\)/)
-  // Dual-write wrappers exist and route every preference mutation through them.
-  // v0.12.0 dropped the explicit-folder channel with the feature itself.
-  assert.match(text, /const makeSharedWrites = \(actions, stylingMap\)/)
-  assert.equal((text.match(/shared\.setStyling\(/g) || []).length, 2,
-    'the customize dialog writes through the shared wrapper')
-  assert.doesNotMatch(text, /shared\.(addFolder|removeFolder|renameFolder)\(/, 'explicit folders are gone (v0.12.0)')
-  // Pull modes: overwrite replaces, merge unions with the pulled copy winning.
-  assert.match(text, /importHost: \(d, host\)/)
-  assert.match(text, /mergeHost: \(d, host\)/)
-  // Surface detection picks the pull label direction.
-  assert.match(text, /location\.protocol === 'dsh-app:'/)
-  assert.match(text, /t\(IS_DESKTOP_SURFACE \? 'sync\.pull\.web' : 'sync\.pull\.desktop'\)/)
-  // No automatic mirror/migration remains: sync is manual by user decision.
-  assert.doesNotMatch(text, /useHostMirror/)
-  assert.doesNotMatch(text, /HOST_SYNC_MARK/)
-  for (const key of ['sync.pull.desktop', 'sync.pull.web', 'sync.mode.overwrite', 'sync.mode.merge', 'sync.push']) {
-    assert.ok(text.includes("'" + key + "':"), 'missing dictionary key ' + key)
-  }
 })
 
 /**
@@ -624,10 +587,10 @@ test('appearance: stroke ships OFF (v0.31.0, legacy ON preserved), gray color de
   // 0.11.1's offset-copy rim is gone: eight directions are four diagonal
   // samples, so slopes and curves came out as detached blocks.
   assert.doesNotMatch(text, /STROKE_DIRECTIONS|strokeShadowsOf/, 'the rim must stay a real geometric stroke')
-  // Host schema + cross-device sync carry the new field.
+  // Host schema + the per-profile ConfigForm carry the new field.
   assert.match(read('src/index.js'), /appearance: Schema\.dict/, 'host namespace must declare appearance')
-  assert.match(text, /host\.appearance && typeof host\.appearance === 'object'/, 'pull paths must carry appearance')
-  assert.match(text, /scopeSet\('appearance'/, 'the push path must carry appearance')
+  assert.match(text, /HOST_CONFIG_FIELDS = new Set\(\[[^\]]*'appearance'/, 'the push path must carry appearance')
+  assert.match(text, /HOST_CONFIG_FIELDS\.has\(key\)/, 'only real Config fields are written to the host')
   assert.match(text, /--bw-stroke-color/, 'the sampled variable is what unattributed rows read')
   // Fresh installs never hydrate: createViewStore's init bakes the shipped
   // default (stroke OFF) into prefs.appearance, and the baked literal must
@@ -659,14 +622,15 @@ test('outline: label keeps a bleed, meta column stays unstroked (0.10.1)', () =>
 })
 
 /**
- * Icon compatibility (0.10.2): dsh 0.1.6-alpha.1 replaced part of the
- * primitives icon set (IconSendOutline16 -> IconPaperPlaneOutline14 and
- * friends), so a persisted custom icon naming a retired glyph must resolve to a
- * surviving equivalent instead of rendering an empty cell.
+ * Icon compatibility (0.10.2, retained as user-data migration): the primitives
+ * icon set has been renamed across host versions (IconSendOutline16 ->
+ * IconPaperPlaneOutline14 and friends), so a persisted custom icon naming a
+ * retired glyph must resolve to a surviving equivalent instead of rendering an
+ * empty cell.
  */
 test('icons: retired glyphs resolve to a survivor; the picker follows the host set (0.10.2)', () => {
   const text = clientText()
-  const start = text.indexOf('const ICON_ALIASES =')
+  const start = text.indexOf('const resolveIconName = (name) => {')
   const end = text.indexOf('/** Render a primitives icon by name')
   assert.ok(start !== -1 && end !== -1 && start < end, 'icon resolution helpers not found')
   const load = (ui) => new Function('ui', text.slice(start, end) + '\nreturn { resolveIconName }')(ui)
@@ -679,11 +643,12 @@ test('icons: retired glyphs resolve to a survivor; the picker follows the host s
   assert.equal(load(oldUi).resolveIconName('solid'), '', 'legacy slots are not glyph names')
 
   const added = ['IconPaperPlaneOutline14', 'IconShieldOutline16', 'IconCompactOutline16', 'IconWrapLinesOutline16', 'IconPlanOutline14']
-  const newUi = { IconSendOutline14: () => null }
+  const newUi = { IconSendOutlineRegular: () => null }
   for (const name of added) newUi[name] = () => null
-  assert.equal(load(newUi).resolveIconName('IconSendOutline16'), 'IconSendOutline14', 'a retired glyph follows its alias chain')
-  assert.equal(load(newUi).resolveIconName('IconSendOutline14'), 'IconSendOutline14')
-  assert.equal(load({}).resolveIconName('IconSendOutline16'), '', 'an alias with no survivor stays empty rather than crashing')
+  assert.equal(load(newUi).resolveIconName('IconSendOutline16'), 'IconSendOutlineRegular', 'a retired pixel name lands on the Regular glyph')
+  assert.equal(load(newUi).resolveIconName('IconSendOutline14'), 'IconSendOutlineRegular', 'a historical 14px name lands there too')
+  assert.equal(load(newUi).resolveIconName('IconSendOutlineRegular'), 'IconSendOutlineRegular', 'a current name is used as-is')
+  assert.equal(load({}).resolveIconName('IconSendOutline16'), '', 'a name with no survivor stays empty rather than crashing')
 
   const choicesStart = text.indexOf('const ICON_CHOICES = [')
   const choicesEnd = text.indexOf('})()', choicesStart) + 4
@@ -692,9 +657,9 @@ test('icons: retired glyphs resolve to a survivor; the picker follows the host s
   const pickerCode = aliasCode + '\n' + text.slice(choicesStart, choicesEnd)
   const listOf = (ui) => new Function('ui', pickerCode + '\nreturn { ICON_CHOICES, ICON_PICKER_CHOICES }')(ui)
   const onNew = listOf(newUi)
-  assert.ok(!onNew.ICON_CHOICES.includes('IconSendOutline16'), 'the retired name is gone from the committed list')
-  assert.ok(onNew.ICON_CHOICES.includes('IconSendOutline14'), 'the surviving glyph is committed')
-  assert.ok(onNew.ICON_PICKER_CHOICES.includes('IconSendOutline14'), 'the surviving glyph is offered')
+  assert.ok(onNew.ICON_CHOICES.includes('IconSendOutline14'), 'the historical candidate stays committed')
+  assert.ok(onNew.ICON_PICKER_CHOICES.includes('IconSendOutline14'), 'the historical spelling remains the deduped cell')
+  assert.ok(!onNew.ICON_PICKER_CHOICES.includes('IconSendOutlineRegular'), 'the same glyph is not offered twice')
   assert.equal(new Set(onNew.ICON_PICKER_CHOICES).size, onNew.ICON_PICKER_CHOICES.length, 'no duplicate cells')
   assert.ok(onNew.ICON_PICKER_CHOICES.includes('solid') && onNew.ICON_PICKER_CHOICES.includes('none'), 'legacy slots always survive')
   assert.ok(onNew.ICON_PICKER_CHOICES.length < onNew.ICON_CHOICES.length, 'glyphs this host lacks are filtered out')
@@ -709,15 +674,15 @@ test('icons: retired glyphs resolve to a survivor; the picker follows the host s
 })
 
 /**
- * dsh 0.1.7-rc.1 added exactly two glyphs to the primitives set (the users
- * pair used by the agent-team / subagent surfaces). Invariant 12: a new glyph
- * is committed to the candidate list first; the runtime filter is what keeps a
- * host without it from rendering an empty cell. The generation fallback must
- * also land the historical pixel-suffix spelling on the new name.
+ * The primitives users pair used by the agent-team / subagent surfaces.
+ * Invariant 12: a new glyph is committed to the candidate list first; the
+ * runtime filter is what keeps a host without it from rendering an empty
+ * cell. The generation fallback must also land the retired pixel-suffix
+ * spelling on the current name.
  */
-test('icons: the 0.1.7-rc.1 users pair is committed and host-filtered (0.21.1)', () => {
+test('icons: the users pair is committed and host-filtered (0.21.1)', () => {
   const text = clientText()
-  const start = text.indexOf('const ICON_ALIASES =')
+  const start = text.indexOf('const resolveIconName = (name) => {')
   const end = text.indexOf('/** Render a primitives icon by name')
   const choicesStart = text.indexOf('const ICON_CHOICES = [')
   const choicesEnd = text.indexOf('})()', choicesStart) + 4
@@ -725,32 +690,32 @@ test('icons: the 0.1.7-rc.1 users pair is committed and host-filtered (0.21.1)',
   const listOf = (ui) => new Function('ui', pickerCode + '\nreturn { ICON_CHOICES, ICON_PICKER_CHOICES, resolveIconName }')(ui)
 
   const pair = ['IconUsersOutlineRegular', 'IconUsersOutlineMedium']
-  const rc1 = { IconFolderOpenRegular: () => null }
-  for (const name of pair) rc1[name] = () => null
-  const onRc1 = listOf(rc1)
+  const withPair = { IconFolderOpenRegular: () => null }
+  for (const name of pair) withPair[name] = () => null
+  const onHost = listOf(withPair)
   for (const name of pair) {
-    assert.ok(onRc1.ICON_CHOICES.includes(name), name + ' is committed to the candidate list')
-    assert.ok(onRc1.ICON_PICKER_CHOICES.includes(name), name + ' is offered on a host that exports it')
+    assert.ok(onHost.ICON_CHOICES.includes(name), name + ' is committed to the candidate list')
+    assert.ok(onHost.ICON_PICKER_CHOICES.includes(name), name + ' is offered on a host that exports it')
   }
   assert.equal(
-    onRc1.resolveIconName('IconUsersOutline16'), 'IconUsersOutlineRegular',
+    onHost.resolveIconName('IconUsersOutline16'), 'IconUsersOutlineRegular',
     'the pixel-suffix spelling lands on the new generation name',
   )
-  // Pre-0.1.7 hosts: the pair is unknown, so both disappear from the grid
-  // (never an empty cell) while the legacy spellings keep resolving.
-  const oldHost = listOf({ IconFolderOpen16: () => null })
+  // A host that does not export the pair: both disappear from the grid
+  // (never an empty cell) while the retired spellings keep resolving.
+  const withoutPair = listOf({ IconFolderOpen16: () => null })
   for (const name of pair) {
-    assert.ok(!oldHost.ICON_PICKER_CHOICES.includes(name), name + ' must not become an empty icon cell on an old host')
-    assert.equal(oldHost.resolveIconName(name), '', name + ' resolves to nothing there')
+    assert.ok(!withoutPair.ICON_PICKER_CHOICES.includes(name), name + ' must not become an empty icon cell')
+    assert.equal(withoutPair.resolveIconName(name), '', name + ' resolves to nothing there')
   }
-  assert.ok(oldHost.ICON_PICKER_CHOICES.includes('IconFolderOpen16'), 'the host’s own legacy spellings stay offered')
-  assert.ok(oldHost.ICON_PICKER_CHOICES.includes('solid') && oldHost.ICON_PICKER_CHOICES.includes('none'), 'legacy slots always survive')
+  assert.ok(withoutPair.ICON_PICKER_CHOICES.includes('IconFolderOpen16'), 'the host’s own spellings stay offered')
+  assert.ok(withoutPair.ICON_PICKER_CHOICES.includes('solid') && withoutPair.ICON_PICKER_CHOICES.includes('none'), 'legacy slots always survive')
 })
 
 /**
- * Session reorder fallback (0.10.2): dsh 0.1.6-alpha.1 stopped injecting
- * insertSessionBefore, which used to be the only reorder channel — the browser
- * keeps its own flat order so the gesture keeps working.
+ * Session reorder fallback (0.10.2): the injected WorkspaceService may lack
+ * insertSessionBefore, which was the only reorder channel — the browser keeps
+ * its own flat order so the gesture keeps working.
  */
 test('session reorder: host action preferred, browser-local order as the fallback (0.10.2)', () => {
   const text = clientText()
@@ -1059,16 +1024,16 @@ test('context menu: official alignment via the workspace dictionary (0.14.0)', (
  * order, the stop-and-archive confirmation on the Host refusal, the
  * archived-filter view option, pinned-row fronting, and the two settings
  * gates (right-click trigger vs the official-style "..." button, row hover
- * buttons). Also guards the 0.1.7 status-hook migration and the icon-set
- * generation fallback that keeps pre-0.1.7 glyph names rendering.
+ * buttons). Also guards the single rc.1 status source and the icon-name
+ * generation fallback that keeps retired glyph spellings rendering.
  */
 test('official mirror: pin/archive surface, archived filter, gates, status migration (v0.20.0)', () => {
   const text = clientText()
-  // Status hooks, BOTH eras: useSessionStatus preferred, the pending-only
-  // hook kept for pre-0.1.7 hosts, summary fields filling the rest.
-  assert.match(text, /useSessionPendingInteraction, useSessionStatus, useWorkspaces/)
+  // One status source on rc.1: useSessionStatus, with summary
+  // fields filling whatever it does not carry.
+  assert.match(text, /useSessions, useSessionStatus, useWorkspaces,/)
   assert.match(text, /statusMap = typeof useSessionStatus === 'function' \? useSessionStatus\(s => s\) : null/)
-  assert.match(text, /visiblePendingKind\(st && st\.pendingInteraction && st\.pendingInteraction\.kind\) \|\| pendingKindOf\(pending, id\)/)
+  assert.match(text, /pending: visiblePendingKind\(st && st\.pendingInteraction && st\.pendingInteraction\.kind\)/)
   assert.match(text, /completed: summary\.completed === true \|\| \(st && st\.completionUnread === true\)/)
   // Pin/unpin/unarchive reach the injected face feature-probed; archive
   // passes the stopActivity hop through for the confirmation flow.
@@ -1100,8 +1065,8 @@ test('official mirror: pin/archive surface, archived filter, gates, status migra
   assert.doesNotMatch(text, /function WorkspaceRow\(\{ workspace, depth, count, sessionsOpen, onToggle, onStart, onMenu,/)
   // v0.35.2 (issue #14): rename tiers, cheapest first — open rows borrow the
   // retained binding directly, closed rows go through manager.rename ("without
-  // opening its history"), and 0.1.6-era hosts keep the sessions.using fallback
-  // (slow but the only legal path there).
+  // opening its history"), and the public sessions.using path is the
+  // last-resort fallback (slow but always legal).
   assert.match(text, /const manager = sessions\.manager/)
   assert.match(text, /typeof manager\.rename === 'function'/)
   assert.match(text, /await manager\.rename\(sessionId, title\)/)
@@ -1125,7 +1090,7 @@ test('official mirror: pin/archive surface, archived filter, gates, status migra
  * the official primitives Toast when the host ships it (body portal, official
  * look) and falls back to the plugin's own chip otherwise; the quota's
  * always-visible set follows the official attention semantics (see the issue
- * round test), and the retired forkError mirror keeps its typeof defenses.
+ * round test).
  */
 test('copy-session-id notice: official toast or fallback chip (v0.30.0)', () => {
   const text = clientText()
@@ -1144,10 +1109,8 @@ test('copy-session-id notice: official toast or fallback chip (v0.30.0)', () => 
   // Copy rides the official dictionary with the aligned local fallback, for
   // both outcomes.
   assert.match(text, /officialText\(copyNotice\.ok \? 'toast\.sessionIdCopied' : 'toast\.sessionIdCopyFailed',/)
-  // The retired forkError mirror stays defensive (rc.2-era hosts).
-  assert.match(text, /typeof dismissForkError === 'function'/)
-  // Dictionary: all three keys are local (pre-0.2.1 hosts have no official
-  // copy) — zh carries them and the key-set test pins the other 20.
+  // Dictionary: all three keys are local (the official dictionary may not
+  // carry copy keys) — zh carries them and the key-set test pins the other 20.
   const zhKeys = text.slice(text.indexOf('const zh = {'), text.indexOf('const en = {'))
   assert.match(zhKeys, /'menu\.sessionId': '复制 Session ID',/)
   assert.match(zhKeys, /'toast\.sessionIdCopied': 'Session ID 已复制',/)
@@ -1254,61 +1217,54 @@ test('group move: user renames ride renameByUser, host reorder stays optional', 
   assert.ok(start !== -1 && end > start, 'submitGroupMove sits before the drag section')
   const body = text.slice(start, end)
   assert.match(body, /renameWorkspace\(target\.id, next\)/, 'workspace move is a plain rename')
-  assert.match(body, /typeof insertWorkspaceBefore === 'function'/, 'host reorder action stays optional (0.1.6-alpha.1 contract)')
+  assert.match(body, /typeof insertWorkspaceBefore === 'function'/, 'host reorder action stays optional')
   assert.match(body, /renameByUser\(target\.id, next\)/, 'single session move is pinned against the auto-quote effect')
   assert.match(body, /await renameByUser\(row\.id, next \+ row\.title\.slice\(target\.path\.length\)\)/, 'session-group batch move is pinned too')
   assert.match(body, /for \(const w of affected\)[\s\S]*renameWorkspace\(w\.workspaceId, next \+ String\(w\.title\)\.slice\(target\.path\.length\)\)/, 'workspace-group batch move rewrites every member')
 })
 
 /**
- * Host-era compat: 0.1.6-alpha.2 replaced ISessions.binding with the
- * retention-contract using(); 0.1.5-rc.x hosts still ship binding only, where
- * the unconditional using() call threw "sessions.using is not a function" and
- * took every rename path down with it (row dialog, session-group batch, move
- * to group). Both contracts must stay wired.
+ * Rename tiers: the public binding face for an OPEN session, the documented
+ * PRIVATE BRIDGE (sessions.manager.rename) for a closed one, and the public
+ * using() retention contract as the slow fallback. The private field is the
+ * only way to rename a closed session without loading its whole history.
  */
-test('session rename: using() preferred, binding() fallback for 0.1.5-rc.x hosts', () => {
+test('session rename: binding, private manager bridge, public using fallback', () => {
   const text = clientText()
   const start = text.indexOf('const renameSession = async (sessionId, title) =>')
   const end = text.indexOf('const forkSession = (sessionId)')
   assert.ok(start !== -1 && end > start, 'renameSession sits before forkSession')
   const body = text.slice(start, end)
-  assert.match(body, /if \(typeof sessions\.using === 'function'\)/, 'the new contract is probed, never assumed')
-  assert.match(body, /source: 'workspaceOperation'/, 'new contract keeps the explicit retention source')
-  assert.match(body, /typeof sessions\.binding === 'function' \? sessions\.binding\(sessionId\) : undefined/, 'old binding fallback is probed too')
-  assert.match(body, /face\.rename\(title\)/, 'old contract renames through the session face')
-  assert.match(body, /throw new Error\('session rename is unavailable on this host'\)/, 'fails loud when neither contract exists')
+  assert.match(body, /typeof sessions\.binding === 'function' \? sessions\.binding\(sessionId\) : undefined/, 'the public binding face is probed')
+  assert.match(body, /face\.rename\(title\)/, 'open sessions rename through the binding face')
+  assert.match(body, /const manager = sessions\.manager/, 'the private manager bridge is still reached')
+  assert.match(body, /typeof manager\.rename === 'function'/, 'the bridge is feature-probed')
+  assert.match(body, /sessions\.using\(/, 'the public slow path stays as fallback')
+  assert.match(body, /source: 'workspaceOperation'/, 'the fallback keeps the explicit retention source')
+  assert.match(body, /throw new Error\('session rename is unavailable on this host'\)/, 'fails loud when no contract exists')
 })
 
 /**
- * Host-era compat, second contract: the "open" session. 0.1.6-alpha.2 replaced
- * the SessionListState.current wire field with the mainView retention source,
- * and 0.1.5-rc.x never carried retainedBy at all — so reading either one alone
- * breaks on the other generation: no current highlight, and every blank row
- * (a brand-new session before its first message) filtered out by
- * sessionVisible. Retention wins, the wire field backs it up.
+ * The current session comes from the mainView retention source only: rc.1
+ * SessionListState carries ids/byId/phase and no `current` wire field.
  */
-test('current session: mainView retention preferred, wire current as the 0.1.5-rc.x fallback', () => {
+test('current session: mainView retention decides', () => {
   const text = clientText()
   const start = text.indexOf('const mainSessionIdOf = (list) => {')
-  const end = text.indexOf('const hasActiveScheduleOf')
-  assert.ok(start !== -1 && end > start, 'mainSessionIdOf sits before hasActiveScheduleOf')
+  const end = text.indexOf('const DEFAULT_WORKSPACE_TITLE')
+  assert.ok(start !== -1 && end > start, 'mainSessionIdOf sits before DEFAULT_WORKSPACE_TITLE')
   const { mainSessionIdOf } = new Function(text.slice(start, end) + '\nreturn { mainSessionIdOf }')()
 
-  // 0.1.6-alpha.2 shape: no \`current\` field, retention decides.
   assert.equal(mainSessionIdOf({ byId: { a: { id: 'a' }, b: { id: 'b', retainedBy: { mainView: 1 } } } }), 'b')
-  // 0.1.5-rc.x shape: no retainedBy anywhere, the wire field decides.
-  assert.equal(mainSessionIdOf({ byId: { a: { id: 'a' }, b: { id: 'b' } }, current: 'a' }), 'a')
-  // Retention wins when both are present, so an alpha.2 host is never second-guessed.
-  assert.equal(mainSessionIdOf({ byId: { a: { id: 'a', retainedBy: { mainView: 1 } } }, current: 'z' }), 'a')
   // Nothing open (or no list at all): undefined, never a throw.
   assert.equal(mainSessionIdOf({ byId: { a: { id: 'a' } } }), undefined)
   assert.equal(mainSessionIdOf({ byId: {} }), undefined)
   assert.equal(mainSessionIdOf(null), undefined)
+  // The wire field is gone: a stray `current` must not resurrect the highlight.
+  assert.equal(mainSessionIdOf({ byId: { a: { id: 'a' } }, current: 'a' }), undefined)
 
-  // The consumer memo must also watch \`current\`: 0.1.5-rc.x switches it without
-  // necessarily handing back a new byId.
-  assert.match(text, /\[list \? list\.byId : null, list \? list\.current : null\]/, 'currentId memo depends on current')
+  assert.doesNotMatch(text.slice(start, end), /list\.current/, 'mainSessionIdOf never reads the removed wire field')
+  assert.match(text, /\[list \? list\.byId : null\]/, 'currentId memo watches byId only')
 })
 
 /**
@@ -1617,7 +1573,7 @@ test('new-group dialog components stay at module scope (React discipline)', () =
 })
 
 /**
- * dsh 0.1.7-rc.2 alignment (v0.23.0). The sidebar/session-tree surface changed
+ * rc.1 alignment (v0.23.0). The sidebar/session-tree surface changed
  * most in this release, and two of the changes BROKE this plugin silently:
  * the active-Schedule list projection was deleted (official moved the mark
  * into a seat the shadowed entry declares) and the shortcut layer routes
@@ -1625,25 +1581,23 @@ test('new-group dialog components stay at module scope (React discipline)', () =
  * store. Both are consumed through the ledger instead, and both degrade to
  * "nothing" when the shipped side is not there.
  */
-test('rc.2 archived filter: three explicit picks, legacy two-toggle fallback (v0.23.0)', () => {
+test('archived filter: three explicit picks (v0.23.0)', () => {
   const text = clientText()
   const start = text.indexOf('function ViewOptionsMenu(')
-  const end = text.indexOf('function CustomizeDialog(', start)
+  const end = text.indexOf('\n    function ', start + 10)
   const menu = text.slice(start, end)
   assert.ok(menu.length > 0, 'ViewOptionsMenu not found')
-  // The era probe is the new default item's own label: pre-rc.2 hosts have no
-  // viewOptions.hideArchived key, and official() returns null for a missing one.
   assert.match(menu, /const hideLabel = official\('viewOptions\.hideArchived'\)/)
-  assert.match(menu, /const threeState = hideLabel !== null/)
   assert.match(menu, /\{ id: 'hide-archived', label: hideLabel, icon: icon\('IconArchiveOffOutlineRegular', 16\) \}/)
-  assert.match(menu, /icon\(threeState \? 'IconQueueOutlineRegular' : 'IconArchiveOutline20', 16\)/)
+  assert.match(menu, /\{ id: 'show-archived', label: showLabel, icon: icon\('IconQueueOutlineRegular', 16\) \}/)
   assert.match(menu, /\{ id: 'only-archived', label: onlyLabel, icon: icon\('IconArchiveCheckOutlineRegular', 16\) \}/)
-  // rc.2 picks a state directly instead of toggling back to the default...
+  // Picks a state directly instead of toggling back to the default...
   assert.match(menu, /if \(id === 'hide-archived'\) \{ onFilterPick\('default'\)/)
-  assert.match(menu, /onFilterPick\(threeState \? 'show' : \(filter === 'show' \? 'default' : 'show'\)\)/)
-  assert.match(menu, /onFilterPick\(threeState \? 'only' : \(filter === 'only' \? 'default' : 'only'\)\)/)
+  assert.match(menu, /onFilterPick\('show'\)/)
+  assert.match(menu, /onFilterPick\('only'\)/)
   // ...and keeps exactly one of the three selected.
-  assert.match(menu, /filter === 'only' \? \['only-archived'\] : \(threeState \? \['hide-archived'\] : \[\]\)/)
+  assert.match(menu, /filter === 'show' \? \['show-archived'\] : filter === 'only' \? \['only-archived'\] : \['hide-archived'\]/)
+  assert.doesNotMatch(menu, /threeState/, 'the pre-rc.2 two-toggle era is gone')
 })
 
 test('rc.2 archived-only view drops Workspaces without archived Sessions (v0.23.0)', () => {
@@ -1684,7 +1638,7 @@ test('rc.2 first-use Workspace name: display-only substitution, both surfaces (v
   assert.doesNotMatch(text, /renameWorkspace\([^)]*defaultWorkspaceName/)
 })
 
-test('rc.2 schedule mark: the shipped seat occupant, legacy projection only as fallback (v0.23.0)', () => {
+test('schedule mark: the shipped seat occupant only (v0.23.0)', () => {
   const text = clientText()
   // rc.2 deleted packages/schedule/schedule/src/projection.ts, so
   // projectionValues.schedule never exists there: the new source is the seat
@@ -1704,9 +1658,6 @@ test('rc.2 schedule mark: the shipped seat occupant, legacy projection only as f
   // Shipped row rule: the leading cell belongs to the mark only while the
   // row's own primary state is idle, and never on an archived/blank row.
   assert.match(text, /const markNode = scheduleSeat && !status && !node\.archived && !node\.blank/)
-  // Exactly one mark per row: the legacy projection badge is gated on the seat
-  // being absent, so a host that has both can never render two.
-  assert.match(text, /node\.hasActiveSchedule && !markNode/)
   assert.match(text, /: \(markNode \|\| E\('span', \{ className: 'bw-dot' \}\)\)/)
   // The foreign component renders behind the render-crash boundary.
   assert.match(text, /E\(QuietBoundary, \{ key: 'schedule-seat' \}, E\(ShippedSeatOccupant/)
@@ -1720,8 +1671,8 @@ test('rc.2 shortcuts: the shadowed browser\'s request channel is consumed here (
   assert.match(text, /const shippedBrowserFaceOf = \(slots, ownComponent\) => \{/)
   assert.match(text, /slots\.entries\('sidebar\.workspaces'\)/)
   assert.match(text, /entry\.component === ownComponent/)
-  // ...and version-gated on the face's own shape: an older host has no
-  // requestSearch, so there is no channel AND nothing is consumed.
+  // ...and version-gated on the face's own shape: a face without
+  // requestSearch has no channel AND consumes nothing.
   assert.match(text, /typeof face\.requestSearch === 'function'\) return face/)
   assert.match(text, /shippedBrowserFace: \(\) => shippedBrowserFaceOf\(slots, BetterBrowser\)/)
   // Consumption mirrors the shipped effect: search opens + focuses the field,
@@ -1734,10 +1685,7 @@ test('rc.2 shortcuts: the shadowed browser\'s request channel is consumed here (
   // Cmd/Ctrl+O is answered with the host's own reason instead of stacking.
   assert.match(text, /if \(typeof reportDirectoryBusy === 'function'\) reportDirectoryBusy\(true\)/)
   assert.match(text, /const settle = \(\) => \{ if \(typeof reportDirectoryBusy === 'function'\) reportDirectoryBusy\(false\) \}/)
-  // The shipped fork notice rides the shadowed overlay: it is re-rendered here
-  // and its dismissal delegates to the shipped channel.
-  assert.match(text, /forkError\.reason === 'unavailable'/)
-  assert.match(text, /typeof dismissForkError === 'function'\) dismissForkError\(\)/)
+
   // Sidebar shows the CURRENT binding next to the command it belongs to.
   assert.match(text, /const shortcutLabel = \(label, id\) => \{/)
   assert.match(text, /'aria-keyshortcuts': shortcutAria\('session\.search'\)/)
@@ -1747,11 +1695,10 @@ test('rc.2 shortcuts: the shadowed browser\'s request channel is consumed here (
   assert.match(text, /const useObservableSnapshot = \(observable\) => \{/)
 })
 
-test('rc.2 design tokens: radii and focus rings follow the host scale (v0.23.0)', () => {
+test('rc.1 design tokens: radii and focus rings follow the host scale (v0.23.0)', () => {
   const text = clientText()
-  // rc.2 published --dsw-radius-* and --dsw-focus-ring-*; every adopted value
-  // keeps its pre-rc.2 pixel value as the fallback so older hosts only gain
-  // the token when the host has it.
+  // rc.1 published --dsw-radius-* and --dsw-focus-ring-*; every adopted value
+  // keeps the previous pixel value as the fallback for a host without the token.
   for (const token of ['--dsw-radius-xs', '--dsw-radius-sm', '--dsw-radius-md']) {
     assert.ok(text.includes('var(' + token + ','), 'token without a fallback: ' + token)
   }
@@ -2105,8 +2052,8 @@ test('rc.1: shipped seat occupants receive the global useSessionAccess hook', ()
   // the whole sidebar degrades to empty.
   assert.match(text, /useWorkspaces,\n        useSessionAccess,/,
     'the browser must read the rc.1 global access hook')
-  assert.match(text, /const seatStandardProps = typeof useSessionAccess === 'function' \? \{ useSessionAccess \} : null/,
-    'older hosts omit the hook instead of passing undefined')
+  assert.match(text, /const seatStandardProps = \{ useSessionAccess \}/,
+    'the hook is always handed down on rc.1')
   assert.match(text, /function ShippedSeatOccupant\(\{ seat, ownerProps, standardProps, t, useMenuOpenState \}\)/,
     'the seat occupant accepts standard props')
   assert.match(text, /Object\.assign\(\{\}, standardProps \|\| null, ownerProps, bound/,

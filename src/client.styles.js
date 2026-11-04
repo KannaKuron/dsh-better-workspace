@@ -28,8 +28,7 @@ window.__ModuleLoader__.load({
       // focus.css + WorkspaceBrowser.module.css): the host publishes the ring
       // width/colour as tokens and keeps offsets inside controls that clip an
       // outer ring — ours sit in dense 28px rows, so they do the same. The
-      // tokens are absent before rc.2, where the literal fallbacks keep the
-      // pre-existing look.
+      // literal fallbacks keep the ring visible if a theme omits the tokens.
       '.bw-icon-btn:focus-visible,.bw-rail-btn:focus-visible,.bw-ctx-item:focus-visible,.bw-seg-btn:focus-visible,.bw-btn:focus-visible{outline:var(--dsw-focus-ring-width,2px) solid var(--dsw-focus-ring-color,var(--dsw-alias-state-business-primary,#5b8def));outline-offset:-2px}',
       '.bw-search-row{flex:none;padding:0 10px 6px}',
       '.bw-input{width:100%;box-sizing:border-box;height:26px;background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.1));border:1px solid var(--dsw-alias-border-l1,rgba(127,127,127,.25));border-radius:var(--dsw-radius-sm,6px);color:inherit;padding:0 8px;font-size:13px;outline:none;font-family:inherit}',
@@ -153,11 +152,10 @@ window.__ModuleLoader__.load({
       // count / relative time) opts out — stroked meta text outshines the title
       // it is supposed to support.
       '.bw-row-count,.bw-row-time{-webkit-text-stroke-width:0}',
-      '.bw-schedule-badge{flex:none;display:inline-flex;align-items:center;color:var(--dsw-alias-label-tertiary,#9a9a9a);margin:0 6px}',
       '.bw-row-trailing{flex:none;display:inline-flex;align-items:center;gap:6px;color:var(--dsw-alias-label-tertiary,#9a9a9a)}',
       '.bw-row-actions{flex:none;display:none;align-items:center;gap:15px}',
       '.bw-row:hover .bw-row-actions,.bw-row.menu-open .bw-row-actions{display:flex}',
-      '.bw-row:hover .bw-row-time,.bw-row:hover .bw-row-count,.bw-row:hover .bw-schedule-badge,.bw-row:hover .bw-row-trailing,.bw-row:hover .bw-pin-indicator,.bw-row.menu-open .bw-row-time,.bw-row.menu-open .bw-row-count,.bw-row.menu-open .bw-schedule-badge,.bw-row.menu-open .bw-row-trailing,.bw-row.menu-open .bw-pin-indicator{display:none}',
+      '.bw-row:hover .bw-row-time,.bw-row:hover .bw-row-count,.bw-row:hover .bw-row-trailing,.bw-row:hover .bw-pin-indicator,.bw-row.menu-open .bw-row-time,.bw-row.menu-open .bw-row-count,.bw-row.menu-open .bw-row-trailing,.bw-row.menu-open .bw-pin-indicator{display:none}',
       '.bw-row-archived .bw-row-label{color:var(--dsw-alias-label-caption,#8a8a8a)}',
       '.bw-pin-indicator{flex:none;display:inline-flex;align-items:center;justify-content:center;width:16px;height:20px;color:var(--dsw-alias-label-caption,#adb2b8);margin:0 0 0 6px}',
       '.bw-overflow-row{display:block;width:100%;text-align:left;border:0;background:transparent;color:var(--dsw-alias-label-tertiary,#9a9a9a);font-size:12px;cursor:pointer;padding:4px 6px;font-family:inherit}',
@@ -173,9 +171,6 @@ window.__ModuleLoader__.load({
       // offers the way back.
       '.bw-empty-action{margin:8px auto 0;display:block;padding:0;border:none;background:none;cursor:pointer;font:inherit;font-size:13px;color:var(--dsw-alias-link,#5b8def)}',
       '.bw-empty-action:hover{text-decoration:underline}',
-      // Row toast for the shipped fork shortcut's async failure (the shipped
-      // notice rides the shadowed overlay). Token chain kept transparent-safe
-      // like every other self-drawn surface.
       // Session/workspace hover-card body (official Rows.module.css palette:
 // fixed colors, independent of theme aliases).
       '.bw-hover-card{display:flex;flex-direction:column;gap:8px}',
@@ -273,19 +268,6 @@ window.__ModuleLoader__.load({
       '@keyframes bw-breathe{0%,100%{filter:drop-shadow(0 0 1px var(--bw-pulse-color));opacity:.55}50%{filter:drop-shadow(0 0 6px var(--bw-pulse-color));opacity:1}}',
       '.bw-pulse-text{animation:bw-breathe-text 1.8s ease-in-out infinite}',
       '@keyframes bw-breathe-text{0%,100%{text-shadow:0 0 1px var(--bw-pulse-color);opacity:.65}50%{text-shadow:0 0 7px var(--bw-pulse-color);opacity:1}}',
-      '.bw-sync-modes{display:flex;gap:6px;margin-top:8px}',
-      '.bw-sync-mode{flex:1;padding:5px 10px;border-radius:6px;border:1px solid var(--dsw-alias-border-l2,rgba(127,127,127,.3));background:transparent;color:var(--dsw-alias-label-secondary,#b8b8b8);cursor:pointer;font-size:12px}',
-      '.bw-sync-mode-on{border-color:var(--dsw-alias-brand-primary,#5b8def);color:var(--dsw-alias-label-primary,#e6e6e6);background:var(--dsw-alias-bg-layer-2,rgba(127,127,127,.12))}',
-      '.bw-sync-actions{display:flex;gap:8px;margin-top:8px}',
-      '.bw-sync-btn{padding:5px 12px;border-radius:6px;border:1px solid var(--dsw-alias-border-l2,rgba(127,127,127,.3));background:transparent;color:var(--dsw-alias-label-secondary,#b8b8b8);cursor:pointer;font-size:12px}',
-      '.bw-sync-btn:disabled{opacity:.45;cursor:default}',
-      '.bw-sync-btn-primary{border-color:var(--dsw-alias-brand-primary,#5b8def);color:var(--dsw-alias-label-primary,#e6e6e6)}',
-      /*
-       * In-app directory browser (Hosts composing the browse backend). Every
-       * surface rides the theme token chain like the rest of the plugin — the
-       * list panel uses bg-layer-2 so a transparent/background plugin still
-       * reads correctly; nothing may hard-code an opaque background.
-       */
     ].join('')
 
     return { CSS_TEXT }

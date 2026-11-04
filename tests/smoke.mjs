@@ -2097,6 +2097,24 @@ test('issue #12: the in-row "..." menu is retired, row.action seat renders in a 
     'the seat/fallback switch must stay')
 })
 
+test('rc.1: shipped seat occupants receive the global useSessionAccess hook', () => {
+  const text = clientText()
+  // rc.1 moved useSessionAccess into the GLOBAL standard hooks; the official
+  // pin/archive row buttons call it directly. Our in-row reproduction has to
+  // hand it down like the slot renderer, or the first session row throws and
+  // the whole sidebar degrades to empty.
+  assert.match(text, /useWorkspaces,\n        useSessionAccess,/,
+    'the browser must read the rc.1 global access hook')
+  assert.match(text, /const seatStandardProps = typeof useSessionAccess === 'function' \? \{ useSessionAccess \} : null/,
+    'older hosts omit the hook instead of passing undefined')
+  assert.match(text, /function ShippedSeatOccupant\(\{ seat, ownerProps, standardProps, t, useMenuOpenState \}\)/,
+    'the seat occupant accepts standard props')
+  assert.match(text, /Object\.assign\(\{\}, standardProps \|\| null, ownerProps, bound/,
+    'standard hooks merge before the mirror props')
+  assert.match(text, /ownerProps: \{ sessionId: node\.id, displayTitle: node\.leaf \|\| node\.title \},\n                  standardProps: sessionActions\.standardProps,/,
+    'the official row.action seat receives the hook')
+})
+
 test('alpha.2: sidebar.session.row.trailing renders inside the row, between time and pin', () => {
   const text = clientText()
   // alpha.2 declares a row-inline trailing seat (ui-workspace Rows.tsx:744:

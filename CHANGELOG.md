@@ -3,6 +3,17 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.38.2 — 2026-11-04
+
+**类型**:fix(适配 dsh 0.2.2-rc.1:侧栏官方行内按钮补 `useSessionAccess`)
+
+### fix
+- **首条会话渲染时侧栏降级**:rc.1 把 `useSessionAccess` 提升为全局标准 hook,官方 `sidebar.workspaces.session.row.action` 的 pin/archive 按钮直接调用它。本插件自绘侧栏用 `ShippedSeatOccupant` 手工复刻座位时只合并了 owner props、inject face 与 `t`,没有注入全局标准 hook,官方按钮收到 `undefined` 后抛 `TypeError: useSessionAccess is not a function`,整块侧栏被错误边界降级为空。
+- **修复**:`BetterBrowser` 读取 rc.1 注入的 `useSessionAccess`,经 `sessionActions.standardProps` 透传给 row.action / trailing / hover / leading 四类官方座位;`ShippedSeatOccupant` 按官方顺序先合并标准 hook,再合并 owner props 与 inject face。旧宿主没有该 hook 时省略该 prop,不改变既有座位行为;官方按钮保留,自绘 fallback 按钮的退出条件不变。
+- **真机**:dsh 0.2.2-rc.1 隔离实例新建会话后侧栏不再出现 render error;官方置顶按钮悬停出现、点击后变为「取消置顶」,再次点击恢复,无 `data-region-degraded`。唯一控制台 404 是 macOS 上不注册的 gitbash status 路由,与本插件无关。
+- **兼容性复核**:ModuleLoader 与 package-local chunk 正常;`contextMenus` 补充项仍与官方条目同席;`ui-settings` 新增的可选 `settings.section.icon` 未使用;`ui-conversation` 的「固定浮层应 portal 到 body」不涉及本插件的注入面。
+- 测试:84 项全绿(新增 1 项座位标准 hook 契约)。peer 下限保持 `>=0.1.6-alpha.2`,不设上界。
+
 ## v0.38.1 — 2026-11-04
 
 **类型**:chore(把词典与样式表拆成官方 package-local client chunk,压缩主入口)

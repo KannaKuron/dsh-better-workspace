@@ -599,9 +599,9 @@ window.__ModuleLoader__.load({
      * React discipline — the occupant mounts once per row and keeps its own
      * state across our re-renders).
      */
-    function ShippedSeatOccupant({ seat, ownerProps, t, useMenuOpenState }) {
+    function ShippedSeatOccupant({ seat, ownerProps, standardProps, t, useMenuOpenState }) {
       const bound = React.useMemo(() => bindOccupantFace(seat.face), [seat])
-      return E(seat.component, Object.assign({}, ownerProps, bound, t ? { t } : null,
+      return E(seat.component, Object.assign({}, standardProps || null, ownerProps, bound, t ? { t } : null,
         // The menu.item slot's hookContext factory (ui-slots) hands its
         // occupants the menu open-state pair through a useMenuOpenState
         // hook; the slot renderer would inject it, our in-row menu
@@ -2386,6 +2386,7 @@ window.__ModuleLoader__.load({
         ? E(QuietBoundary, { key: 'schedule-seat' }, E(ShippedSeatOccupant, {
           seat: scheduleSeat,
           ownerProps: { sessionId: node.id },
+          standardProps: sessionActions ? sessionActions.standardProps : null,
           t: scheduleSeat.t,
         }))
         : null
@@ -2402,6 +2403,7 @@ window.__ModuleLoader__.load({
         }, E(ShippedSeatOccupant, {
           seat,
           ownerProps: { sessionId: node.id },
+          standardProps: sessionActions ? sessionActions.standardProps : null,
           t: seat.t,
         }))))
         : null
@@ -2436,6 +2438,7 @@ window.__ModuleLoader__.load({
                   key: 'row-action-seat-' + index,
                   seat,
                   ownerProps: { sessionId: node.id, displayTitle: node.leaf || node.title },
+                  standardProps: sessionActions.standardProps,
                   t: seat.t,
                 })))
               : null,
@@ -3716,6 +3719,7 @@ window.__ModuleLoader__.load({
       const {
         wide, expandSidebar,
         useSessions, useSessionPendingInteraction, useSessionStatus, useWorkspaces,
+        useSessionAccess,
         useStore: injectedUseStore, actions: injectedActions,
         localStore: localStoreProp,
         startSession, open, renameSession, forkSession, renameWorkspace, deleteWorkspace,
@@ -3755,6 +3759,12 @@ window.__ModuleLoader__.load({
         console.error('[dsh-better-workspace] standard snapshot hooks missing; browser renders nothing')
         return null
       }
+      // rc.1 added useSessionAccess to the GLOBAL standard hooks. Shipped seat
+      // occupants (row.action pin/archive) call it directly, so an in-row
+      // reproduction must hand it down exactly like the slot renderer does.
+      // Older hosts do not define it; omit the prop there so the seats stay
+      // compatible with their own generation.
+      const seatStandardProps = typeof useSessionAccess === 'function' ? { useSessionAccess } : null
 
       const storedItems = useWorkspaces(s => s.items)
       // Official rc.2 first-use naming (see withDisplayTitles): every surface
@@ -4675,6 +4685,7 @@ window.__ModuleLoader__.load({
         ...(Array.isArray(hoverSeat) ? hoverSeat.map((seat, index) => E(QuietBoundary, { key: 'hover-seat-' + index }, E(ShippedSeatOccupant, {
           seat,
           ownerProps: { sessionId: node.id },
+          standardProps: sessionActions ? sessionActions.standardProps : null,
           t: seat.t,
         }))) : []),
         status && typeof ui.StateDot === 'function' ? E('div', { className: 'bw-hover-status' },
@@ -4724,6 +4735,7 @@ window.__ModuleLoader__.load({
         // menu.item occupants need slot-level inject hooks an in-row
         // reproduction cannot supply); the context menu keeps every entry
         // through sessionMenuEntriesFor + handleCtxPick.
+        standardProps: seatStandardProps,
         rowActionSeat,
         trailingSeat,
         rename: (node) => setDialog({ kind: 'sess-rename', session: node }),

@@ -2798,3 +2798,32 @@ test('v0.36.14: unnamed rows use the official Untitled label in every language (
   assert.match(body, /return t\('session\.untitled'\)/)
   assert.doesNotMatch(body, /summary\.displayTitle/)
 })
+
+test('v0.39.1: only real subagents count as running children (issue #18)', () => {
+  const text = clientText()
+  // The reported defect: an ordinary Fork keeps parentId for lineage, so a raw
+  // parent-link walk treated the running fork as a running subagent of its
+  // idle parent. The walk must key on origin === 'subagent', and a live status
+  // must override the summary's stale running flag.
+  const start = text.indexOf('    const subagentRunningCounts =')
+  const end = text.indexOf('    /**\n     * Session nesting', start)
+  assert.ok(start !== -1 && end > start, 'subagentRunningCounts stays a self-contained helper')
+  const subagentRunningCounts = new Function(
+    text.slice(start, end) + '\nreturn subagentRunningCounts',
+  )()
+  const byId = {
+    parent: { id: 'parent', running: false },
+    sub: { id: 'sub', parentId: 'parent', origin: 'subagent', running: true },
+    nested: { id: 'nested', parentId: 'sub', origin: 'subagent', running: true },
+    fork: { id: 'fork', parentId: 'parent', running: true },
+  }
+  const counts = subagentRunningCounts(byId, new Map())
+  assert.equal(counts.get('parent'), 2, 'real subagent plus its running descendant')
+  assert.equal(counts.get('sub'), 1)
+  assert.equal(counts.get('fork'), 0, 'an ordinary fork is never a subagent child')
+  const live = new Map([['sub', { running: false }]])
+  assert.equal(subagentRunningCounts(byId, live).get('parent'), 1,
+    'live status false overrides a stale summary running flag')
+  assert.match(text, /running: \(st && st\.running !== undefined \? st\.running : summary\.running\) === true,/,
+    'row status also prefers an explicit live false')
+})

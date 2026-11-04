@@ -3,6 +3,20 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.39.1 — 2026-11-05
+
+**类型**:fix(修复 issue #18:普通 Fork 被误计为运行中的子代理)
+
+### fix
+- **父行误显示运行环**:`subagentRunningCounts` 原来沿所有 `parentId` 链遍历,`SessionSummary` 里普通 Fork 也会保留父会话 id,于是空闲父行被正在运行的 Fork 计成子代理,显示运行环。现在只把 `origin === 'subagent'` 的会话当作子代理;Fork 不再进入计数,自己的运行环照常显示。
+- **陈旧 running 覆盖实时状态**:子代理计数与行`running`都改为实时 `SessionStatus.running` 优先、仅在字段缺席时回退 summary;显式 `false` 不再被陈旧的 `summary.running === true` 压回 true。与官方 `ui-workspace` 的 `status?.running ?? s.running` 语义一致。
+- 新增 #18 回归测试:普通 Fork 不计、真实子代理及其嵌套子代理计入、live `false` 覆盖陈旧 summary;冒烟 84/84 通过。
+
+### 验证
+- `npm test`:84 项全绿。
+- `node --check src/client.js`:通过。
+- 相关:#18(https://github.com/KannaKuron/dsh-better-workspace/issues/18)。
+
 ## v0.39.0 — 2026-11-05
 
 **类型**:breaking(收敛到 dsh 0.2.2-rc.1 单代基线)

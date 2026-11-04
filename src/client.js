@@ -571,13 +571,19 @@ window.__ModuleLoader__.load({
      * parent links) — a parent row keeps its "ongoing" ring while a spawned
      * subagent is still working. The client SessionSummary exposes the
      * parent as parentId.
+     *
+     * Only origin === 'subagent' rows are children here. An ordinary Fork
+     * also records parentId (it is a fork of, not a subagent of, its parent),
+     * so walking raw parent links made an idle parent breathe while its fork
+     * ran — issue #18. The live SessionStatus wins over the summary's
+     * (possibly stale) running flag, exactly like the shipped row status.
      */
-    const subagentRunningCounts = (byId) => {
+    const subagentRunningCounts = (byId, statusMap) => {
       const children = new Map()
       for (const id of Object.keys(byId || {})) {
         const summary = byId[id]
         const parentId = summary && summary.parentId
-        if (!summary || !parentId) continue
+        if (!summary || !parentId || summary.origin !== 'subagent') continue
         let list = children.get(parentId)
         if (!list) { list = []; children.set(parentId, list) }
         list.push(summary)
@@ -590,7 +596,9 @@ window.__ModuleLoader__.load({
           const summary = queue.shift()
           if (!summary || seen.has(summary.id)) continue
           seen.add(summary.id)
-          if (summary.running) count += 1
+          const live = statusMap && typeof statusMap.get === 'function' ? statusMap.get(summary.id) : undefined
+          const running = live && live.running !== undefined ? live.running : summary.running
+          if (running === true) count += 1
           const kids = children.get(summary.id)
           if (kids) for (const kid of kids) queue.push(kid)
         }
@@ -3689,7 +3697,10 @@ window.__ModuleLoader__.load({
       const archivedFilter = useStore ? (useStore(s => s.archivedFilter) || 'default') : 'default'
       const archivedSet = React.useMemo(() => new Set(archivedSessionIds), [archivedSessionIds])
       const pinnedSet = React.useMemo(() => new Set(pinnedSessionIds), [pinnedSessionIds])
-      const subCounts = React.useMemo(() => subagentRunningCounts(list ? list.byId : {}), [list ? list.byId : null])
+      const subCounts = React.useMemo(
+        () => subagentRunningCounts(list ? list.byId : {}, statusMap),
+        [list ? list.byId : null, statusMap],
+      )
 
       /* ------------- auto appearance for new items (v0.24.0) -------------- */
       // One mount-scoped ledger of what has already been accounted for, so an
@@ -4206,7 +4217,7 @@ window.__ModuleLoader__.load({
             title: rowTitleOf(id, summary, prefsMap.graftTitlePrefix !== false),
             leaf: rowTitleOf(id, summary, prefsMap.graftTitlePrefix !== false),
             blank: !!summary.blank,
-            running: (st && st.running === true) || !!summary.running,
+            running: (st && st.running !== undefined ? st.running : summary.running) === true,
             completed: summary.completed === true || (st && st.completionUnread === true),
             subagents: subCounts.get(id) || 0,
             updatedAt: summary.updatedAt || 0,
@@ -4282,7 +4293,7 @@ window.__ModuleLoader__.load({
             title: rowTitleOf(id, summary, prefsMap.graftTitlePrefix !== false),
             leaf: rowTitleOf(id, summary, prefsMap.graftTitlePrefix !== false),
             blank: !!summary.blank,
-            running: (st && st.running === true) || !!summary.running,
+            running: (st && st.running !== undefined ? st.running : summary.running) === true,
             completed: summary.completed === true || (st && st.completionUnread === true),
             subagents: subCounts.get(id) || 0,
             updatedAt: summary.updatedAt || 0,

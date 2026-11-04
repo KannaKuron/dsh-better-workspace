@@ -35,7 +35,9 @@
 
 | 路径 | 作用 |
 |---|---|
-| src/client.js | **全部功能所在**。window.__ModuleLoader__.load({ id, factory }) 包装的浏览器插件:sidebar.workspaces 座位(priority -1)+ 官方目录流驱动(startAddFlow)→ 双设置座位 + 两层层级树 UI |
+| src/client.js | **功能主入口**。window.__ModuleLoader__.load({ id, factory }) 包装的浏览器插件:sidebar.workspaces 座位(priority -1)+ 官方目录流驱动(startAddFlow)→ 双设置座位 + 两层层级树 UI;词典与 CSS 经官方 package-local chunk 按需加载 |
+| src/client.locales.js | 官方 chunk(`chunk:'client.locales.js'`):zh / en / LOCALES 词典,返回 `{ zh, en, LOCALES }`;不是 package entry |
+| src/client.styles.js | 官方 chunk(`chunk:'client.styles.js'`):全量 CSS 文本,返回 `{ CSS_TEXT }` |
 | src/index.js | host 半,纯占位(有效 Node 入口 + 一行日志);未来宿主侧功能(分组宿主登记、设置页后端)的家 |
 | cordis.patch.yml | dsh plugin add 官方安装通道的挂载声明(insert 一行插件 row) |
 | dsh.plugin.json | 插件注册表清单(id dsh-external/dsh-better-workspace) |
@@ -43,7 +45,7 @@
 
 ## 核心不变量(改代码前必读)
 
-1. **无构建,单文件客户端**。src/client.js 必须保持 __ModuleLoader__ 包装;每个 npm 包只有一个 client entry(exports["./client"]),**不能 require 任何非基线模块**。基线白名单(dsh-client-web seed.ts):react、react/jsx-runtime、react-dom、react-dom/client、@deepseek-ai/cordis、@deepseek-ai/dsh-client-store、@deepseek-ai/dsh-client-ui-slots、@deepseek-ai/dsh-client-ui-primitives。冒烟测试强制执行。**exports 必须含 "./package.json"(issue #9,2026-09-23)**:桌面渲染进程的模块发现(ctx.loader.internal 不可用)回退 createRequire().resolve(<pkg>/package.json),该调用遵守 exports map——缺这一行抛 ERR_PACKAGE_PATH_NOT_EXPORTED 被吞,包被永久缓存为「非 client 包」,client 半永不进启动图且宿主日志全绿(极难排查;web 宿主走 internal 分支所以测不出来)。冒烟测试有断言。
+1. **无构建,单一客户端入口 + 官方 chunk**。src/client.js 必须保持 __ModuleLoader__ 包装;每个 npm 包只有一个 client entry(exports["./client"]),**同步 require 不能碰任何非基线模块**。基线白名单(dsh-client-web seed.ts):react、react/jsx-runtime、react-dom、react-dom/client、@deepseek-ai/cordis、@deepseek-ai/dsh-client-store、@deepseek-ai/dsh-client-ui-slots、@deepseek-ai/dsh-client-ui-primitives。冒烟测试强制执行。**v0.38.1 起大块数据走官方 package-local chunk**:主入口用 `require.async('./client.*.js')` 按需拉取,chunk 文件独立放在 `src/`、由 `window.__ModuleLoader__.load({ id, chunk: 'client.*.js', factory })` 注册,文件名必须匹配 `/^client\.[A-Za-z0-9][A-Za-z0-9._-]*\.js$/`,并加入 `files[]`;chunk 不是 package subpath,不要加进 exports。chunk 工厂同步执行,内部只应 require 基线模块(或为自包含纯数据/字符串)。**exports 必须含 "./package.json"(issue #9,2026-09-23)**:桌面渲染进程的模块发现(ctx.loader.internal 不可用)回退 createRequire().resolve(<pkg>/package.json),该调用遵守 exports map——缺这一行抛 ERR_PACKAGE_PATH_NOT_EXPORTED 被吞,包被永久缓存为「非 client 包」,client 半永不进启动图且宿主日志全绿(极难排查;web 宿主走 internal 分支所以测不出来)。冒烟测试有断言。
 2. **slot 契约**(对照 dsh 源码 packages/client/ui-workspace/src/client/):
    - sidebar.workspaces 是 **single** 槽;same-priority 二次注册会抛错,官方占用者优先级 0,本插件用 priority: -1(ascending, lowest renders)压制。
    - **两个 directoryFlow 洞都不占用(v0.16.0 定型;v0.12.1 的自占模式已废弃)**。v0.12.0 事故的根因是**子洞声明互斥**:官方 WorkspaceBrowser 的 entry 输掉渲染竞争但仍在 ledger 上、仍拥有 'sidebar.workspaces.directoryFlow' 的声明,bw 再声明同洞 → register 抛 `slot ... is already declared` → guarded 吞掉 → **bw 浏览器整个不注册,官方浏览器接管**(用户实测:右键菜单没了、/ 不解析)。

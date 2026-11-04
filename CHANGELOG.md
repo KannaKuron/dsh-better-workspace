@@ -3,6 +3,24 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.38.1 — 2026-11-04
+
+**类型**:chore(把词典与样式表拆成官方 package-local client chunk,压缩主入口)
+
+### chore
+- **主入口从 11,927 行降到 7,945 行**:21 门语言的词典移入 `src/client.locales.js`,全量 CSS 移入 `src/client.styles.js`。两份文件都通过官方 ModuleLoader 的 package-local chunk 机制注册(`chunk: 'client.*.js'`),由 `src/client.js` 在 `apply()` 里用 `require.async('./client.*.js')` 按需拉取;不是 package entry,也不增加 `exports` 子路径。
+- **仓库仍然无构建、单一客户端入口**:没有引入打包器、没有发布前拼接;chunk 工厂同步执行,内部只返回纯数据/字符串。`package.json` 的 `files[]` 收录两份 chunk,保证 npm tarball 与宿主静态路由都能取到。
+- **加载失败局部降级**:词典 chunk 失败时保留英文回退键并 warn,样式 chunk 失败时界面保持无样式但座位照常注册;两种情况都不阻断侧栏、设置卡与右键菜单。
+- `AGENTS.md` 更新目录地图,并把「无构建,单文件客户端」不变量改写为「单一客户端入口 + 官方 chunk」,记录文件名正则、`files[]` 与「chunk 不是 package subpath」的契约。
+
+### fix
+- 词典注册保持官方语言表形状:`ctx.locale.register(NS, Object.assign({ zh, en }, LOCALES))`。拆分时一度误写成把三张表摊平成单层对象,真机启动即报 `locale id "search.placeholder" is not a BCP 47-style tag` 并导致整本词典不生效;现在 chunk 只负责搬运三张表,注册仍按语言标签映射。
+
+### 验证
+- 冒烟 83/83 通过(基线 82 + 新增 chunk 契约测试);`node --check` 覆盖 `src/client.js`、`src/client.locales.js`、`src/client.styles.js`。
+- `npm pack --dry-run` 共 13 个文件,两份 chunk 均以 `src/client.*.js` 入包。
+- 隔离实例真机验证(dsh 0.2.2-alpha.3 + 本地 tarball 0.38.1,Playwright + 本机 Chrome):`/plugins/dsh-better-workspace/client.locales.js` 与 `client.styles.js` 均返回 200,侧栏正常渲染「工作区 / 默认工作区 / 新会话」等中文文案,样式生效,console 无 `dictionary registration failed`、无 chunk 加载错误。
+
 ## v0.38.0 — 2026-11-03
 
 **类型**:feat(适配 dsh 0.2.2-alpha.3:会话/工作区右键菜单接入官方统一菜单)

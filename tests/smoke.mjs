@@ -7,6 +7,11 @@ import { dirname, join } from 'node:path'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const read = (p) => readFileSync(join(root, p), 'utf8')
+// The client half is one entry plus official package-local chunks. Source
+// assertions keep reading the whole shipped text; chunks come FIRST so the
+// dictionary slices (zh -> en -> LOCALES -> helpers) stay contiguous.
+const CLIENT_CHUNKS = ['src/client.locales.js', 'src/client.styles.js']
+const clientText = () => [...CLIENT_CHUNKS.map(read), read('src/client.js')].join('\n')
 
 test('package.json declares a dual-face dsh web plugin', () => {
   const pkg = JSON.parse(read('package.json'))
@@ -16,6 +21,10 @@ test('package.json declares a dual-face dsh web plugin', () => {
   assert.equal(pkg.dsh.bundle.patch, './cordis.patch.yml')
   assert.equal(pkg.dsh.client.platform, 'web')
   assert.ok(pkg.files.includes('src/client.js'), 'client entry must ship')
+  for (const chunk of CLIENT_CHUNKS) {
+    assert.ok(pkg.files.includes(chunk), chunk + ' must ship')
+    assert.equal(pkg.exports['./' + chunk.split('/').pop()], undefined, 'a chunk is not a package subpath')
+  }
   assert.ok(pkg.files.includes('src/index.js'), 'host entry must ship')
 })
 
@@ -63,7 +72,7 @@ test('package.json declares the dsh engine floor (plugin market requirement)', (
 })
 
 test('client half is a __ModuleLoader__ bundle with baseline requires only', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   assert.match(text, /window\.__ModuleLoader__\.load\(/)
   assert.match(text, /id: 'dsh-better-workspace'/)
   const requires = [...text.matchAll(/require\('([^']+)'\)/g)].map((m) => m[1])
@@ -83,8 +92,35 @@ test('client half is a __ModuleLoader__ bundle with baseline requires only', () 
   assert.ok(requires.length > 0, 'expected at least one require')
 })
 
+test('client half loads dictionaries and styles as official package-local chunks', () => {
+  const entry = read('src/client.js')
+  // The entry keeps the one __ModuleLoader__.load; each face is fetched on
+  // demand and degrades locally when the request fails.
+  assert.match(entry, /localeTables = await require\.async\('\.\/client\.locales\.js'\)/)
+  assert.match(entry, /await require\.async\('\.\/client\.styles\.js'\)/)
+  assert.match(entry, /if \(localeTables && ctx\.locale && typeof ctx\.locale\.register === 'function'\)/)
+  assert.match(entry, /let CSS_TEXT = ''/)
+  assert.doesNotMatch(entry, /const zh = \{/, 'the dictionaries moved to client.locales.js')
+  assert.doesNotMatch(entry, /const CSS_TEXT = \[/, 'the stylesheet moved to client.styles.js')
+  for (const chunk of CLIENT_CHUNKS) {
+    const text = read(chunk)
+    const file = chunk.split('/').pop()
+    assert.match(text, /window\.__ModuleLoader__\.load\(\{/)
+    assert.match(text, /id: 'dsh-better-workspace'/)
+    assert.match(text, new RegExp("chunk: '" + file.replace('.', '\\.') + "'"))
+    assert.match(text, /factory: \(\) => \{/)
+    // A chunk factory has no require parameter and no package subpath; it may
+    // only hand values back to the entry.
+    assert.doesNotMatch(text, /require\(/)
+    assert.doesNotMatch(text, /(^|\n)\s*import\s/)
+    assert.doesNotMatch(text, /(^|\n)\s*export\s/)
+  }
+  assert.match(read('src/client.locales.js'), /return \{ zh, en, LOCALES \}/)
+  assert.match(read('src/client.styles.js'), /return \{ CSS_TEXT \}/)
+})
+
 test('client half registers the expected seats (v0.12.1)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   assert.match(text, /slots\.inject\('sidebar\.workspaces'/)
   assert.match(text, /priority: -1/, 'browser shadowing needs the lowest rank')
   // NO children declaration, ever (the v0.12.0 regression): a child-hole
@@ -109,7 +145,7 @@ test('client half registers the expected seats (v0.12.1)', () => {
 })
 
 test('hero picker: the sidebar tree shadows the shipped flat picker (v0.22.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // Same shadowing rule as the sidebar seat: lowest rank renders, and the
   // shipped entry keeps its registration (and its child-hole declaration).
   assert.match(text, /slots\.inject\('conversation\.hero\.workspace', guarded\(/)
@@ -132,7 +168,7 @@ test('hero picker: the sidebar tree shadows the shipped flat picker (v0.22.0)', 
 })
 
 test('customize dialog seeds the draft by row identity, not the rebuilt initial (v0.22.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   assert.match(text, /function CustomizeDialog\(\{ open, seedKey, initial, defaults, kind, onChange, onReset, onClose, t \}\)/)
   assert.match(text, /seedKey: customize \? customize\.entryKey : undefined,/)
   assert.match(text, /\}, \[open, seedKey\]\)/)
@@ -143,7 +179,7 @@ test('customize dialog seeds the draft by row identity, not the rebuilt initial 
 })
 
 test('client plugin exports the cordis plugin triple', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   assert.match(text, /name: 'dsh-better-workspace'/)
   // dsh 0.1.7 removed the settingsScope service: a hard inject would leave
   // the fiber PENDING forever, so only era-guaranteed services stay; the
@@ -152,11 +188,11 @@ test('client plugin exports the cordis plugin triple', () => {
   assert.match(text, /inject: \['slots', 'sessions', 'workspaces', 'locale', 'uiWorkspace'\]/)
   assert.match(text, /ctx\.inject\(\['configForms'\]/)
   assert.doesNotMatch(text, /'uiWorkspace', 'settingsScope'/)
-  assert.match(text, /function apply\(ctx\)/)
+  assert.match(text, /async function apply\(ctx\)/)
 })
 
 test('client half stays plain JavaScript (no import/JSX/TS syntax)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   assert.doesNotMatch(text, /(^|\n)\s*import\s/)
   assert.doesNotMatch(text, /(^|\n)\s*export\s/)
   assert.doesNotMatch(text, /=> </, 'JSX arrow syntax is forbidden')
@@ -172,7 +208,7 @@ test('client half stays plain JavaScript (no import/JSX/TS syntax)', () => {
  * executes exactly what ships.
  */
 const loadTitleSegs = () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const start = text.indexOf('const splitPlainSegs = (text) => {')
   const end = text.indexOf('const normPath =')
   assert.ok(start !== -1 && end !== -1 && start < end, 'splitting helpers not found')
@@ -212,7 +248,7 @@ test('splitTitleSegs: paired quotes verbatim, lone quotes are plain text', () =>
 })
 
 test('quote-on-land effect: blank-born only, user renames pinned, stability window', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // Eligibility is keyed off an observed BLANK snapshot, not "first time seen".
   assert.match(text, /blankSeen\.add\(id\)/, 'blank birth mark must be recorded')
   assert.match(text, /!blankSeen\.has\(id\) \|\| touched\.has\(id\)/, 'untouched blankSeen/human guard')
@@ -236,7 +272,7 @@ test('quote-on-land effect: blank-born only, user renames pinned, stability wind
 })
 
 test('alpha.3: the official context menu owns session/workspace rows (v0.38.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const pkg = JSON.parse(read('package.json'))
   const inject = pkg.dsh.client.inject
   assert.ok(inject.includes('@deepseek-ai/dsh-client-ui-context-menu'),
@@ -300,7 +336,7 @@ test('host half keeps its schemastery peer import lazy (0.21.1)', () => {
 })
 
 test('locale dictionaries cover every static t() key in both languages', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const slice = (startMarker, endMarker) => {
     const start = text.indexOf(startMarker)
     assert.ok(start !== -1, 'missing block: ' + startMarker)
@@ -337,7 +373,7 @@ const SHIPPED_LOCALES = [
 ]
 
 test('every shipped dictionary carries the same key set as zh', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // Values may be single- OR double-quoted (apostrophe-bearing copy), so
   // the line pattern stops at the key's closing colon.
   const keyLines = (segment) => [...segment.matchAll(/^ +'([^']+)': (?!\{)/gm)].map((m) => m[1]).sort()
@@ -363,7 +399,7 @@ test('every shipped dictionary carries the same key set as zh', () => {
   // a dropped locale here would leave that language on English.
   assert.match(
     text,
-    /ctx\.locale\.register\(NS, Object\.assign\(\{ zh, en \}, LOCALES\)\)/,
+    /ctx\.locale\.register\(NS, Object\.assign\(\{ zh: localeTables\.zh, en: localeTables\.en \}, localeTables\.LOCALES\)\)/,
     'every dictionary must be published through ctx.locale.register',
   )
 
@@ -389,7 +425,7 @@ test('every shipped dictionary carries the same key set as zh', () => {
  * through sessionTitleOf's third parameter.
  */
 test('sessionTitleOf: wire title wins, remembered fills the cold-restart window', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const start = text.indexOf('const sessionTitleOf =')
   const end = text.indexOf('/**', start)
   assert.ok(start !== -1 && end !== -1, 'sessionTitleOf not found')
@@ -408,7 +444,7 @@ test('sessionTitleOf: wire title wins, remembered fills the cold-restart window'
 })
 
 test('title cache: persisted key, batch learning, debounced save, bounded eviction (0.9.6)', async () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // 0.9.6 shape (issue #1): the cache is plain module state — no reactive
   // store, no per-session dispatch; one batch pass + one debounced save.
   assert.doesNotMatch(text, /createTitleCacheStore|actions\.rememberTitle/)
@@ -489,7 +525,7 @@ test('title cache: persisted key, batch learning, debounced save, bounded evicti
 
 
 test('manual cross-device sync: host scope bind, dual writes, pull modes', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // Scope bound once per activation; failures degrade to browser-local.
   // v0.21.1: the probe goes through ctx.get — reading the service PROPERTY on
   // a host that never injected it throws on the cordis proxy ("cannot get
@@ -525,7 +561,7 @@ test('manual cross-device sync: host scope bind, dual writes, pull modes', () =>
  * it survives a theme or background-plugin light/dark flip.
  */
 test('appearance: stroke ships OFF (v0.31.0, legacy ON preserved), gray color default, field-by-field merge (0.10.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const start = text.indexOf('const colorToRgb =')
   const end = text.indexOf('function FolderRow(')
   assert.ok(start !== -1 && end !== -1 && start < end, 'appearance helpers not found')
@@ -611,7 +647,7 @@ test('appearance: stroke ships OFF (v0.31.0, legacy ON preserved), gray color de
  * at the left edge; the 11px meta column must not be stroked at all.
  */
 test('outline: label keeps a bleed, meta column stays unstroked (0.10.1)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   assert.match(text, /\.bw-row-label\{[^}]*padding:3px;margin:-3px/, 'the label needs a bleed for the rim')
   assert.match(text, /\.bw-row-label\{[^}]*overflow:hidden/, 'the ellipsis overflow must stay')
   assert.match(text, /\.bw-preview-label\{[^}]*padding:3px;margin:-3px/, 'the preview label bleeds too')
@@ -629,7 +665,7 @@ test('outline: label keeps a bleed, meta column stays unstroked (0.10.1)', () =>
  * surviving equivalent instead of rendering an empty cell.
  */
 test('icons: retired glyphs resolve to a survivor; the picker follows the host set (0.10.2)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const start = text.indexOf('const ICON_ALIASES =')
   const end = text.indexOf('/** Render a primitives icon by name')
   assert.ok(start !== -1 && end !== -1 && start < end, 'icon resolution helpers not found')
@@ -680,7 +716,7 @@ test('icons: retired glyphs resolve to a survivor; the picker follows the host s
  * also land the historical pixel-suffix spelling on the new name.
  */
 test('icons: the 0.1.7-rc.1 users pair is committed and host-filtered (0.21.1)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const start = text.indexOf('const ICON_ALIASES =')
   const end = text.indexOf('/** Render a primitives icon by name')
   const choicesStart = text.indexOf('const ICON_CHOICES = [')
@@ -717,7 +753,7 @@ test('icons: the 0.1.7-rc.1 users pair is committed and host-filtered (0.21.1)',
  * keeps its own flat order so the gesture keeps working.
  */
 test('session reorder: host action preferred, browser-local order as the fallback (0.10.2)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
 
   const start = text.indexOf('function reorderIds(ids, id, anchor)')
   const end = text.indexOf('const countSessionTree = (node) =>')
@@ -777,7 +813,7 @@ test('session reorder: host action preferred, browser-local order as the fallbac
  * buildTree for real across both layers.
  */
 test('buildTree: disk nesting + name groups inside each level (0.12.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const helpers = new Function(text.slice(
     text.indexOf('const basename ='),
     text.indexOf('const splitPlainSegs ='),
@@ -843,7 +879,7 @@ test('buildTree: disk nesting + name groups inside each level (0.12.0)', () => {
  * affect the current mode, anchor suppression while recency sorts).
  */
 test('view options: group/order menu + the two slash toggles (0.13.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // v0.15: the workspace name layer ships OFF (see the opt-in test below);
   // session grouping keeps its 0.13 default (v0.37.2 protects path titles at
   // the SPLIT layer instead of turning the feature off — issue #17).
@@ -945,7 +981,7 @@ test('view options: group/order menu + the two slash toggles (0.13.0)', () => {
  * entry.
  */
 test('add-workspace flow: official chooser, browse Host renders the shipped dialog in place (v0.28.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // The affordance probes the composed backend and rides the OFFICIAL chooser;
   // a browse Host opens 'add-flow', which renders the SHIPPED occupant read
   // off the sidebar hole's ledger (never a plugin-built browser — the seat
@@ -986,7 +1022,7 @@ test('add-workspace flow: official chooser, browse Host renders the shipped dial
  * semantics), and the menu renders through the official primitives Menu.
  */
 test('context menu: official alignment via the workspace dictionary (0.14.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   assert.match(text, /ctx\.locale\.bind\('workspace'\)/, 'binds the official dictionary')
   assert.match(text, /let officialT = null/)
   assert.match(text, /officialT,/)
@@ -1027,7 +1063,7 @@ test('context menu: official alignment via the workspace dictionary (0.14.0)', (
  * generation fallback that keeps pre-0.1.7 glyph names rendering.
  */
 test('official mirror: pin/archive surface, archived filter, gates, status migration (v0.20.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // Status hooks, BOTH eras: useSessionStatus preferred, the pending-only
   // hook kept for pre-0.1.7 hosts, summary fields filling the rest.
   assert.match(text, /useSessionPendingInteraction, useSessionStatus, useWorkspaces/)
@@ -1092,7 +1128,7 @@ test('official mirror: pin/archive surface, archived filter, gates, status migra
  * round test), and the retired forkError mirror keeps its typeof defenses.
  */
 test('copy-session-id notice: official toast or fallback chip (v0.30.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // Feature probes, both directions.
   assert.match(text, /const officialToast = typeof ui\.Toast === 'function' \? ui\.Toast : null/)
   assert.match(text, /id === 'copy-id' && typeof ui\.writeClipboard === 'function'/)
@@ -1126,7 +1162,7 @@ test('copy-session-id notice: official toast or fallback chip (v0.30.0)', () => 
  * faces, and #8's progressive session listing.
  */
 test('issue round: exports fix, icon pick, ungrouped fold, tri-state, quota (v0.21.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // #9-1: desktop module discovery resolves <pkg>/package.json through the
   // exports map; without this row the client half never enters the boot
   // graph (ERR_PACKAGE_PATH_NOT_EXPORTED, silently swallowed).
@@ -1167,7 +1203,7 @@ test('issue round: exports fix, icon pick, ungrouped fold, tri-state, quota (v0.
  * name projection: no empty group container, no new store key.
  */
 test('group move: one shared menu entry on every row kind, one dialog for both entry paths', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // One shared item object, gated PER NAME LAYER (v0.15): a workspace row
   // offers "move to group" only while "/" grouping is on for workspaces, a
   // session row while its own layer is on. The two switches are independent —
@@ -1186,7 +1222,7 @@ test('group move: one shared menu entry on every row kind, one dialog for both e
 })
 
 test('group move: the header "New group" button doubles as the drop slot', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // v0.17.0: the button is an ICON now and its label tracks the live layers.
   assert.match(text, /'aria-label': newGroupLabel\(\)/, 'header button is labelled by the live layers')
   assert.match(text, /const newGroupLabel = \(\) => \(workspaceSlash && sessionSlash \? t\('group\.new\.both'\)/, 'both layers live -> "session or workspace"')
@@ -1212,7 +1248,7 @@ test('group move: the header "New group" button doubles as the drop slot', () =>
 })
 
 test('group move: user renames ride renameByUser, host reorder stays optional', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const start = text.indexOf('const submitGroupMove = (target, rawGroup) =>')
   const end = text.indexOf('/* ------------------------- drag & drop --------------------------')
   assert.ok(start !== -1 && end > start, 'submitGroupMove sits before the drag section')
@@ -1232,7 +1268,7 @@ test('group move: user renames ride renameByUser, host reorder stays optional', 
  * to group). Both contracts must stay wired.
  */
 test('session rename: using() preferred, binding() fallback for 0.1.5-rc.x hosts', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const start = text.indexOf('const renameSession = async (sessionId, title) =>')
   const end = text.indexOf('const forkSession = (sessionId)')
   assert.ok(start !== -1 && end > start, 'renameSession sits before forkSession')
@@ -1253,7 +1289,7 @@ test('session rename: using() preferred, binding() fallback for 0.1.5-rc.x hosts
  * sessionVisible. Retention wins, the wire field backs it up.
  */
 test('current session: mainView retention preferred, wire current as the 0.1.5-rc.x fallback', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const start = text.indexOf('const mainSessionIdOf = (list) => {')
   const end = text.indexOf('const hasActiveScheduleOf')
   assert.ok(start !== -1 && end > start, 'mainSessionIdOf sits before hasActiveScheduleOf')
@@ -1285,7 +1321,7 @@ test('current session: mainView retention preferred, wire current as the 0.1.5-r
  * makes those three cases separable from one read (no migration pass).
  */
 test('workspace "/" grouping: opt-in default, pre-0.13 snapshots stay on', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   assert.match(text, /workspaceGroupMode: 'disk', sessionTitleSlash: true, workspaceTitleSlash: false, ungroupedOpen: true/, 'init ships the disk-only workspace default plus the declared-group bags')
   assert.match(text, /const workspaceSlashOf = \(value\) => value === undefined \? true : value === true/, 'tri-state read')
   const start = text.indexOf('const workspaceSlashOf = (value) =>')
@@ -1325,7 +1361,7 @@ test('workspace "/" grouping: opt-in default, pre-0.13 snapshots stay on', () =>
  * agree that there is no folder to cross.
  */
 test('workspace drag: disk-only mode reorders, never rewrites titles', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   assert.match(text, /const sourceFolder = workspaceSlash && segs\.length > 1 \? segs\.slice\(0, -1\)\.join\('\/'\) : ''/, 'drag source drops the folder while the layer is off')
   assert.match(text, /const sameFolder = !workspaceSlash \|\| targetFolder === source\.folderPath/, 'commit forces the reorder path')
   assert.match(text, /hint: workspaceSlash \? t\('ws\.rename\.hint'\) : null/, 'the rename dialog stops advertising "/"')
@@ -1344,7 +1380,7 @@ test('workspace drag: disk-only mode reorders, never rewrites titles', () => {
  * own scrolling list.
  */
 test('group dialog dropdowns: primitives Menu, native control only as the Menu-less fallback', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   assert.match(text, /function MenuPicker\(\{ options, value, onPick, placeholder, chevronOnly, title, t \}\)/, 'one shared picker')
   assert.match(text, /const menuReady = typeof ui\.Menu === 'function'/, 'the primitives are probed')
   assert.match(text, /selectedId: current === null \? undefined : String\(current\.value\)/, 'the current row is checked')
@@ -1368,7 +1404,7 @@ test('group dialog dropdowns: primitives Menu, native control only as the Menu-l
  * while building, so only this flat path lost it. Reported 2026-09-19.
  */
 test('official "workspace" grouping: flat rows carry a label', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   assert.match(text, /renderWorkspaceEntry\(\{ workspace: flatWorkspaceEntry\(workspace\) \}, 0, wsPulseOf\(workspace\)\)/, 'the flat mode builds a labelled entry')
   // The bare { workspace } form stays CORRECT on the tree path — those entries
   // carry a leaf by construction. What must never come back is the raw form
@@ -1401,7 +1437,7 @@ test('official "workspace" grouping: flat rows carry a label', () => {
  * the declaration; these tests drive the real reducer and the real tree walk.
  */
 test('declared groups: the store writes and prunes them, descendants included (v0.17.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const start = text.indexOf('        addFolder: (d, kind, scope, path) => {')
   const end = text.indexOf('\n      },', start)
   assert.ok(start !== -1 && end > start, 'the two folder actions sit in the store')
@@ -1429,7 +1465,7 @@ test('declared groups: the store writes and prunes them, descendants included (v
 })
 
 test('declared groups: they render even with no members to project from (v0.17.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const start = text.indexOf('    const EMPTY_FOLDERS = Object.freeze({})')
   const end = text.indexOf('    function buildTree(')
   assert.ok(start !== -1 && end > start, 'the resolvers sit above buildTree')
@@ -1465,7 +1501,7 @@ test('declared groups: they render even with no members to project from (v0.17.0
  * The move dialog keeps its own shape; the two are separate entry points now.
  */
 test('new group: icon button, live tooltip, layer switch and a tree picker (v0.17.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   assert.match(text, /function GroupNewDialog\(props\)/, 'the dialog exists')
   assert.match(text, /const newGroupLayers = \(\) => \(workspaceSlash && sessionSlash \? \['session', 'workspace'\]/, 'both layers are offered when both are live')
   assert.match(text, /layer: defaultNewGroupLayer\(\)/, 'the header hands the dialog its default layer')
@@ -1531,7 +1567,7 @@ test('new group: icon button, live tooltip, layer switch and a tree picker (v0.1
  * nothing" (user report: dragging a session out of 测试1 kept it inside).
  */
 test('session drag out of a group: cross-group drops move the row, the workspace row takes it out (v0.18.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // A drop on a row of another group rewrites the prefix (the move), and only
   // then applies the order.
   assert.match(text, /const titleMovedToGroup = \(title, anchorTitle\) => \{/)
@@ -1570,7 +1606,7 @@ test('session drag out of a group: cross-group drops move the row, the workspace
 })
 
 test('new-group dialog components stay at module scope (React discipline)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const head = text.indexOf('function GroupNewDialog(props) {')
   const start = text.indexOf('\n', head) + 1
   const end = text.indexOf('\n    function ', start)
@@ -1590,7 +1626,7 @@ test('new-group dialog components stay at module scope (React discipline)', () =
  * "nothing" when the shipped side is not there.
  */
 test('rc.2 archived filter: three explicit picks, legacy two-toggle fallback (v0.23.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const start = text.indexOf('function ViewOptionsMenu(')
   const end = text.indexOf('function CustomizeDialog(', start)
   const menu = text.slice(start, end)
@@ -1611,7 +1647,7 @@ test('rc.2 archived filter: three explicit picks, legacy two-toggle fallback (v0
 })
 
 test('rc.2 archived-only view drops Workspaces without archived Sessions (v0.23.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // Official tree.ts groupByWorkspace: `if (archivedFilter === 'only' &&
   // members.length === 0) continue` — the inventory is not the archive list.
   assert.match(text, /const archivedOnly = archivedFilter === 'only'/)
@@ -1630,7 +1666,7 @@ test('rc.2 archived-only view drops Workspaces without archived Sessions (v0.23.
 })
 
 test('rc.2 first-use Workspace name: display-only substitution, both surfaces (v0.23.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // Official api/workspace-controller/default-workspace.ts: the registry's
   // automatic first-use title is the on-disk leaf, and consumers label exactly
   // that title with the localized name.
@@ -1649,7 +1685,7 @@ test('rc.2 first-use Workspace name: display-only substitution, both surfaces (v
 })
 
 test('rc.2 schedule mark: the shipped seat occupant, legacy projection only as fallback (v0.23.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // rc.2 deleted packages/schedule/schedule/src/projection.ts, so
   // projectionValues.schedule never exists there: the new source is the seat
   // the SHIPPED browser declares, read off the ledger like the hero occupant.
@@ -1677,7 +1713,7 @@ test('rc.2 schedule mark: the shipped seat occupant, legacy projection only as f
 })
 
 test('rc.2 shortcuts: the shadowed browser\'s request channel is consumed here (v0.23.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // session.search / workspace.add resolve into the SHIPPED browser's private
   // store, whose only consumer is that component's effect. The seat is
   // shadowed at priority -1, so the channel is read off the ledger...
@@ -1712,7 +1748,7 @@ test('rc.2 shortcuts: the shadowed browser\'s request channel is consumed here (
 })
 
 test('rc.2 design tokens: radii and focus rings follow the host scale (v0.23.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // rc.2 published --dsw-radius-* and --dsw-focus-ring-*; every adopted value
   // keeps its pre-rc.2 pixel value as the fallback so older hosts only gain
   // the token when the host has it.
@@ -1729,7 +1765,7 @@ test('rc.2 design tokens: radii and focus rings follow the host scale (v0.23.0)'
  * is asserted here rather than trusted.
  */
 const loadAutoStyle = () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // Two pure slices: the slot table + resolvers (kept beside colorToRgb, where
   // strokeColorOf can reach them) and the icon pool + shuffle bag.
   const slotsStart = text.indexOf('/* ---------- auto palette slots + theme resolution (v0.25.0, pure) ---------- */')
@@ -1821,7 +1857,7 @@ test('auto style: two theme palettes, each ≥4.5 (normal-text AA) on its own ba
   // Icons come from the existing candidate list — never a new icon set.
   // (The theme-subscription guards live in their own tests below, so a mutation
   // in either shape reports independently.)
-  const text = read('src/client.js')
+  const text = clientText()
   const choices = text.slice(text.indexOf('const ICON_CHOICES = ['), text.indexOf('const ICON_PICKER_CHOICES'))
   assert.ok(AUTO_ICON_POOL.length >= 10, 'icon pool too small: ' + AUTO_ICON_POOL.length)
   for (const name of AUTO_ICON_POOL) {
@@ -1837,7 +1873,7 @@ test('auto style: two theme palettes, each ≥4.5 (normal-text AA) on its own ba
  * same as "no subscription at all". Two tests report independently.
  */
 test('auto style: the row renderer subscribes to the theme flip (v0.25.0 P1 guard 1/2)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const browserStart = text.indexOf('function BetterBrowser(props) {')
   assert.ok(browserStart !== -1, 'BetterBrowser not found')
   const rowStyleStart = text.indexOf('const rowStyleOf = (key) => {', browserStart)
@@ -1847,7 +1883,7 @@ test('auto style: the row renderer subscribes to the theme flip (v0.25.0 P1 guar
 })
 
 test('auto style: the row colour resolves with the SUBSCRIBED theme (v0.25.0 P1 guard 2/2)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // "Subscription present but unused" is the half-fix this catches: reading the
   // theme without passing it keeps the old implicit DOM read, and a switch then
   // repaints only after some unrelated re-render.
@@ -1900,7 +1936,7 @@ test('auto style: shuffle bag + recent-dedup drawer, colors and icons independen
 })
 
 test('auto style: opt-in switch, blank-only sessions, settled-inventory workspaces (v0.24.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // Default OFF: the store never seeds the key, and the reader demands `true`
   // (an absent key on every persisted snapshot therefore means off).
   assert.match(text, /const autoStyle = prefsMap\.autoStyle === true/)
@@ -1963,7 +1999,7 @@ test('auto style: opt-in switch, blank-only sessions, settled-inventory workspac
  * de/fr use 3,0), and a strict pattern once mis-flagged correct translations.
  */
 test('auto style: all 21 hints promise ≥4.5 (normal-text AA) per theme, no stale "not AA" copy (v0.25.0)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const hints = [...text.matchAll(/'settings\.autoStyle\.hint':\s*(?:'([^']*)'|"([^"]*)")/g)]
     .map((match) => match[1] !== undefined ? match[1] : match[2])
   const locales = [...text.matchAll(/\/\* locale: ([\w-]+) \*\//g)].map((match) => match[1])
@@ -1988,7 +2024,7 @@ test('auto style: all 21 hints promise ≥4.5 (normal-text AA) per theme, no sta
 })
 
 test('customize dialog honors the Modal height contract (v0.27.1, issue #10)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // The Modal .dialog frame is overflow:hidden; a card that grows past the
   // window gets clipped on BOTH ends (title unreachable on top, footer's
   // reset/done unreachable below ~1074px). The official contract caps growth
@@ -2017,7 +2053,7 @@ test('customize dialog honors the Modal height contract (v0.27.1, issue #10)', (
 
 
 test('v0.30.2: rowTitleOf grafts the remembered display while the wire stays group-less', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const start = text.indexOf('const remembered = (titleCacheRef')
   const end = text.indexOf('// Learn real titles from every snapshot')
   assert.ok(start !== -1 && end !== -1 && start < end, 'rowTitleOf block not found')
@@ -2039,7 +2075,7 @@ test('v0.30.2: rowTitleOf grafts the remembered display while the wire stays gro
 })
 
 test('issue #12: the in-row "..." menu is retired, row.action seat renders in a boundary', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // The menu.item seat must never even be READ again: its occupants need
   // slot-level inject hooks (useShortcuts on 0.2.1-rc.2) that an in-row
   // reproduction cannot supply — one missing hook blanked the whole sidebar.
@@ -2062,7 +2098,7 @@ test('issue #12: the in-row "..." menu is retired, row.action seat renders in a 
 })
 
 test('alpha.2: sidebar.session.row.trailing renders inside the row, between time and pin', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // alpha.2 declares a row-inline trailing seat (ui-workspace Rows.tsx:744:
   // resting cell order time → trailing → pinned). It is where the official
   // experimental worktree/PR icon registers; a custom sidebar that never reads
@@ -2092,7 +2128,7 @@ test('alpha.2: sidebar.session.row.trailing renders inside the row, between time
 })
 
 test('collapsed rail add button never reaches startAddFlow before initialization', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // Regression: the rail renders before the main tree, but startAddFlow is a
   // const declared later in the component body. An early return placed above
   // it left the click handler in the temporal dead zone; the first collapsed
@@ -2107,7 +2143,7 @@ test('collapsed rail add button never reaches startAddFlow before initialization
 })
 
 test('issue #13: local reads and writes ride the PRIVATE store instance', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // The bundle creates its own instance once (defineStore returns a HANDLE;
   // only .create() yields actions + a live snapshot source).
   assert.ok(text.includes('const viewInstance = viewStore.create()'),
@@ -2130,7 +2166,7 @@ test('issue #13: local reads and writes ride the PRIVATE store instance', () => 
 /* ------------------------------ v0.36.0 ------------------------------ */
 
 test('v0.36.0: sub-level folder appearance saves by the RENDER key (idPath)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // keyOf must produce the SAME key the render side reads (renderPlainFolder
   // reads 'folder:' + idPath; idPath = node.idPath || node.path). Saving by
   // payload.path alone parked sub-level group styling under a key the render
@@ -2140,7 +2176,7 @@ test('v0.36.0: sub-level folder appearance saves by the RENDER key (idPath)', ()
 })
 
 test('v0.36.0: folder rows drag as whole groups (members retitled under the target prefix)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // The row must be draggable and arm the same one-frame drag state the
   // workspace drag uses (Chromium cancels a drag whose source moves).
   assert.match(text, /const folderDropEvents = \(idPath, path, node\) => \(\{\n        draggable: !searching,/,
@@ -2177,7 +2213,7 @@ test('v0.36.0: folder rows drag as whole groups (members retitled under the targ
 })
 
 test('v0.36.1: group rows use a content-band hover (outer reorder + middle into) with a growing slot', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // v0.36.4 judges the bands against the row's ORIGINAL position: an open
   // slot pads the row with one logical row (--bw-row-h) via PADDING, so the
   // row box is twice as tall while the original position is the half the
@@ -2247,7 +2283,7 @@ test('v0.36.1: group rows use a content-band hover (outer reorder + middle into)
 })
 
 test('v0.36.2: edge-band reorder needs no hover intent; refusals warn loudly', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // v0.36.4 retired the 200ms intent timer: a resting pointer on a band
   // opens the slot on the first dragover frame. Waiting made a fast drag
   // read as "只有一条蓝线" while a slow one read as "抽搐" — the feedback
@@ -2272,7 +2308,7 @@ test('v0.36.2: edge-band reorder needs no hover intent; refusals warn loudly', (
 })
 
 test('v0.36.3/0.36.7: an ancestor row only answers the framed INTO on the DIRECT parent', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // v0.36.3 briefly opened the DIRECT parent's edge bands as a drag-out;
   // v0.36.4 closed it again. v0.36.7 reopens ONLY the parent's MIDDLE band,
   // and only as the framed INTO: "放进那个组" = move the block to the tail of
@@ -2292,7 +2328,7 @@ test('v0.36.3/0.36.7: an ancestor row only answers the framed INTO on the DIRECT
 })
 
 test('v0.36.4: group order is persisted per parent and drives the tree sort', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // THE bug behind "工作区文件夹完全没法改排序": buildTree sorted every level
   // by name, so a SUCCESSFUL commitFolderReorder (a registry edit) changed
   // nothing the user could see. The visible order now lives in the view
@@ -2336,7 +2372,7 @@ test('v0.36.4: group order is persisted per parent and drives the tree sort', ()
 })
 
 test('v0.36.4: an open reorder slot splits the original row at its midpoint (no INTO flip)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // fail() lives in BetterBrowser; setFlowOpen lives in WorkspacePicker. Crossing that
   // fiber boundary threw ReferenceError on every failure path (v0.36.4 fix).
   assert.doesNotMatch(text, /const fail = \(text\) => \{ setFlowOpen/,
@@ -2367,7 +2403,7 @@ test('v0.36.4: an open reorder slot splits the original row at its midpoint (no 
 })
 
 test('v0.36.5: a level is ONE mixed sequence (bare workspaces interleave with group rows)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // THE bug behind "插到第一个永远失败": every level painted all group rows
   // first and every bare workspace after, so a workspace dropped ABOVE a group
   // committed its registry edit but still painted last. A level now carries one
@@ -2411,7 +2447,7 @@ test('v0.36.5: a level is ONE mixed sequence (bare workspaces interleave with gr
 })
 
 test('v0.36.11: "workspaces" + a name layer renders the root-level name tree', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // THE bug behind "切到按工作区后树完全散开": the workspace branch hard-coded
   // the official scatter (every workspace at the root) and ignored the name
   // layer the user had enabled. The tree memo now resolves its mode through
@@ -2436,7 +2472,7 @@ test('v0.36.11: "workspaces" + a name layer renders the root-level name tree', (
 })
 
 test('v0.36.5: a workspace row and a group row reorder into each other (mixed drag)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // A workspace row now answers the reorder slot for a GROUP source too — the
   // mirror of a group row answering a workspace source. Same pending highlight,
   // same slot padding: one mechanism, two drag kinds.
@@ -2512,7 +2548,7 @@ test('v0.36.5: a workspace row and a group row reorder into each other (mixed dr
 
 
 test('v0.36.6: a workspace lifts OUT of its group onto any same-disk level (insert-as-first)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // THE proven bug (probe12): hover over a group row of ANOTHER level refused
   // without preventDefault, so {over} kept the INTO band the pointer crossed on
   // its way down; the drop then ran move-into and left the row LAST in the
@@ -2575,7 +2611,7 @@ test('v0.36.6: a workspace lifts OUT of its group onto any same-disk level (inse
 
 
 test('v0.36.7: dropping a group on its OWN container row is the framed INTO (block goes to the level tail)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // The user's report: dragging a group row ("工作区分区") onto the workspace
   // row that CONTAINS it showed no feedback at all, while a workspace row
   // dropped on a group row answers the framed INTO. Same visual language now:
@@ -2620,7 +2656,7 @@ test('v0.36.7: dropping a group on its OWN container row is the framed INTO (blo
  * workspace runs. Exercise the actual client functions without a Cordis host.
  */
 test('flat last-updated order is global, preserving blank and pinned sections', () => {
-  const source = read('src/client.js')
+  const source = clientText()
   const helperStart = source.indexOf('    const pinnedPartition = (rows) => {')
   const helperEnd = source.indexOf('    const sessionTitleOf = ', helperStart)
   const flatStart = source.indexOf('      const renderFlatRows = () => {')
@@ -2674,7 +2710,7 @@ test('flat last-updated order is global, preserving blank and pinned sections', 
  */
 
 test('v0.36.9: a container workspace cannot be dropped inside its own disk subtree', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // The shared judgement: resolve a drop target's disk scope down the parent
   // chain, then walk the disk parent map looking for the dragged workspace.
   const diskScopeAt = text.indexOf('const diskScopeOf = (folderIdPath) => {')
@@ -2702,7 +2738,7 @@ test('v0.36.9: a container workspace cannot be dropped inside its own disk subtr
 })
 
 test('v0.36.10: level-mate groups nest, lift and survive a resting drag', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // 1) NEST — "把平行帮拖到 Fis管理后台 下面". The old prefix swap merged the
   // members straight into the target level and died on name-conflict when the
   // target had a child with the same leaf name (Web/Back on both sides).
@@ -2754,7 +2790,7 @@ test('v0.36.10: level-mate groups nest, lift and survive a resting drag', () => 
 })
 
 test('v0.36.13: every tree-shaped surface shares ONE view rule (no per-surface drift)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   // THE recurring bug class: a surface renders a hierarchy but keeps its own
   // private view condition, so toggling a grouping mode leaves ONE surface
   // scattering rows the others keep as a tree (v0.36.11 sidebar vs v0.36.13
@@ -2777,7 +2813,7 @@ test('v0.36.13: every tree-shaped surface shares ONE view rule (no per-surface d
 })
 
 test('v0.36.14: unnamed rows use the official Untitled label in every language (issue #16)', () => {
-  const text = read('src/client.js')
+  const text = clientText()
   const locales = [...text.matchAll(/\/\* locale: ([\w-]+) \*\//g)].map((match) => match[1])
   assert.equal(locales.length, 19, 'the LOCALES table must still carry 19 marked languages')
   const entries = [...text.matchAll(/'session\.untitled':\s*'([^']*)'/g)].map((match) => match[1])

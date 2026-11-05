@@ -47,14 +47,28 @@ window.__ModuleLoader__.load({
       const i = Math.max(s.lastIndexOf('/'), s.lastIndexOf('\\'))
       return i === -1 ? s : s.slice(i + 1)
     }
+
+    // Host-recorded title provenance (src/title-source.js). A fresh session's
+    // fallback/provider title never becomes a hierarchy; only a user rename or
+    // an explicit grouping action may form groups. Undefined means the host
+    // projection is not there (old cold cache), so the display falls back to
+    // the text heuristics below.
+    const TITLE_SOURCE_KEY = 'betterWorkspace/titleSource'
+    const titleSourceOf = (summary) => {
+      const values = summary && summary.projectionValues
+      return values && typeof values === 'object' ? values[TITLE_SOURCE_KEY] : undefined
+    }
+    const groupsAllowedFor = (summary) => {
+      const source = titleSourceOf(summary)
+      return source === undefined || source === 'user'
+    }
     /**
      * Plain-text splitting with the URL tail kept opaque: a bare "/" split
      * shreds URLs ("https:" → empty → host → path...), so from the first
      * "://" onward the tail is ONE leaf; text before the marker splits
      * normally at the last "/" before it. This is the FALLBACK guard —
-     * freshly generated titles get their whole "/"-bearing title wrapped in
-     * quotes by the quote-on-land effect (see BetterBrowser), which is the
-     * primary mechanism.
+     * whether a session title is allowed to form groups at all is decided by
+     * its host-recorded provenance (see TITLE_SOURCE_KEY), not by the text.
      */
     const splitPlainSegs = (text) => {
       const s = String(text || '')
@@ -79,12 +93,18 @@ window.__ModuleLoader__.load({
     const titleQuotesPath = (text) => {
       // A path inside a PAIRED quote span is already an opaque leaf (the
       // quote parser below keeps it verbatim), so only the unquoted remainder
-      // can be mistaken for a name hierarchy.
+      // can be mistaken for a name hierarchy. "~/.dsh/..." and "./..." are
+      // paths even when they carry only one slash; drive-letter paths are
+      // paths by construction. A bare "https://" is not matched (it does not
+      // start with a slash).
       const s = String(text || '').replace(/"[^"]*"|“[^”]*”/g, ' ')
-      const re = /(?:^|\s)(?:[A-Za-z]:)?\/\S+/g
+      const re = /(?:^|\s)(?:(?:[A-Za-z]:)?\/\S+|(?:~|\.{1,2})\/\S+)/g
       let m
       while ((m = re.exec(s)) !== null) {
-        if ((m[0].match(/\//g) || []).length >= 2) return true
+        const token = m[0].trim()
+        if (/^[A-Za-z]:[\\/]/.test(token)) return true
+        if (/^(?:~|\.{1,2})\//.test(token)) return true
+        if ((token.match(/\//g) || []).length >= 2) return true
       }
       return false
     }
@@ -100,8 +120,9 @@ window.__ModuleLoader__.load({
      * Grouping is a pure projection, so previously shredded titles re-flow
      * on reload.
      */
-    const splitTitleSegs = (title) => {
+    const splitTitleSegs = (title, allowGroups = true) => {
       const s = String(title || '')
+      if (allowGroups === false) return s.trim() === '' ? [] : [s.trim()]
       if (titleQuotesPath(s)) return [s.trim()]
       if (!/["“]/.test(s)) return splitPlainSegs(s)
       const out = []
@@ -117,11 +138,19 @@ window.__ModuleLoader__.load({
             i += 1
             continue
           }
-          for (const seg of splitPlainSegs(plain)) out.push(seg)
-          plain = ''
           const end = j + 1
           const quoted = s.slice(i, end).trim()
-          if (quoted !== '') out.push(quoted)
+          // Quotes protect a slash INSIDE a leaf; they do not manufacture a
+          // group out of ordinary punctuation. "受阻" in a sentence stays
+          // part of the surrounding leaf (issue #19), so the pending plain
+          // text is only flushed when the quoted span itself carries a slash.
+          if (quoted !== '' && quoted.includes('/')) {
+            for (const seg of splitPlainSegs(plain)) out.push(seg)
+            plain = ''
+            out.push(quoted)
+          } else {
+            plain += quoted
+          }
           i = end
           continue
         }
@@ -645,7 +674,7 @@ window.__ModuleLoader__.load({
       }
       for (const segs of explicitSegsOf(explicitSess, groupScope)) ensure(segs)
       for (const row of rows || []) {
-        const segs = splitTitleSegs(row.title)
+        const segs = splitTitleSegs(row.title, row.allowGroups !== false)
         const folderPath = segs.slice(0, -1).join('/')
         const leaf = segs.length > 0 ? segs[segs.length - 1] : row.title
         ensure(segs.slice(0, -1)).sessions.push({ ...row, leaf })
@@ -4009,42 +4038,13 @@ window.__ModuleLoader__.load({
       // across a group row showed the thin insert line and never the empty
       // slot — the user report "还是一条蓝线,没拨开让我插入". The edge bands
       // are 30% wide and geometrically judged, so they can answer at once.
-      // Quote-on-land eligibility sets (mount-scoped):
-      // - blankSeen: ids observed BLANK in any snapshot. A blank row is a
-      //   freshly created New Session, so ONLY these may ever receive an
-      //   automatic quote. A titled row missing from blankSeen — rows that
-      //   stream into the store after mount, fork children (born titled),
-      //   rows hidden by load-time filtering — predates this mount or was
-      //   named deliberately, and is NEVER touched. (0.9.1 keyed "fresh" off
-      //   the first snapshot instead, so late-arriving OLD sessions were
-      //   misquoted; blank is the only trustworthy birth mark.)
-      // - humanTouched: ids renamed through THIS component's user actions
-      //   (rename dialog, drag into a group, group prefix rewrite). A
-      //   user-written "/" is a deliberate grouping; a user-written quote
-      //   pair is the verbatim escape. The host pins user titles (a later
-      //   automatic name is superseded), so the mark is final.
-      // - autoStable: id → { title, since } for freshly landed automatic
-      //   titles waiting out the stabilization window below.
-      const blankSeenRef = React.useRef(null)
-      const humanTouchedRef = React.useRef(null)
-      const autoStableRef = React.useRef(null)
-      const stableTimerRef = React.useRef(null)
-      const [stableTick, setStableTick] = React.useState(0)
-      // The wire cannot tell the deterministic fallback title (first user
-      // message echo, "/"-prone) from the async LLM name that replaces it
-      // seconds later — SessionSummary carries no source field. So a landed
-      // "/"-bearing title is quoted only after it survives 20s unchanged;
-      // any rename resets the window, and the common slash-free LLM name
-      // simply releases the session untouched. Only the "new session
-      // auto-title stayed slashy" case gets wrapped.
-      const TITLE_STABLE_MS = 20000
-
-      // User-driven renames funnel through here: mark first so the
-      // quote-on-land effect never second-guesses a deliberate title.
+      // Title provenance is host-recorded: the summary projection above paints
+      // source.kind ('fallback' | 'provider' | 'user') onto every list row, so
+      // a user rename needs no local bookkeeping — the next snapshot marks it
+      // 'user' and only then does a "/" title form groups. No synthetic user
+      // title and no 20s stabilization window: rewriting the host title would
+      // pin an automatic name before its LLM replacement lands.
       const renameByUser = (sessionId, title) => {
-        if (humanTouchedRef.current === null) humanTouchedRef.current = new Set()
-        humanTouchedRef.current.add(String(sessionId))
-        if (autoStableRef.current) autoStableRef.current.delete(String(sessionId))
         // A manual rename is authoritative: forget any grafted display so
         // the fresh wire title stands verbatim (no prefix re-applied).
         if (titleCacheRef && typeof titleCacheRef.forgetDisplay === 'function') titleCacheRef.forgetDisplay(String(sessionId))
@@ -4096,66 +4096,6 @@ window.__ModuleLoader__.load({
         return () => clearTimeout(timer)
       }, [copyNotice ? copyNotice.seq : null])
 
-      React.useEffect(() => {
-        if (!list || !list.byId || typeof renameSession !== 'function') return
-        if (blankSeenRef.current === null) blankSeenRef.current = new Set()
-        if (humanTouchedRef.current === null) humanTouchedRef.current = new Set()
-        if (autoStableRef.current === null) autoStableRef.current = new Map()
-        const blankSeen = blankSeenRef.current
-        const touched = humanTouchedRef.current
-        const stable = autoStableRef.current
-        const now = Date.now()
-        const fixes = []
-        let deadline = Infinity
-        for (const id of Object.keys(list.byId)) {
-          const summary = list.byId[id]
-          if (!summary) continue
-          if (summary.blank) { blankSeen.add(id); stable.delete(id); continue }
-          if (!blankSeen.has(id) || touched.has(id)) { stable.delete(id); continue }
-          const text = String(summary.title || '')
-          if (text.trim() === '' || text.includes('“') || text.includes('"') || !text.includes('/')) {
-            stable.delete(id) // quoted already, or the LLM name arrived slash-free: done
-            continue
-          }
-          // v0.37.3: a path-shaped title is already ONE row at render time
-          // (titleQuotesPath). Renaming it here would append a USER title and
-          // supersede an asynchronous LLM name that has not landed yet, so the
-          // fallback would stay pinned as a raw path. Leave it to the host.
-          if (titleQuotesPath(text)) {
-            stable.delete(id)
-            continue
-          }
-          const prev = stable.get(id)
-          if (prev && prev.title === text) {
-            if (now - prev.since >= TITLE_STABLE_MS) {
-              stable.delete(id)
-              fixes.push([id, '“' + text + '”'])
-            } else {
-              deadline = Math.min(deadline, prev.since + TITLE_STABLE_MS)
-            }
-            continue
-          }
-          stable.set(id, { title: text, since: now }) // new landing or fallback→LLM rename: reset
-          deadline = Math.min(deadline, now + TITLE_STABLE_MS)
-        }
-        for (const id of Array.from(stable.keys())) {
-          if (!list.byId[id]) stable.delete(id) // session vanished (archived/deleted): drop the wait
-        }
-        if (stableTimerRef.current !== null) { clearTimeout(stableTimerRef.current); stableTimerRef.current = null }
-        if (deadline !== Infinity) {
-          stableTimerRef.current = setTimeout(() => {
-            stableTimerRef.current = null
-            setStableTick(t => t + 1) // re-evaluate through the effect, never rename from a stale closure
-          }, Math.max(1, deadline - now))
-        }
-        if (fixes.length === 0) return
-        Promise.resolve()
-          .then(async () => { for (const [id, next] of fixes) await renameSession(id, next) })
-          .catch(() => { /* display-layer fallback keeps the row flat; a later snapshot re-evaluates */ })
-      }, [list, stableTick])
-      React.useEffect(() => () => {
-        if (stableTimerRef.current !== null) clearTimeout(stableTimerRef.current)
-      }, [])
       const normalizedQuery = query.trim().toLowerCase()
       const now = Date.now()
 
@@ -4224,6 +4164,7 @@ window.__ModuleLoader__.load({
             pending: visiblePendingKind(st && st.pendingInteraction && st.pendingInteraction.kind),
             pinned: pinnedSet.has(id) && !archivedSet.has(id),
             archived: archivedSet.has(id),
+            allowGroups: groupsAllowedFor(summary),
           })
         }
         ungrouped.sort((a, b) => b.updatedAt - a.updatedAt)
@@ -4300,6 +4241,7 @@ window.__ModuleLoader__.load({
             pending: visiblePendingKind(st && st.pendingInteraction && st.pendingInteraction.kind),
             pinned: pinnedSet.has(id) && !archivedSet.has(id),
             archived: archivedSet.has(id),
+            allowGroups: groupsAllowedFor(summary),
           })
         }
         // Browser-local reorder fallback: used only when the injected
@@ -4576,16 +4518,27 @@ window.__ModuleLoader__.load({
        * by these groups, so a drop that only reorders the flat list would leave
        * the row exactly where it was.
        */
-      const titleMovedToGroup = (title, anchorTitle) => {
-        const leaf = leafOf(title)
-        const group = groupPrefixOf(anchorTitle)
-        if (!group) return leaf
-        // A path-shaped leaf stays ONE opaque row (titleQuotesPath), so an
-        // unwrapped prefix would never become a visible group. Quote the leaf
-        // — the same convention quote-on-land uses — and the prefix splits
-        // while the path stays verbatim inside the quotes.
-        const safe = titleQuotesPath(leaf) ? '“' + leaf + '”' : leaf
-        return group + '/' + safe
+      // A path-shaped leaf stays ONE opaque row (titleQuotesPath), so an
+      // unwrapped prefix would never become a visible group. Quote it and the
+      // prefix splits while the path stays verbatim inside the quotes. A leaf
+      // from an auto-titled session is opaque for the same reason: its "\/" is
+      // prose, not a group, and the drag itself is the explicit grouping act.
+      const leafForGroup = (leaf, opaque) => {
+        const s = String(leaf || '')
+        if (!s.includes('/')) return s
+        if (/^“[^”]*”$/.test(s) || /^"[^"]*"$/.test(s)) return s
+        return (opaque || titleQuotesPath(s)) ? '“' + s + '”' : s
+      }
+      const titleMovedToGroup = (title, anchorTitle, opts = {}) => {
+        const sourceOpaque = opts.sourceOpaque === true
+        const anchorOpaque = opts.anchorOpaque === true
+        const leaf = sourceOpaque ? String(title || '') : leafOf(title)
+        const group = anchorOpaque ? '' : groupPrefixOf(anchorTitle)
+        // Returning to the root is still a manual rename in the host, which
+        // turns the title's source into 'user'. Quote an opaque leaf so its
+        // prose "/" cannot start forming groups after that rename.
+        if (!group) return leafForGroup(leaf, sourceOpaque)
+        return group + '/' + leafForGroup(leaf, sourceOpaque)
       }
       /**
        * Every existing group path, deduplicated (datalist source). `kind`
@@ -4607,7 +4560,12 @@ window.__ModuleLoader__.load({
         }
         for (const workspace of items || []) {
           if (kind !== 'session') addPrefixes(workspace.title)
-          if (kind !== 'workspace') for (const session of sessionsOf(workspace)) addPrefixes(session.title)
+          if (kind !== 'workspace') for (const session of sessionsOf(workspace)) {
+            // An auto-titled session's "/" is prose: it forms no group and must
+            // not be suggested as one (issue #19).
+            if (session.allowGroups === false) continue
+            addPrefixes(session.title)
+          }
         }
         return [...paths].sort()
       }
@@ -4731,7 +4689,7 @@ window.__ModuleLoader__.load({
           const id = text.slice(5)
           for (const workspace of items || []) {
             const row = sessionsOf(workspace).find((s) => s.id === id)
-            if (row) return { kind: 'session', id: row.id, title: row.title, workspaceId: workspace.workspaceId }
+            if (row) return { kind: 'session', id: row.id, title: row.title, workspaceId: workspace.workspaceId, allowGroups: row.allowGroups !== false }
           }
           return null
         }
@@ -4747,13 +4705,15 @@ window.__ModuleLoader__.load({
        * (folder / sgroup) rewrite the prefix of every member, exactly like
        * the existing rename-group dialogs; single kinds just retitle the
        * entry. All paths are user-driven renames, so sessions go through
-       * renameByUser (humanTouched: never auto-quoted afterwards).
+       * renameByUser, so the next snapshot records source "user" and the new
+       * prefix becomes a real group.
        */
       const submitGroupMove = (target, rawGroup) => {
         if (!target) { setDialog(null); return }
         const group = normPath(String(rawGroup || ''))
-        const leaf = leafOf(target.title)
-        const next = group ? group + '/' + leaf : leaf
+        const leaf = target.allowGroups === false ? String(target.title || '') : leafOf(target.title)
+        const safe = target.kind === 'session' ? leafForGroup(leaf, target.allowGroups === false) : leaf
+        const next = group ? group + '/' + safe : safe
         if (next === '' || next === target.title) { setDialog(null); return }
         if (target.kind === 'workspace') {
           Promise.resolve()
@@ -4988,7 +4948,7 @@ window.__ModuleLoader__.load({
           // then shows its plain "no drop" cursor, which tells the truth).
           if (dragMatches('session')) {
             if (!sessionSlash || drag.source.workspaceId !== workspace.workspaceId) return
-            if (leafOf(drag.source.title) === drag.source.title) return
+            if (drag.source.allowGroups === false || leafOf(drag.source.title) === drag.source.title) return
             event.preventDefault()
             event.stopPropagation()
             try { event.dataTransfer.dropEffect = 'move' } catch { }
@@ -5081,7 +5041,7 @@ window.__ModuleLoader__.load({
         onDrop: (event) => {
           if (dragMatches('session')) {
             if (!sessionSlash || drag.source.workspaceId !== workspace.workspaceId) return
-            if (leafOf(drag.source.title) === drag.source.title) return
+            if (drag.source.allowGroups === false || leafOf(drag.source.title) === drag.source.title) return
             event.preventDefault()
             event.stopPropagation()
             commitSessionMoveOut(workspace.workspaceId)
@@ -5791,7 +5751,7 @@ window.__ModuleLoader__.load({
             event.dataTransfer.effectAllowed = 'move'
             event.dataTransfer.setData('text/plain', session.id)
           } catch { }
-          setDrag({ kind: 'session', source: { sessionId: session.id, workspaceId, title: session.title, leaf: session.leaf || session.title }, over: null })
+          setDrag({ kind: 'session', source: { sessionId: session.id, workspaceId, title: session.title, leaf: session.leaf || session.title, allowGroups: session.allowGroups !== false }, over: null })
         },
         onDragEnd: () => setDrag(null),
         onDragOver: (event) => {
@@ -5849,7 +5809,7 @@ window.__ModuleLoader__.load({
         // pure reorder; with the name layer off every group is '' — which is
         // the same thing.
         const target = flat.find(s => s.id === targetSessionId)
-        const nextTitle = sessionSlash && target ? titleMovedToGroup(source.title, target.title) : null
+        const nextTitle = sessionSlash && target ? titleMovedToGroup(source.title, target.title, { sourceOpaque: source.allowGroups === false, anchorOpaque: target.allowGroups === false }) : null
         // Official pinned-block rule: a pinned row reorders only among pinned
         // rows. A cross-block drop that would be a pure reorder is ignored;
         // group moves keep working (the pin fronts the row in its new group).
@@ -5882,7 +5842,9 @@ window.__ModuleLoader__.load({
         const source = drag.source
         setDrag(null)
         if (!source || source.workspaceId !== workspaceId) return
-        const leaf = leafOf(source.title)
+        // An auto-titled row is already at the root: its "/" never formed a
+        // group, so there is nothing to leave.
+        const leaf = source.allowGroups === false ? source.title : leafOf(source.title)
         if (leaf === source.title) return
         Promise.resolve()
           .then(() => renameByUser(source.sessionId, leaf))
@@ -5904,7 +5866,8 @@ window.__ModuleLoader__.load({
       const commitSessionMoveInto = (workspaceId, groupPath) => {
         const source = drag.source
         setDrag(null)
-        const newTitle = groupPath !== '' ? groupPath + '/' + source.leaf : source.leaf
+        const leaf = leafForGroup(source.leaf, source.allowGroups === false)
+        const newTitle = groupPath !== '' ? groupPath + '/' + leaf : leaf
         if (newTitle === source.title) return
         Promise.resolve()
           .then(() => renameByUser(source.sessionId, newTitle))
@@ -6392,7 +6355,7 @@ window.__ModuleLoader__.load({
         const groupItem = { id: 'move-group', label: t('menu.moveToGroup'), icon: icon('IconFolderOpenOutline16', 16) }
         const ungroupItem = { id: 'move-out', label: t('menu.moveOutGroup'), icon: icon('IconRightUpOutline16', 16) }
         const sgroupItems = sessionSlash ? [groupItem] : []
-        const sessionUngroupItems = sessionSlash && payload && groupPrefixOf(String(payload.title || '')) !== '' ? [ungroupItem] : []
+        const sessionUngroupItems = sessionSlash && payload && payload.allowGroups !== false && groupPrefixOf(String(payload.title || '')) !== '' ? [ungroupItem] : []
         const official = (key, fallback) => {
           const value = typeof ot === 'function' ? ot(key) : null
           return typeof value === 'string' && value !== '' && value !== key ? value : fallback
@@ -6435,6 +6398,10 @@ window.__ModuleLoader__.load({
       // One group-LEAVING implementation for the local menu and the official
       // contribution: retitle to the leaf and let the user-touch wrapper pin it.
       const moveSessionOut = (payload) => {
+        const summary = list && list.byId ? list.byId[payload.id] : undefined
+        // Only a user-authored title has groups to leave; an automatic title's
+        // "/" is prose (issue #19).
+        if (payload.allowGroups === false || (summary && groupsAllowedFor(summary) === false)) return
         const title = String(payload.title || '')
         const leaf = leafOf(title)
         if (leaf !== title) Promise.resolve().then(() => renameByUser(payload.id, leaf)).catch(fail)
@@ -6592,9 +6559,9 @@ window.__ModuleLoader__.load({
           // at its CURRENT prefix so "retype to move elsewhere" is one edit.
           const target = kind === 'folder' ? { kind: 'folder', path: payload.path, title: payload.path }
             : kind === 'workspace' ? { kind: 'workspace', id: payload.workspaceId, title: payload.title || payload.leaf }
-              : kind === 'session' ? { kind: 'session', id: payload.id, title: payload.title }
+              : kind === 'session' ? { kind: 'session', id: payload.id, title: payload.title, allowGroups: payload.allowGroups !== false }
                 : { kind: 'sgroup', path: payload.path, title: payload.path, workspaceId: payload.workspaceId }
-          setDialog({ kind: 'group-move', target, initial: groupPrefixOf(target.title), groupPaths: collectGroupPaths(target.kind) })
+          setDialog({ kind: 'group-move', target, initial: target.allowGroups === false ? '' : groupPrefixOf(target.title), groupPaths: collectGroupPaths(target.kind) })
         }
         else if (kind === 'folder' && id === 'rename-folder') setDialog({ kind: 'folder-rename', path: payload.path })
         else if (kind === 'folder' && id === 'delete-folder') setDialog({ kind: 'folder-delete', path: payload.path, scope: payload.scope, name: payload.name })
@@ -6618,6 +6585,12 @@ window.__ModuleLoader__.load({
         slashes: { session: sessionSlash, workspace: workspaceSlash },
         hasPreset: () => !!presetFace,
         groupPrefix: (title) => groupPrefixOf(title),
+        // The official session target carries only displayTitle, so provenance
+        // is looked up by id here — the same list snapshot the rows render from.
+        allowGroups: (sessionId) => {
+          const summary = list && list.byId ? list.byId[sessionId] : undefined
+          return !summary || groupsAllowedFor(summary)
+        },
         label: (key) => t(key),
         customize: (kind, payload) => {
           const name = kind === 'workspace' ? (payload.title || payload.leaf) : payload.title
@@ -6628,10 +6601,13 @@ window.__ModuleLoader__.load({
           const target = kind === 'workspace'
             ? { kind: 'workspace', id: payload.workspaceId, title }
             : { kind: 'session', id: payload.id, title }
+          const summary = kind === 'session' && list && list.byId ? list.byId[payload.id] : undefined
+          const allowGroups = !summary || groupsAllowedFor(summary)
+          if (kind === 'session') target.allowGroups = allowGroups
           setDialog({
             kind: 'group-move',
             target,
-            initial: groupPrefixOf(target.title),
+            initial: allowGroups ? groupPrefixOf(target.title) : '',
             groupPaths: collectGroupPaths(kind),
           })
         },
@@ -6899,7 +6875,7 @@ window.__ModuleLoader__.load({
       // gap), so a drop outside every group always means the same thing:
       // leave the group. Row handlers stopPropagation, so this only fires
       // where no row claimed the drop.
-      const sessionCouldLeaveGroup = dragMatches('session') && sessionSlash && drag.source && leafOf(drag.source.title) !== drag.source.title
+      const sessionCouldLeaveGroup = dragMatches('session') && sessionSlash && drag.source && drag.source.allowGroups !== false && leafOf(drag.source.title) !== drag.source.title
       const rootDropEvents = {
         onDragOver: (event) => {
           if (!sessionCouldLeaveGroup) return
@@ -7273,7 +7249,8 @@ window.__ModuleLoader__.load({
                 run: () => bridge.moveGroup('session', { id: target.sessionId, title }),
               })
             }
-            if (bridge.groupPrefix && bridge.groupPrefix(title) !== '') {
+            const allowGroups = !bridge.allowGroups || bridge.allowGroups(target.sessionId)
+            if (allowGroups && bridge.groupPrefix && bridge.groupPrefix(title) !== '') {
               actions.push({
                 id: 'bw-move-out',
                 label: bridge.label('menu.moveOutGroup'),

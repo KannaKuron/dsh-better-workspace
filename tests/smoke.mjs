@@ -234,6 +234,16 @@ test('splitTitleSegs: paired quotes verbatim, lone quotes are plain text', () =>
   assert.deepEqual(splitTitleSegs('看看 /etc/passwd 权限'), ['看看 /etc/passwd 权限'])
   assert.deepEqual(splitTitleSegs('/Users/mars/a.md'), ['/Users/mars/a.md'])
   assert.deepEqual(splitTitleSegs('C:/Users/mars/a.md'), ['C:/Users/mars/a.md'])
+  // v0.39.2 (issue #19): ~ paths, ./ and ../ paths are prose too, and a
+  // paired quote that carries no slash must not become its own node.
+  assert.deepEqual(splitTitleSegs('读取 ~/.dsh/读取凭证文件前三行'), ['读取 ~/.dsh/读取凭证文件前三行'])
+  assert.deepEqual(splitTitleSegs('~/.dsh'), ['~/.dsh'])
+  assert.deepEqual(splitTitleSegs('./a/b'), ['./a/b'])
+  assert.deepEqual(splitTitleSegs('../a/b'), ['../a/b'])
+  assert.deepEqual(splitTitleSegs('目标显示"受阻"的含义'), ['目标显示"受阻"的含义'])
+  assert.deepEqual(splitTitleSegs('web/"受阻"'), ['web', '"受阻"'])
+  // An opaque source (host provenance says this is an auto title) never splits.
+  assert.deepEqual(splitTitleSegs('A/B', false), ['A/B'])
   // Deliberate name groups and relative pairs still split.
   assert.deepEqual(splitTitleSegs('web/前端/登录页'), ['web', '前端', '登录页'])
   assert.deepEqual(splitTitleSegs('a/b'), ['a', 'b'])
@@ -242,28 +252,53 @@ test('splitTitleSegs: paired quotes verbatim, lone quotes are plain text', () =>
   assert.deepEqual(splitTitleSegs('web/“读一下 /Users/mars/a.md”'), ['web', '“读一下 /Users/mars/a.md”'])
 })
 
-test('quote-on-land effect: blank-born only, user renames pinned, stability window', () => {
+test('v0.39.2: host title provenance, not title text, decides grouping (issue #19)', () => {
   const text = clientText()
-  // Eligibility is keyed off an observed BLANK snapshot, not "first time seen".
-  assert.match(text, /blankSeen\.add\(id\)/, 'blank birth mark must be recorded')
-  assert.match(text, /!blankSeen\.has\(id\) \|\| touched\.has\(id\)/, 'untouched blankSeen/human guard')
-  assert.doesNotMatch(text, /titledSeenRef/, '0.9.1 first-snapshot heuristic must be gone')
-  // User renames route through the pinning wrapper; the automatic path alone
-  // keeps the raw injected renameSession. 8 call sites: drag-into-session-group,
-  // session rename dialog, session-group rename, the two group-move entry
-  // points (single session / session-group batch), and the three v0.18.0
-  // group-LEAVING moves (cross-group drop, workspace-row drop, menu entry).
+  assert.match(text, /const TITLE_SOURCE_KEY = 'betterWorkspace\/titleSource'/)
+  assert.match(text, /const titleSourceOf = \(summary\) => \{/)
+  assert.match(text, /const groupsAllowedFor = \(summary\) => \{/)
+  assert.match(text, /source === undefined \|\| source === 'user'/)
+  // Both row families (ungrouped and inside a workspace) carry the decision.
+  assert.equal((text.match(/allowGroups: groupsAllowedFor\(summary\)/g) || []).length, 2,
+    'ungrouped and workspace session rows both carry provenance')
+  assert.match(text, /splitTitleSegs\(row\.title, row\.allowGroups !== false\)/)
+  assert.match(text, /if \(session\.allowGroups === false\) continue/,
+    'opaque titles are not offered as group suggestions')
+  // The old text heuristic wrote a synthetic “…” title and pinned the host
+  // name for 20 seconds. It is gone: a user rename now reaches the host, whose
+  // session/title source becomes 'user' and permits grouping on the next list.
+  assert.doesNotMatch(text, /blankSeenRef|humanTouchedRef|TITLE_STABLE_MS|stableTick|quote-on-land/)
+  assert.doesNotMatch(text, /renameSession\([^)]*[“”]/)
   assert.match(text, /const renameByUser = \(sessionId, title\) => \{/)
   assert.equal((text.match(/renameByUser\(/g) || []).length, 8, 'exactly 8 user call sites')
-  // The automatic quote waits out a stabilization window instead of racing
-  // the async LLM name.
-  assert.match(text, /TITLE_STABLE_MS = 20000/)
-  assert.match(text, /prev\.title === text/, 'title change resets the window')
-  assert.match(text, /\[list, stableTick\]/, 'stability tick re-runs the effect')
-  // v0.37.3: a path title is flattened by the display guard; the effect must
-  // not pin it (and cancel an async LLM name) with a 20s quote-on-land rename.
-  assert.match(text, /if \(titleQuotesPath\(text\)\) \{[\s\S]{0,160}?stable\.delete\(id\)/,
-    'path titles skip the pinning rename')
+
+  // Run the two pure readers for real.
+  const start = text.indexOf('const TITLE_SOURCE_KEY')
+  const end = text.indexOf('const splitPlainSegs')
+  assert.ok(start !== -1 && end > start, 'provenance helpers stay self-contained')
+  const { groupsAllowedFor } = new Function(text.slice(start, end) + '\nreturn { groupsAllowedFor }')()
+  const row = (source) => ({ projectionValues: { 'betterWorkspace/titleSource': source } })
+  assert.equal(groupsAllowedFor(row('user')), true, 'a user rename may group')
+  assert.equal(groupsAllowedFor(row('fallback')), false, 'a fallback auto-title never groups')
+  assert.equal(groupsAllowedFor(row('provider')), false, 'a provider auto-title never groups')
+  assert.equal(groupsAllowedFor(row(null)), false, 'an explicit null never groups')
+  assert.equal(groupsAllowedFor({}), true, 'a missing projection keeps the legacy text fallback')
+  assert.equal(groupsAllowedFor({ projectionValues: null }), true)
+})
+
+test('v0.39.2: title provenance projection folds session/title source.kind', async () => {
+  const { TITLE_SOURCE_KEY, titleSourceProjection } = await import('../src/title-source.js')
+  const { z } = await import('zod')
+  const definition = titleSourceProjection(z)
+  assert.equal(definition.key, TITLE_SOURCE_KEY)
+  assert.equal(definition.stateVersion, 1)
+  assert.equal(definition.init(), null)
+  assert.equal(definition.apply(null, { type: 'session/title', data: { source: { kind: 'fallback' } } }), 'fallback')
+  assert.equal(definition.apply('fallback', { type: 'message' }), 'fallback', 'unrelated events keep the reference/value')
+  assert.equal(definition.apply('user', { type: 'session/title', data: {} }), 'user', 'a malformed title event does not clear provenance')
+  assert.equal(definition.apply(null, { type: 'session/title', data: { source: { kind: 'provider' } } }), 'provider')
+  assert.equal(definition.wire.viewSchema.safeParse('user').success, true)
+  assert.equal(definition.wire.viewSchema.safeParse(7).success, false)
 })
 
 test('alpha.3: the official context menu owns session/workspace rows (v0.38.0)', () => {
@@ -306,14 +341,27 @@ test('alpha.3: the official context menu owns session/workspace rows (v0.38.0)',
   assert.match(text, /ctx\.effect\(\(\) => \{[\s\S]{0,600}?menus\.register\(sessionExtras\)/)
 })
 
-test('host half imports cleanly and applies without side effects', async () => {
+test('host half imports cleanly, registers title provenance, and survives a missing service', async () => {
   const plugin = await import('../src/index.js')
   assert.equal(plugin.name, 'dsh-better-workspace')
   assert.equal(typeof plugin.apply, 'function')
+  assert.deepEqual(plugin.inject, ['sessionProjections'])
   let logged = ''
-  plugin.apply({ logger: { info: (m) => { logged = String(m) } } })
+  const registered = []
+  const ctx = {
+    logger: { info: (m) => { logged = String(m) } },
+    sessionProjections: { register: async (definition) => { registered.push(definition); return {} } },
+  }
+  await plugin.apply(ctx)
   assert.match(logged, /dsh-better-workspace/)
-  plugin.apply(undefined) // must not throw without a logger
+  assert.match(logged, /session title provenance projection registered/)
+  assert.equal(registered.length, 1)
+  assert.equal(registered[0].key, 'betterWorkspace/titleSource')
+  // Registration is best-effort: without the service the row still mounts and
+  // the client keeps its text fallback.
+  await plugin.apply({ logger: { info: (m) => { logged = String(m) } } })
+  assert.match(logged, /title provenance unavailable/)
+  await plugin.apply(undefined) // must not throw without a ctx/logger
 })
 
 /**
@@ -1526,8 +1574,12 @@ test('session drag out of a group: cross-group drops move the row, the workspace
   const text = clientText()
   // A drop on a row of another group rewrites the prefix (the move), and only
   // then applies the order.
-  assert.match(text, /const titleMovedToGroup = \(title, anchorTitle\) => \{/)
-  assert.match(text, /const nextTitle = sessionSlash && target \? titleMovedToGroup\(source\.title, target\.title\) : null/)
+  assert.match(text, /const titleMovedToGroup = \(title, anchorTitle, opts = \{\}\) => \{/)
+  assert.match(text, /const nextTitle = sessionSlash && target \? titleMovedToGroup\(source\.title, target\.title, \{ sourceOpaque: source\.allowGroups === false, anchorOpaque: target\.allowGroups === false \}\) : null/)
+  // A drag is itself an explicit grouping act, but the source's automatic
+  // provenance still decides whether its own "/" was a hierarchy (issue #19).
+  assert.match(text, /allowGroups: session\.allowGroups !== false/)
+  assert.match(text, /drag\.source\.allowGroups === false \|\|/)
   assert.match(text, /chain\.then\(reorder\)\.catch\(fail\)/)
   // The workspace row is the root of the session tree: the one drop target
   // that always exists OUTSIDE every group.
@@ -1559,6 +1611,12 @@ test('session drag out of a group: cross-group drops move the row, the workspace
   assert.equal(titleMovedToGroup('组/A', '裸行'), 'A', 'an anchor at the root pulls the row out')
   assert.equal(titleMovedToGroup('A', 'B/x'), 'B/A', 'a root row can be moved in')
   assert.equal(titleMovedToGroup('组/A', ''), 'A', 'an empty anchor keeps the leaf as it is')
+  // An auto-titled source is opaque: its own "/" is prose, so the whole text
+  // is the leaf and gets quotes only when it must become a group member.
+  assert.equal(titleMovedToGroup('目标/显示', 'B/x', { sourceOpaque: true }), 'B/“目标/显示”')
+  assert.equal(titleMovedToGroup('目标/显示', '', { sourceOpaque: true }), '“目标/显示”')
+  assert.equal(titleMovedToGroup('组/A', '裸/行', { anchorOpaque: true }), 'A',
+    'an opaque anchor sits at the root')
 })
 
 test('new-group dialog components stay at module scope (React discipline)', () => {

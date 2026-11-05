@@ -3,6 +3,23 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.39.2 — 2026-11-05
+
+**类型**:fix(修复 issue #19:自动标题被按 `/` 拆成多级,`~/` 路径与成对引号漏判)
+
+### fix
+- **按标题来源决定是否分组**:客户端 `SessionSummary` 不携带标题来源,新增 host 半 summary projection `betterWorkspace/titleSource`(经 `sessionProjections.register`),只折叠 `session/title` 事件的 `data.source.kind`,以 `string|null` 随会话列表下发。client 半 `groupsAllowedFor` 仅允许 `source === undefined || source === 'user'` 按 `/` 分组:自动标题(fallback 回显 / provider/LLM 总结)整条单段,用户显式改名/拖组(user)才建层级。
+- **删除 quote-on-land**:旧机制在会话落地 20s 后把带 `/` 的标题整串包 `“”` 并写宿主标题,会把自动标题 pin 成用户标题、阻断后续 AI 命名;整段删除,`renameByUser` 只做 forgetDisplay + renameSession。来源缺失(`{}` / 旧投影缓存)时回退到原有路径/引号解析兜底,不迁移任何数据。
+- **标题解析修正**:`titleQuotesPath` 的路径 token 现在识别 `~/`、`./`、`../` 与盘符路径,不必凑满两个 `/`;成对引号段只有内部含 `/` 才成为树节点,否则并回普通文本——`目标显示"受阻"的含义` 不再被拆成三段,`读取 ~/.dsh/...` 整行平铺。
+- **手动分组保持可用**:拖拽/菜单移入分组统一走 `leafForGroup`,opaque 源整串包 `“”` 再拼组前缀;opaque 行拖到根层也包引号,且不提供「移出分组」。
+- **依赖**:host 半新增动态 `import('zod')`(注册投影用),peer/dev 声明 `zod ^4.4.3`;`files` 加入 `src/title-source.js`。
+
+### 验证
+- 冒烟 `npm test`:85 项全绿(新增 title provenance projection 折叠测试;标题解析/来源门控/拖拽测试覆盖 `~/...`、`./a/b`、`../a/b`、`目标显示"受阻"的含义`、`web/"受阻"`)。
+- `node --check src/client.js src/index.js src/title-source.js`:通过。
+- 隔离 rc.1 web 真机(dsh 0.2.2-rc.1):插件页显示 v0.39.2、设置卡与侧栏树正常、零 pageerror/console error;新会话 `读取 ~/.dsh/...`、`目标显示"受阻"的含义`、`alpha/beta` 的 fallback 与 provider 自动标题均单行平铺;手动重命名为 `web/"受阻"` 后正确成组。桌面客户端内置 dsh 低于本轮下限,未在本版复验。
+- 相关:#19(https://github.com/KannaKuron/dsh-better-workspace/issues/19)。
+
 ## v0.39.1 — 2026-11-05
 
 **类型**:fix(修复 issue #18:普通 Fork 被误计为运行中的子代理)

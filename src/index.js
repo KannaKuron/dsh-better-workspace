@@ -6,6 +6,8 @@
  * dsh client store). This host half exists so the cordis plugin row has a
  * valid Node entry and so Config metadata is available to the Loader.
  */
+import { registerTitleSource } from './title-source.js'
+
 export const name = 'dsh-better-workspace'
 
 /**
@@ -48,9 +50,13 @@ export const Config = Schema === null
     appearance: Schema.dict(Schema.any()).default({}).volatile(),
   })
 
-export function apply(ctx) {
+export const inject = ['sessionProjections']
+
+export async function apply(ctx) {
   const log = ctx && ctx.logger && typeof ctx.logger.info === 'function'
     ? (msg) => ctx.logger.info(msg)
     : (msg) => console.log(msg)
-  log('[dsh-better-workspace] host half loaded; UI runs in the browser (client half)')
+  const registered = await registerTitleSource(ctx, log)
+  log('[dsh-better-workspace] host half loaded; UI runs in the browser (client half)'
+    + (registered ? '; session title provenance projection registered' : '; title provenance unavailable'))
 }

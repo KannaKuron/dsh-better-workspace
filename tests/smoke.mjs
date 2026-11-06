@@ -643,7 +643,7 @@ test('appearance: stroke ships OFF (v0.31.0, legacy ON preserved), gray color de
   // Fresh installs never hydrate: createViewStore's init bakes the shipped
   // default (stroke OFF) into prefs.appearance, and the baked literal must
   // stay in lockstep with DEFAULT_APPEARANCE.
-  const initPrefs = /prefs: \{ compactChains: true, sessionLimit: 0, appearance: \{([^}]*)\}/.exec(text)
+  const initPrefs = /prefs: \{ compactChains: true, sessionLimit: 0, sessionAgeDays: 0, appearance: \{([^}]*)\}/.exec(text)
   assert.ok(initPrefs, 'init must bake an appearance record for fresh installs')
   const baked = {}
   for (const pair of initPrefs[1].matchAll(/(\w+): ('[^']*'|[^,}]+)/g)) baked[pair[1]] = String(pair[2]).replace(/^'|'$/g, '')
@@ -904,7 +904,7 @@ test('view options: group/order menu + the two slash toggles (0.13.0)', () => {
   assert.match(text, /setWorkspaceGroupMode: \(d, value\)/)
   assert.match(text, /setUngroupedOpen: \(d, value\)/)
   // v0.31.0: init bakes prefs.appearance (stroke ships OFF) for fresh installs.
-  assert.match(text, /prefs: \{ compactChains: true, sessionLimit: 0, appearance: \{ color: '', glow: 0, weight: 0, shadow: false, stroke: false, strokeWidth: 1, strokeColor: '#808080' \} \}/)
+  assert.match(text, /prefs: \{ compactChains: true, sessionLimit: 0, sessionAgeDays: 0, appearance: \{ color: '', glow: 0, weight: 0, shadow: false, stroke: false, strokeWidth: 1, strokeColor: '#808080' \} \}/)
   assert.match(text, /useStore\(s => s\.ungroupedOpen\) !== false/)
   for (const action of ['setGroupBy', 'setOrderBy', 'setSessionTitleSlash', 'setWorkspaceTitleSlash']) {
     assert.ok(text.includes(action + ': (d, value)'), 'store action ' + action)
@@ -1527,7 +1527,7 @@ test('declared groups: they render even with no members to project from (v0.17.0
   // ("workspaces" + a name layer = 'slash'), picker keeps its own variable.
   assert.match(text, /const treeMode = groupBy === 'workspace' && workspaceGroupMode !== 'disk'\n          \? 'slash'\n          : workspaceGroupMode\n        const built = buildTree\(items, treeMode, wsFolders, folderOrderMap\)/,
     'the main tree passes the workspace bag and the persisted group order')
-  assert.equal((text.match(/buildSessionTree\(sessionsOf\(workspace\), sessionSlash, sessFolders, workspace\.workspaceId\)/g) || []).length, 4,
+  assert.equal((text.match(/buildSessionTree\((?:filterSessionsByAge\()?sessionsOf\(workspace\)/g) || []).length, 4,
     'every session-tree caller passes the session bag and its workspace scope')
 })
 
@@ -2752,7 +2752,7 @@ test('flat last-updated order is global, preserving blank and pinned sections', 
   const source = clientText()
   const helperStart = source.indexOf('    const pinnedPartition = (rows) => {')
   const helperEnd = source.indexOf('    const sessionTitleOf = ', helperStart)
-  const flatStart = source.indexOf('      const renderFlatRows = () => {')
+  const flatStart = source.indexOf('      const renderFlatRows = (')
   const flatEnd = source.indexOf('      const renderUngroupedBlock = ', flatStart)
   assert.ok(helperStart !== -1 && helperEnd > helperStart && flatStart !== -1 && flatEnd > flatStart)
   const render = new Function('items', 'sessionsOf', 'ungrouped', 'orderBy', 'currentId', 'renderSessionRow',
@@ -2954,4 +2954,20 @@ test('v0.39.1: only real subagents count as running children (issue #18)', () =>
     'live status false overrides a stale summary running flag')
   assert.match(text, /running: \(st && st\.running !== undefined \? st\.running : summary\.running\) === true,/,
     'row status also prefers an explicit live false')
+})
+
+test('session age filter hides old rows without archiving them', () => {
+  const text = clientText()
+  assert.match(text, /const filterSessionsByAge = \(rows, days, currentId, searching\)/)
+  assert.match(text, /row\.blank \|\| row\.id === currentId \|\| row\.pinned/)
+  assert.match(text, /row\.running \|\| row\.pending \|\| row\.completed \|\| row\.subagents > 0/)
+  assert.match(text, /if \(!rows \|\| rows\.length === 0 \|\| searching \|\| !\(days > 0\)\) return rows \|\| \[\]/)
+  const entry = read('src/client.js')
+  assert.match(entry, /sessionLimit: 0, sessionAgeDays: 0, appearance:/)
+  assert.match(entry, /const sessionAgeDays = Number\.isFinite\(rawAgeDays\)/)
+  assert.match(entry, /filterSessionsByAge\(sessionsOf\(workspace\), sessionAgeDays, currentId, searching\)/)
+  assert.match(entry, /filterSessionsByAge\(rows, sessionAgeDays, currentId, searching\)/)
+  assert.match(entry, /filterSessionsByAge\(ungrouped, sessionAgeDays, currentId, searching\)/)
+  assert.match(entry, /t\('settings\.sessionAge'\)/)
+  assert.match(entry, /setPref\('sessionAgeDays', value\)/)
 })

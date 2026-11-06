@@ -3,6 +3,23 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.40.0 — 2026-11-06
+
+**类型**:feat(工作区级归档筛选:单个工作区可覆盖全局三态,默认跟随全局)
+
+### feat
+- **工作区右键「筛选会话」子菜单**:工作区行新增四态选择——跟随全局(默认)/ 隐藏已归档 / 全部对话(显示已归档)/ 仅显示已归档。选择只写入该工作区的覆盖,不修改全局 `archivedFilter`,其他工作区保持原样;解决了「全局切到全部对话后所有工作区一起摊开」的问题。
+- **存储**:视图 store 新增 `workspaceArchivedFilters`(workspaceId → `default|show|only`;缺键 = 跟随全局)。`setWorkspaceArchivedFilter` 只接受三字面量,选择「跟随全局」删除该键;旧快照缺键、坏值均回退跟随全局。
+- **渲染语义**:`effectiveArchivedFilterOf(workspace)` 本地覆盖优先,`sessionsOf`、工作区可见性、计数、搜索、拖拽与 flat 视图全部继承。**only 档下工作区自己选了 only 且没有归档会话时仍保留空行**,否则唯一能改回来的右键入口会随行消失;全局 only 的原有「无归档会话工作区整行隐藏」不变。
+- **菜单接入**:官方共享 `contextMenus` 通过 `children` 渲染子菜单(共享菜单无 selectedIds,勾选放在 label);无 primitives Menu 时同一批 id 平铺进自绘菜单,保证两条渲染路径行为一致。父项文案定为「筛选会话」/「Filter sessions」,与全局筛选用词一致。
+- **词典**:新增 5 键并同步全部 21 门语言(zh / en + ar / de / fr / hi / id / it / ja / ko / nl / pl / pt / ru / sv / th / tr / vi / zh-HK / zh-MO / zh-TW)。
+
+### 验证
+- 冒烟 `npm test`:86 项全绿(新增工作区级归档筛选守卫:store/action/selector、`sessionsOf`、空 only 覆盖保留、子菜单与 fallback、官方 bridge children、21 门键计数)。
+- 隔离 rc.1 Web 真机(dsh 0.2.2-rc.1,3 个工作区 14 个会话):默认 2/4/2;QQBot 单区「全部对话」2/5/2 且刷新后保持;全局「全部对话」8/5/2;QQBot 单区「隐藏」8/4/2、「仅显示」8/1/2;Web 单区「仅显示」8/1/0 且空工作区行仍在、可改回;全局 only 6/1/2 行为不变;勾选态与「跟随全局」清除覆盖均正确;零 pageerror / console error。
+- `node --check src/client.js src/client.locales.js`:通过。
+- 桌面客户端本轮未单独复验;同一 client 渲染面与官方共享菜单,Web 隔离实例覆盖本次交互。
+
 ## v0.39.2 — 2026-11-05
 
 **类型**:fix(修复 issue #19:自动标题被按 `/` 拆成多级,`~/` 路径与成对引号漏判)

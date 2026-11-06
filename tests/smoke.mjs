@@ -896,7 +896,7 @@ test('view options: group/order menu + the two slash toggles (0.13.0)', () => {
   // v0.15: the workspace name layer ships OFF (see the opt-in test below);
   // session grouping keeps its 0.13 default (v0.37.2 protects path titles at
   // the SPLIT layer instead of turning the feature off — issue #17).
-  assert.match(text, /groupBy: 'workspace-tree', orderBy: 'manual', archivedFilter: 'default', workspaceGroupMode: 'disk', sessionTitleSlash: true, workspaceTitleSlash: false, ungroupedOpen: true/)
+  assert.match(text, /groupBy: 'workspace-tree', orderBy: 'manual', archivedFilter: 'default', workspaceArchivedFilters: \{\}, workspaceGroupMode: 'disk', sessionTitleSlash: true, workspaceTitleSlash: false, ungroupedOpen: true/)
   // v0.20.0: the archived filter rides the same store (official mirror).
   assert.match(text, /setArchivedFilter: \(d, value\)/)
   assert.match(text, /useStore\(s => s\.archivedFilter\) \|\| 'default'/)
@@ -1663,7 +1663,7 @@ test('rc.2 archived-only view drops Workspaces without archived Sessions (v0.23.
   // Official tree.ts groupByWorkspace: `if (archivedFilter === 'only' &&
   // members.length === 0) continue` — the inventory is not the archive list.
   assert.match(text, /const archivedOnly = archivedFilter === 'only'/)
-  assert.match(text, /const workspaceVisible = \(workspace\) => !archivedOnly/)
+  assert.match(text, /const workspaceVisible = \(workspace\) => \{/)
   assert.match(text, /if \(!workspaceVisible\(workspace\)\) return \[\]/)
   // A name group emptied by the filter goes with its members, disk sub-levels
   // included (official re-parents a survivor onto the nearest rendered one).
@@ -1675,6 +1675,43 @@ test('rc.2 archived-only view drops Workspaces without archived Sessions (v0.23.
   assert.match(text, /shippedText\('empty\.viewOthers', t\('empty\.viewOthers'\)\)/)
   assert.match(text, /className: 'bw-empty-action'/)
   assert.match(text, /actions\.setArchivedFilter\('default'\)/)
+})
+
+test('per-workspace archived filter overrides the global one (v0.40.0)', () => {
+  const text = clientText()
+  // Store contract: absent = follow global, the three literals are shared with
+  // the global filter, and hydration from older snapshots gets an empty map.
+  assert.match(text, /archivedFilter: 'default', workspaceArchivedFilters: \{\}/)
+  assert.match(text, /setWorkspaceArchivedFilter: \(d, workspaceId, value\) => \{[\s\S]*?delete d\.workspaceArchivedFilters\[workspaceId\]/)
+  assert.match(text, /const workspaceArchivedFilters = useStore \? \(useStore\(s => s\.workspaceArchivedFilters\) \|\| \{\}\) : \{\}/)
+  assert.match(text, /const effectiveArchivedFilterOf = \(workspace\) => \{[\s\S]*?return override \|\| archivedFilter/)
+  // Every session consumer goes through sessionsOf, so the row list, counts,
+  // search, drag anchors and flat view inherit the workspace override.
+  assert.match(text, /const filter = effectiveArchivedFilterOf\(workspace\)/)
+  assert.match(text, /sessionVisible\(summary, currentId, archivedSet, filter\)/)
+  // An empty workspace whose own mode is "only archived" must survive: its
+  // row carries the only menu that can switch it back to follow-global.
+  assert.match(text, /return workspaceArchivedFilterOf\(workspace\.workspaceId\) === 'only'/)
+  // Local primitives menu: submenu when Menu exists, flat same-id items when
+  // the no-primitives fallback renders (a nested submenu would be unreachable).
+  assert.match(text, /const archiveFilterOptions = \(workspaceId\) => \{/)
+  assert.match(text, /option\(null, 'bw-archive-follow'/)
+  assert.match(text, /option\('default', 'bw-archive-hide'/)
+  assert.match(text, /if \(typeof ui\.Menu !== 'function'\) \{[\s\S]*?return options\.map/)
+  assert.match(text, /submenu: options\.map\(\(option\) => \(\{ id: option\.id, label: option\.label \}\)\)/)
+  assert.match(text, /\.\.\.archiveFilterEntries\(ctx\.payload\.workspaceId\)/)
+  assert.match(text, /const archiveValue = id === 'bw-archive-follow' \? null/)
+  assert.match(text, /actions\.setWorkspaceArchivedFilter\(payload\.workspaceId, archiveValue\)/)
+  // Official shared menu: the bridge exposes the same checked option list,
+  // and the contribution renders it as a submenu (contextMenus has no
+  // selectedIds channel, so the check lives in the label).
+  assert.match(text, /archiveOptions: \(workspaceId\) => archiveFilterOptions\(workspaceId\)/)
+  assert.match(text, /children: archive\.map\(\(option\) => \(\{[\s\S]*?run: \(\) => bridge\.setArchiveFilter\(target\.workspaceId, option\.value\)/)
+  const locales = read('src/client.locales.js')
+  for (const key of ['archiveFilter', 'archiveFollow', 'archiveHide', 'archiveShow', 'archiveOnly']) {
+    const marker = "'menu." + key + "':"
+    assert.equal(locales.split(marker).length - 1, 21, 'menu.' + key + ' must exist in all 21 dictionaries')
+  }
 })
 
 test('rc.2 first-use Workspace name: display-only substitution, both surfaces (v0.23.0)', () => {

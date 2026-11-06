@@ -1109,7 +1109,7 @@ window.__ModuleLoader__.load({
       // LITERAL, not a spread of DEFAULT_APPEARANCE: init() is eval-harness
       // friendly (no cross-section reference), and the smoke suite asserts the
       // two stay in lockstep field by field.
-      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true, sessionLimit: 0, appearance: { color: '', glow: 0, weight: 0, shadow: false, stroke: false, strokeWidth: 1, strokeColor: '#808080' } }, styling: {}, groupBy: 'workspace-tree', orderBy: 'manual', archivedFilter: 'default', workspaceGroupMode: 'disk', sessionTitleSlash: true, workspaceTitleSlash: false, ungroupedOpen: true, folders: { ws: {}, sess: {} }, folderOrder: {} }),
+      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true, sessionLimit: 0, appearance: { color: '', glow: 0, weight: 0, shadow: false, stroke: false, strokeWidth: 1, strokeColor: '#808080' } }, styling: {}, groupBy: 'workspace-tree', orderBy: 'manual', archivedFilter: 'default', workspaceArchivedFilters: {}, workspaceGroupMode: 'disk', sessionTitleSlash: true, workspaceTitleSlash: false, ungroupedOpen: true, folders: { ws: {}, sess: {} }, folderOrder: {} }),
       // NOTE: hydration REPLACES the state with the persisted whole value —
       // init defaults never merge. Every action must tolerate a missing key
       // (states persisted by older plugin versions lack sessionGroups), and
@@ -1137,6 +1137,15 @@ window.__ModuleLoader__.load({
         setGroupBy: (d, value) => { d.groupBy = value },
         setOrderBy: (d, value) => { d.orderBy = value },
         setArchivedFilter: (d, value) => { d.archivedFilter = value === 'show' || value === 'only' ? value : 'default' },
+        // Per-workspace override of the archived visibility filter (v0.40.0).
+        // Absent means "follow the global archivedFilter"; a stored value is
+        // one of the same three literals, so sessionsOf needs no translation
+        // layer. null deletes the override and restores the follow state.
+        setWorkspaceArchivedFilter: (d, workspaceId, value) => {
+          if (!d.workspaceArchivedFilters || typeof d.workspaceArchivedFilters !== 'object') d.workspaceArchivedFilters = {}
+          if (value === 'default' || value === 'show' || value === 'only') d.workspaceArchivedFilters[workspaceId] = value
+          else delete d.workspaceArchivedFilters[workspaceId]
+        },
         setSessionTitleSlash: (d, value) => { d.sessionTitleSlash = value !== false },
         setWorkspaceTitleSlash: (d, value) => { d.workspaceTitleSlash = value !== false },
         // v0.21.0 tri-state grouping (issue #7). The legacy boolean rides
@@ -3724,6 +3733,19 @@ window.__ModuleLoader__.load({
       // Archived-row visibility (v0.20.0, official ArchivedFilter mirror);
       // persisted snapshots from older plugin versions lack the key.
       const archivedFilter = useStore ? (useStore(s => s.archivedFilter) || 'default') : 'default'
+      // Per-workspace archived-visibility overrides (v0.40.0): hydrated
+      // snapshots predate the key, so every read takes the empty-object
+      // fallback and an unknown value means "follow the global filter".
+      const workspaceArchivedFilters = useStore ? (useStore(s => s.workspaceArchivedFilters) || {}) : {}
+      const workspaceArchivedFilterOf = (workspaceId) => {
+        if (!workspaceArchivedFilters || typeof workspaceArchivedFilters !== 'object') return null
+        const value = workspaceArchivedFilters[workspaceId]
+        return value === 'default' || value === 'show' || value === 'only' ? value : null
+      }
+      const effectiveArchivedFilterOf = (workspace) => {
+        const override = workspace ? workspaceArchivedFilterOf(workspace.workspaceId) : null
+        return override || archivedFilter
+      }
       const archivedSet = React.useMemo(() => new Set(archivedSessionIds), [archivedSessionIds])
       const pinnedSet = React.useMemo(() => new Set(pinnedSessionIds), [pinnedSessionIds])
       const subCounts = React.useMemo(
@@ -4225,9 +4247,10 @@ window.__ModuleLoader__.load({
 
       const sessionsOf = (workspace) => {
         const rows = []
+        const filter = effectiveArchivedFilterOf(workspace)
         for (const id of workspace.sessionIds || []) {
           const summary = list && list.byId ? list.byId[id] : undefined
-          if (!sessionVisible(summary, currentId, archivedSet, archivedFilter)) continue
+          if (!sessionVisible(summary, currentId, archivedSet, filter)) continue
           const st = statusOf(id)
           rows.push({
             id,
@@ -6091,8 +6114,17 @@ window.__ModuleLoader__.load({
        * with, so this can never disagree with the session list below the row.
        */
       const archivedOnly = archivedFilter === 'only'
-      const workspaceVisible = (workspace) => !archivedOnly
-        || !!(workspace && Array.isArray(workspace.sessionIds) && sessionsOf(workspace).length > 0)
+      const workspaceVisible = (workspace) => {
+        if (!workspace) return false
+        if (effectiveArchivedFilterOf(workspace) !== 'only') return true
+        if (Array.isArray(workspace.sessionIds) && sessionsOf(workspace).length > 0) return true
+        // Keep an EMPTY workspace that carries its own "only archived"
+        // override: its row is the sole surface holding the menu that can
+        // switch it back to "follow global". Hiding it would trap the user
+        // in an empty view with no visible way out (the global empty-state
+        // action edits the global filter, not this workspace's override).
+        return workspaceArchivedFilterOf(workspace.workspaceId) === 'only'
+      }
       const countVisibleAt = (level) => {
         let total = 0
         for (const folder of level.folders) {
@@ -6487,6 +6519,39 @@ window.__ModuleLoader__.load({
           current: projection && typeof projection.agentPreset === 'string' ? projection.agentPreset : undefined,
         })
       }
+      // Per-workspace archived visibility (v0.40.0). The four entries share
+      // one id set across the primitives submenu, the flat no-Menu fallback
+      // and the official shared menu, so dispatch is identical everywhere.
+      // A leading check marks the stored value; `follow` is the absent key.
+      const archiveFilterOptions = (workspaceId) => {
+        const selected = workspaceArchivedFilterOf(workspaceId)
+        const option = (value, id, label) => ({
+          value,
+          id,
+          label: (selected === value ? '✓ ' : '') + label,
+        })
+        return [
+          option(null, 'bw-archive-follow', t('menu.archiveFollow')),
+          option('default', 'bw-archive-hide', t('menu.archiveHide')),
+          option('show', 'bw-archive-show', t('menu.archiveShow')),
+          option('only', 'bw-archive-only', t('menu.archiveOnly')),
+        ]
+      }
+      const archiveFilterEntries = (workspaceId) => {
+        const options = archiveFilterOptions(workspaceId)
+        // The plugin's no-primitives fallback menu is a flat button list, so
+        // a submenu would be unreachable there. Flatten into the parent menu
+        // instead; ids stay the same, dispatch stays shared.
+        if (typeof ui.Menu !== 'function') {
+          return options.map((option) => ({ id: option.id, label: option.label }))
+        }
+        return [{
+          id: 'bw-archive-filter',
+          label: t('menu.archiveFilter'),
+          icon: icon('IconArchiveOutlineRegular', 16),
+          submenu: options.map((option) => ({ id: option.id, label: option.label })),
+        }]
+      }
       const menuEntries = () => {
         if (ctx === null) return []
         const customizeEntry = { id: 'customize', label: t('custom.title'), icon: icon('IconPersonalizationOutline16', 16) }
@@ -6520,6 +6585,7 @@ window.__ModuleLoader__.load({
           { id: 'delete', label: ot ? ot('delete.workspace') : t('menu.delete'), icon: icon('IconTrashOutline16', 16), danger: true },
           { type: 'separator', id: 'bw-sep' },
           ...wsGroupItems,
+          ...archiveFilterEntries(ctx.payload.workspaceId),
           customizeEntry,
           // v0.32.0: the workspace default preset. Rides the official
           // agent-preset roster + blank-composition channels (the hero
@@ -6554,6 +6620,17 @@ window.__ModuleLoader__.load({
         }
         const { kind, payload } = current
         setCtx(null)
+        const archiveValue = id === 'bw-archive-follow' ? null
+          : id === 'bw-archive-hide' ? 'default'
+            : id === 'bw-archive-show' ? 'show'
+              : id === 'bw-archive-only' ? 'only'
+                : undefined
+        if (kind === 'workspace' && archiveValue !== undefined) {
+          if (actions && typeof actions.setWorkspaceArchivedFilter === 'function') {
+            actions.setWorkspaceArchivedFilter(payload.workspaceId, archiveValue)
+          }
+          return
+        }
         if (id === 'move-group') {
           // Lock the clicked row as the dialog target; the group name starts
           // at its CURRENT prefix so "retype to move elsewhere" is one edit.
@@ -6592,6 +6669,12 @@ window.__ModuleLoader__.load({
           return !summary || groupsAllowedFor(summary)
         },
         label: (key) => t(key),
+        archiveOptions: (workspaceId) => archiveFilterOptions(workspaceId),
+        setArchiveFilter: (workspaceId, value) => {
+          if (actions && typeof actions.setWorkspaceArchivedFilter === 'function') {
+            actions.setWorkspaceArchivedFilter(workspaceId, value)
+          }
+        },
         customize: (kind, payload) => {
           const name = kind === 'workspace' ? (payload.title || payload.leaf) : payload.title
           setCustomize({ kind, entryKey: keyOf(kind, payload), name })
@@ -7280,6 +7363,23 @@ window.__ModuleLoader__.load({
                 id: 'bw-move-group',
                 label: bridge.label('menu.moveToGroup'),
                 run: () => bridge.moveGroup('workspace', payload),
+              })
+            }
+            // A submenu, not four top-level rows: the official shared menu
+            // only sees this plugin's contribution, so the workspace verb
+            // block stays short while the four archive modes are one level
+            // deeper. The check mark lives in the label because a shared
+            // contextMenus action has no selectedIds channel.
+            const archive = bridge.archiveOptions && bridge.archiveOptions(target.workspaceId)
+            if (archive && archive.length > 0) {
+              actions.push({
+                id: 'bw-archive-filter',
+                label: bridge.label('menu.archiveFilter'),
+                children: archive.map((option) => ({
+                  id: option.id,
+                  label: option.label,
+                  run: () => bridge.setArchiveFilter(target.workspaceId, option.value),
+                })),
               })
             }
             actions.push({

@@ -3597,7 +3597,7 @@ window.__ModuleLoader__.load({
         useStore: injectedUseStore, actions: injectedActions,
         localStore: localStoreProp,
         startSession, open, renameSession, forkSession, renameWorkspace, deleteWorkspace,
-        archiveSession, createWorkspace, pinSession, unpinSession, unarchiveSession,
+        archiveSession, openWorkspace, createWorkspace, pinSession, unpinSession, unarchiveSession,
         insertWorkspaceBefore, insertSessionBefore,
         useDirectoryFlow,
         pickDirectory, listDirectory, createDirectory,
@@ -6488,12 +6488,15 @@ window.__ModuleLoader__.load({
         // blank lookup mirrors the official createInWorkspace rule — a
         // standing blank IS the workspace default (its preset projection
         // is what the hero chip shows). With NO standing blank the edit
-        // still applies: ClientSessions.create prepares one WITH the
-        // picked preset (the same channel as the official new-session
-        // button), which makes it the workspace default. Creating a
-        // session here is deliberate, not a side effect — the host has
-        // no other per-workspace default store (agent-preset-registry
-        // selectedDefault is GLOBAL; the standing blank IS the carrier).
+        // still applies: uiWorkspace.openWorkspace prepares a workspace
+        // MEMBER with the picked preset and reveals it (the official New
+        // Session path), which makes it the workspace default.
+        // Revealing matters: a blank row is only drawn while it is the
+        // current selection, so creating without opening would leave the
+        // new carrier invisible until the next reload. Creating a session
+        // here is deliberate, not a side effect — the host has no other
+        // per-workspace default store (agent-preset-registry selectedDefault
+        // is GLOBAL; the standing blank IS the carrier).
         const raw = (storedItems || []).find((item) => item.workspaceId === payload.workspaceId)
         const blankIds = raw && Array.isArray(raw.sessionIds) ? raw.sessionIds : []
         const blankId = raw && raw.path
@@ -6514,7 +6517,13 @@ window.__ModuleLoader__.load({
             // Shape matches select's { ok } contract; a SessionCreateError
             // lands in the dialog as an inline refusal line.
             : (presetId) => Promise.resolve()
-              .then(() => sessions.create({ cwd: raw.path, agentPreset: presetId }))
+              // Issue #20: openWorkspace attaches the new blank to the
+              // workspace and selects it; sessions.create alone leaves it
+              // orphaned, and connectWorkspace alone leaves it hidden (a
+              // blank row is only drawn while current). The component scope
+              // has no `sessions` service — browserInjected carries this
+              // channel in from apply().
+              .then(() => openWorkspace(raw.workspaceId, undefined, { agentPreset: presetId }))
               .then(() => ({ ok: true }), (reason) => ({ ok: false, refusal: reason instanceof Error ? reason.message : String(reason || 'session create failed') })),
           current: projection && typeof projection.agentPreset === 'string' ? projection.agentPreset : undefined,
         })
@@ -6867,6 +6876,7 @@ window.__ModuleLoader__.load({
         if (dialog.kind === 'ws-preset') return E(WorkspacePresetDialog, {
           key: 'ws-preset',
           applyPreset: dialog.applyPreset,
+          hasBlank: dialog.hasBlank,
           loadRoster: presetFace ? presetFace.list : null,
           current: dialog.current,
           // Success closes with the same notice pipeline as copy-session-id
@@ -7596,6 +7606,11 @@ window.__ModuleLoader__.load({
         unpinSession: typeof uiWorkspace.unpinSession === 'function' ? (sessionId) => uiWorkspace.unpinSession(sessionId) : undefined,
         unarchiveSession: typeof uiWorkspace.unarchiveSession === 'function' ? (sessionId) => uiWorkspace.unarchiveSession(sessionId) : undefined,
         createWorkspace: (input) => workspaces.create(input),
+        // Issue #20: a workspace with no standing blank needs the official
+        // blank path, which writes workspace membership and reveals the new
+        // row. The service lives in this apply() scope, so expose it through
+        // the same injection face as the other browser actions.
+        openWorkspace: (workspaceId, beforeOpen, options) => uiWorkspace.openWorkspace(workspaceId, beforeOpen, options),
         pickDirectory: () => uiWorkspace.pickDirectory(),
         // Browse-side primitives: the in-app dialog needs them whenever the
         // Host composes the browse backend instead of the OS chooser.

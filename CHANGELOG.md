@@ -3,6 +3,21 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.40.1 — 2026-11-07
+
+**类型**:fix(修复 issue #20:工作区没有待命新会话时设置默认预设崩溃)
+
+### fix
+- **无待命 blank 的默认预设编辑**:BetterBrowser 是模块层组件,作用域里没有 `sessions` 服务;原无 blank 分支直接调 `sessions.create`,既抛 `sessions is not defined`,又只创建孤立会话、不写工作区成员关系。现在经 `browserInjected` 注入 `uiWorkspace.openWorkspace(workspaceId, undefined, { agentPreset })`——官方 New Session 路径,同一次操作写入 membership、reveal 新 blank 并切换为当前会话,确认后侧栏立即出现新行。`connectWorkspace` 只建成员不导航,而 blank 行仅当前选中时绘制,会一直隐藏到刷新,不能替代 `openWorkspace`。
+- **弹窗提示**:`WorkspacePresetDialog` 现在接收 `hasBlank`;无待命 blank 时显示「该工作区暂无待命的新会话,确认后将预备一个使用所选预设的新会话作为工作区默认」,不再显示「当前预设未知」。
+- 保持 standing blank 的 `presetFace.select` 分支不变;创建失败仍以 `{ ok: false, refusal }` 显示在弹窗内,对话框不关闭。
+
+### 验证
+- 冒烟 `npm test`:87 项全绿(新增 issue #20 守卫:no-blank 分支走 `openWorkspace`、无裸 `sessions.create` / `createSession` / `connectWorkspace`、注入面、`hasBlank`、错误转 refusal)。
+- 隔离 rc.1 Web 真机(dsh 0.2.2-rc.1):归档自动 blank 后工作区只剩一个非 blank 会话;打开「修改工作区默认预设」显示预备提示;选 PTC 确认后 253ms 内新行出现且带 `bw-row-current`,对话框关闭、toast「已更新工作区默认预设」,无 `sessions is not defined`,零 pageerror / console error;workspace store 的 `sessionIds` 含新会话,会话头 `agentPreset: "ptc"`、`cwd: "/Users/kanna/sandbox"`;无需刷新。
+- 桌面客户端本轮未单独复验;同一 client 渲染面与官方 blank 路径,Web 隔离实例覆盖本次交互。
+- 相关:#20(https://github.com/KannaKuron/dsh-better-workspace/issues/20)。
+
 ## v0.40.0 — 2026-11-06
 
 **类型**:feat(工作区级归档筛选:单个工作区可覆盖全局三态,默认跟随全局)

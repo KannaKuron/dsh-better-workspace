@@ -1025,6 +1025,39 @@ test('add-workspace flow: official chooser, browse Host renders the shipped dial
     'the parent-group popup must not return')
 })
 
+/**
+ * Issue #20: a workspace with no standing blank still edits its default preset
+ * by preparing a workspace MEMBER through the official blank path. BetterBrowser
+ * is a module-level component with no `sessions` service in scope, so
+ * openWorkspace rides browserInjected from apply() where the service is
+ * acquired. A bare `sessions.create` crashed with "sessions is not defined";
+ * it also left the new Session orphaned (not a workspace member, invisible),
+ * and connectWorkspace alone leaves it hidden (blank rows draw only while current).
+ */
+test('workspace preset: no blank prepares and reveals the injected workspace blank (issue #20)', () => {
+  const text = clientText()
+  const start = text.indexOf('const openWorkspacePresetDialog = (payload) => {')
+  const end = text.indexOf('// Per-workspace archived visibility (v0.40.0)', start)
+  assert.ok(start !== -1 && end > start, 'openWorkspacePresetDialog sits before the archive-filter section')
+  const body = text.slice(start, end)
+  assert.match(body, /openWorkspace\(raw\.workspaceId, undefined, \{ agentPreset: presetId \}\)/,
+    'the no-blank branch prepares and reveals a workspace member through the injected channel')
+  assert.doesNotMatch(body, /sessions\.create\(/,
+    'the component scope must not reach for a service it cannot see')
+  assert.doesNotMatch(body, /createSession\(/,
+    'the orphan-prone raw create channel is gone')
+  assert.doesNotMatch(body, /connectWorkspace\(/,
+    'connectWorkspace alone leaves the blank hidden until reload')
+  assert.match(text, /archiveSession, openWorkspace, createWorkspace, pinSession,/,
+    'BetterBrowser destructures the workspace blank channel')
+  assert.match(text, /openWorkspace: \(workspaceId, beforeOpen, options\) => uiWorkspace\.openWorkspace\(workspaceId, beforeOpen, options\)/,
+    'browserInjected exposes the official workspace blank navigation channel')
+  assert.match(text, /hasBlank: dialog\.hasBlank/,
+    'the preset dialog learns whether a standing blank exists')
+  assert.match(body, /reason instanceof Error \? reason\.message : String\(reason \|\| 'session create failed'\)/,
+    'a SessionCreateError lands in the dialog as an inline refusal')
+})
+
 
 /**
  * Context menu (v0.14.0): mirrors the OFFICIAL row menus item-for-item —

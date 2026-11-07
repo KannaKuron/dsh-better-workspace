@@ -3838,6 +3838,16 @@ window.__ModuleLoader__.load({
       const shortcutCatalog = shippedFace && shippedFace.hooks ? shippedFace.hooks.shortcuts || null : null
       const shortcutState = useObservableSnapshot(shortcutChannel)
       const shortcutRows = useObservableSnapshot(shortcutCatalog)
+      // Issue #22: the official workspace.rename / workspace.delete menu items
+      // resolve into this request store, whose only consumer is the shipped
+      // browser's <WorkspaceDialogs>. This plugin shadows that browser, so the
+      // request is consumed here and settled through the face's own channel.
+      const workspaceRequest = useObservableSnapshot(
+        shippedFace && shippedFace.hooks ? shippedFace.hooks.workspaceActionRequest || null : null
+      )
+      const settleWorkspaceAction = shippedFace && typeof shippedFace.settleWorkspaceAction === 'function'
+        ? shippedFace.settleWorkspaceAction
+        : null
       const shortcutStateOf = shortcutState && typeof shortcutState === 'object' ? shortcutState : null
       const searchRequest = shortcutStateOf ? shortcutStateOf.searchRequest : 0
       const addRequested = !!(shortcutStateOf && shortcutStateOf.addRequested)
@@ -4126,7 +4136,31 @@ window.__ModuleLoader__.load({
       // 'ReferenceError: setFlowOpen is not defined' on every failure path —
       // including the .catch(fail) of a group move-into, which then silently
       // aborted the rename ('变下级没反应').
-      const fail = (text) => { setDialog(null); setErrorText(String(text || 'unknown error')) }
+
+      // Issue #22: settle the official request once, from every exit of a
+      // bridged workspace dialog. A stale request would otherwise reopen the
+      // dialog on the next render or stay pending until the plugin unmounts.
+      const settleWorkspaceRequest = () => {
+        if (typeof settleWorkspaceAction !== 'function') return
+        try { settleWorkspaceAction() } catch (error) { /* a stale host must not trap the local dialog */ }
+      }
+      const fail = (text) => { settleWorkspaceRequest(); setDialog(null); setErrorText(String(text || 'unknown error')) }
+
+      // The shipped browser's <WorkspaceDialogs> is the only consumer of this
+      // store. Map its request into the SAME local dialogs the context menu
+      // opens, so rename/delete keep one implementation under the shadow.
+      React.useEffect(() => {
+        if (!workspaceRequest || typeof workspaceRequest !== 'object') return
+        const action = workspaceRequest.action
+        if (action !== 'rename' && action !== 'delete') return
+        const workspaceId = String(workspaceRequest.workspaceId || '')
+        if (workspaceId === '') return
+        const title = String(workspaceRequest.displayTitle || workspaceRequest.storedTitle || '')
+        setDialog({
+          kind: action === 'rename' ? 'ws-rename' : 'ws-delete',
+          workspace: { workspaceId, title, leaf: title },
+        })
+      }, [workspaceRequest])
 
       const styleEntry = (key) => stylingMap[key] || null
       // Effective appearance = the settings card's default, overridden field by
@@ -5940,17 +5974,17 @@ window.__ModuleLoader__.load({
 
       const submitWorkspaceRename = (workspace, nextTitle) => {
         const title = String(nextTitle || '').trim()
-        if (title === '' || title === workspace.title) { setDialog(null); return }
+        if (title === '' || title === workspace.title) { settleWorkspaceRequest(); setDialog(null); return }
         Promise.resolve()
           .then(() => renameWorkspace(workspace.workspaceId, title))
-          .then(() => setDialog(null))
+          .then(() => { settleWorkspaceRequest(); setDialog(null) })
           .catch(fail)
       }
 
       const submitWorkspaceDelete = (workspace) => {
         Promise.resolve()
           .then(() => deleteWorkspace(workspace.workspaceId))
-          .then(() => setDialog(null))
+          .then(() => { settleWorkspaceRequest(); setDialog(null) })
           .catch(fail)
       }
 
@@ -6729,7 +6763,7 @@ window.__ModuleLoader__.load({
           hint: workspaceSlash ? t('ws.rename.hint') : null,
           initial: dialog.workspace.title || dialog.workspace.leaf,
           onConfirm: (v) => submitWorkspaceRename(dialog.workspace, v),
-          onClose: () => setDialog(null),
+          onClose: () => { settleWorkspaceRequest(); setDialog(null) },
           t,
         })
         // Declared-empty groups are the only ones that can be deleted (the menu
@@ -6756,7 +6790,7 @@ window.__ModuleLoader__.load({
           title: t('ws.delete.title'),
           body: t('ws.delete.body', { name: dialog.workspace.title || dialog.workspace.leaf }),
           onConfirm: () => submitWorkspaceDelete(dialog.workspace),
-          onClose: () => setDialog(null),
+          onClose: () => { settleWorkspaceRequest(); setDialog(null) },
           t,
         })
         if (dialog.kind === 'sess-rename') return E(TextDialog, {

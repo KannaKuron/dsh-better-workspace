@@ -3,6 +3,21 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.40.2 — 2026-11-07
+
+**类型**:fix(修复 issue #22:官方工作区重命名 / 删除菜单在自绘侧栏下不弹窗)
+
+### fix
+- **官方工作区动作请求接回本地对话框**:官方 workspace browser 把「重命名 / 删除工作区」请求写入私有 `hooks.workspaceActionRequest`,唯一消费者是官方 `<WorkspaceDialogs>`。本插件以 priority -1 遮蔽 `sidebar.workspaces` 后官方 browser 不挂载,请求无人消费,点菜单没有任何反应(禁用插件、官方 browser 重新挂载后才补弹)。现在从被遮蔽座位的 entry 订阅该请求,复用本地 `ws-rename` / `ws-delete` 对话框;确认、取消、关闭与失败都调用 `settleWorkspaceAction()` 结清请求,避免积压重放。
+- **只接管 rename / delete**:其它 action 不处理;目标 workspaceId 为空时忽略。本地右键菜单仍直接打开同一对话框,不修改官方菜单,也不写回请求字段。
+- **失败不丢错误**:工作区动作失败时保留错误文本并结清请求;成功与取消先结清再关闭。
+
+### 验证
+- 冒烟 `npm test`:88 项全绿(新增静态守卫:订阅 `hooks.workspaceActionRequest`、读取 `settleWorkspaceAction`、action 过滤、dialog 映射、成功 / 取消 / 失败 settle,且禁止 `workspaceActionRequest.set(` 回写)。
+- 隔离 rc.1 Web 真机(dsh 0.2.2-rc.1):官方右键菜单点「删除工作区」弹出本地删除对话框,取消后工作区保留;点「重命名」弹出本地重命名对话框,改为 `Issue22 Renamed` 后行文本立即更新,刷新后仍保持;零 pageerror / console error。
+- 桌面客户端本轮未单独复验;同一 client 渲染面与官方共享菜单,Web 隔离实例覆盖本次交互。
+- 相关:#22(https://github.com/KannaKuron/dsh-better-workspace/issues/22)。
+
 ## v0.40.1 — 2026-11-07
 
 **类型**:fix(修复 issue #20:工作区没有待命新会话时设置默认预设崩溃)

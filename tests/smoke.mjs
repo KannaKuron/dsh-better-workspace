@@ -1823,6 +1823,26 @@ test('rc.2 shortcuts: the shadowed browser\'s request channel is consumed here (
   assert.match(text, /const useObservableSnapshot = \(observable\) => \{/)
 })
 
+test('issue #22: the shadowed browser\'s workspace action request opens the local dialogs', () => {
+  const text = clientText()
+  // The official rename/delete menu items resolve into the shipped browser's
+  // private request store. This plugin shadows that browser, so it must read
+  // the request off the same face and settle it through the face's channel.
+  assert.match(text, /const workspaceRequest = useObservableSnapshot\(/)
+  assert.match(text, /shippedFace\.hooks\.workspaceActionRequest \|\| null/)
+  assert.match(text, /const settleWorkspaceAction = shippedFace && typeof shippedFace\.settleWorkspaceAction === 'function'/)
+  assert.match(text, /const settleWorkspaceRequest = \(\) => \{/)
+  assert.match(text, /if \(action !== 'rename' && action !== 'delete'\) return/)
+  assert.match(text, /kind: action === 'rename' \? 'ws-rename' : 'ws-delete'/)
+  assert.match(text, /workspace: \{ workspaceId, title, leaf: title \}/)
+  // Every exit settles: cancel, unchanged submit, success, and failure.
+  assert.match(text, /onClose: \(\) => \{ settleWorkspaceRequest\(\); setDialog\(null\) \}/)
+  assert.match(text, /then\(\(\) => \{ settleWorkspaceRequest\(\); setDialog\(null\) \}\)/)
+  assert.match(text, /const fail = \(text\) => \{ settleWorkspaceRequest\(\); setDialog\(null\)/)
+  // The plugin consumes the store; it must never write it itself.
+  assert.doesNotMatch(text, /workspaceActionRequest\.set\(/)
+})
+
 test('rc.1 design tokens: radii and focus rings follow the host scale (v0.23.0)', () => {
   const text = clientText()
   // rc.1 published --dsw-radius-* and --dsw-focus-ring-*; every adopted value
@@ -2470,8 +2490,8 @@ test('v0.36.4: an open reorder slot splits the original row at its midpoint (no 
   // fiber boundary threw ReferenceError on every failure path (v0.36.4 fix).
   assert.doesNotMatch(text, /const fail = \(text\) => \{ setFlowOpen/,
     'fail() must not reach for the picker-scoped setFlowOpen')
-  assert.match(text, /const fail = \(text\) => \{ setDialog\(null\); setErrorText/,
-    'fail() closes the dialog and surfaces the error text')
+  assert.match(text, /const fail = \(text\) => \{ settleWorkspaceRequest\(\); setDialog\(null\); setErrorText/,
+    'fail() settles a bridged request, closes the dialog and surfaces the error text')
   // THE flicker behind "变下级还是会被撑开" on the row being reordered: the
   // three bands were re-judged on the PADDED row, so a still pointer sitting
   // in the middle band flipped the just-opened slot to INTO on the next

@@ -3,6 +3,29 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.41.0 — 2026-11-07
+
+**类型**:feat(新增「隐藏较早会话」纯视图过滤,整理自 PR #21)
+
+### feat
+- **设置卡时间窗**:新增「隐藏较早会话」分段控件——关闭 / 3 / 7 / 14 / 30 天,写入视图 store 的 `prefs.sessionAgeDays`(默认 0 = 关闭;旧快照缺键按 0 读取)。只按 `SessionSummary.updatedAt`(epoch ms)过滤当前视图,**不归档、不写回会话数据**;调回「关闭」立即恢复全部行。
+- **豁免与搜索**:blank 占位、当前会话、置顶、运行中、等待交互、刚完成、带子代理(`subagents > 0`)以及 `updatedAt` 未知(0)的会话始终显示;搜索时绕过时间窗,显示全部匹配。
+- **统一入口**:`visibleSessionsOf(workspace) = filterSessionsByAge(sessionsOf(workspace), sessionAgeDays, currentId, searching)` 同时服务会话树、工作区计数、flat 单列表、Ungrouped 桶与「仅显示已归档」的 `workspaceVisible`。全局 only 档下,年龄过滤后没有可见归档会话的工作区整行隐藏;工作区自己 override 为 only 的空行仍保留(唯一能改回来的入口)。
+- **21 门词典**:新增 `settings.sessionAge` / `settings.sessionAge.off` / `settings.sessionAge.hint`,全部语言与 zh 键集一致。
+
+### fix(整理 PR #21 时修复的阻断项)
+- **设置卡崩溃**:`BetterWorkspaceSettings` 误读 `prefsMap.sessionAgeDays`(该作用域只有 `prefs`),改为 `prefs.sessionAgeDays`。
+- **浏览器作用域缺变量**:`BetterBrowser` 原先没有定义 `sessionAgeDays`,树 / 计数 / flat / Ungrouped 多处会 ReferenceError;补 `prefsMap` 读取与 0–365 夹取。
+- **only 档计数语义**:`workspaceVisible` 改用 `visibleSessionsOf`,避免全局「仅显示已归档」+ 归档会话全部超窗时渲染 count=0 的空工作区行。
+- **文档与词典**:README / README_EN 新 bullet 拆行;英文不再复用中文、繁体中文不再使用简体、其余语言补齐本地化。
+- **测试**:新增可执行的 `filterSessionsByAge` 纯函数断言(旧行隐藏、近期保留、关闭 / 搜索全显、各类豁免、当前 id 归属),并对设置卡与浏览器的作用域、`visibleSessionsOf` 接入点做静态守卫。
+
+### 验证
+- 冒烟 `npm test`:89 项全绿(0 fail);`node --check src/client.js`、`node --check src/client.locales.js` 通过。
+- 隔离 rc.1 Web 真机(dsh 0.2.2-rc.1,合成 5 个会话覆盖 1 小时 / 10 天 / 置顶 / 归档 / 当前):43 项检查全绿,零 pageerror / console error。覆盖 0→3→7→14→30 天、旧 idle 隐藏与恢复、工作区计数同步、当前 / 置顶豁免、搜索绕过、flat、Ungrouped、本地 / 全局 only 组合与保留空行、关闭恢复、刷新后 `sessionAgeDays=3` 局部持久化。
+- 桌面客户端本轮未单独复验;同一 client 渲染面,Web 隔离实例覆盖本次交互。
+- 相关:PR #21(https://github.com/KannaKuron/dsh-better-workspace/pull/21)。
+
 ## v0.40.2 — 2026-11-07
 
 **类型**:fix(修复 issue #22:官方工作区重命名 / 删除菜单在自绘侧栏下不弹窗)

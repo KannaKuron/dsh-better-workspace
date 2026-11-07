@@ -383,6 +383,23 @@ window.__ModuleLoader__.load({
       return pinnedPartition(sorted)
     }
 
+    /**
+     * Pure view filter: hide Session rows whose last update is older than the
+     * configured number of days. Nothing is archived and nothing is written
+     * back: the rows reappear the moment the preference returns to 0.
+     *
+     * Exemptions mirror limitSessionsForRender: blank placeholders, the open
+     * Session, pinned rows and attention rows (running / waiting / completed)
+     * never disappear; a search always shows the full list.
+     */
+    const filterSessionsByAge = (rows, days, currentId, searching) => {
+      if (!rows || rows.length === 0 || searching || !(days > 0)) return rows || []
+      const cutoff = Date.now() - days * 86400000
+      return rows.filter((row) => row.blank || row.id === currentId || row.pinned
+        || row.running || row.pending || row.completed || row.subagents > 0
+        || !(row.updatedAt > 0) || row.updatedAt >= cutoff)
+    }
+
     const sessionTitleOf = (summary, t, rememberedTitle) => {
       if (!summary) return ''
       if (summary.blank) return t('session.new')
@@ -1109,7 +1126,7 @@ window.__ModuleLoader__.load({
       // LITERAL, not a spread of DEFAULT_APPEARANCE: init() is eval-harness
       // friendly (no cross-section reference), and the smoke suite asserts the
       // two stay in lockstep field by field.
-      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true, sessionLimit: 0, appearance: { color: '', glow: 0, weight: 0, shadow: false, stroke: false, strokeWidth: 1, strokeColor: '#808080' } }, styling: {}, groupBy: 'workspace-tree', orderBy: 'manual', archivedFilter: 'default', workspaceArchivedFilters: {}, workspaceGroupMode: 'disk', sessionTitleSlash: true, workspaceTitleSlash: false, ungroupedOpen: true, folders: { ws: {}, sess: {} }, folderOrder: {} }),
+      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true, sessionLimit: 0, sessionAgeDays: 0, appearance: { color: '', glow: 0, weight: 0, shadow: false, stroke: false, strokeWidth: 1, strokeColor: '#808080' } }, styling: {}, groupBy: 'workspace-tree', orderBy: 'manual', archivedFilter: 'default', workspaceArchivedFilters: {}, workspaceGroupMode: 'disk', sessionTitleSlash: true, workspaceTitleSlash: false, ungroupedOpen: true, folders: { ws: {}, sess: {} }, folderOrder: {} }),
       // NOTE: hydration REPLACES the state with the persisted whole value —
       // init defaults never merge. Every action must tolerate a missing key
       // (states persisted by older plugin versions lack sessionGroups), and
@@ -3070,6 +3087,10 @@ window.__ModuleLoader__.load({
       // Progressive listing quota (v0.21.0, issue #8): 0 = unlimited.
       const rawLimit = Math.floor(Number(prefs.sessionLimit))
       const sessionLimit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 500) : 0
+      // Pure view filter for older Sessions: 0 = off. Snapshots persisted
+      // before this key existed read as 0 through the fallback.
+      const rawAgeDays = Math.floor(Number(prefs.sessionAgeDays))
+      const sessionAgeDays = Number.isFinite(rawAgeDays) && rawAgeDays > 0 ? Math.min(rawAgeDays, 365) : 0
       // Row density (v0.34.0): Comfortable rides the shipped sidebar row
       // heights (the default); Compact/Roomy drive the --bw-row-h dials.
       const densityRaw = String(prefs.density || 'comfortable')
@@ -3175,6 +3196,19 @@ window.__ModuleLoader__.load({
           ),
         ),
         E('div', { className: 'bw-hint' }, t('settings.sessionLimit.hint')),
+        E('div', { className: 'bw-setting-row' },
+          E('div', { className: 'bw-setting-label' }, t('settings.sessionAge')),
+          E('div', { className: 'bw-seg' },
+            [[0, t('settings.sessionAge.off')], [3, '3'], [7, '7'], [14, '14'], [30, '30']].map(([value, label]) =>
+              E('button', {
+                type: 'button',
+                key: String(value),
+                className: cls('bw-seg-btn', sessionAgeDays === value && 'bw-seg-btn-active'),
+                onClick: () => { setPref('sessionAgeDays', value) },
+              }, label)),
+          ),
+        ),
+        E('div', { className: 'bw-hint' }, t('settings.sessionAge.hint')),
         ),
         fold('settings.group.interaction',
         E('div', { className: 'bw-setting-row' },
@@ -3693,6 +3727,10 @@ window.__ModuleLoader__.load({
       // Progressive listing (v0.21.0, issue #8): 0 means unlimited (default).
       const rawLimit = Math.floor(Number(prefsMap.sessionLimit))
       const sessionLimit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 500) : 0
+      // Pure view filter for older Sessions: 0 = off. Snapshots persisted
+      // before this key existed read as 0 through the fallback.
+      const rawAgeDays = Math.floor(Number(prefsMap.sessionAgeDays))
+      const sessionAgeDays = Number.isFinite(rawAgeDays) && rawAgeDays > 0 ? Math.min(rawAgeDays, 365) : 0
       // Tree density + count badge (v0.34.0), read fresh every render.
       const densityRaw = String(prefsMap.density || 'comfortable')
       const density = densityRaw === 'compact' || densityRaw === 'roomy' ? densityRaw : 'comfortable'
@@ -4351,6 +4389,9 @@ window.__ModuleLoader__.load({
         }
       }
       const searching = normalizedQuery !== ''
+      // Age-filtered view of a workspace: the single source shared by the row
+      // list, its count badge and the "only archived" visibility test.
+      const visibleSessionsOf = (workspace) => filterSessionsByAge(sessionsOf(workspace), sessionAgeDays, currentId, searching)
 
       /* --------------------- status breathing relay -------------------- */
 
@@ -6063,7 +6104,7 @@ window.__ModuleLoader__.load({
         // Folder semantics: a closed workspace shows no sessions at all (the
         // row keeps its count badge); an open one shows the full session tree.
         if (!searching && !sessionsOpenOf(workspace.workspaceId)) return []
-        const full = sessionsOf(workspace)
+        const full = visibleSessionsOf(workspace)
         if (full.length === 0 && !hasDeclared(sessFolders, workspace.workspaceId)) return []
         // Issue #8 progressive listing: quota the IDLE rows of this folder
         // (attention rows stay visible — see limitSessionsForRender); one
@@ -6144,14 +6185,14 @@ window.__ModuleLoader__.load({
        * left without one is dropped with it (the shipped browser re-parents a
        * surviving descendant onto the nearest rendered ancestor; our groups are
        * derived from the members, so an emptied one simply disappears).
-       * `sessionsOf` already applies the SAME visibility rule the rows render
-       * with, so this can never disagree with the session list below the row.
+       * `visibleSessionsOf` applies the SAME archive and age rules the rows
+       * render with, so the row can never disagree with the list below it.
        */
       const archivedOnly = archivedFilter === 'only'
       const workspaceVisible = (workspace) => {
         if (!workspace) return false
         if (effectiveArchivedFilterOf(workspace) !== 'only') return true
-        if (Array.isArray(workspace.sessionIds) && sessionsOf(workspace).length > 0) return true
+        if (Array.isArray(workspace.sessionIds) && visibleSessionsOf(workspace).length > 0) return true
         // Keep an EMPTY workspace that carries its own "only archived"
         // override: its row is the sole surface holding the menu that can
         // switch it back to "follow global". Hiding it would trap the user
@@ -6176,7 +6217,7 @@ window.__ModuleLoader__.load({
       const renderWorkspaceEntry = (entry, depth, pulse) => {
         const { workspace } = entry
         if (!workspaceVisible(workspace)) return []
-        const count = countSessionTree(buildSessionTree(sessionsOf(workspace), sessionSlash, sessFolders, workspace.workspaceId))
+        const count = countSessionTree(buildSessionTree(visibleSessionsOf(workspace), sessionSlash, sessFolders, workspace.workspaceId))
         const rows = [E(WorkspaceRow, {
           key: 'ws-' + workspace.workspaceId,
           workspace,
@@ -6304,18 +6345,20 @@ window.__ModuleLoader__.load({
       // account — as one depth-0 list. Rows keep their FULL title (no leaf
       // split, no levels), and render through the workspaceId-less path,
       // which carries no drag anchors by construction.
-      const renderFlatRows = () => {
+      const renderFlatRows = (sessionAgeDays = 0, searching = false) => {
         const rows = []
         for (const workspace of items || []) rows.push(...sessionsOf(workspace))
         rows.push(...ungrouped)
         // sessionsOf() sorts inside one workspace; flat mode needs one global
         // recency sort, including the Ungrouped bucket (not per-workspace runs).
-        const ordered = orderBy === 'updated' ? orderSessionsByRecency(rows, currentId) : rows
+        const visible = filterSessionsByAge(rows, sessionAgeDays, currentId, searching)
+        const ordered = orderBy === 'updated' ? orderSessionsByRecency(visible, currentId) : visible
         return ordered.map((s) => renderSessionRow({ ...s, leaf: s.title }, 0, undefined))
       }
       const renderUngroupedBlock = () => {
         const rows = []
-        if (ungrouped.length > 0) {
+        const visible = filterSessionsByAge(ungrouped, sessionAgeDays, currentId, searching)
+        if (visible.length > 0) {
           // Issue #6: the Ungrouped bucket folds like every other group row
           // (chevron + live count); search keeps it expanded.
           const open = searching || ungroupedOpen
@@ -6329,9 +6372,9 @@ window.__ModuleLoader__.load({
           },
             E('span', { className: cls('bw-chevron', open && 'bw-chevron-open') }, E('span', { className: 'bw-arrow' }, icon('IconTriangleRightFill14', 14))),
             E('span', { className: 'bw-row-label' }, t('group.ungrouped')),
-            E('span', { className: 'bw-row-count' }, String(ungrouped.length)),
+            E('span', { className: 'bw-row-count' }, String(visible.length)),
           ))
-          if (open) for (const s of ungrouped) rows.push(renderSessionRow(s, 0))
+          if (open) for (const s of visible) rows.push(renderSessionRow(s, 0))
         }
         return rows
       }
@@ -6339,7 +6382,7 @@ window.__ModuleLoader__.load({
       if (searching) {
         for (const entry of searched) bodyRows.push(...renderWorkspaceEntry(entry, 0))
       } else if (groupBy === 'flat') {
-        bodyRows.push(...renderFlatRows())
+        bodyRows.push(...renderFlatRows(sessionAgeDays, searching))
       } else if (groupBy === 'workspace') {
         if (workspaceGroupMode === 'disk') {
           // Official 'workspace' mode (v0.13): one level — every workspace at

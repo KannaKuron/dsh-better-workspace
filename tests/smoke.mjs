@@ -643,7 +643,7 @@ test('appearance: stroke ships OFF (v0.31.0, legacy ON preserved), gray color de
   // Fresh installs never hydrate: createViewStore's init bakes the shipped
   // default (stroke OFF) into prefs.appearance, and the baked literal must
   // stay in lockstep with DEFAULT_APPEARANCE.
-  const initPrefs = /prefs: \{ compactChains: true, sessionLimit: 0, appearance: \{([^}]*)\}/.exec(text)
+  const initPrefs = /prefs: \{ compactChains: true, sessionLimit: 0, sessionAgeDays: 0, appearance: \{([^}]*)\}/.exec(text)
   assert.ok(initPrefs, 'init must bake an appearance record for fresh installs')
   const baked = {}
   for (const pair of initPrefs[1].matchAll(/(\w+): ('[^']*'|[^,}]+)/g)) baked[pair[1]] = String(pair[2]).replace(/^'|'$/g, '')
@@ -904,7 +904,7 @@ test('view options: group/order menu + the two slash toggles (0.13.0)', () => {
   assert.match(text, /setWorkspaceGroupMode: \(d, value\)/)
   assert.match(text, /setUngroupedOpen: \(d, value\)/)
   // v0.31.0: init bakes prefs.appearance (stroke ships OFF) for fresh installs.
-  assert.match(text, /prefs: \{ compactChains: true, sessionLimit: 0, appearance: \{ color: '', glow: 0, weight: 0, shadow: false, stroke: false, strokeWidth: 1, strokeColor: '#808080' \} \}/)
+  assert.match(text, /prefs: \{ compactChains: true, sessionLimit: 0, sessionAgeDays: 0, appearance: \{ color: '', glow: 0, weight: 0, shadow: false, stroke: false, strokeWidth: 1, strokeColor: '#808080' \} \}/)
   assert.match(text, /useStore\(s => s\.ungroupedOpen\) !== false/)
   for (const action of ['setGroupBy', 'setOrderBy', 'setSessionTitleSlash', 'setWorkspaceTitleSlash']) {
     assert.ok(text.includes(action + ': (d, value)'), 'store action ' + action)
@@ -1527,7 +1527,7 @@ test('declared groups: they render even with no members to project from (v0.17.0
   // ("workspaces" + a name layer = 'slash'), picker keeps its own variable.
   assert.match(text, /const treeMode = groupBy === 'workspace' && workspaceGroupMode !== 'disk'\n          \? 'slash'\n          : workspaceGroupMode\n        const built = buildTree\(items, treeMode, wsFolders, folderOrderMap\)/,
     'the main tree passes the workspace bag and the persisted group order')
-  assert.equal((text.match(/buildSessionTree\(sessionsOf\(workspace\), sessionSlash, sessFolders, workspace\.workspaceId\)/g) || []).length, 4,
+  assert.equal((text.match(/buildSessionTree\([^\n]*?(?:sessionsOf|visibleSessionsOf)\(workspace\)/g) || []).length, 4,
     'every session-tree caller passes the session bag and its workspace scope')
 })
 
@@ -2772,7 +2772,7 @@ test('flat last-updated order is global, preserving blank and pinned sections', 
   const source = clientText()
   const helperStart = source.indexOf('    const pinnedPartition = (rows) => {')
   const helperEnd = source.indexOf('    const sessionTitleOf = ', helperStart)
-  const flatStart = source.indexOf('      const renderFlatRows = () => {')
+  const flatStart = source.indexOf('      const renderFlatRows = (')
   const flatEnd = source.indexOf('      const renderUngroupedBlock = ', flatStart)
   assert.ok(helperStart !== -1 && helperEnd > helperStart && flatStart !== -1 && flatEnd > flatStart)
   const render = new Function('items', 'sessionsOf', 'ungrouped', 'orderBy', 'currentId', 'renderSessionRow',
@@ -2974,4 +2974,62 @@ test('v0.39.1: only real subagents count as running children (issue #18)', () =>
     'live status false overrides a stale summary running flag')
   assert.match(text, /running: \(st && st\.running !== undefined \? st\.running : summary\.running\) === true,/,
     'row status also prefers an explicit live false')
+})
+
+test('session age filter hides old rows without archiving them', () => {
+  const source = clientText()
+  const helperStart = source.indexOf('    const filterSessionsByAge = (')
+  const helperEnd = source.indexOf('    const sessionTitleOf = ', helperStart)
+  assert.ok(helperStart !== -1 && helperEnd > helperStart, 'the age filter helper is present')
+  const filter = new Function('rows', 'days', 'currentId', 'searching',
+    source.slice(helperStart, helperEnd) + '\nreturn filterSessionsByAge')()
+
+  const now = Date.now()
+  const stale = now - 10 * 86400000
+  const recent = now - 86400000
+  const rows = [
+    { id: 'old', updatedAt: stale },
+    { id: 'recent', updatedAt: recent },
+    { id: 'blank', updatedAt: stale, blank: true },
+    { id: 'current', updatedAt: stale },
+    { id: 'pinned', updatedAt: stale, pinned: true },
+    { id: 'running', updatedAt: stale, running: true },
+    { id: 'pending', updatedAt: stale, pending: true },
+    { id: 'completed', updatedAt: stale, completed: true },
+    { id: 'subagents', updatedAt: stale, subagents: 1 },
+    { id: 'unknown', updatedAt: 0 },
+  ]
+  const visible = (days, currentId = 'current', searching = false) =>
+    filter(rows, days, currentId, searching).map(row => row.id)
+  assert.deepEqual(visible(7), [
+    'recent', 'blank', 'current', 'pinned', 'running', 'pending', 'completed', 'subagents', 'unknown',
+  ], 'only an old idle row disappears; every active/blank/unknown row is exempt')
+  assert.deepEqual(visible(7, 'other'), [
+    'recent', 'blank', 'pinned', 'running', 'pending', 'completed', 'subagents', 'unknown',
+  ], 'the current-session exemption belongs to the actual current id')
+  assert.equal(filter(rows, 0, 'current', false), rows, 'off returns the original list')
+  assert.equal(filter(rows, 7, 'current', true), rows, 'search always returns everything')
+  assert.deepEqual(visible(3), [
+    'recent', 'blank', 'current', 'pinned', 'running', 'pending', 'completed', 'subagents', 'unknown',
+  ], 'a 3-day window still hides the 10-day-old row')
+
+  const text = clientText()
+  assert.match(text, /const filterSessionsByAge = \(rows, days, currentId, searching\)/)
+  assert.match(text, /row\.blank \|\| row\.id === currentId \|\| row\.pinned/)
+  assert.match(text, /row\.running \|\| row\.pending \|\| row\.completed \|\| row\.subagents > 0/)
+  assert.match(text, /if \(!rows \|\| rows\.length === 0 \|\| searching \|\| !\(days > 0\)\) return rows \|\| \[\]/)
+  assert.match(text, /sessionLimit: 0, sessionAgeDays: 0, appearance:/)
+  // The settings card reads the preference from its own prefs; the browser
+  // reads prefsMap. A missing definition used to crash both surfaces.
+  const settings = text.slice(text.indexOf('    function BetterWorkspaceSettings('), text.indexOf('    function BetterBrowser('))
+  assert.match(settings, /Number\(prefs\.sessionAgeDays\)/)
+  assert.doesNotMatch(settings, /prefsMap/)
+  assert.match(text, /const rawAgeDays = Math\.floor\(Number\(prefsMap\.sessionAgeDays\)\)/)
+  assert.match(text, /const sessionAgeDays = Number\.isFinite\(rawAgeDays\)/)
+  assert.match(text, /const visibleSessionsOf = \(workspace\) => filterSessionsByAge\(sessionsOf\(workspace\), sessionAgeDays, currentId, searching\)/)
+  assert.match(text, /const full = visibleSessionsOf\(workspace\)/)
+  assert.match(text, /const count = countSessionTree\(buildSessionTree\(visibleSessionsOf\(workspace\)/)
+  assert.match(text, /if \(Array\.isArray\(workspace\.sessionIds\) && visibleSessionsOf\(workspace\)\.length > 0\) return true/)
+  assert.match(text, /t\('settings\.sessionAge'\)/)
+  assert.match(text, /setPref\('sessionAgeDays', value\)/)
 })

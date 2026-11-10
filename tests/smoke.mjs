@@ -761,6 +761,46 @@ test('icons: the users pair is committed and host-filtered (0.21.1)', () => {
 })
 
 /**
+ * Emoji icons (issue #24): the stored value carries an explicit prefix so a
+ * text glyph can never be mistaken for a primitives name, and the picker grows
+ * a second tab instead of one long wall of cells. The same test pins the three
+ * private DOM contracts dsh-sidebar-session-provider-icon reads — aligning them
+ * is a deliberate unilateral compatibility choice, not a host API.
+ */
+test('icons: emoji tab plus the provider-badge DOM contracts (0.42.0)', () => {
+  const text = clientText()
+  const start = text.indexOf('const ICON_EMOJI_PREFIX')
+  const end = text.indexOf('const FALLBACK_UNITS')
+  assert.ok(start !== -1 && end !== -1 && start < end, 'emoji helpers not found')
+  const helpers = new Function(text.slice(start, end) + '\nreturn { ICON_EMOJI_PREFIX, emojiIconValue, isEmojiIcon, parseEmojiIcon }')()
+  assert.equal(helpers.ICON_EMOJI_PREFIX, 'emoji:')
+  assert.equal(helpers.emojiIconValue('emoji:🚀'), '🚀')
+  assert.equal(helpers.emojiIconValue('🚀'), '', 'a bare glyph is not a stored value')
+  assert.equal(helpers.isEmojiIcon('emoji:🚀'), true)
+  assert.equal(helpers.isEmojiIcon('solid'), false)
+  assert.equal(helpers.parseEmojiIcon('🚀'), '🚀')
+  assert.equal(helpers.parseEmojiIcon(' 👨‍👩‍👧‍👦 '), '👨‍👩‍👧‍👦', 'a ZWJ family sequence is one glyph')
+  assert.equal(helpers.parseEmojiIcon('🏳️‍🌈'), '🏳️‍🌈', 'variation selectors join the run')
+  assert.equal(helpers.parseEmojiIcon('abc'), '', 'plain text is rejected')
+  assert.equal(helpers.parseEmojiIcon('IconFolderClose16'), '', 'a primitives name is never text-rendered')
+  assert.equal(helpers.parseEmojiIcon('🚀 x'), '', 'whitespace cannot smuggle extra text in')
+  assert.equal(helpers.parseEmojiIcon(''), '')
+  assert.match(text, /const EMOJI_CHOICES = \[/, 'the common emoji grid exists')
+  const emojiBlock = text.slice(text.indexOf('const EMOJI_CHOICES = ['), text.indexOf('].map((emoji) => ICON_EMOJI_PREFIX + emoji)'))
+  assert.ok((emojiBlock.match(/[\u{1F000}-\u{1FAFF}]/gu) || []).length >= 50, 'the grid should stay a real choice, not a token few')
+  assert.match(text, /bw-icon-tabs/, 'the picker splits into tabs')
+  assert.match(text, /iconTab === 'emoji'/, 'the emoji tab renders its own panel')
+  assert.match(text, /bw-emoji-input/, 'free emoji input rides the same tab')
+  assert.match(text, /custom\.icon\.defaults/)
+  assert.match(text, /custom\.icon\.emojiHint/)
+  // Provider badge contracts: class token suffix, title class suffix, row key prefix.
+  assert.match(text, /cls\('bw-row', 'bw-session-row', 'bw-sessionRow'/, 'the row must end in a sessionRow class token')
+  assert.match(text, /className: 'bw-row-label bw-title'/, 'the title class must end in title')
+  assert.match(text, /key: 'session:' \+ session\.id/, 'the session React key must carry the session: prefix')
+  assert.match(text, /\[data-dsh-provider-logo\]\{margin-left:0\}/, 'the injected badge sits flush in the leading cell')
+})
+
+/**
  * Session reorder fallback (0.10.2): the injected WorkspaceService may lack
  * insertSessionBefore, which was the only reorder channel — the browser keeps
  * its own flat order so the gesture keeps working.

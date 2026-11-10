@@ -187,6 +187,31 @@ window.__ModuleLoader__.load({
       return C ? E(C, { size: size || 16 }) : null
     }
 
+    /**
+     * Custom emoji icon: the stored value keeps an explicit prefix so an
+     * arbitrary string can never be mistaken for a primitives glyph. Only a
+     * single pictographic run (ZWJ sequences and skin tones included) is
+     * accepted; unknown names keep degrading to no glyph as before.
+     */
+    const ICON_EMOJI_PREFIX = 'emoji:'
+    const emojiIconValue = (value) => {
+      if (typeof value !== 'string' || !value.startsWith(ICON_EMOJI_PREFIX)) return ''
+      return value.slice(ICON_EMOJI_PREFIX.length)
+    }
+    const isEmojiIcon = (value) => emojiIconValue(value) !== ''
+    const parseEmojiIcon = (raw) => {
+      const text = typeof raw === 'string' ? raw.trim() : ''
+      if (text === '' || text.length > 24 || /\s/.test(text)) return ''
+      let pictographic = false
+      for (const ch of text) {
+        const cp = ch.codePointAt(0)
+        if (cp === 0x200d || cp === 0xfe0e || cp === 0xfe0f || (cp >= 0x1f3fb && cp <= 0x1f3ff)) continue
+        if ((cp >= 0x1f000 && cp <= 0x1faff) || (cp >= 0x2600 && cp <= 0x27bf)) { pictographic = true; continue }
+        return ''
+      }
+      return pictographic ? text : ''
+    }
+
     const FALLBACK_UNITS = { minutes: 'm', hours: 'h', days: 'd', months: 'mo', years: 'y' }
     const timeLabel = (updatedAt, now, t) => {
       if (typeof ui.relativeTime !== 'function') return ''
@@ -1921,6 +1946,8 @@ window.__ModuleLoader__.load({
       if (!mode || mode === 'none') return null
       if (mode === 'solid') return icon(expanded ? 'IconFolderOpen16' : 'IconFolderClose16')
       if (mode === 'outline') return icon('IconFolderOpenOutline16')
+      const emoji = emojiIconValue(mode)
+      if (emoji !== '') return E('span', { className: 'bw-icon-emoji', 'aria-hidden': 'true' }, emoji)
       return icon(resolveIconName(mode))
     }
 
@@ -2416,7 +2443,7 @@ window.__ModuleLoader__.load({
       // copy/copyLabels; a blank row copies nothing (official rule).
       const hoverCard = typeof ui.HoverCard === 'function' && sessionActions && typeof sessionActions.hoverBody === 'function'
       let row = E('div', {
-        className: cls('bw-row', 'bw-session-row', current && 'bw-row-current',
+        className: cls('bw-row', 'bw-session-row', 'bw-sessionRow', current && 'bw-row-current',
           node.archived && 'bw-row-archived',
           dropHalf === 'before' && 'bw-drop-before', dropHalf === 'after' && 'bw-drop-after'),
         'data-row-key': dataRowKey,
@@ -2455,7 +2482,7 @@ window.__ModuleLoader__.load({
               : E(ui.StateDot, { state: status.state }))
             : (markNode || E('span', { className: 'bw-dot' })),
         ),
-        E('span', { className: 'bw-row-label', ref: marquee.titleRef }, title),
+        E('span', { className: 'bw-row-label bw-title', ref: marquee.titleRef }, title),
         // Official blank rows carry no time, no pin, no actions (a standing
         // "new session" placeholder, not a session).
         !node.blank ? E('span', { className: 'bw-row-time' }, timeLabel(node.updatedAt, now, t)) : null,
@@ -2671,6 +2698,20 @@ window.__ModuleLoader__.load({
       })
     })()
 
+    /**
+     * Emoji tab (issue #24): a short common set plus free input, deliberately
+     * independent of ICON_CHOICES — these are text glyphs, not primitives
+     * exports, so the host filter above must never see them.
+     */
+    const EMOJI_CHOICES = [
+      '🚀', '✨', '🔥', '⭐', '🌟', '💡', '📦', '📁', '📂', '🗂️', '🧩', '🛠️',
+      '⚙️', '🔧', '🔨', '🧪', '🧬', '🔬', '📊', '📈', '📉', '🗺️', '🌐', '🧭',
+      '🏠', '🏢', '🏗️', '🧱', '🌱', '🌳', '🍀', '🌸', '🌈', '☀️', '🌙', '⚡',
+      '❄️', '💧', '🌊', '🎯', '🎨', '🎵', '🎮', '🏆', '🥇', '💎', '🔑', '🔒',
+      '🔓', '📌', '📎', '🔖', '🧠', '🤖', '👾', '🐙', '🐳', '🦊', '🐼', '🦄',
+      '🍎', '🍋', '🍇', '🍩', '☕', '🧊',
+    ].map((emoji) => ICON_EMOJI_PREFIX + emoji)
+
     /* ========= theme-aware auto appearance for NEW items (v0.25.0) ========= */
 
     /**
@@ -2819,7 +2860,23 @@ window.__ModuleLoader__.load({
       // The glyph this choice actually resolves to on THIS host: a value saved
       // before the host renamed its icon set still highlights a real cell.
       const activeGlyph = resolveIconName(iconMode)
+      // Issue #24: the picker grew an Emoji tab; keep its tab and free-input
+      // draft in sync with the committed value without resetting the draft on
+      // an invalid mid-IME composition.
+      const [iconTab, setIconTab] = React.useState(isEmojiIcon(iconMode) ? 'emoji' : 'icons')
+      const [emojiDraft, setEmojiDraft] = React.useState(emojiIconValue(iconMode))
+      React.useEffect(() => {
+        const next = emojiIconValue(iconMode)
+        setEmojiDraft(next)
+        if (next !== '') setIconTab('emoji')
+      }, [iconMode])
       const patch = (next) => { if (typeof onChange === 'function') onChange(next) }
+      const chooseEmoji = (raw) => {
+        const parsed = parseEmojiIcon(raw)
+        if (parsed === '') return
+        setEmojiDraft(parsed)
+        patch({ icon: ICON_EMOJI_PREFIX + parsed })
+      }
       const channels = colorToRgb(color)
       const setChannel = (index, raw) => {
         const n = Math.max(0, Math.min(255, parseInt(raw, 10) || 0))
@@ -2966,19 +3023,62 @@ window.__ModuleLoader__.load({
         ),
         allowIcon ? E('div', { className: 'bw-field' },
           t('custom.icon'),
-          E('div', { className: 'bw-icon-grid' },
-            ICON_PICKER_CHOICES.map((mode) => E('button', {
-              key: mode,
+          E('div', { className: 'bw-icon-tabs', role: 'tablist', 'aria-label': t('custom.icon') },
+            E('button', {
               type: 'button',
-              // A value saved before an alias flip still highlights the cell it
-              // now resolves to, instead of leaving the grid with no selection.
-              className: cls('bw-icon-cell',
-                (iconMode === mode || (activeGlyph !== '' && resolveIconName(mode) === activeGlyph)) && 'bw-icon-cell-active'),
-              title: mode === 'solid' ? t('custom.icon.solid') : (mode === 'outline' ? t('custom.icon.outline') : mode),
-              'aria-label': mode === 'solid' ? t('custom.icon.solid') : (mode === 'outline' ? t('custom.icon.outline') : mode),
-              onClick: () => patch({ icon: mode }),
-            }, mode === 'none' ? E('span', { className: 'bw-icon-none' }) : iconOf(mode, false))),
+              role: 'tab',
+              'aria-selected': iconTab === 'icons',
+              className: cls('bw-icon-tab', iconTab === 'icons' && 'bw-icon-tab-active'),
+              onClick: () => setIconTab('icons'),
+            }, t('custom.icon.defaults')),
+            E('button', {
+              type: 'button',
+              role: 'tab',
+              'aria-selected': iconTab === 'emoji',
+              className: cls('bw-icon-tab', iconTab === 'emoji' && 'bw-icon-tab-active'),
+              onClick: () => setIconTab('emoji'),
+            }, t('custom.icon.emoji')),
           ),
+          iconTab === 'emoji'
+            ? E('div', { className: 'bw-emoji-panel' },
+              E('div', { className: 'bw-icon-grid bw-emoji-grid' },
+                EMOJI_CHOICES.map((mode) => E('button', {
+                  key: mode,
+                  type: 'button',
+                  className: cls('bw-icon-cell', 'bw-emoji-cell', iconMode === mode && 'bw-icon-cell-active'),
+                  title: mode.slice(ICON_EMOJI_PREFIX.length),
+                  'aria-label': mode.slice(ICON_EMOJI_PREFIX.length),
+                  onClick: () => chooseEmoji(mode.slice(ICON_EMOJI_PREFIX.length)),
+                }, E('span', { className: 'bw-icon-emoji', 'aria-hidden': 'true' }, mode.slice(ICON_EMOJI_PREFIX.length)))),
+              ),
+              E('div', { className: 'bw-emoji-custom' },
+                E('input', {
+                  type: 'text',
+                  className: 'bw-emoji-input',
+                  value: emojiDraft,
+                  maxLength: 24,
+                  placeholder: '😀',
+                  'aria-label': t('custom.icon.emoji'),
+                  spellCheck: false,
+                  autoComplete: 'off',
+                  onChange: (e) => { const raw = e.target.value; setEmojiDraft(raw); chooseEmoji(raw) },
+                }),
+              ),
+              E('div', { className: 'bw-hint' }, t('custom.icon.emojiHint')),
+            )
+            : E('div', { className: 'bw-icon-grid' },
+              ICON_PICKER_CHOICES.map((mode) => E('button', {
+                key: mode,
+                type: 'button',
+                // A value saved before an alias flip still highlights the cell it
+                // now resolves to, instead of leaving the grid with no selection.
+                className: cls('bw-icon-cell',
+                  (iconMode === mode || (activeGlyph !== '' && resolveIconName(mode) === activeGlyph)) && 'bw-icon-cell-active'),
+                title: mode === 'solid' ? t('custom.icon.solid') : (mode === 'outline' ? t('custom.icon.outline') : mode),
+                'aria-label': mode === 'solid' ? t('custom.icon.solid') : (mode === 'outline' ? t('custom.icon.outline') : mode),
+                onClick: () => patch({ icon: mode }),
+              }, mode === 'none' ? E('span', { className: 'bw-icon-none' }) : iconOf(mode, false))),
+            ),
         ) : null,
         E('div', { className: 'bw-field' },
           t('custom.preview'),
@@ -6162,7 +6262,7 @@ window.__ModuleLoader__.load({
       }
 
       const renderSessionRow = (session, depth, workspaceId) => E(SessionRow, {
-        key: session.id,
+        key: 'session:' + session.id,
         node: session,
         depth,
         current: currentId === session.id,

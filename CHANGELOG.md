@@ -3,6 +3,25 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.42.0 — 2026-11-10
+
+**类型**:feat(issue #24:图标选择分 tab + Emoji;issue #23:与 provider 图标插件共存)
+
+### feat(#24)
+- **图标区拆成两个 tab**:外观自定义的图标区新增 `role="tablist"`——「默认图标」保留原有 69 个 dsh primitives 候选网格;「Emoji」提供 66 个常用字形 + 自由输入(上限 24 个 UTF-16 单元,拒绝纯文本与不含 pictographic 码点的串)。选中即在底部实时预览生效。
+- **存值与兼容**:Emoji 存为 `emoji:<字形>` 前缀值,不进入宿主导出过滤,也不影响旧图标名;刷新、切换主题、默认外观继承均照常。图标(含 Emoji)仍只作用于工作区与工作区分组行,会话行没有图标位。
+- **21 门词典**:新增 `custom.icon.defaults` / `custom.icon.emoji` / `custom.icon.emojiHint`,21 份词典键集一致。
+
+### fix(#23)
+- **与会话 provider 图标插件共存**:`dsh-sidebar-session-provider-icon` 不是 slot 插件,而是用 MutationObserver 按官方 DOM 约定注入徽标。本插件补齐它依赖的三个标记:会话行 class token `bw-sessionRow`、标题 class `bw-row-label bw-title`(`bw-title` 最后)、行键 `session:<id>`(经 `data-row-key` 自动透传)。**只改本插件,对方无需修改**,也不引入依赖。
+- **行内布局**:provider 徽标紧贴 leading cell(`.bw-session-row > span[data-dsh-provider-logo]{margin-left:0}`);对方未安装时选择器不命中。
+
+### 验证
+- 冒烟 `npm test`:90 项全绿(0 fail);`node --check` 三个 client 文件通过;新增静态守卫覆盖 Emoji 解析矩阵(ZWJ 家庭、彩虹旗、拒绝纯文本/图标名/空白)、tab 结构、21 门键集与三处 provider DOM 契约。
+- 隔离 rc.1 Web 真机:Emoji tab 选择与自由输入、刷新持久化;安装 `dsh-sidebar-session-provider-icon@0.1.13` 后会话标题前出现 provider 徽标;零 pageerror。
+- 桌面客户端本轮未单独复验;同一 client 渲染面,Web 隔离实例覆盖本次交互。
+- 相关:#24(https://github.com/KannaKuron/dsh-better-workspace/issues/24)、#23(https://github.com/KannaKuron/dsh-better-workspace/issues/23)。
+
 ## v0.41.0 — 2026-11-07
 
 **类型**:feat(新增「隐藏较早会话」纯视图过滤,整理自 PR #21)

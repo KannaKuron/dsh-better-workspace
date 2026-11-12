@@ -3,6 +3,14 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.43.0 — 2026-11-12
+
+**类型**:fix(适配 dsh 0.2.2-rc.2 的 Menu 锚点契约)
+
+- **菜单锚点**:官方 `Menu` 在 rc.2 删除了 `getAnchorRect`,改用 `anchorRef`(元素锚点)与 `anchorPoint`(坐标锚点)。对话空态工作区选择器改为把 owner chip 的 ref 传给 `anchorRef`;工作区/会话右键菜单把事件坐标传给 `anchorPoint`。两处都保留旧的 `getAnchorRect`,因此 rc.1 仍按原路径工作。
+- **其余 rc.2 漂移复核**:`ui-workspace` 删除的 `openWorkspaceMenu` / `openSessionMenu` 注入本插件未使用;`contextMenus.open` 新增的可选 `{button}`、`ui-slots` 新增的 `hoc` 座位类型均无影响。
+- **验证**:`node --check src/client.js` 通过;`npm test` **90 项全绿**;新增/更新的冒烟断言锁住两套锚点 prop。
+
 ## v0.42.0 — 2026-11-10
 
 **类型**:feat(issue #24:图标选择分 tab + Emoji;issue #23:与 provider 图标插件共存)

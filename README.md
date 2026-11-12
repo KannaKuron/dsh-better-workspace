@@ -126,6 +126,7 @@ DSH 的侧边栏浏览区是一个公开插槽 `sidebar.workspaces`(single),官�
 
 - **运行时下限:dsh >= 0.2.2-rc.1,Node.js >= 24.9.0**。本插件自 v0.39.0 起只维护这一代宿主,不再为 0.1.x / 0.2.0 / 0.2.1 / 0.2.2-rc.1 之前的预发布保留探测或回退。
 - **rc.1 契约**:全局标准 hook 使用 `useSessionStatus` / `useSessionAccess`;会话/工作区行接入官方 `contextMenus`;会话行渲染官方 `sidebar.session.row.trailing` 与 `sidebar.session.row.leading` 座位;设置只注册官方插件面板的 `plugins.bundle.config` 座位。
+- **rc.2 契约**:官方 `Menu` 已删除 `getAnchorRect`,改用 `anchorRef`(元素锚点)与 `anchorPoint`(坐标锚点)。本插件两处弹层同时发送新旧两套 prop,rc.1 与 rc.2 都能正确定位;`ui-workspace` 删除的 `openWorkspaceMenu` / `openSessionMenu` 注入本插件未使用,`contextMenus.open` 新增的可选 `{button}` 与 `ui-slots` 新增的 `hoc` 座位类型也不影响现有路径。
 - **设置持久化**:插件 Config 只公开 `compactChains` / `statusPulse` / `styling` / `appearance` 四个 volatile 字段;其余视图偏好留在浏览器本地 store,不再尝试写宿主。跨端手动同步已随共享 `settings.yaml` 时代一起移除。
 - **用户数据迁移**:旧快照的 `workspaceTitleSlash` / 缺省 `stroke` 键 / 旧图标名仍按读时分代解析,升级不会改变既有外观与分组;这类兼容只针对**本插件自己的旧数据**,不针对旧宿主。
 

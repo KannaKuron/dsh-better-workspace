@@ -3712,6 +3712,10 @@ window.__ModuleLoader__.load({
           portal: true,
           dense: true,
           side: 'bottom',
+          // rc.2 anchors the picker on the owner's chip element; older hosts
+          // position from the rect predicate. Both props are inert to the
+          // other version.
+          anchorRef,
           getAnchorRect: () => (anchorRef && anchorRef.current ? anchorRef.current.getBoundingClientRect() : null),
           onClose: () => { if (typeof onClose === 'function') onClose() },
           onSelect: (id) => { if (id === HERO_ADD_ID) openFlow() },
@@ -7264,9 +7268,8 @@ window.__ModuleLoader__.load({
         dialogElement,
         (ctx !== null && typeof ui.Menu === 'function') ? E(ui.Menu, {
           // Right-click opens the SAME menu surface the official ⋯ button
-          // renders (primitives Menu, portal, dense): getAnchorRect feeds
-          // the event coordinates as the anchor rect — portal mode positions
-          // from it directly, no in-place wrapper needed.
+          // renders (primitives Menu, portal, dense): the event coordinates
+          // are the anchor point, so no in-place wrapper is needed.
           open: true,
           onClose: () => setCtx(null),
           items: menuEntries(),
@@ -7274,6 +7277,9 @@ window.__ModuleLoader__.load({
           align: 'start',
           dense: true,
           portal: true,
+          // rc.2 positions the popup from the captured client point;
+          // older hosts use the rect predicate. Each ignores the other.
+          anchorPoint: { x: ctx.x, y: ctx.y },
           getAnchorRect: () => new DOMRect(ctx.x, ctx.y, 0, 0),
         }) : (ctx !== null ? E('div', {
           className: 'bw-ctx-overlay',

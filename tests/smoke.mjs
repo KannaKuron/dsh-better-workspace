@@ -152,6 +152,11 @@ test('hero picker: the sidebar tree shadows the shipped flat picker (v0.22.0)', 
   assert.doesNotMatch(text, /'conversation\.hero\.workspace\.directoryFlow':\s*\{/)
   assert.match(text, /slots\.entries\(HERO_FLOW_HOLE\)/)
   assert.match(text, /function HeroWorkspacePicker\(props\)/)
+  const hero = text.slice(text.indexOf('function HeroWorkspacePicker('), text.indexOf('function BetterBrowser('))
+  // rc.2 anchors a portal Menu on the owner's chip element (anchorRef);
+  // older hosts still need the rect predicate. Send both.
+  assert.match(hero, /anchorRef,/)
+  assert.match(hero, /getAnchorRect: \(\) => \(anchorRef && anchorRef\.current/)
   assert.match(text, /function PickerRow\(/)
   // The tree reads the SAME view-store selectors the sidebar reads, so a view
   // option changed on either surface moves both.
@@ -1127,6 +1132,7 @@ test('context menu: official alignment via the workspace dictionary (0.14.0)', (
   assert.match(text, /deliberately NOT styled destructive/)
   // Rendered through the official primitives Menu, positioned by the event.
   assert.match(text, /typeof ui\.Menu === 'function'\) \? E\(ui\.Menu/)
+  assert.match(text, /anchorPoint: \{ x: ctx\.x, y: ctx\.y \},/)
   assert.match(text, /getAnchorRect: \(\) => new DOMRect\(ctx\.x, ctx\.y, 0, 0\)/)
   // dsh 0.2.1-alpha.5's fifth official entry rides after archive (order 450):
   // the clipboard write is feature-probed on the host primitive, so the whole

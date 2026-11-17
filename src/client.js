@@ -1323,10 +1323,13 @@ window.__ModuleLoader__.load({
         if (!summary || summary.blank) continue
         const title = summary.title
         if (typeof title !== 'string' || title === '') continue
+        // A user rename is authoritative: never graft a stale display onto it,
+        // and drop a display left by an earlier automatic rename (issue #25).
+        const userAuthored = titleSourceOf(summary) === 'user'
         const prev = byId[id]
-        if (prev && prev.title === title) continue
+        if (prev && prev.title === title && (!userAuthored || prev.display === undefined)) continue
         const base = prev ? (prev.display || prev.title) : undefined
-        const grafted = graftTitleDisplay(base, title)
+        const grafted = userAuthored ? undefined : graftTitleDisplay(base, title)
         const entry = { title: title, at: now }
         if (grafted !== undefined) entry.display = grafted
         byId[id] = entry
@@ -4072,7 +4075,7 @@ window.__ModuleLoader__.load({
       // renames (renameByUser forgets the display) always stand verbatim.
       const rememberedDisplayOf = (id) => (remembered[id] && typeof remembered[id].display === 'string' ? remembered[id].display : undefined)
       const rowTitleOf = (id, summary, graftedOn) => {
-        if (graftedOn) {
+        if (graftedOn && titleSourceOf(summary) !== 'user') {
           const wire = summary && summary.title
           if (typeof wire === 'string' && wire !== '' && !wire.includes('/')) {
             const shown = rememberedDisplayOf(id)
@@ -4221,7 +4224,7 @@ window.__ModuleLoader__.load({
       const renameByUser = (sessionId, title) => {
         // A manual rename is authoritative: forget any grafted display so
         // the fresh wire title stands verbatim (no prefix re-applied).
-        if (titleCacheRef && typeof titleCacheRef.forgetDisplay === 'function') titleCacheRef.forgetDisplay(String(sessionId))
+        if (titleCacheRef && typeof titleCacheRef.forgetDisplay === 'function') titleCacheRef.forgetDisplay(String(sessionId), title)
         return renameSession(sessionId, title)
       }
 
@@ -7870,11 +7873,23 @@ window.__ModuleLoader__.load({
       titleCacheRef = {
         getSnapshot: () => titleCache,
         rememberAllTitles,
-        // Manual renames clear a grafted display (see renameByUser).
-        forgetDisplay: (id) => {
+        // Manual renames clear a grafted display AND rewrite the cached baseline
+        // to the typed title, so the next snapshot cannot re-graft the old
+        // prefix (issue #25).
+        forgetDisplay: (id, title) => {
+          const next = typeof title === 'string' ? title : undefined
           const entry = titleCache.byId[id]
-          if (entry && entry.display !== undefined) { delete entry.display; scheduleTitleSave(); return true }
-          return false
+          if (!entry) {
+            if (next === undefined) return false
+            titleCache.byId[id] = { title: next, at: Date.now() }
+            scheduleTitleSave()
+            return true
+          }
+          let changed = false
+          if (entry.display !== undefined) { delete entry.display; changed = true }
+          if (next !== undefined && entry.title !== next) { entry.title = next; entry.at = Date.now(); changed = true }
+          if (changed) scheduleTitleSave()
+          return changed
         },
       }
 

@@ -3,6 +3,16 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.43.1 — 2026-11-18
+
+**类型**:fix(issue #25:手动改名后侧栏仍显示旧分组前缀)
+
+- **用户改名是权威来源**:`rememberAllTitles` 读取宿主 `betterWorkspace/titleSource` 投影;来源为 `user` 时不再调用 `graftTitleDisplay`,并丢弃之前自动改名留下的 `display`。已被污染的 `display` 会在下一次快照自愈。
+- **渲染门控**:`rowTitleOf` 的嫁接分支同样要求来源不是 `user`;自动标题(provider/fallback)仍保留“只换叶子、保留分组前缀”的原特性。
+- **缓存基线同步**:`renameByUser` 把用户输入的新标题传给 `forgetDisplay(id, title)`,缓存里的 `title` 直接改成新名字,后续快照不会再把旧前缀拼回来;缺少缓存项时也会建立新基线。
+- **测试**:`npm test` **90/90**;新增用户来源不嫁接、污染 display 自愈、provider 仍嫁接及 `rowTitleOf` 来源门控断言。
+- **链接**:[issue #25](https://github.com/KannaKuron/dsh-better-workspace/issues/25)
+
 ## v0.43.0 — 2026-11-12
 
 **类型**:fix(适配 dsh 0.2.2-rc.2 的 Menu 锚点契约)

@@ -509,8 +509,11 @@ test('title cache: persisted key, batch learning, debounced save, bounded evicti
   assert.match(text, /title: rowTitleOf\(id, summary, prefsMap\.graftTitlePrefix !== false\)/)
   assert.match(text, /leaf: rowTitleOf\(id, summary, prefsMap\.graftTitlePrefix !== false\)/)
   assert.match(text, /rowTitleOf\(dialog\.sessionId, summary, prefsMap\.graftTitlePrefix !== false\)/)
-  // Manual renames forget the grafted display (authoritative rename).
-  assert.match(text, /forgetDisplay\(String\(sessionId\)\)/)
+  // Manual renames forget the grafted display AND update the cached baseline
+  // with the typed title (issue #25).
+  assert.match(text, /forgetDisplay\(String\(sessionId\), title\)/)
+  assert.match(text, /forgetDisplay: \(id, title\) => \{/)
+  assert.match(text, /entry\.title = next/)
   // Drive the real block with a mocked localStorage.
   const start = text.indexOf('const TITLE_CACHE_LIMIT =')
   const end = text.indexOf('/* ================== host settings (per profile)')
@@ -520,10 +523,11 @@ test('title cache: persisted key, batch learning, debounced save, bounded evicti
     getItem: (k) => (saved.has(k) ? saved.get(k) : null),
     setItem: (k, v) => { saved.set(k, String(v)) },
   }
-  const scope = new Function('localStorage', 'setTimeout', 'clearTimeout',
+  const scope = new Function('localStorage', 'setTimeout', 'clearTimeout', 'titleSourceOf',
     text.slice(start, end)
     + '\nreturn { titleCache, loadTitleCache, rememberAllTitles, graftTitleDisplay, TITLE_CACHE_LIMIT, TITLE_CACHE_KEEP }')
-  const api = scope(fakeLocalStorage, setTimeout, clearTimeout)
+  const api = scope(fakeLocalStorage, setTimeout, clearTimeout,
+    (summary) => summary && summary.projectionValues ? summary.projectionValues['betterWorkspace/titleSource'] : undefined)
   // Hydration: existing persisted state replaces the empty seed.
   saved.set('dsh.betterWorkspace.titles.v1', JSON.stringify({ byId: { old: { title: 'a/b', at: 1 } } }))
   api.loadTitleCache()
@@ -569,6 +573,20 @@ test('title cache: persisted key, batch learning, debounced save, bounded evicti
   api.rememberAllTitles(list4)
   assert.equal(api.titleCache.byId.g1.title, 'Other/renamed')
   assert.equal(api.titleCache.byId.g1.display, undefined, 'grouped rename clears the display')
+  // issue #25: a user rename is authoritative. It never grafts, and a stale
+  // display left by a previous automatic rename is dropped on the next snapshot.
+  const userSource = { projectionValues: { 'betterWorkspace/titleSource': 'user' } }
+  api.titleCache.byId.g1 = { title: '技术/旧会话', at: 1 }
+  api.rememberAllTitles({ byId: { g1: { ...userSource, title: 'Ghostty 使用' } } })
+  assert.equal(api.titleCache.byId.g1.title, 'Ghostty 使用')
+  assert.equal(api.titleCache.byId.g1.display, undefined, 'a user rename never grafts the old prefix')
+  api.titleCache.byId.g1.display = '技术/Ghostty 使用'
+  api.rememberAllTitles({ byId: { g1: { ...userSource, title: 'Ghostty 使用' } } })
+  assert.equal(api.titleCache.byId.g1.display, undefined, 'a poisoned display self-heals for a user title')
+  // Provider titles keep the automatic graft feature.
+  api.titleCache.byId.g1 = { title: 'A/old', at: 1 }
+  api.rememberAllTitles({ byId: { g1: { title: 'leaf', projectionValues: { 'betterWorkspace/titleSource': 'provider' } } } })
+  assert.equal(api.titleCache.byId.g1.display, 'A/leaf', 'provider auto-renames still keep the group prefix')
 })
 
 /**
@@ -2198,13 +2216,20 @@ test('v0.30.2: rowTitleOf grafts the remembered display while the wire stays gro
   const start = text.indexOf('const remembered = (titleCacheRef')
   const end = text.indexOf('// Learn real titles from every snapshot')
   assert.ok(start !== -1 && end !== -1 && start < end, 'rowTitleOf block not found')
-  const { rowTitleOf } = new Function('sessionTitleOf', 'titleCacheRef', 't',
+  const { rowTitleOf } = new Function('sessionTitleOf', 'titleCacheRef', 't', 'titleSourceOf',
     text.slice(start, end) + '\nreturn { rowTitleOf }')(
     (summary, t, remembered) => 'fallback:' + (summary && summary.title),
     { getSnapshot: () => ({ byId: { s1: { title: 'A/prev', display: 'A/prev' } }, rememberAllTitles() {} }) },
-    (k) => k)
+    (k) => k,
+    (summary) => summary && summary.projectionValues ? summary.projectionValues['betterWorkspace/titleSource'] : undefined)
+  const provider = { title: 'bare', projectionValues: { 'betterWorkspace/titleSource': 'provider' } }
+  const user = { title: 'bare', projectionValues: { 'betterWorkspace/titleSource': 'user' } }
+  assert.equal(rowTitleOf('s1', provider, true), 'A/prev',
+    'group-less provider title + remembered display: the grafted title wins')
+  assert.equal(rowTitleOf('s1', user, true), 'fallback:bare',
+    'a user rename ignores the remembered display (issue #25)')
   assert.equal(rowTitleOf('s1', { title: 'bare' }, true), 'A/prev',
-    'group-less wire + remembered display: the grafted title wins')
+    'a missing provenance keeps the legacy shape-based graft')
   assert.equal(rowTitleOf('s1', { title: 'A/kept' }, true), 'fallback:A/kept',
     'a grouped wire title always stands (the display is not consulted)')
   assert.equal(rowTitleOf('s1', { title: 'X/newgroup/leaf' }, true), 'fallback:X/newgroup/leaf',

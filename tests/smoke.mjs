@@ -1299,7 +1299,7 @@ test('issue round: exports fix, icon pick, ungrouped fold, tri-state, quota (v0.
   assert.match(text, /row\.blank \|\| row\.running \|\| row\.subagents > 0 \|\| row\.pinned/)
   assert.match(text, /const SESSION_ATTENTION_WINDOW = 50/)
   assert.match(text, /row\.pending \|\| row\.completed \|\| row\.id === currentId/)
-  assert.match(text, /limitSessionsForRender\(full, sessionLimit, limitLifted\[workspace\.workspaceId\], currentId\)/)
+  assert.match(text, /limitSessionsForRender\(full, sessionLimit, searching \|\| limitLifted\[workspace\.workspaceId\], currentId, countActive\)/)
   assert.match(text, /t\('sessions\.expand', \{ n: limited\.hidden \}\)/)
 })
 

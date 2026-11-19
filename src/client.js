@@ -1104,22 +1104,15 @@ window.__ModuleLoader__.load({
       return workspaceSlashOf(legacySlash) ? 'disk-slash' : 'disk'
     }
 
-    // Issue #8 progressive listing. The official collapsedSessionRows mirror
-    // this quota used to track is GONE in dsh 0.2.1-alpha.5 — the shipped
-    // browser now folds per group behind a client-side watermark (base 5,
-    // auto-raise to 50 for attention rows, +5 per "Show more"). The quota
-    // stays a plugin-side opt-in (limit 0 = unlimited, the folder-style
-    // default), but its always-visible set follows the official attention
-    // semantics: blank, running, running-subagent and pinned rows stay
-    // OUTSIDE the quota unconditionally, and so — within the first 50
-    // non-blank rows, the official SESSION_WATERMARK_AUTO_MAX — do
-    // pending-interaction, completed and the current session, exactly the
-    // rows the shipped watermark refuses to fold away. Idle rows beyond the
-    // quota hide behind one overflow row; a lifted workspace renders
-    // everything again.
+    // A configured quota counts real rows, not the provisional New Session.
+    // The legacy quota counts idle rows; the opt-in total quota includes
+    // attention-bearing and pinned rows while retaining the existing sort.
+    const normalizeSessionLimit = (raw) => {
+      const n = Math.floor(Number(raw))
+      return Number.isFinite(n) && n > 0 ? Math.min(n, 500) : 0
+    }
     const SESSION_ATTENTION_WINDOW = 50
-    const limitSessionsForRender = (rows, limit, lifted, currentId) => {
-      if (!rows || !limit || lifted) return { rows: rows || [], hidden: 0 }
+    const legacySessionQuota = (rows, limit, currentId) => {
       const keep = []
       const idle = []
       let seen = 0
@@ -1132,6 +1125,48 @@ window.__ModuleLoader__.load({
       }
       if (idle.length <= limit) return { rows, hidden: 0 }
       return { rows: [...keep, ...idle.slice(0, limit)], hidden: idle.length - limit }
+    }
+
+
+    const limitSessionsForRender = (rows, limit, lifted, currentId, countActive) => {
+      if (!rows || !limit || lifted) return { rows: rows || [], hidden: 0 }
+      if (countActive !== true) return legacySessionQuota(rows, limit, currentId)
+      const protectedSession = row =>
+        row.running || row.subagents > 0 || row.pinned || row.pending || row.completed || row.id === currentId
+      let fill = Math.max(0, limit - rows.reduce(
+        (count, row) => count + (!row.blank && protectedSession(row) ? 1 : 0), 0,
+      ))
+      const visible = rows.filter(row => {
+        if (row.blank || protectedSession(row)) return true
+        if (fill === 0) return false
+        fill -= 1
+        return true
+      })
+      return { rows: visible, hidden: rows.length - visible.length }
+    }
+
+    function SessionLimitField({ limit, save, label, unlimited }) {
+      const [draft, setDraft] = React.useState(String(limit))
+      React.useEffect(() => { setDraft(String(limit)) }, [limit])
+      const n = Number(draft)
+      const valid = /^[0-9]{1,3}$/.test(draft) && Number.isInteger(n) && n >= 0 && n <= 500
+      return E('div', { className: 'bw-seg' },
+        ...[[0, unlimited], [5, '5'], [10, '10'], [25, '25']].map(([value, text]) =>
+          E('button', {
+            key: value, type: 'button', className: cls('bw-seg-btn', limit === value && 'bw-seg-btn-active'),
+            'aria-pressed': limit === value, onClick: () => { save(value); setDraft(String(value)) },
+          }, text)),
+        E('input', {
+          type: 'number', min: 0, max: 500, step: 1, value: draft,
+          'aria-label': label, 'aria-invalid': !valid,
+          onChange: event => setDraft(event.target.value),
+          onBlur: () => { if (valid) save(n); else setDraft(String(limit)) },
+          onKeyDown: event => {
+            if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.blur() }
+          },
+          style: { width: '5em', marginInlineEnd: '0.5em' },
+        })
+      )
     }
 
     /**
@@ -3188,8 +3223,8 @@ window.__ModuleLoader__.load({
       // the switch is opt-in, and an absent key means off.
       const autoStyle = prefs.autoStyle === true
       // Progressive listing quota (v0.21.0, issue #8): 0 = unlimited.
-      const rawLimit = Math.floor(Number(prefs.sessionLimit))
-      const sessionLimit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 500) : 0
+      const sessionLimit = normalizeSessionLimit(prefs.sessionLimit)
+      const countActive = prefs.countActiveSessions === true
       // Pure view filter for older Sessions: 0 = off. Snapshots persisted
       // before this key existed read as 0 through the fallback.
       const rawAgeDays = Math.floor(Number(prefs.sessionAgeDays))
@@ -3288,17 +3323,23 @@ window.__ModuleLoader__.load({
         E('div', { className: 'bw-hint' }, t('settings.workspaceGroup.hint')),
         E('div', { className: 'bw-setting-row' },
           E('div', { className: 'bw-setting-label' }, t('settings.sessionLimit')),
-          E('div', { className: 'bw-seg' },
-            [[0, t('settings.sessionLimit.all')], [5, '5'], [10, '10'], [25, '25']].map(([value, label]) =>
-              E('button', {
-                type: 'button',
-                key: String(value),
-                className: cls('bw-seg-btn', sessionLimit === value && 'bw-seg-btn-active'),
-                onClick: () => { setPref('sessionLimit', value) },
-              }, label)),
-          ),
+          E(SessionLimitField, {
+            limit: sessionLimit,
+            save: value => setPref('sessionLimit', value),
+            label: t('settings.sessionLimit'),
+            unlimited: t('settings.sessionLimit.all'),
+          }),
         ),
-        E('div', { className: 'bw-hint' }, t('settings.sessionLimit.hint')),
+        E('div', { className: 'bw-setting-row' },
+          E('div', { className: 'bw-setting-label' }, t('settings.sessionLimit.countActive')),
+          E('button', {
+            type: 'button', role: 'switch', 'aria-checked': countActive,
+            'aria-label': t('settings.sessionLimit.countActive'),
+            className: cls('bw-switch', countActive && 'bw-switch-on'),
+            onClick: () => { setPref('countActiveSessions', !countActive) },
+          }, E('span', { className: 'bw-switch-thumb' })),
+        ),
+        E('div', { className: 'bw-hint' }, t(countActive ? 'settings.sessionLimit.countActiveHint' : 'settings.sessionLimit.hint')),
         E('div', { className: 'bw-setting-row' },
           E('div', { className: 'bw-setting-label' }, t('settings.sessionAge')),
           E('div', { className: 'bw-seg' },
@@ -3832,8 +3873,8 @@ window.__ModuleLoader__.load({
       // Collapsible Ungrouped block (v0.21.0, issue #6); default open.
       const ungroupedOpen = useStore ? (useStore(s => s.ungroupedOpen) !== false) : true
       // Progressive listing (v0.21.0, issue #8): 0 means unlimited (default).
-      const rawLimit = Math.floor(Number(prefsMap.sessionLimit))
-      const sessionLimit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 500) : 0
+      const sessionLimit = normalizeSessionLimit(prefsMap.sessionLimit)
+      const countActive = prefsMap.countActiveSessions === true
       // Pure view filter for older Sessions: 0 = off. Snapshots persisted
       // before this key existed read as 0 through the fallback.
       const rawAgeDays = Math.floor(Number(prefsMap.sessionAgeDays))
@@ -6218,7 +6259,7 @@ window.__ModuleLoader__.load({
         // overflow row hides the rest until clicked. Search always shows
         // everything, and the current session is passed so it can never be
         // folded away.
-        const limited = limitSessionsForRender(full, sessionLimit, limitLifted[workspace.workspaceId], currentId)
+        const limited = limitSessionsForRender(full, sessionLimit, searching || limitLifted[workspace.workspaceId], currentId, countActive)
         const out = renderSessionNode(buildSessionTree(limited.rows, sessionSlash, sessFolders, workspace.workspaceId), workspace.workspaceId, depth)
         if (limited.hidden > 0) {
           out.push(E('button', {

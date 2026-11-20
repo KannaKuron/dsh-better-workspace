@@ -2620,8 +2620,8 @@ test('v0.36.5: a level is ONE mixed sequence (bare workspaces interleave with gr
   // v0.36.11 adds a fourth walk: "workspaces" + a name layer renders the
   // root-level name tree through the same loop. v0.36.12 adds a fifth:
   // nodeHoldsCurrent walks it to light ancestor folders holding the session.
-  assert.equal((text.match(/for \(const item of levelSeqOf\(/g) || []).length, 5,
-    'every render/active path walks the mixed sequence (root level, group row, plain folder, workspace+name tree, ancestor-active walk)')
+  assert.equal((text.match(/for \(const item of levelSeqOf\(/g) || []).length, 6,
+    'render, active path, and branch quota reset all walk the same mixed sequence')
   // Chain compression rebuilds the folder nodes; the sequence must keep the
   // compressed stand-ins in place or a bare workspace lands next to the wrong row.
   assert.match(text, /const seq = Array\.isArray\(built\.seq\)/,
@@ -3103,4 +3103,80 @@ test('session age filter hides old rows without archiving them', () => {
   assert.match(text, /if \(Array\.isArray\(workspace\.sessionIds\) && visibleSessionsOf\(workspace\)\.length > 0\) return true/)
   assert.match(text, /t\('settings\.sessionAge'\)/)
   assert.match(text, /setPref\('sessionAgeDays', value\)/)
+})
+
+test('closing an expanded workspace restores the per-workspace preview for its own branch only', () => {
+  const source = read('src/client.js')
+  const slice = (start, end) => {
+    const from = source.indexOf(start)
+    const to = source.indexOf(end, from)
+    assert.ok(from >= 0 && to > from)
+    return source.slice(from, to)
+  }
+  const render = new Function('state', 'searching', 'workspace', `
+    const E = (type, props, ...children) => ({ type, props, children })
+    const WorkspaceRow = 'workspace', workspaceVisible = () => true
+    const visibleSessionsOf = entry => entry.sessions
+    const countSessionTree = node => node.sessions.length
+    const buildSessionTree = sessions => ({ sessions, groups: [] })
+    const renderSessionRow = node => node.title
+    const hasDeclared = () => false, sessionSlash = false, sessFolders = {}
+    const sessionLimit = 5, currentId = undefined, normalizedQuery = 'no match'
+    const limitLifted = state.lifted
+    const setLimitLifted = update => { state.lifted = update(state.lifted) }
+    const sessionsOpenOf = id => state.open[id] !== false
+    const actions = { setSessionsExpanded: (id, open) => { state.open[id] = open } }
+    const noop = () => undefined, t = key => key, openCtx = noop, wsHasCurrent = noop
+    const wsDropHalf = noop, wsRootDropActive = noop, wsGroupIntoActive = noop
+    const workspaceDragEvents = noop, rowStyleOf = noop, styleEntry = noop
+    const shortcutLabel = noop, shortcutAria = noop, workspaceHoverBody = undefined
+    const ctx = null, activeContextMenu = null, startSession = noop
+    ${slice('const SESSION_ATTENTION_WINDOW =', 'const createViewStore')}
+    ${slice('const levelSeqOf =', 'const levelTokenOf =')}
+    ${slice('const renderSessionTree =', 'const renderSessionRow =')}
+    ${slice('const clearBranchSessionLimits =', '// Official folderActive semantics')}
+    const renderLevelRows = (level, depth) => levelSeqOf(level).flatMap(item => {
+      if (item.kind === 'ws') return renderWorkspaceEntry({ workspace: item.entry }, depth)
+      if (item.node.kind === 'ws') return renderWorkspaceEntry({ workspace: item.node.workspace }, depth)
+      return renderLevelRows(item.node, depth)
+    })
+    return renderWorkspaceEntry({ workspace }, 0)
+  `)
+  const make = workspaceId => ({
+    workspaceId,
+    sessions: Array.from({ length: 6 }, (_, index) => ({
+      id: `${workspaceId}-${index}`, title: `${workspaceId} ${index}`,
+    })),
+  })
+  const parent = make('parent'), child = make('child'), nested = make('nested'), sibling = make('sibling')
+  parent.sub = { seq: [
+    { kind: 'ws', entry: child },
+    { kind: 'folder', node: { folders: [{ kind: 'ws', workspace: nested }] } },
+  ] }
+  const state = { open: { nested: false }, lifted: {} }
+  const toggle = (id, root = parent, search = false) => render(state, search, root)
+    .find(row => row?.type === 'workspace' && row.props.workspace.workspaceId === id).props.onToggle()
+  const histories = (id, root = parent) => render(state, false, root)
+    .filter(row => typeof row === 'string' && row.startsWith(id + ' ')).length
+  const showMore = (id, root = parent) => render(state, false, root)
+    .find(row => row?.type === 'button' && row.props.key === 'lim-' + id).props.onClick()
+  for (const id of ['parent', 'child']) {
+    assert.equal(histories(id), 5)
+    showMore(id)
+    assert.equal(histories(id), 6)
+  }
+  showMore('sibling', sibling)
+  state.lifted.nested = true // a previously lifted descendant with a saved collapsed toggle
+  toggle('parent', parent, true)
+  assert.deepEqual(state.lifted, { parent: true, child: true, nested: true, sibling: true })
+  assert.deepEqual(state.open, { nested: false })
+  toggle('parent')
+  assert.deepEqual(state.lifted, { sibling: true })
+  assert.deepEqual(state.open, { nested: false, parent: false })
+  assert.equal(histories('parent'), 0)
+  toggle('parent')
+  assert.equal(histories('parent'), 5)
+  assert.equal(histories('child'), 5)
+  assert.equal(histories('nested'), 0)
+  assert.equal(histories('sibling', sibling), 6)
 })

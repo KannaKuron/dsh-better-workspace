@@ -1299,7 +1299,7 @@ test('issue round: exports fix, icon pick, ungrouped fold, tri-state, quota (v0.
   assert.match(text, /row\.blank \|\| row\.running \|\| row\.subagents > 0 \|\| row\.pinned/)
   assert.match(text, /const SESSION_ATTENTION_WINDOW = 50/)
   assert.match(text, /row\.pending \|\| row\.completed \|\| row\.id === currentId/)
-  assert.match(text, /limitSessionsForRender\(full, sessionLimit, searching && extra > 0, currentId, extra\)/)
+  assert.match(text, /limitSessionsForRender\(full, sessionLimit, searching \|\| extra === Infinity, currentId, extra, countActive\)/)
   assert.match(text, /t\('sessions\.expand', \{ n: limited\.hidden \}\)/)
 })
 
@@ -3190,7 +3190,7 @@ test('closing an expanded workspace restores the per-workspace preview for its o
     const buildSessionTree = sessions => ({ sessions, groups: [] })
     const renderSessionRow = node => node.title
     const hasDeclared = () => false, sessionSlash = false, sessFolders = {}
-    const sessionLimit = 5, currentId = undefined, normalizedQuery = 'no match'
+    const sessionLimit = 5, countActive = false, currentId = undefined, normalizedQuery = 'no match'
     const limitLifted = state.lifted
     const setLimitLifted = update => { state.lifted = update(state.lifted) }
     const sessionsOpenOf = id => state.open[id] !== false

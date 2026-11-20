@@ -1117,10 +1117,22 @@ window.__ModuleLoader__.load({
     // rows the shipped watermark refuses to fold away. Idle rows beyond the
     // quota hide behind one overflow row; a lifted workspace renders
     // everything again.
+    //
+    // Two independent axes ride on top of that base:
+    //  - "extra" is the per-workspace progressive reveal (every "Show more"
+    //    adds SESSION_PREVIEW_STEP rows; Infinity = everything, the search
+    //    path); it widens whichever quota flavour is active.
+    //  - prefs.countActiveSessions swaps the legacy idle-row quota for a
+    //    TOTAL quota: attention-bearing and pinned rows consume the same
+    //    budget as idle ones instead of being free, so the number the user
+    //    configures is the number of rows the workspace actually shows.
+    const normalizeSessionLimit = (raw) => {
+      const n = Math.floor(Number(raw))
+      return Number.isFinite(n) && n > 0 ? Math.min(n, 500) : 0
+    }
     const SESSION_PREVIEW_STEP = 5
     const SESSION_ATTENTION_WINDOW = 50
-    const limitSessionsForRender = (rows, limit, lifted, currentId, extra = 0) => {
-      if (!rows || !limit || lifted) return { rows: rows || [], hidden: 0 }
+    const legacySessionQuota = (rows, limit, currentId, extra = 0) => {
       const keep = []
       const idle = []
       let seen = 0
@@ -1134,6 +1146,47 @@ window.__ModuleLoader__.load({
       const visibleIdle = limit + extra
       if (idle.length <= visibleIdle) return { rows, hidden: 0 }
       return { rows: [...keep, ...idle.slice(0, visibleIdle)], hidden: idle.length - visibleIdle }
+    }
+
+    const limitSessionsForRender = (rows, limit, lifted, currentId, extra = 0, countActive) => {
+      if (!rows || !limit || lifted) return { rows: rows || [], hidden: 0 }
+      if (countActive !== true) return legacySessionQuota(rows, limit, currentId, extra)
+      const protectedSession = row =>
+        row.running || row.subagents > 0 || row.pinned || row.pending || row.completed || row.id === currentId
+      let fill = Math.max(0, limit + extra - rows.reduce(
+        (count, row) => count + (!row.blank && protectedSession(row) ? 1 : 0), 0,
+      ))
+      const visible = rows.filter(row => {
+        if (row.blank || protectedSession(row)) return true
+        if (fill === 0) return false
+        fill -= 1
+        return true
+      })
+      return { rows: visible, hidden: rows.length - visible.length }
+    }
+
+    function SessionLimitField({ limit, save, label, unlimited }) {
+      const [draft, setDraft] = React.useState(String(limit))
+      React.useEffect(() => { setDraft(String(limit)) }, [limit])
+      const n = Number(draft)
+      const valid = /^[0-9]{1,3}$/.test(draft) && Number.isInteger(n) && n >= 0 && n <= 500
+      return E('div', { className: 'bw-seg' },
+        ...[[0, unlimited], [5, '5'], [10, '10'], [25, '25']].map(([value, text]) =>
+          E('button', {
+            key: value, type: 'button', className: cls('bw-seg-btn', limit === value && 'bw-seg-btn-active'),
+            'aria-pressed': limit === value, onClick: () => { save(value); setDraft(String(value)) },
+          }, text)),
+        E('input', {
+          type: 'number', min: 0, max: 500, step: 1, value: draft,
+          'aria-label': label, 'aria-invalid': !valid,
+          onChange: event => setDraft(event.target.value),
+          onBlur: () => { if (valid) save(n); else setDraft(String(limit)) },
+          onKeyDown: event => {
+            if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.blur() }
+          },
+          style: { width: '5em', marginInlineEnd: '0.5em' },
+        })
+      )
     }
 
     /**
@@ -3190,8 +3243,8 @@ window.__ModuleLoader__.load({
       // the switch is opt-in, and an absent key means off.
       const autoStyle = prefs.autoStyle === true
       // Progressive listing quota (v0.21.0, issue #8): 0 = unlimited.
-      const rawLimit = Math.floor(Number(prefs.sessionLimit))
-      const sessionLimit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 500) : 0
+      const sessionLimit = normalizeSessionLimit(prefs.sessionLimit)
+      const countActive = prefs.countActiveSessions === true
       // Pure view filter for older Sessions: 0 = off. Snapshots persisted
       // before this key existed read as 0 through the fallback.
       const rawAgeDays = Math.floor(Number(prefs.sessionAgeDays))
@@ -3290,17 +3343,23 @@ window.__ModuleLoader__.load({
         E('div', { className: 'bw-hint' }, t('settings.workspaceGroup.hint')),
         E('div', { className: 'bw-setting-row' },
           E('div', { className: 'bw-setting-label' }, t('settings.sessionLimit')),
-          E('div', { className: 'bw-seg' },
-            [[0, t('settings.sessionLimit.all')], [5, '5'], [10, '10'], [25, '25']].map(([value, label]) =>
-              E('button', {
-                type: 'button',
-                key: String(value),
-                className: cls('bw-seg-btn', sessionLimit === value && 'bw-seg-btn-active'),
-                onClick: () => { setPref('sessionLimit', value) },
-              }, label)),
-          ),
+          E(SessionLimitField, {
+            limit: sessionLimit,
+            save: value => setPref('sessionLimit', value),
+            label: t('settings.sessionLimit'),
+            unlimited: t('settings.sessionLimit.all'),
+          }),
         ),
-        E('div', { className: 'bw-hint' }, t('settings.sessionLimit.hint')),
+        E('div', { className: 'bw-setting-row' },
+          E('div', { className: 'bw-setting-label' }, t('settings.sessionLimit.countActive')),
+          E('button', {
+            type: 'button', role: 'switch', 'aria-checked': countActive,
+            'aria-label': t('settings.sessionLimit.countActive'),
+            className: cls('bw-switch', countActive && 'bw-switch-on'),
+            onClick: () => { setPref('countActiveSessions', !countActive) },
+          }, E('span', { className: 'bw-switch-thumb' })),
+        ),
+        E('div', { className: 'bw-hint' }, t(countActive ? 'settings.sessionLimit.countActiveHint' : 'settings.sessionLimit.hint')),
         E('div', { className: 'bw-setting-row' },
           E('div', { className: 'bw-setting-label' }, t('settings.sessionAge')),
           E('div', { className: 'bw-seg' },
@@ -3834,8 +3893,8 @@ window.__ModuleLoader__.load({
       // Collapsible Ungrouped block (v0.21.0, issue #6); default open.
       const ungroupedOpen = useStore ? (useStore(s => s.ungroupedOpen) !== false) : true
       // Progressive listing (v0.21.0, issue #8): 0 means unlimited (default).
-      const rawLimit = Math.floor(Number(prefsMap.sessionLimit))
-      const sessionLimit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 500) : 0
+      const sessionLimit = normalizeSessionLimit(prefsMap.sessionLimit)
+      const countActive = prefsMap.countActiveSessions === true
       // Pure view filter for older Sessions: 0 = off. Snapshots persisted
       // before this key existed read as 0 through the fallback.
       const rawAgeDays = Math.floor(Number(prefsMap.sessionAgeDays))
@@ -6215,14 +6274,16 @@ window.__ModuleLoader__.load({
         if (!searching && !sessionsOpenOf(workspace.workspaceId)) return []
         const full = visibleSessionsOf(workspace)
         if (full.length === 0 && !hasDeclared(sessFolders, workspace.workspaceId)) return []
-        // A preview expands in batches, while preserving this plugin's quota
-        // and attention rules. After the last batch, new rows remain visible
-        // until this workspace's preview is reset.
+        // Issue #8 progressive listing, two independent axes on top of the
+        // quota: "extra" is this workspace's progressive reveal (every "Show
+        // more" adds SESSION_PREVIEW_STEP rows; Infinity = everything, the
+        // search path), and countActive swaps the legacy idle-row quota for a
+        // total quota. Search and an exhausted reveal both bypass the quota.
         const id = workspace.workspaceId
         const extra = limitLifted[id] ?? 0
-        const limited = limitSessionsForRender(full, sessionLimit, searching && extra > 0, currentId, extra)
+        const limited = limitSessionsForRender(full, sessionLimit, searching || extra === Infinity, currentId, extra, countActive)
         const showLess = !searching && extra > 0 && limited.hidden === 0
-          && limitSessionsForRender(full, sessionLimit, false, currentId).hidden > 0
+          && limitSessionsForRender(full, sessionLimit, false, currentId, 0, countActive).hidden > 0
         const out = renderSessionNode(buildSessionTree(limited.rows, sessionSlash, sessFolders, id), id, depth)
         if (limited.hidden > 0 || showLess) {
           out.push(E('button', {

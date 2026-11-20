@@ -4178,7 +4178,7 @@ window.__ModuleLoader__.load({
       const [dialog, setDialog] = React.useState(null) // { kind, ... }
       // Issue #8: workspaces whose overflow row was clicked this mount.
       // Component-local on purpose (official sessionLimits precedent): a
-      // lifted fold resets when the sidebar unmounts.
+      // lift is reset by closing its branch or unmounting.
       const [limitLifted, setLimitLifted] = React.useState({})
       const [ctx, setCtx] = React.useState(null) // context menu { kind, payload, x, y }
       const [copyNotice, setCopyNotice] = React.useState(null) // { seq, ok } copy-session-id notice
@@ -6321,6 +6321,31 @@ window.__ModuleLoader__.load({
         return total
       }
 
+      // Match the native workspace tree: closing a branch clears its
+      // temporary quota overrides without closing individual children.
+      const clearBranchSessionLimits = (workspace) => {
+        const ids = new Set()
+        function visitWorkspace(entry) {
+          if (ids.has(entry.workspaceId)) return
+          ids.add(entry.workspaceId)
+          visitLevel(entry.sub)
+        }
+        function visitLevel(level) {
+          for (const item of levelSeqOf(level)) {
+            if (item.kind === 'ws') visitWorkspace(item.entry)
+            else if (item.node.kind === 'ws') visitWorkspace(item.node.workspace)
+            else visitLevel(item.node)
+          }
+        }
+        visitWorkspace(workspace)
+        setLimitLifted((current) => {
+          if (![...ids].some(id => current[id])) return current
+          const next = { ...current }
+          for (const id of ids) delete next[id]
+          return next
+        })
+      }
+
       const renderWorkspaceEntry = (entry, depth, pulse) => {
         const { workspace } = entry
         if (!workspaceVisible(workspace)) return []
@@ -6332,7 +6357,12 @@ window.__ModuleLoader__.load({
           count,
           sessionsOpen: searching ? true : sessionsOpenOf(workspace.workspaceId),
           currentInside: wsHasCurrent(workspace),
-          onToggle: () => { if (!searching) actions.setSessionsExpanded(workspace.workspaceId, !sessionsOpenOf(workspace.workspaceId)) },
+          onToggle: () => {
+            if (searching) return
+            const open = sessionsOpenOf(workspace.workspaceId)
+            if (open) clearBranchSessionLimits(workspace)
+            actions.setSessionsExpanded(workspace.workspaceId, !open)
+          },
           // Starting a session force-expands the workspace row: the user must
           // SEE the new session appear, even if the row was collapsed.
           onStart: () => { actions.setSessionsExpanded(workspace.workspaceId, true); startSession(workspace.workspaceId) },

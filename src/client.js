@@ -1117,8 +1117,9 @@ window.__ModuleLoader__.load({
     // rows the shipped watermark refuses to fold away. Idle rows beyond the
     // quota hide behind one overflow row; a lifted workspace renders
     // everything again.
+    const SESSION_PREVIEW_STEP = 5
     const SESSION_ATTENTION_WINDOW = 50
-    const limitSessionsForRender = (rows, limit, lifted, currentId) => {
+    const limitSessionsForRender = (rows, limit, lifted, currentId, extra = 0) => {
       if (!rows || !limit || lifted) return { rows: rows || [], hidden: 0 }
       const keep = []
       const idle = []
@@ -1130,8 +1131,9 @@ window.__ModuleLoader__.load({
         if (attention) keep.push(row)
         else idle.push(row)
       }
-      if (idle.length <= limit) return { rows, hidden: 0 }
-      return { rows: [...keep, ...idle.slice(0, limit)], hidden: idle.length - limit }
+      const visibleIdle = limit + extra
+      if (idle.length <= visibleIdle) return { rows, hidden: 0 }
+      return { rows: [...keep, ...idle.slice(0, visibleIdle)], hidden: idle.length - visibleIdle }
     }
 
     /**
@@ -6213,21 +6215,34 @@ window.__ModuleLoader__.load({
         if (!searching && !sessionsOpenOf(workspace.workspaceId)) return []
         const full = visibleSessionsOf(workspace)
         if (full.length === 0 && !hasDeclared(sessFolders, workspace.workspaceId)) return []
-        // Issue #8 progressive listing: quota the IDLE rows of this folder
-        // (attention rows stay visible — see limitSessionsForRender); one
-        // overflow row hides the rest until clicked. Search always shows
-        // everything, and the current session is passed so it can never be
-        // folded away.
-        const limited = limitSessionsForRender(full, sessionLimit, limitLifted[workspace.workspaceId], currentId)
-        const out = renderSessionNode(buildSessionTree(limited.rows, sessionSlash, sessFolders, workspace.workspaceId), workspace.workspaceId, depth)
-        if (limited.hidden > 0) {
+        // A preview expands in batches, while preserving this plugin's quota
+        // and attention rules. After the last batch, new rows remain visible
+        // until this workspace's preview is reset.
+        const id = workspace.workspaceId
+        const extra = limitLifted[id] ?? 0
+        const limited = limitSessionsForRender(full, sessionLimit, searching && extra > 0, currentId, extra)
+        const showLess = !searching && extra > 0 && limited.hidden === 0
+          && limitSessionsForRender(full, sessionLimit, false, currentId).hidden > 0
+        const out = renderSessionNode(buildSessionTree(limited.rows, sessionSlash, sessFolders, id), id, depth)
+        if (limited.hidden > 0 || showLess) {
           out.push(E('button', {
-            key: 'lim-' + workspace.workspaceId,
+            key: 'lim-' + id,
             type: 'button',
             className: 'bw-row bw-overflow-row',
             style: { paddingLeft: 8 + (depth + 1) * 12 },
-            onClick: () => setLimitLifted((current) => ({ ...current, [workspace.workspaceId]: true })),
-          }, t('sessions.expand', { n: limited.hidden })))
+            'aria-expanded': showLess,
+            onClick: () => setLimitLifted((current) => {
+              if (showLess) {
+                const next = { ...current }
+                delete next[id]
+                return next
+              }
+              return {
+                ...current,
+                [id]: searching || limited.hidden <= SESSION_PREVIEW_STEP ? Infinity : (current[id] ?? 0) + SESSION_PREVIEW_STEP,
+              }
+            }),
+          }, showLess ? t('sessions.collapse') : t('sessions.expand', { n: limited.hidden })))
         }
         return out
       }

@@ -1299,7 +1299,7 @@ test('issue round: exports fix, icon pick, ungrouped fold, tri-state, quota (v0.
   assert.match(text, /row\.blank \|\| row\.running \|\| row\.subagents > 0 \|\| row\.pinned/)
   assert.match(text, /const SESSION_ATTENTION_WINDOW = 50/)
   assert.match(text, /row\.pending \|\| row\.completed \|\| row\.id === currentId/)
-  assert.match(text, /limitSessionsForRender\(full, sessionLimit, limitLifted\[workspace\.workspaceId\], currentId\)/)
+  assert.match(text, /limitSessionsForRender\(full, sessionLimit, searching && extra > 0, currentId, extra\)/)
   assert.match(text, /t\('sessions\.expand', \{ n: limited\.hidden \}\)/)
 })
 
@@ -1310,6 +1310,75 @@ test('issue round: exports fix, icon pick, ungrouped fold, tri-state, quota (v0.
  * + drop slot and the menu entry funnel into one dialog, and grouping stays a
  * name projection: no empty group container, no new store key.
  */
+test('workspace overflow progressively shows five rows, then offers one local reset', () => {
+  const source = read('src/client.js')
+  const slice = (start, finish) => {
+    const a = source.indexOf(start)
+    const b = source.indexOf(finish, a)
+    assert.ok(a >= 0 && b > a, start)
+    return source.slice(a, b)
+  }
+  const hasActiveQuota = source.includes('countActive, extra = 0')
+  const render = new Function('state', 'workspace', 'options', `
+    const { countActive, searching, sessionLimit } = options;
+    const currentId = undefined, normalizedQuery = 'history';
+    const limitLifted = state.lifted;
+    const setLimitLifted = apply => { state.lifted = apply(state.lifted) };
+    const sessionsOpenOf = () => true;
+    const visibleSessionsOf = workspace => workspace.rows;
+    const sessionSlash = false, sessFolders = {};
+    const buildSessionTree = sessions => ({ sessions, groups: [] });
+    const renderSessionRow = session => session.title;
+    const hasDeclared = () => false;
+    const E = (tag, props, label) => ({ tag, props, label });
+    const t = (key, args) => [key, args?.n];
+    ${slice('const SESSION_PREVIEW_STEP', hasActiveQuota ? 'function SessionLimitField' : 'const createViewStore')}
+    ${slice('const renderSessionTree =', 'const renderSessionRow =')}
+    return renderSessionTree(workspace, 0);
+  `)
+  const make = (id, total, protectedRows = 0) => ({ workspaceId: id, rows: Array.from({ length: total }, (_, n) => ({
+    id: id + ':' + n, title: 'history ' + n, pinned: n < protectedRows,
+  })) })
+  for (const countActive of hasActiveQuota ? [false, true] : [false]) {
+    const state = { lifted: {} }
+    const options = { countActive, searching: false, sessionLimit: 2 }
+    const parent = make('parent', 19, 4), sibling = make('sibling', 13)
+    const initial = countActive ? 4 : 6
+    const draw = (workspace = parent) => render(state, workspace, options)
+    const titles = workspace => draw(workspace).filter(row => typeof row === 'string')
+    const button = workspace => draw(workspace).find(row => row?.tag === 'button')
+    const expect = (count, label, remaining) => {
+      assert.equal(titles().length, count)
+      assert.deepEqual(button().label, [label, remaining])
+      assert.equal(button().props['aria-expanded'], label === 'sessions.collapse')
+    }
+    expect(initial, 'sessions.expand', 19 - initial)
+    button().props.onClick()
+    expect(initial + 5, 'sessions.expand', 19 - initial - 5)
+    button(sibling).props.onClick()
+    assert.equal(titles(sibling).length, 7)
+    button().props.onClick()
+    expect(initial + 10, 'sessions.expand', 19 - initial - 10)
+    button().props.onClick()
+    expect(19, 'sessions.collapse', undefined)
+    parent.rows.push({ id: 'new', title: 'history 19' })
+    expect(20, 'sessions.collapse', undefined)
+    button().props.onClick()
+    expect(initial, 'sessions.expand', 20 - initial)
+    assert.equal(titles(sibling).length, 7)
+    options.sessionLimit = 0
+    assert.equal(titles().length, 20)
+    assert.equal(button(), undefined)
+    if (hasActiveQuota) {
+      options.sessionLimit = 2
+      options.searching = true
+      assert.equal(titles().length, 20)
+      assert.equal(button(), undefined)
+    }
+  }
+})
+
+
 test('group move: one shared menu entry on every row kind, one dialog for both entry paths', () => {
   const text = clientText()
   // One shared item object, gated PER NAME LAYER (v0.15): a workspace row
@@ -3131,7 +3200,7 @@ test('closing an expanded workspace restores the per-workspace preview for its o
     const workspaceDragEvents = noop, rowStyleOf = noop, styleEntry = noop
     const shortcutLabel = noop, shortcutAria = noop, workspaceHoverBody = undefined
     const ctx = null, activeContextMenu = null, startSession = noop
-    ${slice('const SESSION_ATTENTION_WINDOW =', 'const createViewStore')}
+    ${slice('const SESSION_PREVIEW_STEP =', 'const createViewStore')}
     ${slice('const levelSeqOf =', 'const levelTokenOf =')}
     ${slice('const renderSessionTree =', 'const renderSessionRow =')}
     ${slice('const clearBranchSessionLimits =', '// Official folderActive semantics')}
@@ -3168,10 +3237,10 @@ test('closing an expanded workspace restores the per-workspace preview for its o
   showMore('sibling', sibling)
   state.lifted.nested = true // a previously lifted descendant with a saved collapsed toggle
   toggle('parent', parent, true)
-  assert.deepEqual(state.lifted, { parent: true, child: true, nested: true, sibling: true })
+  assert.deepEqual(state.lifted, { parent: Infinity, child: Infinity, nested: true, sibling: Infinity })
   assert.deepEqual(state.open, { nested: false })
   toggle('parent')
-  assert.deepEqual(state.lifted, { sibling: true })
+  assert.deepEqual(state.lifted, { sibling: Infinity })
   assert.deepEqual(state.open, { nested: false, parent: false })
   assert.equal(histories('parent'), 0)
   toggle('parent')

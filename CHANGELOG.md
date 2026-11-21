@@ -3,7 +3,17 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
-## 未发布
+## v0.44.0 — 2026-11-21
+
+**类型**:feat / fix([#29](https://github.com/KannaKuron/dsh-better-workspace/issues/29):会话分组拖拽排序、拖拽改层级、批量移入分组)
+
+- **会话分组可拖拽**:会话分组行不再是只接会话的投放目标,它自己也能被拖。行分外/中/后三带(与工作区分组行同一套 30%/40%/30% 几何):中带落进该分组(成为它的子分组),外两带落在该分组前后(同级重排)。沿用工作区行的一帧延迟 arm(`wsDragArmTimer`)规避 Chromium 在 dragstart 同帧重渲染取消手势的老问题,并在 `onDragEnd` 保留 resting-drag 兜底提交。拖拽源与目标同父时**只写顺序、绝不改标题**;跨父时先按前缀批量改写成员标题,再迁移 `folders.sess` 里的显式空分组声明,保证空的声明分组拖走后不会凭空消失。
+- **拖出回顶层**:把嵌套分组拖到它所属的工作区行、或树里任何空白处(根容器 `bw-root-drop-out`),即提升回该工作区的根层末尾。自环与后代目标一律拒绝(不 preventDefault,让平台自带「禁止」光标说真话)。
+- **持久化**:视图 store 新增 `sessionGroupOrder`(parentKey → 分组名数组;parentKey = `workspaceId + '|' + 父分组路径`,根层是 `workspaceId + '|' + ''`),新 action `setSessionGroupOrder` 与既有 `setFolderOrder` 同构(空数组即删键);两个箱子**故意分开** —— 工作区层按 idPrefix 建键、会话层按 workspaceId 前缀建键,不可能碰撞。`buildSessionTree` 新增第 5 参读取该顺序,未列出的分组按名字兜底追加。顺序、折叠状态、显式分组声明三者都在既有的 `dsh.betterWorkspace.view.v1` 里,没有新增第三种持久化。
+- **批量移入分组(多选)**:会话行右键新增「选择会话 / 取消选择」,进入选择态后行首出现勾选框、点行体即切换归属(绝不导航),顶部出现批量条(已选 N 个会话 / 移动到分组… / 取消选择);「移动到分组…」复用既有分组对话框,提交走 `submitGroupMove` 的 `batch` 分支逐个改前缀。选择是瞬时手势,**不进 store**(刷新不复活半截选择);快照里已消失的会话会惰性从选择袋里剔除,不留幽灵成员。选中多行时拖拽其中任一行,整批一起落进目标分组。
+- **21 门词典**:新增 `batch.select` / `batch.deselect` / `batch.title` / `batch.count` / `batch.clear`,zh/en 加在 `menu.sessionId` 之后,其余 19 门逐门补齐;zh 与 en 各 178 键,19 门 LOCALES 键集与 zh 完全相等。
+- **测试**:`npm test` **117/117** 全绿(新增 tests/session-groups.mjs 19 项)。测试抓出并修掉三个真实缺陷:① `orderTokensWith` 在 `name === targetName` 时会把行静默挪到末尾(现已短路返回原序);② `submitGroupMove` 的 `batch` 分支原本排在单目标前导之后,批量「移出分组」(空组名)会被「标题未变化」的短路吞掉(现已前置);③ 单列表视图里批量勾选只出了批量条、行上没有勾选框 —— 选择作用域与拖拽作用域本是两回事,现在 `renderSessionRow` 多一个独立的 `selectScopeId` 参数,flat 视图按会话归属的工作区作答。冒烟中若干计数守卫同步更新(renameByUser 11 处、`dragDroppedRef` 9 处、buildSessionTree 调用点 5 处)。
+- **兼容**:会话行的三个 provider 图标 DOM 契约(class token `bw-sessionRow`、标题 `bw-row-label bw-title`、行键 `session:<id>`)**未改动**;折叠、置顶、归档、搜索、限量展开与既有拖拽语义全部保持。
 
 **类型**:fix（对齐原生侧栏的「展开更多」收起行为）
 

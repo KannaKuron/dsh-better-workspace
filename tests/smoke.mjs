@@ -275,7 +275,12 @@ test('v0.39.2: host title provenance, not title text, decides grouping (issue #1
   assert.doesNotMatch(text, /blankSeenRef|humanTouchedRef|TITLE_STABLE_MS|stableTick|quote-on-land/)
   assert.doesNotMatch(text, /renameSession\([^)]*[“”]/)
   assert.match(text, /const renameByUser = \(sessionId, title\) => \{/)
-  assert.equal((text.match(/renameByUser\(/g) || []).length, 8, 'exactly 8 user call sites')
+  // v0.44.0 (issue #29) added three: commitSgroupPlace re-titles a MOVED
+  // group's members one by one, and both batch paths (the move dialog's
+  // 'batch' target and a dragged multi-selection landing on a group row) do
+  // the same for a multi-selected set. Every call site is a user-initiated
+  // rename (never an auto-title write).
+  assert.equal((text.match(/renameByUser\(/g) || []).length, 11, 'exactly 11 user call sites')
 
   // Run the two pure readers for real.
   const start = text.indexOf('const TITLE_SOURCE_KEY')
@@ -1328,6 +1333,7 @@ test('workspace overflow progressively shows five rows, then offers one local re
     const visibleSessionsOf = workspace => workspace.rows;
     const sessionSlash = false, sessFolders = {};
     const buildSessionTree = sessions => ({ sessions, groups: [] });
+    const sessionGroupOrderMap = {}, sessionGroupOpen = () => true;
     const renderSessionRow = session => session.title;
     const hasDeclared = () => false;
     const E = (tag, props, label) => ({ tag, props, label });
@@ -1409,7 +1415,7 @@ test('group move: the header "New group" button doubles as the drop slot', () =>
   assert.match(text, /const groupDropTarget = \(\) => drag !== null && drag\.over && drag\.over\.kind === 'newgroup'/)
   // The slot refuses rows whose layer is off — while hovering AND on drop.
   assert.match(text, /if \(drag\.kind === 'workspace' && !workspaceSlash\) return/, 'hover refused on a disk-only workspace layer')
-  assert.match(text, /if \(\(drag\.kind === 'workspace' && !workspaceSlash\) \|\| \(drag\.kind === 'session' && !sessionSlash\)\) \{/, 'drop refused on a disabled layer')
+  assert.match(text, /if \(\(drag\.kind === 'workspace' && !workspaceSlash\) \|\| \(\(drag\.kind === 'session' \|\| drag\.kind === 'sgroup'\) && !sessionSlash\)\) \{/, 'drop refused on a disabled layer (sessions and session groups share the session layer)')
   assert.match(text, /over: \{ kind: 'newgroup' \}/, 'drag over the button marks the new-group target')
   // The datalist source is snapshotted when the dialog opens, never walked
   // during render: collectGroupPaths covers every workspace + session title,
@@ -1660,7 +1666,9 @@ test('declared groups: they render even with no members to project from (v0.17.0
   // ("workspaces" + a name layer = 'slash'), picker keeps its own variable.
   assert.match(text, /const treeMode = groupBy === 'workspace' && workspaceGroupMode !== 'disk'\n          \? 'slash'\n          : workspaceGroupMode\n        const built = buildTree\(items, treeMode, wsFolders, folderOrderMap\)/,
     'the main tree passes the workspace bag and the persisted group order')
-  assert.equal((text.match(/buildSessionTree\([^\n]*?(?:sessionsOf|visibleSessionsOf)\(workspace\)/g) || []).length, 4,
+  // v0.44.0 (issue #29) added sessionGroupTreeOf, the single reader the group
+  // drag commits order/nesting from — it is the fifth caller of this shape.
+  assert.equal((text.match(/buildSessionTree\([^\n]*?(?:sessionsOf|visibleSessionsOf)\(workspace\)/g) || []).length, 5,
     'every session-tree caller passes the session bag and its workspace scope')
 })
 
@@ -1750,7 +1758,9 @@ test('session drag out of a group: cross-group drops move the row, the workspace
   // The workspace row is the root of the session tree: the one drop target
   // that always exists OUTSIDE every group.
   assert.match(text, /const commitSessionMoveOut = \(workspaceId\) => \{/)
-  assert.match(text, /const wsRootDropActive = \(workspaceId\) => dragMatches\('session'\)/)
+  // v0.44.0 (issue #29): the workspace row is also the way OUT for a NESTED
+  // session group, so this probe accepts both kinds.
+  assert.match(text, /const wsRootDropActive = \(workspaceId\) => drag !== null && drag\.over !== null && drag\.over\.kind === 'ws-root' && drag\.over\.target === workspaceId && \(dragMatches\('session'\) \|\| dragMatches\('sgroup'\)\)/)
   assert.match(text, /over: \{ kind: 'ws-root', target: workspace\.workspaceId \}/)
   assert.match(text, /dropInto: wsRootDropActive\(workspace\.workspaceId\)/)
   assert.match(text, /dropInto && 'bw-drop-into'/)
@@ -1765,7 +1775,10 @@ test('session drag out of a group: cross-group drops move the row, the workspace
   // the drop (row handlers stopPropagation, so only unclaimed drops reach it)
   // and marks itself while such a drag is in flight.
   assert.match(text, /const sessionCouldLeaveGroup = dragMatches\('session'\) && sessionSlash/)
-  assert.match(text, /sessionCouldLeaveGroup && 'bw-root-drop-out'/)
+  // v0.44.0 (issue #29): a NESTED session group leaves its nesting the same
+  // way, so the exit marker is now the union of both.
+  assert.match(text, /const couldLeaveGroup = sessionCouldLeaveGroup \|\| sgroupCouldLeaveGroup/)
+  assert.match(text, /couldLeaveGroup && 'bw-root-drop-out'/)
 
   // Pure helper: the leaf's own text survives, the group comes from the anchor
   // row ('' = the root level, i.e. out of every group).
@@ -3024,10 +3037,14 @@ test('v0.36.10: level-mate groups nest, lift and survive a resting drag', () => 
   // real drop ran or Escape cancelled.
   assert.equal((text.match(/const dragStateRef = React\.useRef\(null\)/g) || []).length, 1,
     'one drag state mirror for the dragEnd fallback')
-  assert.equal((text.match(/dragDroppedRef\.current = true/g) || []).length, 6,
-    'every preventDefault drop marks itself (folder drop, ws drop, owning-row nest, group lift, group reorder, ws drop)')
-  assert.equal((text.match(/dragCancelledRef\.current = false/g) || []).length, 2,
-    'both dragEnds reset the escape flag')
+  // v0.44.0 (issue #29) added three session-group drops (session into a group,
+  // group reorder/nest, group lift onto a workspace row), so the marker count
+  // rises with every preventDefault drop — the point of the assertion is that
+  // NONE of them forgets to mark itself.
+  assert.equal((text.match(/dragDroppedRef\.current = true/g) || []).length, 9,
+    'every preventDefault drop marks itself (folder drop, ws drop, owning-row nest, group lift, group reorder, ws drop, session-group drops)')
+  assert.equal((text.match(/dragCancelledRef\.current = false/g) || []).length, 3,
+    'every dragEnd resets the escape flag (folder, workspace, session group)')
   assert.match(text, /if \(committed \|\| cancelled \|\| !live \|\| live\.kind !== 'folder' \|\| !live\.over\) return/,
     'the folder dragEnd falls back to the armed over only when no drop and no escape happened')
   assert.match(text, /if \(over\.kind === 'folder'\) \{\n            if \(over\.zone === 'before' \|\| over\.zone === 'after'\) commitFolderReorder\(live\.source, over\.target, over\.zone, over\.node\)\n            else commitFolderMoveInto\(live\.source, over\.target\)/,
@@ -3188,6 +3205,7 @@ test('closing an expanded workspace restores the per-workspace preview for its o
     const visibleSessionsOf = entry => entry.sessions
     const countSessionTree = node => node.sessions.length
     const buildSessionTree = sessions => ({ sessions, groups: [] })
+    const sessionGroupOrderMap = {}, sessionGroupOpen = () => true
     const renderSessionRow = node => node.title
     const hasDeclared = () => false, sessionSlash = false, sessFolders = {}
     const sessionLimit = 5, countActive = false, currentId = undefined, normalizedQuery = 'no match'

@@ -67,6 +67,26 @@ window.__ModuleLoader__.load({
       // brand wash; the middle half of the row (drop-into) never opens.
       '.bw-slot-above{padding-top:var(--bw-row-h,34px);background:linear-gradient(to bottom, color-mix(in srgb, var(--dsw-alias-brand-primary,#5b8def) 10%, transparent) 0, transparent calc(var(--bw-row-h,34px)))}',
       '.bw-slot-below{padding-bottom:var(--bw-row-h,34px);background:linear-gradient(to top, color-mix(in srgb, var(--dsw-alias-brand-primary,#5b8def) 10%, transparent) 0, transparent calc(var(--bw-row-h,34px)))}',
+      // v0.44.0 (issue #29): SESSION-group rows are shorter than workspace
+      // rows (--bw-session-h 32px vs --bw-row-h 34px), so the shared slot
+      // rules above would open a gap 2px taller than the row they stand in
+      // for. These two re-point the same drawer animation at the session
+      // metric — the gesture reads identical, the geometry stays honest.
+      '.bw-sgroup-row.bw-slot-above{padding-top:var(--bw-session-h,32px);background:linear-gradient(to bottom, color-mix(in srgb, var(--dsw-alias-brand-primary,#5b8def) 10%, transparent) 0, transparent calc(var(--bw-session-h,32px)))}',
+      '.bw-sgroup-row.bw-slot-below{padding-bottom:var(--bw-session-h,32px);background:linear-gradient(to top, color-mix(in srgb, var(--dsw-alias-brand-primary,#5b8def) 10%, transparent) 0, transparent calc(var(--bw-session-h,32px)))}',
+      // Batch selection (v0.44.0, issue #29): the pick-up affordance is a
+      // checkbox cell that only exists while a selection is open — the normal
+      // row keeps its official leading metrics, so nothing shifts under the
+      // cursor until the gesture starts.
+      '.bw-select-box{flex:none;width:14px;height:14px;margin-inline-end:4px;border-radius:4px;border:1.5px solid var(--dsw-alias-border-secondary,rgba(255,255,255,.28));display:inline-flex;align-items:center;justify-content:center;color:var(--dsw-alias-label-primary,#fff);background:transparent;cursor:pointer}',
+      '.bw-select-box:hover{border-color:var(--dsw-alias-brand-primary,#5b8def)}',
+      '.bw-select-box-on{border-color:var(--dsw-alias-brand-primary,#5b8def);background:var(--dsw-alias-brand-primary,#5b8def)}',
+      '.bw-selecting .bw-row-time{display:none}',
+      '.bw-row-selected{background:color-mix(in srgb, var(--dsw-alias-brand-primary,#5b8def) 14%, transparent)}',
+      '.bw-batch-bar{display:flex;align-items:center;gap:8px;padding:6px 10px;margin:0 6px 4px;border-radius:8px;background:var(--dsw-alias-bg-layer-2,rgba(255,255,255,.06));border:1px solid var(--dsw-alias-border-secondary,rgba(255,255,255,.12));font-size:12px;color:var(--dsw-alias-label-secondary,#a8a8a8)}',
+      '.bw-batch-count{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dsw-alias-label-primary,#fff)}',
+      '.bw-batch-action{display:inline-flex;align-items:center;gap:4px;flex:none;padding:3px 8px;border-radius:6px;border:1px solid var(--dsw-alias-border-secondary,rgba(255,255,255,.16));background:transparent;color:inherit;font:inherit;cursor:pointer}',
+      '.bw-batch-action:hover{background:color-mix(in srgb, var(--dsw-alias-brand-primary,#5b8def) 16%, transparent);color:var(--dsw-alias-label-primary,#fff)}',
       // Session drag whose source sits in a group: a quiet dashed line at the
       // bottom of the tree says "anywhere outside a group = out of it". Kept
       // faint on purpose — the row outlines are the loud feedback.

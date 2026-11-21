@@ -685,9 +685,20 @@ window.__ModuleLoader__.load({
      * titles. Groups are virtual (projection of names). Rows keep the Host
      * workspace.sessionIds (manual) order — drag-to-reorder must be visible.
      */
-    function buildSessionTree(rows, groupBySlash, explicitSess, groupScope) {
+    function buildSessionTree(rows, groupBySlash, explicitSess, groupScope, groupOrder) {
       const root = { path: '', name: '', groups: [], sessions: [] }
       const byPath = new Map([['', root]])
+      // Persisted sibling order (v0.44.0, issue #29): parentKey → group name
+      // list, the SAME shape as folderOrder's workspace levels. parentKey =
+      // groupScope (the workspace id) plus the parent group's path, so the
+      // root level of a workspace is its own namespace and can never collide
+      // with the workspace tree's folderOrder keys (those are idPrefixes).
+      const orderScope = groupScope == null ? '' : String(groupScope)
+      const orderOf = (parentPath) => {
+        if (!groupOrder || typeof groupOrder !== 'object') return null
+        const hit = groupOrder[orderScope + '|' + parentPath]
+        return Array.isArray(hit) ? hit : null
+      }
       // Slash grouping OFF (v0.13 view option): every row lands at the
       // root level and keeps its FULL title as the leaf — no levels.
       if (groupBySlash === false) {
@@ -721,8 +732,25 @@ window.__ModuleLoader__.load({
         const leaf = segs.length > 0 ? segs[segs.length - 1] : row.title
         ensure(segs.slice(0, -1)).sessions.push({ ...row, leaf })
       }
+      // v0.44.0 (issue #29): persisted sibling order wins, then the name
+      // sort. Names not listed yet (a group created after the last reorder)
+      // keep the alphabetical fallback and land AFTER the ordered ones, so a
+      // drag never silently reshuffles a group the user has never touched.
       const sortRec = (node) => {
-        node.groups.sort((a, b) => a.name.localeCompare(b.name, 'zh'))
+        const order = orderOf(node.path)
+        const sorted = node.groups.slice().sort((a, b) => a.name.localeCompare(b.name, 'zh'))
+        if (order) {
+          const byName = new Map(sorted.map((g) => [g.name, g]))
+          const placed = []
+          for (const name of order) {
+            const hit = byName.get(name)
+            if (hit) { placed.push(hit); byName.delete(name) }
+          }
+          for (const group of sorted) if (byName.has(group.name)) placed.push(group)
+          node.groups = placed
+        } else {
+          node.groups = sorted
+        }
         for (const group of node.groups) sortRec(group)
       }
       sortRec(root)
@@ -758,6 +786,85 @@ window.__ModuleLoader__.load({
         if (hit) return hit
       }
       return null
+    }
+
+    /**
+     * Sibling group order, PURE (v0.44.0, issue #29). Mirrors the store's
+     * folderOrder semantics for the session tree:
+     * - the key namespaces the level: '<workspaceId>|<parent group path>' —
+     *   the workspace's ROOT level is '<workspaceId>|', so it can never
+     *   collide with a workspace-tree level key (those are idPrefixes);
+     * - an empty result returns null, never [], so callers can tell "no
+     *   stored order" (name sort) from "an explicitly empty order";
+     * - names persist verbatim: a group renamed on disk simply drops out of
+     *   the bucket on the next build, which is the shrink the caller commits.
+     */
+    function sessionGroupOrderKey(workspaceId, parentPath) {
+      return (workspaceId == null ? '' : String(workspaceId)) + '|' + (parentPath == null ? '' : String(parentPath))
+    }
+
+    /**
+     * Move `name` to just before / after `targetName` inside one level's
+     * name list (pure). Unknown target = append; the mover is always removed
+     * first, so re-dropping a row on itself is a no-op that still returns a
+     * list (callers may then skip the store write when unchanged).
+     */
+    function orderTokensWith(list, name, targetName, zone) {
+      // Re-dropping a row on itself must not move it: without this guard the
+      // mover is filtered out first, its own anchor then looks unknown, and the
+      // row silently jumps to the end of the level.
+      if (name === targetName) return Array.isArray(list) ? list.slice() : []
+      const next = (Array.isArray(list) ? list : []).filter((n) => n !== name)
+      const at = next.indexOf(targetName)
+      if (at === -1) next.push(name)
+      else next.splice(zone === 'after' ? at + 1 : at, 0, name)
+      return next
+    }
+
+    /**
+     * Drop `name` out of a level's list (pure). Used when a group is lifted
+     * INTO another parent or renamed away: the token must not survive in the
+     * level it no longer lives in, or its old neighbours keep a hole.
+     */
+    function orderTokensWithout(list, name) {
+      return (Array.isArray(list) ? list : []).filter((n) => n !== name)
+    }
+
+    /**
+     * Parent path of a session sub-group path (pure, v0.44.0 issue #29):
+     * 'a/b' -> 'a', 'a' -> '' (the workspace root level). Mirrors parentKeyOf
+     * for the workspace tree, but the session tree has no disk layer, so a
+     * group's parent is purely its own prefix — no idPrefix bookkeeping.
+     */
+    function sessionGroupParentPath(path) {
+      const text = String(path == null ? '' : path)
+      const cut = text.lastIndexOf('/')
+      return cut === -1 ? '' : text.slice(0, cut)
+    }
+
+    /** Leaf name of a session sub-group path (pure): 'a/b' -> 'b'. */
+    function sessionGroupLeafName(path) {
+      const text = String(path == null ? '' : path)
+      const cut = text.lastIndexOf('/')
+      return cut === -1 ? text : text.slice(cut + 1)
+    }
+
+    /**
+     * Re-prefix one member title when its group moves (pure, v0.44.0). The
+     * source prefix must MATCH exactly: a row that never lived in that group
+     * (an auto-titled row, which groupsAllowedFor keeps flat) comes back
+     * untouched, so a group move can never staple a prefix onto a session the
+     * user did not move. An empty `toPath` lifts the row to the root level.
+     */
+    function retitleGroupMember(title, fromPath, toPath) {
+      const text = String(title == null ? '' : title)
+      const from = String(fromPath == null ? '' : fromPath)
+      if (from === '') return text
+      const prefix = from + '/'
+      if (!text.startsWith(prefix)) return text
+      const rest = text.slice(prefix.length)
+      const to = String(toPath == null ? '' : toPath)
+      return to === '' ? rest : to + '/' + rest
     }
 
     /**
@@ -1206,7 +1313,7 @@ window.__ModuleLoader__.load({
       // LITERAL, not a spread of DEFAULT_APPEARANCE: init() is eval-harness
       // friendly (no cross-section reference), and the smoke suite asserts the
       // two stay in lockstep field by field.
-      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true, sessionLimit: 0, sessionAgeDays: 0, appearance: { color: '', glow: 0, weight: 0, shadow: false, stroke: false, strokeWidth: 1, strokeColor: '#808080' } }, styling: {}, groupBy: 'workspace-tree', orderBy: 'manual', archivedFilter: 'default', workspaceArchivedFilters: {}, workspaceGroupMode: 'disk', sessionTitleSlash: true, workspaceTitleSlash: false, ungroupedOpen: true, folders: { ws: {}, sess: {} }, folderOrder: {} }),
+      init: () => ({ expanded: {}, sessionsExpanded: {}, sessionGroups: {}, sessionOrder: {}, prefs: { compactChains: true, sessionLimit: 0, sessionAgeDays: 0, appearance: { color: '', glow: 0, weight: 0, shadow: false, stroke: false, strokeWidth: 1, strokeColor: '#808080' } }, styling: {}, groupBy: 'workspace-tree', orderBy: 'manual', archivedFilter: 'default', workspaceArchivedFilters: {}, workspaceGroupMode: 'disk', sessionTitleSlash: true, workspaceTitleSlash: false, ungroupedOpen: true, folders: { ws: {}, sess: {} }, folderOrder: {}, sessionGroupOrder: {} }),
       // NOTE: hydration REPLACES the state with the persisted whole value —
       // init defaults never merge. Every action must tolerate a missing key
       // (states persisted by older plugin versions lack sessionGroups), and
@@ -1265,6 +1372,18 @@ window.__ModuleLoader__.load({
           const clean = (Array.isArray(names) ? names : []).map((n) => String(n)).filter((n) => n !== '')
           if (clean.length === 0) delete d.folderOrder[key]
           else d.folderOrder[key] = clean
+        },
+        // Persisted SESSION-group order (v0.44.0, issue #29). Same shape as
+        // folderOrder but a separate bag on purpose: the two trees key their
+        // levels differently (workspace levels by idPrefix, session levels by
+        // '<workspaceId>|<parent group path>'), and two bags cannot collide
+        // when a workspace id happens to look like a folder path.
+        setSessionGroupOrder: (d, parentKey, names) => {
+          if (!d.sessionGroupOrder || typeof d.sessionGroupOrder !== 'object') d.sessionGroupOrder = {}
+          const key = String(parentKey == null ? '' : parentKey)
+          const clean = (Array.isArray(names) ? names : []).map((n) => String(n)).filter((n) => n !== '')
+          if (clean.length === 0) delete d.sessionGroupOrder[key]
+          else d.sessionGroupOrder[key] = clean
         },
         // Explicit (possibly EMPTY) groups, v0.17.0. A group has always been a
         // projection of "/" in member titles, so a group with no members simply
@@ -2401,7 +2520,7 @@ window.__ModuleLoader__.load({
       return { titleRef, onPointerEnter, onPointerLeave }
     }
 
-    function SessionRow({ node, depth, current, onOpen, onContextMenu, now, dropHalf, dragEvents, custStyle, breathing, sessionActions, scheduleSeat, dataRowKey, t }) {
+    function SessionRow({ node, depth, current, onOpen, onContextMenu, now, dropHalf, dragEvents, custStyle, breathing, sessionActions, scheduleSeat, dataRowKey, selecting, selected, onSelectToggle, t }) {
       const state = sessionStateOf(node)
       const status = state === null ? null : {
         state,
@@ -2503,10 +2622,16 @@ window.__ModuleLoader__.load({
       let row = E('div', {
         className: cls('bw-row', 'bw-session-row', 'bw-sessionRow', current && 'bw-row-current',
           node.archived && 'bw-row-archived',
+          selecting && 'bw-selecting', selected && 'bw-row-selected',
           dropHalf === 'before' && 'bw-drop-before', dropHalf === 'after' && 'bw-drop-after'),
         'data-row-key': dataRowKey,
         style: { '--bw-indent': (depth * 12) + 'px', ...(custStyle || {}) },
+        // While a selection is open the row's whole body toggles membership
+        // instead of opening the session: picking rows must never navigate
+        // away from the tree the user is assembling (v0.44.0, issue #29).
+        'aria-selected': selected ? true : undefined,
         onClick: () => {
+          if (selecting && typeof onSelectToggle === 'function') { onSelectToggle(node.id); return }
           if (node.archived) {
             // Official semantics (guardedOpen): an archived row is not
             // openable — the click explains instead of navigating.
@@ -2529,6 +2654,19 @@ window.__ModuleLoader__.load({
         ...(dragEvents || {}),
         ...menuTriggerProps(onContextMenu),
       },
+        // Selection slot (v0.44.0, issue #29): a checkmark cell that appears
+        // in the leading gap only while a selection is open, so the normal
+        // row keeps its official metrics untouched.
+        selecting
+          ? E('span', {
+            className: cls('bw-select-box', selected && 'bw-select-box-on'),
+            role: 'checkbox',
+            'aria-checked': selected ? true : false,
+            'aria-label': t(selected ? 'batch.deselect' : 'batch.select'),
+            title: t(selected ? 'batch.deselect' : 'batch.select'),
+            onClick: (e) => { e.stopPropagation(); if (typeof onSelectToggle === 'function') onSelectToggle(node.id) },
+          }, selected ? icon('IconCheckOutlineRegular', 12) : null)
+          : null,
         E('span', { className: 'bw-row-icon', title: status ? status.title : undefined },
           status && typeof ui.StateDot === 'function'
             ? (state === 'ongoing' && breathing
@@ -2570,9 +2708,14 @@ window.__ModuleLoader__.load({
      * titles). Deliberately NOT styled like a workspace folder — no folder
      * icon, tertiary color — so a session level never reads as a workspace.
      */
-    function SessionGroupRow({ name, depth, expanded, count, onToggle, onContextMenu, dropInto, dragEvents, custStyle, pulse, dataRowKey, t }) {
+    // dropSlot (v0.44.0, issue #29) is the session-side twin of the group
+    // rows' edge band: the outer thirds of the row split open as an insertion
+    // slot for SIBLING ordering, the middle third stays "drop into".
+    function SessionGroupRow({ name, depth, expanded, count, onToggle, onContextMenu, dropInto, dropSlot, dragEvents, custStyle, pulse, dataRowKey, t }) {
       return E('div', {
-        className: cls('bw-row', 'bw-sgroup-row', dropInto && 'bw-drop-into', dropInto && 'bw-drop-into-strong'),
+        className: cls('bw-row', 'bw-sgroup-row',
+          dropSlot === 'before' && 'bw-slot-above', dropSlot === 'after' && 'bw-slot-below',
+          dropInto && 'bw-drop-into', dropInto && 'bw-drop-into-strong'),
         'data-row-key': dataRowKey,
         style: { '--bw-indent': (depth * 12) + 'px', ...(custStyle || {}) },
         onClick: onToggle,
@@ -3878,6 +4021,10 @@ window.__ModuleLoader__.load({
       // every snapshot written before it existed — the seed name sort then
       // stands, so old states render unchanged.
       const folderOrderMap = useStore ? (useStore(s => s.folderOrder) || EMPTY_FOLDERS) : EMPTY_FOLDERS
+      // Persisted SESSION-group order (v0.44.0, issue #29): same shape, own
+      // bag — keyed '<workspaceId>|<parent group path>'. Absent on every
+      // snapshot written before it existed, so the name sort stands then.
+      const sessionGroupOrderMap = useStore ? (useStore(s => s.sessionGroupOrder) || EMPTY_FOLDERS) : EMPTY_FOLDERS
       // View options (v0.13). Selector reads take fallbacks: hydration
       // replaces the whole persisted value, so states written by older
       // plugin versions lack these keys (hard store discipline).
@@ -4262,6 +4409,36 @@ window.__ModuleLoader__.load({
       const dragDroppedRef = React.useRef(false)
       const dragCancelledRef = React.useRef(false)
       React.useEffect(() => { dragStateRef.current = drag }, [drag])
+      // Batch selection (v0.44.0, issue #29). A set of session ids inside ONE
+      // workspace: the issue asks for "select the loose sessions, then file
+      // them into a group in one go", which only makes sense within a
+      // workspace because a session's group is a prefix of its own title.
+      // Kept in plain component state (not the store): it is a momentary
+      // gesture, not a preference — reloading the sidebar must not resurrect
+      // a half-finished selection.
+      const [selection, setSelection] = React.useState(null) // { workspaceId, ids: [] }
+      const selectionIdsOf = (workspaceId) => (selection && selection.workspaceId === workspaceId ? selection.ids : [])
+      const isSelected = (workspaceId, sessionId) => selectionIdsOf(workspaceId).indexOf(sessionId) !== -1
+      const clearSelection = () => setSelection(null)
+      const toggleSelected = (workspaceId, sessionId) => setSelection((current) => {
+        if (!current || current.workspaceId !== workspaceId) return { workspaceId, ids: [sessionId] }
+        const next = current.ids.indexOf(sessionId) === -1
+          ? current.ids.concat([sessionId])
+          : current.ids.filter((id) => id !== sessionId)
+        return next.length === 0 ? null : { workspaceId, ids: next }
+      })
+      // A selection outlives the rows that carried it only while its sessions
+      // still exist — the snapshot is the authority, so a vanished session
+      // leaves the bag instead of becoming an invisible ghost member. Read
+      // lazily: sessionsOf is declared further down (no TDZ in a component
+      // body, where everything above runs in declaration order).
+      const liveSelectionIdsOf = () => {
+        if (!selection) return []
+        const workspace = (items || []).find((w) => w.workspaceId === selection.workspaceId)
+        if (!workspace) return []
+        const live = sessionsOf(workspace).map((s) => s.id)
+        return selection.ids.filter((id) => live.indexOf(id) !== -1)
+      }
       React.useEffect(() => {
         const onKey = (event) => { if (event.key === 'Escape') dragCancelledRef.current = true }
         window.addEventListener('keydown', onKey, true)
@@ -4580,7 +4757,7 @@ window.__ModuleLoader__.load({
       // tree AND its disk-nested child levels.
       const wsAllPulseOf = (workspace) => {
         if (!statusPulse || searching) return null
-        let best = nodePulseOf(buildSessionTree(sessionsOf(workspace), sessionSlash, sessFolders, workspace.workspaceId))
+        let best = nodePulseOf(buildSessionTree(sessionsOf(workspace), sessionSlash, sessFolders, workspace.workspaceId, sessionGroupOrderMap))
         if (workspace.sub) {
           for (const folder of workspace.sub.folders) {
             const s = folderPulseOf(folder)
@@ -4913,7 +5090,7 @@ window.__ModuleLoader__.load({
             out.push({ id: f.scope + '|' + f.path, scope: '', path: '', label: folderLabelOf(f), kind: 'folder', pickable: false, children: sessNodesOf(f) })
           }
           for (const w of node.workspaces || []) {
-            const inner = sessGroupNodesOf(buildSessionTree(sessionsOf(w), sessionSlash, sessFolders, w.workspaceId), w.workspaceId)
+            const inner = sessGroupNodesOf(buildSessionTree(sessionsOf(w), sessionSlash, sessFolders, w.workspaceId, sessionGroupOrderMap), w.workspaceId)
             const subNodes = w.sub ? sessNodesOf(w.sub) : []
             out.push({
               id: w.workspaceId + '|', scope: w.workspaceId, path: '', label: w.leaf || w.title, kind: 'ws',
@@ -4927,7 +5104,7 @@ window.__ModuleLoader__.load({
         // sidebar draws it (raw items — there is no .sub level to nest here).
         const flat = []
         for (const w of items) {
-          const inner = sessGroupNodesOf(buildSessionTree(sessionsOf(w), sessionSlash, sessFolders, w.workspaceId), w.workspaceId)
+          const inner = sessGroupNodesOf(buildSessionTree(sessionsOf(w), sessionSlash, sessFolders, w.workspaceId, sessionGroupOrderMap), w.workspaceId)
           flat.push({ id: w.workspaceId + '|', scope: w.workspaceId, path: '', label: w.leaf || w.title, kind: 'ws', children: inner })
         }
         return { hint: t('group.new.pickWorkspace'), nodes: flat }
@@ -4977,6 +5154,36 @@ window.__ModuleLoader__.load({
       const submitGroupMove = (target, rawGroup) => {
         if (!target) { setDialog(null); return }
         const group = normPath(String(rawGroup || ''))
+        // Batch move (v0.44.0, issue #29): the selection bag names many rows
+        // at once, and every one of them gets the same group prefix. Each id
+        // keeps its own leaf, so a batch never overwrites individual names.
+        // Handled FIRST: a batch has no single target title, so the
+        // single-target "unchanged title" shortcut below must not speak for
+        // it — and an empty group ('') is a real verb here (unstacks the
+        // whole selection to the root level).
+        if (target.kind === 'batch') {
+          const workspace = (items || []).find((w) => w.workspaceId === target.workspaceId)
+          if (!workspace) { setDialog(null); return }
+          const byId = new Map(sessionsOf(workspace).map((s) => [s.id, s]))
+          const moving = (target.ids || []).map((id) => byId.get(id)).filter(Boolean)
+          Promise.resolve()
+            .then(async () => {
+              for (const row of moving) {
+                if (row.blank) continue
+                const label = row.allowGroups === false ? String(row.title || '') : leafOf(row.title)
+                const safeLeaf = leafForGroup(label, row.allowGroups === false)
+                const moved = group ? group + '/' + safeLeaf : safeLeaf
+                if (moved === row.title) continue
+                await renameByUser(row.id, moved)
+              }
+            })
+            .then(() => { setSelection(null); setDialog(null) })
+            .catch(fail)
+          return
+        }
+        // One target from here on, so "its leaf under the picked group" is a
+        // single computable title — and rewriting a title to itself is a no-op
+        // worth short-circuiting (it would only churn the host for nothing).
         const leaf = target.allowGroups === false ? String(target.title || '') : leafOf(target.title)
         const safe = target.kind === 'session' ? leafForGroup(leaf, target.allowGroups === false) : leaf
         const next = group ? group + '/' + safe : safe
@@ -5013,7 +5220,7 @@ window.__ModuleLoader__.load({
         if (target.kind === 'sgroup') {
           const workspace = (items || []).find((w) => w.workspaceId === target.workspaceId)
           if (!workspace) { setDialog(null); return }
-          const node = findSessionGroup(buildSessionTree(sessionsOf(workspace), sessionSlash, sessFolders, workspace.workspaceId), target.path)
+          const node = findSessionGroup(buildSessionTree(sessionsOf(workspace), sessionSlash, sessFolders, workspace.workspaceId, sessionGroupOrderMap), target.path)
           if (!node) { setDialog(null); return }
           const affected = collectSessionRows(node)
           Promise.resolve()
@@ -5223,6 +5430,22 @@ window.__ModuleLoader__.load({
               : (current ? { ...current, over: { kind: 'ws-root', target: workspace.workspaceId } } : current))
             return
           }
+          // v0.44.0 (issue #29): the same "put it back on top" answer for a
+          // nested GROUP — the workspace row is the workspace's own top level,
+          // so dropping a group here un-nests it exactly like the root
+          // container does. Only within the group's own workspace, and only
+          // for a group that actually IS nested.
+          if (dragMatches('sgroup')) {
+            if (!sessionSlash || drag.source.workspaceId !== workspace.workspaceId) return
+            if (sessionGroupParentPath(drag.source.path) === '') return
+            event.preventDefault()
+            event.stopPropagation()
+            try { event.dataTransfer.dropEffect = 'move' } catch { }
+            setDrag(current => (current && current.over && current.over.kind === 'ws-root' && current.over.target === workspace.workspaceId)
+              ? current
+              : (current ? { ...current, over: { kind: 'ws-root', target: workspace.workspaceId } } : current))
+            return
+          }
           // v0.36.5 MIXED REORDER: a GROUP block can slide beside a bare
           // workspace row of the same level (the mirror gesture of a
           // workspace sliding beside a group row). Siblings only — a group
@@ -5311,6 +5534,19 @@ window.__ModuleLoader__.load({
             event.preventDefault()
             event.stopPropagation()
             commitSessionMoveOut(workspace.workspaceId)
+            return
+          }
+          // v0.44.0 (issue #29): a nested group dropped on its workspace row
+          // returns to that workspace's top level (see onDragOver).
+          if (dragMatches('sgroup')) {
+            if (!sessionSlash || drag.source.workspaceId !== workspace.workspaceId) return
+            if (sessionGroupParentPath(drag.source.path) === '') return
+            event.preventDefault()
+            event.stopPropagation()
+            dragDroppedRef.current = true
+            const source = drag.source
+            setDrag(null)
+            commitSgroupPlace(source, '', null, 'after')
             return
           }
           if (dragMatches('folder')) {
@@ -6007,7 +6243,12 @@ window.__ModuleLoader__.load({
         const over = drag.over
         return over && over.kind === 'session' && over.target === sessionId ? over.half : null
       }
-      const sgroupDropInto = (workspaceId, path) => dragMatches('session') && drag.over && drag.over.kind === 'sgroup' && drag.over.target === path
+      // A session group row is a drop target for BOTH kinds (v0.44.0,
+      // issue #29): a session dropping on the middle band moves in (the old
+      // behaviour), and a GROUP dropping on the middle band nests inside it;
+      // the two outer bands reorder siblings. The highlight is therefore
+      // kind-agnostic — any live drag whose {over} names this row.
+      const sgroupDropInto = (workspaceId, path) => drag !== null && drag.over != null && drag.over.kind === 'sgroup' && drag.over.target === path && (drag.over.zone === 'into' || drag.over.zone == null)
       const sessionDragEvents = (session, workspaceId) => ({
         draggable: !searching,
         onDragStart: (event) => {
@@ -6017,7 +6258,11 @@ window.__ModuleLoader__.load({
             event.dataTransfer.effectAllowed = 'move'
             event.dataTransfer.setData('text/plain', session.id)
           } catch { }
-          setDrag({ kind: 'session', source: { sessionId: session.id, workspaceId, title: session.title, leaf: session.leaf || session.title, allowGroups: session.allowGroups !== false }, over: null })
+          // A row picked up from an open selection carries the WHOLE bag
+          // (v0.44.0, issue #29): dragging one of many selected rows is how a
+          // user files several sessions into a group in a single gesture.
+          const batchIds = isSelected(workspaceId, session.id) ? liveSelectionIdsOf() : []
+          setDrag({ kind: 'session', source: { sessionId: session.id, workspaceId, title: session.title, leaf: session.leaf || session.title, allowGroups: session.allowGroups !== false, batchIds }, over: null })
         },
         onDragEnd: () => setDrag(null),
         onDragOver: (event) => {
@@ -6038,21 +6283,122 @@ window.__ModuleLoader__.load({
           commitSessionDrop(workspaceId, session.id, half)
         },
       })
+      // Where this row's insertion slot is armed (v0.44.0, issue #29): the
+      // outer bands of a group row split it open exactly like a workspace
+      // group row does, so "a row will land here" is visible at a glance.
+      const sgroupSlotOf = (path) => {
+        const over = drag === null ? null : drag.over
+        if (!over || over.kind !== 'sgroup' || over.target !== path) return null
+        return over.zone === 'before' || over.zone === 'after' ? over.zone : null
+      }
+      /**
+       * The whole gesture grammar of a session group row (v0.44.0, issue
+       * #29). It is deliberately the SAME grammar the workspace tree already
+       * speaks (v0.36.x), because a user who learned one half of this sidebar
+       * must not have to learn the other:
+       * - outer 30% bands: this row's slot — SIBLING order when the source
+       *   already lives there, re-parenting AT THIS LEVEL when it does not;
+       * - middle 40% band: the source goes INSIDE this group (nesting);
+       * - a SESSION keeps its old single meaning (middle band = move in, and
+       *   the band split never applies to it: a session has no sibling slot
+       *   among groups).
+       * Self and descendant targets are refused without preventDefault, so
+       * the platform's own "no drop" cursor tells the truth.
+       */
       const sgroupDropEvents = (workspaceId, path) => ({
+        draggable: !searching,
+        onDragStart: (event) => {
+          if (searching) return
+          event.stopPropagation()
+          try {
+            event.dataTransfer.effectAllowed = 'move'
+            event.dataTransfer.setData('text/plain', path)
+          } catch { /* drag payload is best-effort */ }
+          // Same one-frame arm as every other row drag in this file: a source
+          // element that re-renders under the cursor cancels the gesture.
+          if (wsDragArmTimer.current !== null) clearTimeout(wsDragArmTimer.current)
+          wsDragArmTimer.current = setTimeout(() => {
+            wsDragArmTimer.current = null
+            setDrag({ kind: 'sgroup', source: { workspaceId, path, name: sessionGroupLeafName(path) }, over: null })
+          }, 0)
+        },
+        onDragEnd: () => {
+          if (wsDragArmTimer.current !== null) { clearTimeout(wsDragArmTimer.current); wsDragArmTimer.current = null }
+          const committed = dragDroppedRef.current
+          dragDroppedRef.current = false
+          const cancelled = dragCancelledRef.current
+          dragCancelledRef.current = false
+          const live = dragStateRef.current
+          setDrag(null)
+          // Resting-drag fallback, same reason as the workspace rows: a drop
+          // that never fires still had an armed target the user aimed at.
+          if (committed || cancelled || !live || live.kind !== 'sgroup' || !live.over) return
+          const over = live.over
+          // The workspace row is the lift target, exactly as it is for a
+          // session: a group resting on it (no drop event on the platforms
+          // that skip it) still means "back to this workspace's root level".
+          if (over.kind === 'ws-root' && over.target === workspaceId) {
+            commitSgroupPlace(live.source, '', null, 'after')
+            return
+          }
+          if (over.kind !== 'sgroup' || over.workspaceId !== workspaceId) return
+          if (over.zone === 'before' || over.zone === 'after') commitSgroupPlace(live.source, over.parentPath, over.anchorName, over.zone)
+          else commitSgroupPlace(live.source, over.target, null, 'into')
+        },
         onDragOver: (event) => {
-          if (!dragMatches('session') || drag.source.workspaceId !== workspaceId) return
+          const over = drag === null ? null : drag.over
+          // Same content-box re-judge the workspace rows use: while this row
+          // already holds a sibling slot, the padding band keeps the verdict
+          // but the content box re-runs the three bands, so the INTO middle
+          // stays reachable after entering through an edge.
+          const holdingSlot = over !== null && over.kind === 'sgroup' && over.target === path && (over.zone === 'before' || over.zone === 'after')
+          const zone = holdingSlot ? (pointerInRowBox(event) ? rowZone(event) : rowHalf(event)) : rowZone(event)
+          if (dragMatches('session')) {
+            if (!sessionSlash || drag.source.workspaceId !== workspaceId || zone === null) return
+            event.preventDefault()
+            event.stopPropagation()
+            try { event.dataTransfer.dropEffect = 'move' } catch { }
+            setDrag(current => (current && current.over && current.over.kind === 'sgroup' && current.over.target === path && current.over.zone === 'into')
+              ? current
+              : (current ? { ...current, over: { kind: 'sgroup', target: path, zone: 'into' } } : current))
+            return
+          }
+          if (!dragMatches('sgroup') || drag.source.workspaceId !== workspaceId || zone === null) return
+          const from = drag.source.path
+          const parentPath = zone === 'into' ? path : sessionGroupParentPath(path)
+          const anchorName = zone === 'into' ? null : sessionGroupLeafName(path)
+          if (parentPath === from || parentPath.indexOf(from + '/') === 0) {
+            clearOver('sgroup', path)
+            return
+          }
           event.preventDefault()
           event.stopPropagation()
           try { event.dataTransfer.dropEffect = 'move' } catch { }
-          setDrag(current => (current && current.over && current.over.kind === 'sgroup' && current.over.target === path)
+          setDrag(current => (current && current.over && current.over.kind === 'sgroup' && current.over.target === path && current.over.zone === zone)
             ? current
-            : (current ? { ...current, over: { kind: 'sgroup', target: path } } : current))
+            : (current ? { ...current, over: { kind: 'sgroup', workspaceId, target: path, zone, parentPath, anchorName } } : current))
         },
         onDrop: (event) => {
-          if (!dragMatches('session') || drag.source.workspaceId !== workspaceId) return
+          const over = drag === null ? null : drag.over
+          const armed = over !== null && over.kind === 'sgroup' && over.target === path ? over : null
+          const zone = armed && armed.zone ? armed.zone : rowZone(event)
+          if (dragMatches('session')) {
+            if (!sessionSlash || drag.source.workspaceId !== workspaceId || zone === null) return
+            event.preventDefault()
+            event.stopPropagation()
+            dragDroppedRef.current = true
+            commitSessionMoveInto(workspaceId, path)
+            return
+          }
+          if (!dragMatches('sgroup') || drag.source.workspaceId !== workspaceId || zone === null) return
+          const from = drag.source.path
+          const parentPath = zone === 'into' ? path : sessionGroupParentPath(path)
+          if (parentPath === from || parentPath.indexOf(from + '/') === 0) return
           event.preventDefault()
           event.stopPropagation()
-          commitSessionMoveInto(workspaceId, path)
+          dragDroppedRef.current = true
+          if (zone === 'into') commitSgroupPlace(drag.source, path, null, 'into')
+          else commitSgroupPlace(drag.source, parentPath, sessionGroupLeafName(path), zone)
         },
       })
       const commitSessionDrop = (workspaceId, targetSessionId, half) => {
@@ -6124,7 +6470,91 @@ window.__ModuleLoader__.load({
           })
           .catch(fail)
       }
-      const wsRootDropActive = (workspaceId) => dragMatches('session') && drag.over !== null && drag.over.kind === 'ws-root' && drag.over.target === workspaceId
+      // The workspace-level tree that owns a session group: the ONE place the
+      // group rows, their persisted order and their nesting all come from.
+      const sessionGroupTreeOf = (workspace) => buildSessionTree(sessionsOf(workspace), sessionSlash, sessFolders, workspace.workspaceId, sessionGroupOrderMap)
+      /**
+       * Current sibling ORDER of one level, as the tree renders it (pure read).
+       * Seeded from the visible order — which is the persisted order where one
+       * exists and the name sort where it does not — so the first drag writes a
+       * list that preserves everything the user already saw.
+       */
+      const sessionGroupNamesAt = (workspace, parentPath) => {
+        const root = sessionGroupTreeOf(workspace)
+        const node = parentPath === '' ? root : findSessionGroup(root, parentPath)
+        return node ? node.groups.map((g) => g.name) : []
+      }
+      const writeSgroupOrder = (workspaceId, parentPath, names) => {
+        if (!actions || typeof actions.setSessionGroupOrder !== 'function') return
+        actions.setSessionGroupOrder(sessionGroupOrderKey(workspaceId, parentPath), names)
+      }
+      /**
+       * The ONE commit behind every session-group drop (v0.44.0, issue #29).
+       * A drop is always "this group now lives at THIS level, at THIS spot":
+       * - `parentPath` is the level it lands in ('' = the workspace root);
+       * - `anchorName` is the sibling it lands beside, or null for "append at
+       *   the end of that level" (an INTO drop);
+       * - `zone` is before/after around that sibling.
+       * Two writes make it true: the members' titles carry the nesting (the
+       * name prefix IS the hierarchy), and the level's name list carries the
+       * order. Same-parent moves skip the rename entirely — a pure reorder
+       * must never touch a title.
+       */
+      const commitSgroupPlace = (source, parentPath, anchorName, zone) => {
+        if (!source) return
+        const workspace = (items || []).find((w) => w.workspaceId === source.workspaceId)
+        if (!workspace) return
+        const workspaceId = workspace.workspaceId
+        const from = String(source.path || '')
+        if (from === '') return
+        const leaf = sessionGroupLeafName(from)
+        const parent = parentPath == null ? '' : String(parentPath)
+        // A group cannot land in itself or anywhere below itself.
+        if (parent === from || parent.indexOf(from + '/') === 0) return
+        const nextPath = parent !== '' ? parent + '/' + leaf : leaf
+        const before = zone !== 'after'
+        if (nextPath === from) {
+          const ordered = orderTokensWith(sessionGroupNamesAt(workspace, parent), leaf, anchorName, zone === 'after' ? 'after' : 'before')
+          writeSgroupOrder(workspaceId, parent, ordered)
+          return
+        }
+        const oldParent = sessionGroupParentPath(from)
+        const declared = sessFolders && Array.isArray(sessFolders[workspaceId]) ? sessFolders[workspaceId] : []
+        const prefix = from + '/'
+        const movingDeclared = declared.filter((p) => p === from || p.indexOf(prefix) === 0)
+        const node = findSessionGroup(sessionGroupTreeOf(workspace), from)
+        const rows = node ? collectSessionRows(node) : []
+        const oldNames = sessionGroupNamesAt(workspace, oldParent)
+        const newNames = parent === oldParent ? oldNames : sessionGroupNamesAt(workspace, parent)
+        Promise.resolve()
+          .then(async () => {
+            for (const row of rows) {
+              if (row.blank) continue
+              const nextTitle = retitleGroupMember(row.title, from, nextPath)
+              if (nextTitle !== row.title) await renameByUser(row.id, nextTitle)
+            }
+          })
+          .then(() => {
+            // A declared-but-empty group has no members to carry its new
+            // nesting, so the declaration itself must move — otherwise the
+            // group the user just dragged would simply disappear.
+            if (typeof actions.removeFolder === 'function' && movingDeclared.length > 0) {
+              actions.removeFolder('session', workspaceId, from)
+            }
+            if (typeof actions.addFolder === 'function') {
+              for (const path of movingDeclared) {
+                actions.addFolder('session', workspaceId, nextPath + path.slice(from.length))
+              }
+            }
+            writeSgroupOrder(workspaceId, oldParent, orderTokensWithout(oldNames, leaf))
+            const seeded = parent === oldParent ? orderTokensWithout(newNames, leaf) : newNames.slice()
+            writeSgroupOrder(workspaceId, parent, anchorName
+              ? orderTokensWith(seeded, leaf, anchorName, before ? 'before' : 'after')
+              : [...seeded, leaf])
+          })
+          .catch(fail)
+      }
+      const wsRootDropActive = (workspaceId) => drag !== null && drag.over !== null && drag.over.kind === 'ws-root' && drag.over.target === workspaceId && (dragMatches('session') || dragMatches('sgroup'))
       // v0.36.7: a group block hovering the disk-level row that OWNS it lights
       // the SAME framed INTO a workspace row gets on a group row — the visual
       // is one language: edge bands reorder, the middle band "puts inside".
@@ -6132,6 +6562,28 @@ window.__ModuleLoader__.load({
       const commitSessionMoveInto = (workspaceId, groupPath) => {
         const source = drag.source
         setDrag(null)
+        // A batch carried by the dragged row moves as one (v0.44.0, issue
+        // #29): every member gets the SAME prefix, each keeping its own leaf.
+        const batchIds = Array.isArray(source.batchIds) && source.batchIds.length > 1 ? source.batchIds : null
+        if (batchIds) {
+          const workspace = (items || []).find((w) => w.workspaceId === workspaceId)
+          if (!workspace) return
+          const byId = new Map(sessionsOf(workspace).map((s) => [s.id, s]))
+          Promise.resolve()
+            .then(async () => {
+              for (const id of batchIds) {
+                const row = byId.get(id)
+                if (!row || row.blank) continue
+                const leaf = leafForGroup(row.leaf || row.title, row.allowGroups === false)
+                const moved = groupPath !== '' ? groupPath + '/' + leaf : leaf
+                if (moved === row.title) continue
+                await renameByUser(id, moved)
+              }
+            })
+            .then(() => setSelection(null))
+            .catch(fail)
+          return
+        }
         const leaf = leafForGroup(source.leaf, source.allowGroups === false)
         const newTitle = groupPath !== '' ? groupPath + '/' + leaf : leaf
         if (newTitle === source.title) return
@@ -6154,6 +6606,10 @@ window.__ModuleLoader__.load({
           // for a row whose name layer is off (see the header render guard).
           if (drag.kind === 'workspace' && !workspaceSlash) return
           if (drag.kind === 'session' && !sessionSlash) return
+          // v0.44.0 (issue #29): a whole group can be dropped here too — the
+          // dialog then re-homes it under a name and its members follow the
+          // prefix (submitGroupMove's sgroup branch).
+          if (drag.kind === 'sgroup' && !sessionSlash) return
           event.preventDefault()
           event.stopPropagation()
           try { event.dataTransfer.dropEffect = 'move' } catch { }
@@ -6163,7 +6619,7 @@ window.__ModuleLoader__.load({
         },
         onDrop: (event) => {
           if (drag === null) return
-          if ((drag.kind === 'workspace' && !workspaceSlash) || (drag.kind === 'session' && !sessionSlash)) {
+          if ((drag.kind === 'workspace' && !workspaceSlash) || ((drag.kind === 'session' || drag.kind === 'sgroup') && !sessionSlash)) {
             setDrag(null)
             return
           }
@@ -6171,9 +6627,17 @@ window.__ModuleLoader__.load({
           event.stopPropagation()
           const source = drag.source
           if (!source) { setDrag(null); return }
-          const target = drag.kind === 'session'
+          // A row dragged out of an open selection files the WHOLE bag, so
+          // the dialog is asked about the batch, not the one row under the
+          // cursor (v0.44.0, issue #29).
+          const batchIds = drag.kind === 'session' && Array.isArray(source.batchIds) && source.batchIds.length > 1 ? source.batchIds : null
+          const target = batchIds
+            ? { kind: 'batch', ids: batchIds, workspaceId: source.workspaceId }
+            : drag.kind === 'session'
             ? { kind: 'session', id: source.sessionId, title: source.title || source.leaf, workspaceId: source.workspaceId }
-            : { kind: 'workspace', id: source.workspaceId, title: source.folderPath ? source.folderPath + '/' + source.leaf : source.leaf }
+            : drag.kind === 'sgroup'
+              ? { kind: 'sgroup', path: source.path, title: source.path, workspaceId: source.workspaceId }
+              : { kind: 'workspace', id: source.workspaceId, title: source.folderPath ? source.folderPath + '/' + source.leaf : source.leaf }
           setDialog({ kind: 'group-move', target, initial: '', groupPaths: collectGroupPaths(target.kind) })
           setDrag(null)
         },
@@ -6213,7 +6677,7 @@ window.__ModuleLoader__.load({
         if (name === target.name) { setDialog(null); return }
         const workspace = (items || []).find(w => w.workspaceId === target.workspaceId)
         if (!workspace) { setDialog(null); return }
-        const node = findSessionGroup(buildSessionTree(sessionsOf(workspace), sessionSlash, sessFolders, workspace.workspaceId), target.path)
+        const node = findSessionGroup(buildSessionTree(sessionsOf(workspace), sessionSlash, sessFolders, workspace.workspaceId, sessionGroupOrderMap), target.path)
         if (!node) { setDialog(null); return }
         const parentPath = target.path.includes('/') ? target.path.slice(0, target.path.lastIndexOf('/')) : ''
         const nextPath = parentPath !== '' ? parentPath + '/' + name : name
@@ -6284,7 +6748,7 @@ window.__ModuleLoader__.load({
         const limited = limitSessionsForRender(full, sessionLimit, searching || extra === Infinity, currentId, extra, countActive)
         const showLess = !searching && extra > 0 && limited.hidden === 0
           && limitSessionsForRender(full, sessionLimit, false, currentId, 0, countActive).hidden > 0
-        const out = renderSessionNode(buildSessionTree(limited.rows, sessionSlash, sessFolders, id), id, depth)
+        const out = renderSessionNode(buildSessionTree(limited.rows, sessionSlash, sessFolders, id, sessionGroupOrderMap), id, depth)
         if (limited.hidden > 0 || showLess) {
           out.push(E('button', {
             key: 'lim-' + id,
@@ -6334,6 +6798,7 @@ window.__ModuleLoader__.load({
             onToggle: () => { if (!searching) actions.setSessionGroupExpanded(key, !open) },
             onContextMenu: (e) => openCtx('sgroup', { workspaceId, path: group.path, name: group.name, empty: countSessionTree(group) === 0 }, e),
             dropInto: sgroupDropInto(workspaceId, group.path),
+            dropSlot: sgroupSlotOf(group.path),
             dragEvents: sgroupDropEvents(workspaceId, group.path),
             custStyle: rowStyleOf('sgroup:' + workspaceId + '|' + group.path),
             t,
@@ -6344,22 +6809,39 @@ window.__ModuleLoader__.load({
         return out
       }
 
-      const renderSessionRow = (session, depth, workspaceId) => E(SessionRow, {
-        key: 'session:' + session.id,
-        node: session,
-        depth,
-        current: currentId === session.id,
-        now,
-        onOpen: (id) => open(id),
-        onContextMenu: (e) => openCtx('session', session, e),
-        dropHalf: workspaceId && !session.archived ? sessDropHalf(session.id) : null,
-        dragEvents: workspaceId && !session.archived ? sessionDragEvents(session, workspaceId) : undefined,
-        custStyle: rowStyleOf('session:' + session.id),
-        sessionActions,
-        scheduleSeat,
-        breathing: statusPulse,
-        t,
-      })
+      /**
+       * `selectScopeId` (v0.44.0, issue #29) is where a batch selection is
+       * allowed to answer, and it is deliberately NOT the same value as
+       * `workspaceId`: the latter is the DRAG scope (the flat view passes
+       * none, so its rows are not reorder sources), while a session picked in
+       * the flat view still needs its checkbox and its hit target — without
+       * this split, picking a row in the flat list would open the batch bar
+       * while the row itself showed no mark.
+       */
+      const renderSessionRow = (session, depth, workspaceId, selectScopeId) => {
+        const scope = selectScopeId === undefined ? workspaceId : selectScopeId
+        return E(SessionRow, {
+          key: 'session:' + session.id,
+          node: session,
+          depth,
+          current: currentId === session.id,
+          now,
+          onOpen: (id) => open(id),
+          onContextMenu: (e) => openCtx('session', session, e),
+          dropHalf: workspaceId && !session.archived ? sessDropHalf(session.id) : null,
+          dragEvents: workspaceId && !session.archived ? sessionDragEvents(session, workspaceId) : undefined,
+          custStyle: rowStyleOf('session:' + session.id),
+          sessionActions,
+          scheduleSeat,
+          breathing: statusPulse,
+          // Batch selection wiring (v0.44.0, issue #29): a selection is scoped
+          // to ONE workspace, so only rows of that workspace answer to it.
+          selecting: scope != null && selection !== null && selection.workspaceId === scope,
+          selected: scope != null && isSelected(scope, session.id),
+          onSelectToggle: scope == null ? undefined : (id) => toggleSelected(scope, id),
+          t,
+        })
+      }
 
       /**
        * rc.2 archived-only rule (official tree.ts groupByWorkspace): that view
@@ -6425,7 +6907,7 @@ window.__ModuleLoader__.load({
       const renderWorkspaceEntry = (entry, depth, pulse) => {
         const { workspace } = entry
         if (!workspaceVisible(workspace)) return []
-        const count = countSessionTree(buildSessionTree(visibleSessionsOf(workspace), sessionSlash, sessFolders, workspace.workspaceId))
+        const count = countSessionTree(buildSessionTree(visibleSessionsOf(workspace), sessionSlash, sessFolders, workspace.workspaceId, sessionGroupOrderMap))
         const rows = [E(WorkspaceRow, {
           key: 'ws-' + workspace.workspaceId,
           workspace,
@@ -6566,7 +7048,16 @@ window.__ModuleLoader__.load({
         // recency sort, including the Ungrouped bucket (not per-workspace runs).
         const visible = filterSessionsByAge(rows, sessionAgeDays, currentId, searching)
         const ordered = orderBy === 'updated' ? orderSessionsByRecency(visible, currentId) : visible
-        return ordered.map((s) => renderSessionRow({ ...s, leaf: s.title }, 0, undefined))
+        // A flat row has no reorder scope, but a batch pick still belongs to
+        // the workspace that OWNS the session — the checkbox and the hit target
+        // must not disappear just because the tree is one list (v0.44.0, issue
+        // #29). One pass builds the owner index, so the cost stays linear in
+        // the session count instead of per rendered row.
+        const ownerIndex = new Map()
+        for (const workspace of items || []) {
+          for (const id of workspace.sessionIds || []) if (!ownerIndex.has(id)) ownerIndex.set(id, workspace.workspaceId)
+        }
+        return ordered.map((s) => renderSessionRow({ ...s, leaf: s.title }, 0, undefined, ownerIndex.get(s.id)))
       }
       const renderUngroupedBlock = () => {
         const rows = []
@@ -6587,6 +7078,10 @@ window.__ModuleLoader__.load({
             E('span', { className: 'bw-row-label' }, t('group.ungrouped')),
             E('span', { className: 'bw-row-count' }, String(visible.length)),
           ))
+          // Ungrouped rows have NO workspace at all, and a session group is a
+          // prefix of a title inside a workspace tree — so there is nothing
+          // here to file them into, and they stay out of the batch gesture
+          // (renderSessionRow is called without a selection scope).
           if (open) for (const s of visible) rows.push(renderSessionRow(s, 0))
         }
         return rows
@@ -6673,11 +7168,22 @@ window.__ModuleLoader__.load({
       // the SAME handler, so the two surfaces cannot drift. menuEntries
       // feeds it the ctx payload; sessionActions feeds it the row node.
       const sessionMenuEntriesFor = (payload) => {
+        // Session ids are unique, so membership alone answers "is this row in
+        // the open bag" — no workspace scope needed here.
+        const sessionSelected = !!payload && selection !== null && selection.ids.indexOf(payload.id) !== -1
         const customizeEntry = { id: 'customize', label: t('custom.title'), icon: icon('IconPersonalizationOutline16', 16) }
         const groupItem = { id: 'move-group', label: t('menu.moveToGroup'), icon: icon('IconFolderOpenOutline16', 16) }
         const ungroupItem = { id: 'move-out', label: t('menu.moveOutGroup'), icon: icon('IconRightUpOutline16', 16) }
         const sgroupItems = sessionSlash ? [groupItem] : []
         const sessionUngroupItems = sessionSlash && payload && payload.allowGroups !== false && groupPrefixOf(String(payload.title || '')) !== '' ? [ungroupItem] : []
+        // Batch selection entry (v0.44.0, issue #29): a plain session row can
+        // start a selection; rows already in the bag offer to leave it. It
+        // sits with the other plugin entries, below the official separator.
+        const selectItem = {
+          id: sessionSelected ? 'deselect' : 'select',
+          label: sessionSelected ? t('batch.deselect') : t('batch.select'),
+          icon: icon(sessionSelected ? 'IconCloseOutline16' : 'IconCheckOutlineRegular', 16),
+        }
         const official = (key, fallback) => {
           const value = typeof ot === 'function' ? ot(key) : null
           return typeof value === 'string' && value !== '' && value !== key ? value : fallback
@@ -6712,6 +7218,7 @@ window.__ModuleLoader__.load({
             icon: icon('IconCopyOutlineRegular', 16),
           }] : []),
           { type: 'separator', id: 'bw-sep' },
+          selectItem,
           ...sessionUngroupItems,
           ...sgroupItems,
           customizeEntry,
@@ -6768,6 +7275,15 @@ window.__ModuleLoader__.load({
         // Plain retitle back to the leaf: the row leaves its group and
         // returns to the top level of its workspace (v0.18.0).
         if (id === 'move-out') { moveSessionOut(payload); return true }
+        // Batch selection verbs (v0.44.0, issue #29). The bag is scoped to the
+        // row's workspace, derived from the snapshot because the menu payload
+        // carries only the session.
+        if (id === 'select' || id === 'deselect') {
+          const workspace = (items || []).find((w) => (w.sessionIds || []).includes(payload.id))
+          if (!workspace) return true
+          toggleSelected(workspace.workspaceId, payload.id)
+          return true
+        }
         return false
       }
       // Shared workspace-preset flow: the local menu and the official
@@ -6994,6 +7510,16 @@ window.__ModuleLoader__.load({
           })
         },
         moveOut: moveSessionOut,
+        // Batch selection through the official shared menu (v0.44.0, issue
+        // #29): the same toggle the local menu drives, resolved to its
+        // workspace from the snapshot.
+        selectedIn: (sessionId) => selection !== null && selection.ids.indexOf(sessionId) !== -1,
+        toggleSelect: (sessionId) => {
+          const workspace = (items || []).find((w) => (w.sessionIds || []).includes(sessionId))
+          if (!workspace) return false
+          toggleSelected(workspace.workspaceId, sessionId)
+          return true
+        },
         workspacePreset: (payload) => openWorkspacePresetDialog(payload),
       }
       React.useEffect(() => {
@@ -7258,16 +7784,30 @@ window.__ModuleLoader__.load({
       // gap), so a drop outside every group always means the same thing:
       // leave the group. Row handlers stopPropagation, so this only fires
       // where no row claimed the drop.
+      // v0.44.0 (issue #29): the same exit exists for GROUPS. A nested group
+      // dragged anywhere that is not a group row comes back out to the
+      // workspace's top level — the nesting IS a name prefix, so "lift" means
+      // "strip one level of prefix", exactly what a session leaving a group
+      // does. Only NESTED groups arm it: a top-level group gains nothing from
+      // dropping on empty space, so the container must not suggest it does.
       const sessionCouldLeaveGroup = dragMatches('session') && sessionSlash && drag.source && drag.source.allowGroups !== false && leafOf(drag.source.title) !== drag.source.title
+      const sgroupCouldLeaveGroup = dragMatches('sgroup') && sessionSlash && drag.source && sessionGroupParentPath(drag.source.path) !== ''
+      const couldLeaveGroup = sessionCouldLeaveGroup || sgroupCouldLeaveGroup
       const rootDropEvents = {
         onDragOver: (event) => {
-          if (!sessionCouldLeaveGroup) return
+          if (!couldLeaveGroup) return
           event.preventDefault()
           try { event.dataTransfer.dropEffect = 'move' } catch { }
         },
         onDrop: (event) => {
-          if (!sessionCouldLeaveGroup) return
+          if (!couldLeaveGroup) return
           event.preventDefault()
+          if (sgroupCouldLeaveGroup) {
+            const source = drag.source
+            setDrag(null)
+            commitSgroupPlace(source, '', null, 'after')
+            return
+          }
           commitSessionMoveOut(drag.source.workspaceId)
         },
       }
@@ -7282,7 +7822,12 @@ window.__ModuleLoader__.load({
               undefined, t(copyNotice.ok ? 'toast.sessionIdCopied' : 'toast.sessionIdCopyFailed')))
         : ''
 
-      return E('div', { className: cls('bw-root', sessionCouldLeaveGroup && 'bw-root-drop-out'), ...rootDropEvents },
+      // Live selection count (v0.44.0, issue #29): the bag can outlive a row
+      // that disappeared from the snapshot, so the bar counts what is really
+      // on screen — a batch of ghosts must never be offered for moving.
+      const batchCount = liveSelectionIdsOf().length
+
+      return E('div', { className: cls('bw-root', couldLeaveGroup && 'bw-root-drop-out'), ...rootDropEvents },
         StyleNode(),
         // Copy-session-id notice (the dsh 0.2.1-alpha.5 menu mirror): the
         // official primitives Toast when this host ships it (body portal,
@@ -7362,6 +7907,28 @@ window.__ModuleLoader__.load({
             disabled: flowBusy,
           }, icon('IconProjectAddOutline16')) : null,
         ),
+        // Batch bar (v0.44.0, issue #29): the selection gesture's console. It
+        // only exists while rows are picked up, and it names the count plus
+        // the two verbs that make the gesture worth doing — file them into a
+        // group, or put them back down.
+        batchCount > 0 ? E('div', { className: 'bw-batch-bar', role: 'region', 'aria-label': t('batch.title') },
+          E('span', { className: 'bw-batch-count' }, t('batch.count', { n: batchCount })),
+          E('button', {
+            type: 'button',
+            className: 'bw-batch-action',
+            onClick: () => setDialog({
+              kind: 'group-move',
+              target: { kind: 'batch', ids: liveSelectionIdsOf(), workspaceId: selection.workspaceId },
+              initial: '',
+              groupPaths: collectGroupPaths('session'),
+            }),
+          }, icon('IconFolderOpenOutline16', 14), E('span', null, t('menu.moveToGroup'))),
+          E('button', {
+            type: 'button',
+            className: 'bw-batch-action',
+            onClick: clearSelection,
+          }, icon('IconCloseOutline16', 12), E('span', null, t('batch.clear'))),
+        ) : null,
         E(AnimatedRows, {
           className: 'bw-tree',
           label: t('title'),
@@ -7640,6 +8207,16 @@ window.__ModuleLoader__.load({
                 id: 'bw-move-out',
                 label: bridge.label('menu.moveOutGroup'),
                 run: () => bridge.moveOut({ id: target.sessionId, title }),
+              })
+            }
+            // Selection verb (v0.44.0, issue #29): sessions are the only rows
+            // a batch can carry, so this rides the session contribution.
+            if (bridge.toggleSelect) {
+              const picked = !!(bridge.selectedIn && bridge.selectedIn(target.sessionId))
+              actions.push({
+                id: 'bw-select',
+                label: bridge.label(picked ? 'batch.deselect' : 'batch.select'),
+                run: () => bridge.toggleSelect(target.sessionId),
               })
             }
             actions.push({

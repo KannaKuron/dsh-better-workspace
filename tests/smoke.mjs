@@ -1912,29 +1912,36 @@ test('rc.2 first-use Workspace name: display-only substitution, both surfaces (v
   assert.doesNotMatch(text, /renameWorkspace\([^)]*defaultWorkspaceName/)
 })
 
-test('schedule mark: the shipped seat occupant only (v0.23.0)', () => {
+test('leading seat: every shipped occupant renders, with or without inject (v0.23.0, issue #30)', () => {
   const text = clientText()
   // rc.2 deleted packages/schedule/schedule/src/projection.ts, so
   // projectionValues.schedule never exists there: the new source is the seat
   // the SHIPPED browser declares, read off the ledger like the hero occupant.
-  assert.match(text, /const scheduleSeatOf = \(slots\) => \{/)
-  assert.match(text, /slots\.entries\('sidebar\.session\.row\.leading'\)/)
-  assert.match(text, /scheduleSeatReader: \(\) => \{/)
-  // A host without the seat (older dsh, or the Schedule overlay switched off)
-  // renders NOTHING — no probing, no self-drawn substitute.
-  assert.match(text, /const seat = scheduleSeatOf\(slots\)\s*\n\s*if \(!seat\) return null/)
+  // That seat (`sidebar.session.row.leading`) is declared kind:'list', and the
+  // official renderer draws EVERY occupant — so this plugin does too (issue
+  // #30). The Schedule mark (order 10) is only the first of them.
+  assert.match(text, /seatEntriesReader: \(name\) => \{/)
+  assert.match(text, /slots\.entries\(name\)/)
+  assert.match(text, /const leadingSeats = seatEntriesOf \? seatEntriesOf\('sidebar\.session\.row\.leading'\) : EMPTY_LIST/)
+  assert.match(text, /leading\.map\(\(seat, index\) => E\(QuietBoundary, \{ key: 'leading-seat-' \+ index \}/)
+  // `inject` is OPTIONAL in the slot contract (ui-slots register inject?):
+  // dsh-session-menu registers leading / hover / row.action with no face at
+  // all, and the old typeof gate silently dropped those occupants.
+  assert.match(text, /if \(!entry \|\| !entry\.component\) return null/)
+  assert.match(text, /if \(typeof entry\.inject === 'function'\) \{/)
+  assert.match(text, /return \{ component: entry\.component, face, t: seatT \}/)
   // The occupant's hooks compartment is bound to the `use<Name>` props the
   // slot renderer would synthesize (its use-sync-external-store shim is not on
   // the client baseline whitelist).
   assert.match(text, /const bindOccupantFace = \(face\) => \{/)
   assert.match(text, /\['use' \+ key\.charAt\(0\)\.toUpperCase\(\) \+ key\.slice\(1\)\] = bindSelectorHook\(observable\)/)
   assert.match(text, /return React\.useSyncExternalStore\(subscribe, getSelection\)/)
-  // Shipped row rule: the leading cell belongs to the mark only while the
+  // Shipped row rule: the leading cell belongs to the list only while the
   // row's own primary state is idle, and never on an archived/blank row.
-  assert.match(text, /const markNode = scheduleSeat && !status && !node\.archived && !node\.blank/)
+  assert.match(text, /const markNode = !status && !node\.archived && !node\.blank && leading\.length > 0/)
   assert.match(text, /: \(markNode \|\| E\('span', \{ className: 'bw-dot' \}\)\)/)
-  // The foreign component renders behind the render-crash boundary.
-  assert.match(text, /E\(QuietBoundary, \{ key: 'schedule-seat' \}, E\(ShippedSeatOccupant/)
+  // Every foreign occupant renders behind the render-crash boundary.
+  assert.match(text, /E\(QuietBoundary, \{ key: 'leading-seat-' \+ index \}/)
 })
 
 test('rc.2 shortcuts: the shadowed browser\'s request channel is consumed here (v0.23.0)', () => {

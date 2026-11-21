@@ -526,32 +526,6 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * The shipped schedule mark's seat occupant (dsh 0.1.7-rc.2:
-     * `sidebar.session.row.leading`, registered by
-     * @deepseek-ai/dsh-client-ui-schedule). rc.2 removed the list projection
-     * this plugin used to mirror the mark from and moved the mark into a seat
-     * DECLARED BY THE SHIPPED BROWSER — a shadowing entry cannot render another
-     * entry's child seat, so the occupant is read off the ledger and rendered
-     * inside our own row, exactly like the hero picker's directory-flow
-     * occupant. No occupant (the Schedule overlay is off) means no mark, which
-     * is the shipped default anyway.
-     */
-    const scheduleSeatOf = (slots) => {
-      try {
-        const entries = slots.entries('sidebar.session.row.leading')
-        const entry = entries && entries.length > 0 ? entries[0] : null
-        if (!entry || !entry.component || typeof entry.inject !== 'function') return null
-        return {
-          component: entry.component,
-          face: entry.inject(),
-          locale: typeof entry.locale === 'string' ? entry.locale : null,
-        }
-      } catch (error) {
-        return null
-      }
-    }
-
-    /**
      * Bind one ledger occupant's `hooks` compartment into the `use<Name>`
      * selector-hook props the slot renderer would synthesize (ui-slots
      * PropsHooks): the occupant was written against that contract, so it is
@@ -2520,7 +2494,7 @@ window.__ModuleLoader__.load({
       return { titleRef, onPointerEnter, onPointerLeave }
     }
 
-    function SessionRow({ node, depth, current, onOpen, onContextMenu, now, dropHalf, dragEvents, custStyle, breathing, sessionActions, scheduleSeat, dataRowKey, selecting, selected, onSelectToggle, t }) {
+    function SessionRow({ node, depth, current, onOpen, onContextMenu, now, dropHalf, dragEvents, custStyle, breathing, sessionActions, leadingSeats, dataRowKey, selecting, selected, onSelectToggle, t }) {
       const state = sessionStateOf(node)
       const status = state === null ? null : {
         state,
@@ -2530,20 +2504,25 @@ window.__ModuleLoader__.load({
             ? (node.running ? t('status.running') : t('status.subagents', { n: node.subagents }))
             : t('status.completed'),
       }
-      // Ambient Schedule mark: the shipped row's leading seat
-      // (`sidebar.session.row.leading`), declared by an entry this seat
-      // shadows, so its occupant is rendered here (see scheduleSeatOf). The
-      // shipped rule holds: the cell belongs to the mark only while the row's
-      // own primary state is idle — a status dot and a seat occupant never
-      // share it — and an archived or blank row keeps the cell empty. No seat
-      // (the Schedule overlay is off) means no mark, the shipped default.
-      const markNode = scheduleSeat && !status && !node.archived && !node.blank
-        ? E(QuietBoundary, { key: 'schedule-seat' }, E(ShippedSeatOccupant, {
-          seat: scheduleSeat,
-          ownerProps: { sessionId: node.id },
-          standardProps: sessionActions ? sessionActions.standardProps : null,
-          t: scheduleSeat.t,
-        }))
+      // The shipped row's leading seat LIST (`sidebar.session.row.leading`, a
+      // kind:'list' slot declared by the entry this row shadows — issue #30).
+      // The official renderer draws EVERY occupant of that list: the Schedule
+      // mark (ui-schedule, order 10) plus third-party decorators such as
+      // mark-unread and dsh-session-menu, whose entries may carry no `inject`
+      // face at all. Reading only the first occupant silently dropped everyone
+      // behind it. The shipped rule still holds: the cell belongs to the list
+      // only while the row's own primary state is idle — a status dot and the
+      // decorations never share it — and an archived or blank row keeps the
+      // cell empty.
+      const leading = Array.isArray(leadingSeats) ? leadingSeats : EMPTY_LIST
+      const markNode = !status && !node.archived && !node.blank && leading.length > 0
+        ? leading.map((seat, index) => E(QuietBoundary, { key: 'leading-seat-' + index },
+          E(ShippedSeatOccupant, {
+            seat,
+            ownerProps: { sessionId: node.id },
+            standardProps: sessionActions ? sessionActions.standardProps : null,
+            t: seat.t,
+          })))
         : null
       // Official alpha.2 row-trailing strip: a list seat nested INSIDE the
       // row, between the time cell and the pin marker, hidden while the hover
@@ -3947,7 +3926,7 @@ window.__ModuleLoader__.load({
         useDirectoryFlow,
         pickDirectory, listDirectory, createDirectory,
         sidebarFlowEntry,
-        shippedBrowserFace, scheduleSeatReader, seatEntriesReader,
+        shippedBrowserFace, seatEntriesReader,
         officialT,
         presetFaceOf,
         contextMenuFaceOf, setMenuBridge,
@@ -4210,17 +4189,18 @@ window.__ModuleLoader__.load({
       const reportDirectoryBusy = shippedFace && typeof shippedFace.setDirectoryBusy === 'function'
         ? shippedFace.setDirectoryBusy
         : null
-      // The shipped schedule mark's seat occupant (see scheduleSeatOf); absent
-      // whenever the Schedule overlay is off, which is the shipped default.
-      const scheduleSeat = typeof scheduleSeatReader === 'function' ? scheduleSeatReader() : null
-      // The shipped session-row seats (official Rows.tsx): row.action
-      // occupants render the official pin/archive quick buttons (our own
-      // fallback buttons step aside), session.row.hover decorates the hover
-      // card. The menu.item seat is deliberately NOT read anymore: its
-      // occupants need slot-level inject hooks (useShortcuts on 0.2.1-rc.2)
-      // and the in-row menu they anchored was retired in issue #12. All read
-      // off the ledger like the schedule mark.
+      // The shipped session-row seats (official Rows.tsx): leading draws the
+      // Schedule mark PLUS every third-party decorator (a kind:'list' slot —
+      // issue #30), row.action renders the official pin/archive quick buttons
+      // (our own fallback buttons step aside), session.row.hover decorates the
+      // hover card, trailing keeps the worktree/PR icon visible. The menu.item
+      // seat is deliberately NOT read anymore: its occupants need slot-level
+      // inject hooks (useShortcuts on 0.2.1-rc.2) and the in-row menu they
+      // anchored was retired in issue #12. Every seat is read off the ledger.
       const seatEntriesOf = typeof seatEntriesReader === 'function' ? seatEntriesReader : null
+      // The Schedule overlay being off just means this list starts with a
+      // third-party entry instead — no mark, no special case.
+      const leadingSeats = seatEntriesOf ? seatEntriesOf('sidebar.session.row.leading') : EMPTY_LIST
       const rowActionSeat = seatEntriesOf ? seatEntriesOf('sidebar.workspaces.session.row.action') : []
       const trailingSeat = seatEntriesOf ? seatEntriesOf('sidebar.session.row.trailing') : []
       const hoverSeat = seatEntriesOf ? seatEntriesOf('sidebar.session.row.hover') : []
@@ -6832,7 +6812,7 @@ window.__ModuleLoader__.load({
           dragEvents: workspaceId && !session.archived ? sessionDragEvents(session, workspaceId) : undefined,
           custStyle: rowStyleOf('session:' + session.id),
           sessionActions,
-          scheduleSeat,
+          leadingSeats,
           breathing: statusPulse,
           // Batch selection wiring (v0.44.0, issue #29): a selection is scoped
           // to ONE workspace, so only rows of that workspace answer to it.
@@ -8419,33 +8399,28 @@ window.__ModuleLoader__.load({
         // here (see shippedBrowserFaceOf) — otherwise Cmd/Ctrl+K and Cmd/Ctrl+O
         // would be consumed by the shipped command with no consumer left.
         shippedBrowserFace: () => shippedBrowserFaceOf(slots, BetterBrowser),
-        // The shipped schedule mark's seat occupant (dsh 0.1.7-rc.2), rendered
-        // inside our own row (see scheduleSeatOf); its copy is bound to the
-        // occupant's OWN dictionary namespace, like the slot renderer would.
-        scheduleSeatReader: () => {
-          if (typeof React.useSyncExternalStore !== 'function') return null
-          const seat = scheduleSeatOf(slots)
-          if (!seat) return null
-          let seatT = null
-          if (seat.locale && ctx.locale && typeof ctx.locale.bind === 'function') {
-            try { seatT = ctx.locale.bind(seat.locale) } catch (error) { seatT = null }
-          }
-          return { component: seat.component, face: seat.face, t: seatT }
-        },
-        // The shipped session-row seat occupants, read off the ledger in a
-        // LIST (same shape as scheduleSeatReader): one reader serves every
-        // seat name (menu.item / row.action / session.row.hover).
+        // The shipped session-row seat occupants, read off the ledger as a
+        // LIST: one reader serves every seat name (session.row.leading /
+        // session.row.trailing / row.action / session.row.hover). `inject` is
+        // OPTIONAL in the slot contract (ui-slots: register({ inject? })):
+        // dsh-session-menu registers leading/hover/row.action with no face at
+        // all, and requiring one silently dropped those occupants (issue #30).
+        // An entry without a face simply carries no injected props.
         seatEntriesReader: (name) => {
           try {
             const entries = slots.entries(name)
             if (!Array.isArray(entries)) return []
             return entries.map((entry) => {
-              if (!entry || !entry.component || typeof entry.inject !== 'function') return null
+              if (!entry || !entry.component) return null
+              let face = null
+              if (typeof entry.inject === 'function') {
+                try { face = entry.inject() } catch (error) { face = null }
+              }
               let seatT = null
               if (entry.locale && ctx.locale && typeof ctx.locale.bind === 'function') {
                 try { seatT = ctx.locale.bind(entry.locale) } catch (error) { seatT = null }
               }
-              return { component: entry.component, face: entry.inject(), t: seatT }
+              return { component: entry.component, face, t: seatT }
             }).filter(Boolean)
           } catch (error) {
             return []

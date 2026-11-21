@@ -3,6 +3,18 @@
 > 倒序排列,新版本条目在最上面。条目格式:`## vX.Y.Z — YYYY-MM-DD` + 类型(feat / fix / docs / chore)+ 要点 + 相关链接。
 > 纪律见 AGENTS.md「变更记录纪律」:发版前先更新本文件并随版本提交;事故复盘、复现与真机验证记录也记在这里。
 
+## v0.44.1 — 2026-11-21
+
+**类型**:fix([#30](https://github.com/KannaKuron/dsh-better-workspace/issues/30):会话行首的第三方装饰不再被丢弃)
+
+- **列表座位要画全部占用者**:`sidebar.session.row.leading` 在官方是 `kind: 'list'` 座位,官方 `Rows.tsx` 每行渲染 `renderSlot` 返回的**每一个**占用者;本插件旧实现 `scheduleSeatOf` 只取 `slots.entries(...)[0]` —— 而 `@deepseek-ai/dsh-client-ui-schedule` 的日程标记 order 10 常年排在首位,于是 dsh-plugin-mark-unread 的未读点、dsh-session-menu 的未读 / 错误点全部被静默丢弃。现在改读 `seatEntriesReader('sidebar.session.row.leading')` 列表,逐个包进 `QuietBoundary`(某一个抛错只丢自己);行首单元格与官方规则一致,仅在行主状态空闲、非 blank、非归档时绘制。
+- **`inject` 是可选字段**:官方 `ctx.slots.register({ inject? })` 允许没有注入面的占用者;dsh-session-menu 0.1.3 的 leading / hover / row.action 三个座位都不带 `inject`,旧代码 `typeof entry.inject !== 'function'` 把它们整批过滤。现在只要求 `entry.component`:`inject` 在场时照旧绑定 `use<Name>` 选择器钩子,缺席时传 null 面(不注入任何额外 props);`inject()` 抛错也只丢该占用者的注入面,不牵连同座位的其他占用者。
+- **真机验证**(隔离 profile:本插件 tarball + dsh-plugin-mark-unread 0.1.2 + dsh-session-menu 0.1.3 同装):同一会话行标记未读后,行首同时出现 `.dsm-dot[data-session-menu-mark="unread"]` 与 `.dsh-mu-dot[data-dsh-mark-unread="dot"]`;悬停卡出现 `.dsm-hover-lines`(工作目录 + 已标记为未读);两个插件的「标记为未读」右键项都在;全程 0 pageerror。
+- **测试**:`npm test` **117/117**;冒烟断言改为列表渲染(`leadingSeats`)与 inject 可选(不再要求每一项都有 `inject`,`scheduleSeatReader` 已删)。
+- **文档**:AGENTS.md「官方座位占用者的通用读法」改写为「`kind:'list'` 必须渲染全部占用者,single 才取 `[0]`;inject 可选」;README / README_EN 的 rc.1 契约行注明同一事实。
+
+**链接**:[issue #30](https://github.com/KannaKuron/dsh-better-workspace/issues/30)
+
 ## v0.44.0 — 2026-11-21
 
 **类型**:feat / fix([#29](https://github.com/KannaKuron/dsh-better-workspace/issues/29):会话分组拖拽排序、拖拽改层级、批量移入分组)
